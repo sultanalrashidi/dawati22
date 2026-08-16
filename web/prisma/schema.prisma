@@ -1,0 +1,468 @@
+// Dawati (دعوتي) — core data model.
+// See PROJECT_MAP.md at the repo root for the living architecture doc.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Identity & access
+// ---------------------------------------------------------------------------
+
+enum Role {
+  CUSTOMER
+  ADMIN
+  GATE_STAFF
+}
+
+enum Locale {
+  ar
+  en
+}
+
+model User {
+  id              String    @id @default(cuid())
+  role            Role      @default(CUSTOMER)
+  name            String
+  phone           String?   @unique
+  email           String?   @unique
+  passwordHash    String?
+  locale          Locale    @default(ar)
+  phoneVerifiedAt DateTime?
+  isBlocked       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  ownedEvents          Event[]                  @relation("EventOwner")
+  orders               Order[]
+  createdThemes        Theme[]                  @relation("ThemeCreator")
+  updatedThemes        Theme[]                  @relation("ThemeUpdater")
+  assignedClientThemes ClientAssignedTheme[]    @relation("ThemeAssignee")
+  themeAssignmentsMade ClientAssignedTheme[]    @relation("ThemeAssigner")
+  gateStaffProfile     GateStaff?
+  gateAssignmentsMade  GateStaffAssignment[]    @relation("GateAssigner")
+  notifications        Notification[]
+  auditLogs            AuditLog[]               @relation("AuditActor")
+  sessions             Session[]
+  guestManagementAsks  GuestManagementRequest[] @relation("GuestMgmtRequester")
+  guestManagementDone  GuestManagementRequest[] @relation("GuestMgmtResolver")
+
+  @@index([role])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  userAgent String?
+  ip        String?
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+enum OtpPurpose {
+  SIGNUP
+  LOGIN
+  VERIFY_PHONE
+}
+
+model OtpCode {
+  id          String     @id @default(cuid())
+  phone       String
+  purpose     OtpPurpose
+  codeHash    String
+  attempts    Int        @default(0)
+  maxAttempts Int        @default(5)
+  expiresAt   DateTime
+  consumedAt  DateTime?
+  createdAt   DateTime   @default(now())
+
+  @@index([phone, purpose])
+}
+
+// ---------------------------------------------------------------------------
+// Plans & orders (packages must be purchased before an event can be created)
+// ---------------------------------------------------------------------------
+
+enum PlanStatus {
+  ACTIVE
+  HIDDEN
+  ARCHIVED
+}
+
+model Plan {
+  id                     String     @id @default(cuid())
+  name                   String
+  nameAr                 String
+  invitationCount        Int
+  price                  Decimal    @db.Decimal(10, 2)
+  currency               String     @default("SAR")
+  maxGuestsPerInvitation Int?
+  status                 PlanStatus @default(ACTIVE)
+  sortOrder              Int        @default(0)
+  createdAt              DateTime   @default(now())
+  updatedAt              DateTime   @updatedAt
+
+  orders Order[]
+
+  @@index([status])
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+enum PaymentProvider {
+  MOCK
+  MOYASAR
+}
+
+model Order {
+  id             String          @id @default(cuid())
+  userId         String
+  user           User            @relation(fields: [userId], references: [id])
+  planId         String
+  plan           Plan            @relation(fields: [planId], references: [id])
+  amount         Decimal         @db.Decimal(10, 2)
+  currency       String          @default("SAR")
+  status         OrderStatus     @default(PENDING)
+  provider       PaymentProvider @default(MOCK)
+  providerRef    String?         @unique
+  idempotencyKey String          @unique
+  paidAt         DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  event Event?
+
+  @@index([userId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Themes (data-driven; see PROJECT_MAP.md "Theme engine")
+// ---------------------------------------------------------------------------
+
+enum ThemeStatus {
+  DRAFT
+  PUBLISHED
+  HIDDEN
+  ARCHIVED
+}
+
+model Theme {
+  id            String      @id @default(cuid())
+  slug          String      @unique
+  version       Int         @default(1)
+  name          String
+  nameAr        String
+  category      String
+  description   String?
+  descriptionAr String?
+  config        Json
+  coverImageUrl String?
+  status        ThemeStatus @default(DRAFT)
+  isCustom      Boolean     @default(false)
+  archivedAt    DateTime?
+  createdById   String
+  createdBy     User        @relation("ThemeCreator", fields: [createdById], references: [id])
+  updatedById   String?
+  updatedBy     User?       @relation("ThemeUpdater", fields: [updatedById], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  assets            ThemeAsset[]
+  events            Event[]
+  clientAssignments ClientAssignedTheme[]
+
+  @@index([status])
+  @@index([slug])
+}
+
+model ThemeAsset {
+  id        String   @id @default(cuid())
+  themeId   String
+  theme     Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  kind      String
+  url       String
+  width     Int?
+  height    Int?
+  fileSize  Int?
+  mimeType  String
+  createdAt DateTime @default(now())
+
+  @@index([themeId])
+}
+
+model ClientAssignedTheme {
+  id           String   @id @default(cuid())
+  themeId      String
+  theme        Theme    @relation(fields: [themeId], references: [id])
+  userId       String?
+  user         User?    @relation("ThemeAssignee", fields: [userId], references: [id])
+  eventId      String?  @unique
+  event        Event?   @relation(fields: [eventId], references: [id])
+  assignedById String
+  assignedBy   User     @relation("ThemeAssigner", fields: [assignedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+enum EventType {
+  WEDDING
+  ENGAGEMENT
+  GRADUATION
+  BIRTHDAY
+  ANNIVERSARY
+  CORPORATE
+  OTHER
+}
+
+enum EventGuestManagementMode {
+  SELF
+  ADMIN
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Event {
+  id                  String                   @id @default(cuid())
+  ownerId             String
+  owner               User                     @relation("EventOwner", fields: [ownerId], references: [id])
+  orderId             String                   @unique
+  order               Order                    @relation(fields: [orderId], references: [id])
+  type                EventType
+  name                String
+  groomNameEn         String
+  brideNameEn         String
+  invitationTextAr    String
+  eventDate           DateTime
+  locationName        String
+  mapUrl              String?
+  coverImageUrl       String?
+  themeId             String
+  theme               Theme                    @relation(fields: [themeId], references: [id])
+  guestManagementMode EventGuestManagementMode @default(SELF)
+  rsvpRequired        Boolean                  @default(true)
+  status              EventStatus              @default(DRAFT)
+  expiresAt           DateTime?
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  guests                 Guest[]
+  invitations            Invitation[]
+  gateStaffAssignments   GateStaffAssignment[]
+  clientAssignedTheme    ClientAssignedTheme?
+  checkInLogs            CheckInLog[]
+  guestManagementRequest GuestManagementRequest?
+
+  @@index([ownerId])
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Guests, invitations, RSVP
+// ---------------------------------------------------------------------------
+
+model Guest {
+  id             String   @id @default(cuid())
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  nameAr         String
+  phone          String?
+  allowedCount   Int      @default(1)
+  checkedInCount Int      @default(0)
+  isBlocked      Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  invitation  Invitation?
+  checkInLogs CheckInLog[]
+
+  @@index([eventId])
+}
+
+enum InvitationStatus {
+  DRAFT
+  SENT
+  VIEWED
+  ACCEPTED
+  DECLINED
+  BLOCKED
+  CANCELLED
+  VALID
+  PARTIALLY_USED
+  FULLY_USED
+  EXPIRED
+}
+
+model Invitation {
+  id          String           @id @default(cuid())
+  guestId     String           @unique
+  guest       Guest            @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  eventId     String
+  event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  status      InvitationStatus @default(DRAFT)
+  linkToken   String           @unique
+  qrToken     String           @unique
+  viewedAt    DateTime?
+  respondedAt DateTime?
+  sentAt      DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  rsvps Rsvp[]
+
+  @@index([eventId])
+  @@index([linkToken])
+  @@index([qrToken])
+}
+
+enum RsvpStatus {
+  ACCEPTED
+  DECLINED
+}
+
+model Rsvp {
+  id           String     @id @default(cuid())
+  invitationId String
+  invitation   Invitation @relation(fields: [invitationId], references: [id], onDelete: Cascade)
+  status       RsvpStatus
+  respondedAt  DateTime   @default(now())
+  ipHash       String?
+  userAgent    String?
+
+  @@index([invitationId])
+}
+
+// ---------------------------------------------------------------------------
+// Gate staff & check-in
+// ---------------------------------------------------------------------------
+
+model GateStaff {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  phone     String?
+  email     String?
+  createdAt DateTime @default(now())
+
+  assignments GateStaffAssignment[]
+  checkInLogs CheckInLog[]
+}
+
+model GateStaffAssignment {
+  id           String    @id @default(cuid())
+  gateStaffId  String
+  gateStaff    GateStaff @relation(fields: [gateStaffId], references: [id], onDelete: Cascade)
+  eventId      String
+  event        Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  assignedById String
+  assignedBy   User      @relation("GateAssigner", fields: [assignedById], references: [id])
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@unique([gateStaffId, eventId])
+  @@index([eventId])
+}
+
+enum CheckInResult {
+  SUCCESS
+  DENIED_FULL
+  DENIED_BLOCKED
+  DENIED_CANCELLED
+  DENIED_EXPIRED
+  DENIED_UNCONFIRMED
+  DENIED_INVALID
+}
+
+model CheckInLog {
+  id          String        @id @default(cuid())
+  eventId     String
+  event       Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  guestId     String?
+  guest       Guest?        @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  gateStaffId String
+  gateStaff   GateStaff     @relation(fields: [gateStaffId], references: [id])
+  seatsBefore Int?
+  seatsAfter  Int?
+  result      CheckInResult
+  createdAt   DateTime      @default(now())
+
+  @@index([eventId])
+  @@index([guestId])
+}
+
+// ---------------------------------------------------------------------------
+// Guest management hand-off, notifications, audit
+// ---------------------------------------------------------------------------
+
+enum GuestManagementRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+model GuestManagementRequest {
+  id            String                       @id @default(cuid())
+  eventId       String                       @unique
+  event         Event                        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  requestedById String
+  requestedBy   User                         @relation("GuestMgmtRequester", fields: [requestedById], references: [id])
+  status        GuestManagementRequestStatus @default(PENDING)
+  notes         String?
+  resolvedById  String?
+  resolvedBy    User?                        @relation("GuestMgmtResolver", fields: [resolvedById], references: [id])
+  createdAt     DateTime                     @default(now())
+  resolvedAt    DateTime?
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type      String
+  titleAr   String
+  bodyAr    String
+  meta      Json?
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId, readAt])
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String?
+  actor      User?    @relation("AuditActor", fields: [actorId], references: [id])
+  action     String
+  entityType String
+  entityId   String
+  meta       Json?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+}

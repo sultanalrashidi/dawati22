@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Splash Screen</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e4e2e1",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "secondary-fixed": "#ffdad9",
+                        "secondary": "#7b5455",
+                        "surface": "#fcf9f8",
+                        "surface-container-low": "#f6f3f2",
+                        "background": "#fcf9f8",
+                        "inverse-surface": "#303030",
+                        "on-surface-variant": "#4c463d",
+                        "secondary-container": "#fdcbcb",
+                        "on-secondary": "#ffffff",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "surface-container-highest": "#e4e2e1",
+                        "surface-bright": "#fcf9f8",
+                        "tertiary-container": "#d3d4e8",
+                        "primary": "#6a5d43",
+                        "surface-container": "#f0eded",
+                        "error": "#ba1a1a",
+                        "primary-container": "#e5d3b3",
+                        "on-tertiary-container": "#595b6c",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-container": "#795354",
+                        "surface-tint": "#6a5d43",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#d6c4a5",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-dim": "#dcd9d9",
+                        "on-primary-fixed": "#231a06",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-error": "#ffffff",
+                        "outline": "#7d766c",
+                        "primary-fixed": "#f3e0c0",
+                        "on-secondary-fixed": "#2f1314",
+                        "on-primary-container": "#675a41",
+                        "outline-variant": "#cec5b9",
+                        "tertiary": "#5b5d6e",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "on-surface": "#1b1c1c",
+                        "on-background": "#1b1c1c",
+                        "surface-container-high": "#eae7e7",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#e0e1f5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "gutter": "20px",
+                        "xs": "8px",
+                        "unit": "4px",
+                        "margin-mobile": "20px",
+                        "lg": "48px",
+                        "xl": "80px",
+                        "margin-desktop": "120px",
+                        "sm": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["DM Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["DM Sans"],
+                        "label-sm": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .fade-in-up {
+            animation: fadeInUp 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        
+        .fade-in-delayed {
+            animation: fadeIn 2s ease-in-out 1s forwards;
+            opacity: 0;
+        }
+
+        .pulse-slow {
+            animation: pulseSlow 4s infinite ease-in-out;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+        
+        @keyframes pulseSlow {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen w-screen overflow-hidden flex flex-col items-center justify-center relative selection:bg-primary-container selection:text-on-primary-container">
+<!-- Subtle Background Texture/Gradient (Atmospheric) -->
+<div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(circle at center, var(--tw-colors-surface-container-lowest) 0%, var(--tw-colors-background) 100%);"></div>
+<!-- Main Content Canvas -->
+<main class="z-10 flex flex-col items-center justify-center text-center px-gutter w-full max-w-[1280px]">
+<!-- Monogram / Logo Mark -->
+<div class="mb-lg fade-in-up pulse-slow relative flex items-center justify-center w-24 h-24">
+<!-- A refined monogram symbol using Material Icons for simplicity, styled elegantly -->
+<div class="absolute inset-0 bg-primary-container/20 rounded-full blur-xl"></div>
+<span class="material-symbols-outlined text-primary text-[64px] font-light leading-none" style="font-variation-settings: 'wght' 100, 'FILL' 0;">
+                favorite
+             </span>
+</div>
+<!-- Brand Name -->
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight mb-sm fade-in-up" style="animation-delay: 0.2s;">
+            Dawati
+        </h1>
+<!-- Subtitle / Tagline -->
+<p class="font-body-lg text-body-lg text-on-surface-variant/80 max-w-sm mx-auto fade-in-delayed tracking-wide uppercase text-sm">
+            Your Wedding, Refined
+        </p>
+</main>
+<!-- Note: TopAppBar and BottomNavBar are deliberately suppressed here as this is a linear/transactional Splash Screen intent. -->
+</body></html>

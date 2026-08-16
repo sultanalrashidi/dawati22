@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html class="light" dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Pure Minimal Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#2f1314",
+                      "on-primary-fixed-variant": "#51452d",
+                      "secondary": "#7b5455",
+                      "tertiary-fixed": "#e0e1f5",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "surface-bright": "#fcf9f8",
+                      "primary-fixed": "#f3e0c0",
+                      "on-primary-container": "#675a41",
+                      "outline-variant": "#cec5b9",
+                      "surface-container-low": "#f6f3f2",
+                      "on-tertiary-fixed": "#181b29",
+                      "on-primary": "#ffffff",
+                      "inverse-primary": "#d6c4a5",
+                      "on-background": "#1b1c1c",
+                      "background": "#fcf9f8",
+                      "on-surface": "#1b1c1c",
+                      "on-primary-fixed": "#231a06",
+                      "on-tertiary-container": "#595b6c",
+                      "surface-variant": "#e4e2e1",
+                      "on-tertiary": "#ffffff",
+                      "inverse-on-surface": "#f3f0f0",
+                      "surface-container-high": "#eae7e7",
+                      "secondary-fixed": "#ffdad9",
+                      "error": "#ba1a1a",
+                      "primary-container": "#e5d3b3",
+                      "tertiary": "#5b5d6e",
+                      "surface-container-highest": "#e4e2e1",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "tertiary-container": "#d3d4e8",
+                      "secondary-container": "#fdcbcb",
+                      "surface-dim": "#dcd9d9",
+                      "outline": "#7d766c",
+                      "primary": "#6a5d43",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "surface-container": "#f0eded",
+                      "on-surface-variant": "#4c463d",
+                      "on-error-container": "#93000a",
+                      "inverse-surface": "#303030",
+                      "on-secondary-container": "#795354",
+                      "surface": "#fcf9f8",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "surface-tint": "#6a5d43",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed-variant": "#603d3e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "48px",
+                      "md": "24px",
+                      "sm": "16px",
+                      "xs": "8px",
+                      "xl": "80px",
+                      "margin-desktop": "120px",
+                      "gutter": "20px",
+                      "margin-mobile": "20px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "DM Sans"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ],
+                      "label-sm": [
+                              "DM Sans"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        body {
+            background-color: #fcf9f8;
+            color: #1b1c1c;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1.2s ease-out, transform 1.2s ease-out;
+        }
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Subtle glow for buttons */
+        .btn-primary {
+            box-shadow: 0 10px 30px -10px rgba(229, 211, 179, 0.5);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col font-body-md text-body-md text-on-background">
+<!-- Top Navigation (Mobile & Desktop) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl transition-all duration-300" id="topNav">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 w-full max-w-7xl mx-auto">
+<button aria-label="Menu" class="hover:opacity-70 transition-opacity p-2 -ml-2 text-on-surface-variant dark:text-outline-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<div class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg tracking-[0.2em] text-primary dark:text-primary-fixed">
+                DAWATI
+            </div>
+<button aria-label="Bag" class="hover:opacity-70 transition-opacity p-2 -mr-2 text-on-surface-variant dark:text-outline-variant">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">shopping_bag</span>
+</button>
+</div>
+</header>
+<main class="flex-grow pt-24 pb-32">
+<!-- Hero Section -->
+<section class="min-h-[80vh] flex flex-col items-center justify-center text-center px-margin-mobile md:px-margin-desktop max-w-4xl mx-auto reveal active">
+<h3 class="font-label-sm text-label-sm text-outline tracking-widest uppercase mb-lg">You are invited</h3>
+<h1 class="font-display-lg text-display-lg md:text-[72px] md:leading-[1.1] text-primary mb-md">
+                SARA &amp; MOHAMMED
+            </h1>
+<div class="h-px w-24 bg-outline-variant mx-auto mb-md"></div>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl max-w-2xl mx-auto">
+                Request the pleasure of your company to celebrate their wedding.
+            </p>
+<div class="flex flex-col md:flex-row gap-sm items-center">
+<button class="btn-primary bg-primary-container text-on-primary-container font-label-sm text-label-sm px-8 py-4 rounded-full uppercase tracking-wider hover:scale-[0.98] transition-transform w-full md:w-auto">
+                    RSVP Now
+                </button>
+<button class="bg-transparent border border-outline-variant text-primary font-label-sm text-label-sm px-8 py-4 rounded-full uppercase tracking-wider hover:bg-surface-variant/50 transition-colors w-full md:w-auto">
+                    View Details
+                </button>
+</div>
+</section>
+<!-- Details Grid -->
+<section class="py-xl px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-lg reveal">
+<!-- Image Left -->
+<div class="relative h-[600px] w-full bg-surface-container-low rounded-lg overflow-hidden group">
+<img class="object-cover w-full h-full transition-transform duration-1000 group-hover:scale-105" data-alt="A soft, high-key editorial photograph of a modern wedding table setting. Crisp white linens, delicate crystal glassware, and minimalist floral arrangements featuring cream and pale dusty rose blossoms. The lighting is bright and ethereal, casting subtle shadows. The aesthetic is luxurious, serene, and modern, adhering to a champagne and warm white color palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAqAjDUFstCCgzNf8EFufTDzBb9yE-VRPytRlvH0HYr3sU7sEbsbFn2TP1Q5-uaFBb3c4S0mZsamPiuiKzg6CK12aQb6kWg7OawIuB5QCm63vr4MhO8-k4y7uhyPSRirtUKTtv5NVnNJ1vfxR2jG21QED3ADPHvp5h8Z91nis2Ku9yX6zd7rsYNzUVpFLO7ivaJXN5rBAw9BmLV_JUC1LEdwQ3PMjDfJRo43CJLYuysOuTiyi7UvYaB"/>
+<div class="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent"></div>
+</div>
+<!-- Content Right -->
+<div class="flex flex-col justify-center space-y-md md:pl-lg">
+<span class="material-symbols-outlined text-primary text-3xl opacity-50" style="font-variation-settings: 'FILL' 0;">event</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">The Celebration</h2>
+<div class="space-y-4 pt-sm">
+<div class="flex items-start">
+<span class="material-symbols-outlined text-outline mr-sm mt-1" style="font-variation-settings: 'FILL' 0;">calendar_today</span>
+<div>
+<p class="font-body-lg text-body-lg font-medium text-on-surface">Friday, October 25th, 2024</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Evening Reception at 7:00 PM</p>
+</div>
+</div>
+<div class="flex items-start">
+<span class="material-symbols-outlined text-outline mr-sm mt-1" style="font-variation-settings: 'FILL' 0;">location_on</span>
+<div>
+<p class="font-body-lg text-body-lg font-medium text-on-surface">The Ritz-Carlton</p>
+<p class="font-body-md text-body-md text-on-surface-variant">Dubai International Financial Centre</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Guest Personalized Section -->
+<section class="py-xl bg-surface-container-low mt-lg reveal">
+<div class="max-w-3xl mx-auto text-center px-margin-mobile">
+<h3 class="font-label-sm text-label-sm text-outline tracking-widest uppercase mb-sm">Honored Guest</h3>
+<p class="font-display-lg text-display-lg text-primary mb-md font-arabic" dir="rtl">
+                    أم فلان
+                </p>
+<div class="h-px w-16 bg-outline-variant mx-auto mb-md"></div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-lg mx-auto">
+                    We have reserved 2 seats in your honor. Please confirm your attendance by September 15th.
+                </p>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl pb-8 py-4 px-margin-mobile flex justify-around items-center border-t-0 shadow-[0_-4px_20px_rgba(0,0,0,0.02)]">
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-outline-variant/60 hover:text-primary dark:hover:text-primary-fixed transition-colors scale-95 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0; font-weight: 300;">auto_awesome</span>
+<span class="font-label-sm text-label-sm">Discovery</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-outline-variant/60 hover:text-primary dark:hover:text-primary-fixed transition-colors scale-95 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0; font-weight: 300;">edit_note</span>
+<span class="font-label-sm text-label-sm">Studio</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-secondary-container after:rounded-full after:mt-1 scale-95 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0; font-weight: 300;">mail</span>
+<span class="font-label-sm text-label-sm">Invitations</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-outline-variant/60 hover:text-primary dark:hover:text-primary-fixed transition-colors scale-95 duration-200">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0; font-weight: 300;">person</span>
+<span class="font-label-sm text-label-sm">Account</span>
+</button>
+</nav>
+<script>
+        // Simple scroll reveal
+        function reveal() {
+            var reveals = document.querySelectorAll('.reveal');
+            for (var i = 0; i < reveals.length; i++) {
+                var windowHeight = window.innerHeight;
+                var elementTop = reveals[i].getBoundingClientRect().top;
+                var elementVisible = 100;
+                if (elementTop < windowHeight - elementVisible) {
+                    reveals[i].classList.add('active');
+                }
+            }
+        }
+        window.addEventListener('scroll', reveal);
+        // Trigger once on load
+        setTimeout(reveal, 100);
+        
+        // Hide top nav on scroll down, show on scroll up
+        let lastScrollY = window.scrollY;
+        const nav = document.getElementById('topNav');
+        
+        window.addEventListener('scroll', () => {
+            if(window.scrollY > 100) {
+                 if (lastScrollY < window.scrollY) {
+                    nav.classList.add('-translate-y-full');
+                } else {
+                    nav.classList.remove('-translate-y-full');
+                }
+            }
+            lastScrollY = window.scrollY;
+        });
+    </script>
+</body></html>

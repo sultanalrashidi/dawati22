@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Olive &amp; Ivory Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#cec5b9",
+                      "on-tertiary-fixed": "#181b29",
+                      "on-tertiary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#675a41",
+                      "inverse-on-surface": "#f3f0f0",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#595b6c",
+                      "surface-bright": "#fcf9f8",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "outline": "#7d766c",
+                      "primary-container": "#e5d3b3",
+                      "primary-fixed": "#f3e0c0",
+                      "surface-tint": "#6a5d43",
+                      "primary": "#6a5d43",
+                      "on-error-container": "#93000a",
+                      "surface-container-low": "#f6f3f2",
+                      "secondary-fixed": "#ffdad9",
+                      "on-background": "#1b1c1c",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "on-secondary-container": "#795354",
+                      "on-error": "#ffffff",
+                      "secondary-container": "#fdcbcb",
+                      "on-primary-fixed-variant": "#51452d",
+                      "on-secondary-fixed": "#2f1314",
+                      "surface-dim": "#dcd9d9",
+                      "surface-variant": "#e4e2e1",
+                      "tertiary": "#5b5d6e",
+                      "on-surface-variant": "#4c463d",
+                      "tertiary-fixed": "#e0e1f5",
+                      "inverse-surface": "#303030",
+                      "surface": "#fcf9f8",
+                      "surface-container-high": "#eae7e7",
+                      "error-container": "#ffdad6",
+                      "on-surface": "#1b1c1c",
+                      "surface-container": "#f0eded",
+                      "on-primary-fixed": "#231a06",
+                      "tertiary-container": "#d3d4e8",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "on-primary": "#ffffff",
+                      "background": "#fcf9f8",
+                      "surface-container-highest": "#e4e2e1",
+                      "secondary": "#7b5455",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "inverse-primary": "#d6c4a5",
+                      "on-secondary-fixed-variant": "#603d3e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "16px",
+                      "gutter": "20px",
+                      "md": "24px",
+                      "margin-mobile": "20px",
+                      "margin-desktop": "120px",
+                      "lg": "48px",
+                      "unit": "4px",
+                      "xl": "80px",
+                      "xs": "8px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "DM Sans"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "label-sm": [
+                              "DM Sans"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #fcf9f8;
+            color: #1b1c1c;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .botanical-line {
+            opacity: 0.15;
+            pointer-events: none;
+        }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-body-md text-body-md antialiased overflow-x-hidden">
+<!-- NavigationDrawer (Mobile Hidden by Default, usually accessed via menu) -->
+<!-- Suppressing Navigation Drawer from main view as this is a linear invitation flow, 
+         but keeping it accessible via script if needed -->
+<div class="h-full w-80 max-w-[80vw] fixed left-0 top-0 z-[60] bg-surface dark:bg-surface-dim border-r border-outline-variant/20 shadow-[40px_0_60px_-15px_rgba(106,93,67,0.05)] transform -translate-x-full transition-transform duration-300 ease-in-out hidden md:flex flex-col p-md space-y-sm" id="drawer">
+<div class="mb-lg">
+<h2 class="font-headline-md text-headline-md text-primary">دعوتي - DAWATI</h2>
+</div>
+<nav class="flex flex-col gap-sm">
+<a class="flex items-center gap-sm p-3 text-primary dark:text-primary-fixed font-bold bg-primary-container/30 rounded-lg hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="info" data-weight="fill" style="font-variation-settings: 'FILL' 1;">info</span>
+<span>تفاصيل الحفل</span>
+</a>
+<a class="flex items-center gap-sm p-3 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+<span>برنامج الزفاف</span>
+</a>
+<a class="flex items-center gap-sm p-3 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+<span>قائمة الطعام</span>
+</a>
+<a class="flex items-center gap-sm p-3 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="photo_library">photo_library</span>
+<span>معرض الصور</span>
+</a>
+<a class="flex items-center gap-sm p-3 text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="contact_support">contact_support</span>
+<span>تواصل معنا</span>
+</a>
+</nav>
+</div>
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl dark:bg-surface-dim/80 flex justify-between items-center px-margin-mobile h-16">
+<button class="hover:opacity-80 transition-opacity duration-300 scale-95 duration-200">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="menu">menu</span>
+</button>
+<div class="font-headline-md text-headline-md uppercase tracking-widest text-primary dark:text-primary-fixed font-headline-md text-headline-md text-primary dark:text-primary-fixed">
+            SARA &amp; MOHAMMED
+        </div>
+<button class="hover:opacity-80 transition-opacity duration-300 scale-95 duration-200">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed" data-icon="share">share</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-20 pb-32 max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop">
+<!-- Opening / Hero Section -->
+<section class="min-h-[707px] flex flex-col items-center justify-center text-center relative py-lg fade-in">
+<div class="absolute top-0 right-0 botanical-line w-64 h-64 bg-cover" data-alt="A delicate, minimalist botanical line-art illustration of fine olive stems and leaves against a pure white background. The lines are subtle and elegant, drawn with a thin brush in a muted olive tone. The style is highly editorial and refined, evoking a sense of modern luxury and quiet sophistication. High-key lighting, soft and airy." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCUevyYPAp96c1bYVs70TjSnEfM1GBHEzNmIly10ly4xM2js3gfSXG3xql1FsNLbxRSOY6WnoUUZYTYsdblBdPQq8RboaeAiS9YrynYifPIEUVHk8qQ9WbANOrOmqtmVWTyhMUMlmuKYGjuC8Ij32Ca3ByCr3rgJfzgWb2BgXqCqnLSKH8JRgVXToteEYZCLuquhKqAyc_1EJYbs8Aee0XkdoETcd0KJr74nJJIK-ba8OaovxeXxlEQ')"></div>
+<p class="font-body-lg text-body-lg text-primary mb-md tracking-[0.2em] uppercase">نتشرف بدعوتكم</p>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-lg">
+                سارة و محمد
+            </h1>
+<div class="w-full max-w-md aspect-[3/4] rounded-t-full overflow-hidden mb-lg relative">
+<img class="object-cover w-full h-full absolute inset-0" data-alt="A softly focused, elegant photograph of an abstract organic shape carved in ivory stone, set in a lush, muted olive garden. The lighting is diffused and romantic, casting gentle shadows that highlight the smooth texture of the stone. The composition is asymmetrical and contemporary, evoking a luxurious garden estate aesthetic. Soft, natural daylight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDZrYoTZGJfOMoAa8uXLnw03hQynIXwS-b7E41MNvFf_MjWUT-smORw1HAvqIdY7nyXmm12JzW8ZK8pf8yyxJyE2r3YSmaNSOrZe5BPkmtyoN0_DDTwqZPZX9VQkYlJqjwaL_UHsRJSVtlDEMZ1fpSdNyU9G1-gX2-u7jP7aUbKO-sKs6e35EMbLBrcmmmbv6PI9n1VE2NIBgKBFizWFINpYlGxEvntEvJqqvo3RB1P5encZjow8GGp"/>
+<div class="absolute inset-0 bg-surface/20 backdrop-blur-[2px]"></div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-lg mx-auto leading-relaxed">
+                في يوم يحمل معه وعوداً بالحب الأبدي، يسرنا أن تشاركونا فرحة العمر وبداية رحلتنا معاً.
+            </p>
+</section>
+<!-- Guest Greeting -->
+<section class="py-xl border-t border-outline-variant/30 text-center fade-in">
+<h2 class="font-headline-md text-headline-md text-secondary mb-sm">عزيزي الضيف الكريم</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">
+                حضوركم يكتمل به الفرح، ونسعد بمشاركتكم لنا في هذه الليلة المميزة.
+            </p>
+</section>
+<!-- Details / Bento Grid -->
+<section class="py-xl fade-in">
+<h2 class="font-headline-md text-headline-md text-primary text-center mb-lg">تفاصيل الحفل</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-gutter">
+<!-- Date Card -->
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant/20 flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-primary mb-sm text-4xl" data-icon="calendar_today">calendar_today</span>
+<h3 class="font-body-lg text-body-lg font-bold mb-xs">الزمان</h3>
+<p class="text-on-surface-variant">الجمعة، ٢٥ أكتوبر ٢٠٢٤</p>
+<p class="text-on-surface-variant">الساعة ٨:٠٠ مساءً</p>
+</div>
+<!-- Location Card -->
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant/20 flex flex-col items-center text-center">
+<span class="material-symbols-outlined text-primary mb-sm text-4xl" data-icon="location_on">location_on</span>
+<h3 class="font-body-lg text-body-lg font-bold mb-xs">المكان</h3>
+<p class="text-on-surface-variant">قاعة الاحتفالات الكبرى</p>
+<p class="text-on-surface-variant text-sm mt-2 underline cursor-pointer hover:text-primary transition-colors">عرض الخريطة</p>
+</div>
+<!-- Dress Code Card -->
+<div class="bg-surface-container-low p-md rounded-xl border border-outline-variant/20 flex flex-col items-center text-center md:col-span-2 lg:col-span-1">
+<span class="material-symbols-outlined text-primary mb-sm text-4xl" data-icon="checkroom">checkroom</span>
+<h3 class="font-body-lg text-body-lg font-bold mb-xs">قواعد اللباس</h3>
+<p class="text-on-surface-variant">رسمي / فساتين سهرة</p>
+<p class="text-on-surface-variant text-sm opacity-70 mt-1">نرجو الالتزام بالألوان الهادئة</p>
+</div>
+</div>
+</section>
+<!-- RSVP Form -->
+<section class="py-xl fade-in max-w-2xl mx-auto">
+<div class="bg-surface-container p-lg rounded-2xl border border-outline-variant/30 shadow-[0_20px_40px_-15px_rgba(106,93,67,0.08)] relative overflow-hidden">
+<div class="absolute bottom-0 left-0 botanical-line w-48 h-48 bg-cover opacity-10 transform -scale-x-100" data-alt="A subtle, translucent botanical illustration of a single olive branch curving gently upwards. The style is minimalist line-art, rendered in a pale ivory tone against a soft background. It evokes a feeling of organic growth and refined elegance, suitable for a high-end luxury brand asset." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD9QMJxjQ3uls4oX872L36J7slAvjcyI0pzymDyXLphCF2SfmGun53iOqdaPPVPSiruv9fscNkOgkzZGPO4LHn8ecccxENbrv39DFzkfOwZzHeVwcCyUBnfYy_-iuuU1HNaD8liHrKhMd2rdJbbRYOP8F0qUj4gpT-XW1jOr5LcOVi8FAIzdmXG5X6znKR5_krxcSIwUgY6LZdpCCjSqIUrZwej1lKvD9FqL4VOppbESO0CY0aPfolG')"></div>
+<h2 class="font-headline-md text-headline-md text-center text-primary mb-lg">تأكيد الحضور</h2>
+<form class="space-y-md relative z-10">
+<div class="relative">
+<input class="block w-full px-0 py-3 bg-transparent border-0 border-b border-outline-variant text-on-surface focus:ring-0 focus:border-primary focus:border-b-2 transition-colors peer" id="name" placeholder=" " type="text"/>
+<label class="absolute text-sm text-on-surface-variant duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-auto peer-focus:right-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-primary" for="name">الاسم الكريم</label>
+</div>
+<div class="relative mt-8">
+<input class="block w-full px-0 py-3 bg-transparent border-0 border-b border-outline-variant text-on-surface focus:ring-0 focus:border-primary focus:border-b-2 transition-colors peer" id="guests" placeholder=" " type="number"/>
+<label class="absolute text-sm text-on-surface-variant duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-auto peer-focus:right-0 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 peer-focus:text-primary" for="guests">عدد المرافقين</label>
+</div>
+<div class="pt-sm flex justify-center">
+<button class="bg-primary-container text-on-primary-container font-body-md text-body-md py-3 px-12 rounded-full hover:scale-95 transition-transform duration-200" type="button">
+                            تأكيد
+                        </button>
+</div>
+</form>
+</div>
+</section>
+<!-- QR Code Section -->
+<section class="py-xl text-center fade-in">
+<h2 class="font-headline-md text-headline-md text-primary mb-md">بطاقة الدخول</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg max-w-md mx-auto">
+                يرجى إبراز هذا الرمز عند بوابة الدخول لتسهيل عملية الاستقبال.
+            </p>
+<div class="inline-block p-4 bg-white rounded-xl shadow-sm border border-outline-variant/20">
+<img class="w-48 h-48 object-contain" data-alt="A clean, high-contrast, perfectly square QR code rendered in dark olive green on a stark white background. The QR code has rounded corners on its inner modules, giving it a modern, slightly organic feel while remaining strictly geometric and scannable. It exudes a premium, minimalist tech aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVmvoxrsTGMWBBGTNboyuHxu3Xr8XeKfXOg60rGSbOG0UngXQmDCEXHHgL9SV7dE-sd86UQOqjimzfVSlVWzdUNPb9GNxQAHD-sjBnF-iv-2cSkqLWn7lmFjc7nk_nGzq6zg16gwG5yEBDWRJygkUdZunhHLGXKDk8MWLTbDTef0oSZD4jNPxPKoeoQix9zMR0olv-XhVztSuK-eP2qHTPglszx2tNBcRgQgydtr1n9sH-tTjhWpWG"/>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/90 backdrop-blur-2xl border-t border-primary/10 fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe">
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-secondary dark:after:bg-secondary-fixed-dim after:rounded-full after:mt-1 font-label-sm text-label-sm hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="home" data-weight="fill" style="font-variation-settings: 'FILL' 1;">home</span>
+            الرئيسية
+        </a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant font-label-sm text-label-sm hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="location_on">location_on</span>
+            الموقع
+        </a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant font-label-sm text-label-sm hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="event_available">event_available</span>
+            التأكيد
+        </a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant font-label-sm text-label-sm hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="qr_code_2">qr_code_2</span>
+            البطاقة
+        </a>
+</nav>
+<script>
+        // Simple fade-in intersection observer
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            document.querySelectorAll('.fade-in').forEach((el) => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body></html>

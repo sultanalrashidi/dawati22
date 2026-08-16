@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="light" dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>Dawati | دعوتي - Sign In</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#fcf9f8",
+                        "surface-variant": "#e4e2e1",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "on-surface": "#1b1c1c",
+                        "on-secondary": "#ffffff",
+                        "on-surface-variant": "#4c463d",
+                        "inverse-surface": "#303030",
+                        "surface-bright": "#fcf9f8",
+                        "on-primary": "#ffffff",
+                        "on-primary-container": "#675a41",
+                        "surface-tint": "#6a5d43",
+                        "tertiary-fixed": "#e0e1f5",
+                        "surface-container-high": "#eae7e7",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "surface-container-low": "#f6f3f2",
+                        "tertiary-container": "#d3d4e8",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-primary-fixed-variant": "#51452d",
+                        "outline-variant": "#cec5b9",
+                        outline: "#7d766c",
+                        "on-tertiary-container": "#595b6c",
+                        "error-container": "#ffdad6",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        secondary: "#7b5455",
+                        "surface-container": "#f0eded",
+                        "on-secondary-container": "#795354",
+                        error: "#ba1a1a",
+                        primary: "#6a5d43",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-primary-fixed": "#231a06",
+                        "primary-container": "#e5d3b3",
+                        "on-error": "#ffffff",
+                        "secondary-fixed": "#ffdad9",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "secondary-container": "#fdcbcb",
+                        tertiary: "#5b5d6e",
+                        "on-background": "#1b1c1c",
+                        "on-secondary-fixed": "#2f1314",
+                        "surface-dim": "#dcd9d9",
+                        "inverse-primary": "#d6c4a5",
+                        "surface-container-lowest": "#ffffff",
+                        surface: "#fcf9f8",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed": "#181b29",
+                        "primary-fixed": "#f3e0c0"
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        "margin-desktop": "120px",
+                        lg: "48px",
+                        sm: "16px",
+                        gutter: "20px",
+                        xs: "8px",
+                        unit: "4px",
+                        xl: "80px",
+                        "margin-mobile": "20px",
+                        md: "24px"
+                    },
+                    fontFamily: {
+                        "display-lg-mobile": ["Playfair Display"],
+                        "label-sm": ["DM Sans"],
+                        "body-md": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-lg": ["DM Sans"]
+                    },
+                    fontSize: {
+                        "display-lg-mobile": ["32px", { lineHeight: "1.2", fontWeight: "600" }],
+                        "label-sm": ["12px", { lineHeight: "1.0", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "500" }],
+                        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Subtle Entrance Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up {
+            animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            opacity: 0;
+        }
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+        
+        /* Input Focus Transition */
+        .input-line {
+            transform-origin: left;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        input:focus ~ .input-line {
+            transform: scaleX(1);
+        }
+        input:not(:placeholder-shown) ~ .input-line {
+            transform: scaleX(1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen antialiased flex flex-col font-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation (Suppressed for purely linear flow, but required to render TopAppBar for brand anchor if it wasn't a strict transactional screen. Given instruction: "Automatic Suppression: You MUST exclude the navigation shell if the page intent is: Linear/Transactional: Login...". Therefore, no TopAppBar or BottomNavBar.) -->
+<!-- Main Canvas -->
+<main class="flex-grow flex items-center justify-center p-margin-mobile md:p-margin-desktop relative overflow-hidden min-h-[100dvh]">
+<!-- Subtle Background Glow -->
+<div class="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-full pointer-events-none overflow-hidden">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary-container/20 blur-[100px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-secondary-container/20 blur-[100px]"></div>
+</div>
+<!-- Sign In Container -->
+<div class="w-full max-w-md relative z-10">
+<!-- Brand & Greeting -->
+<div class="text-center mb-12 animate-fade-up">
+<h1 class="font-headline-md text-display-lg-mobile md:text-display-lg text-primary mb-xs tracking-tight">Dawati | دعوتي</h1>
+<p class="font-body-lg text-on-surface-variant/80">Welcome back. Please enter your details.</p>
+</div>
+<!-- Form -->
+<form class="space-y-lg animate-fade-up stagger-1" onsubmit="event.preventDefault();">
+<!-- Input Group: Email -->
+<div class="relative group pb-unit">
+<label class="block font-headline-md text-headline-md text-on-surface mb-xs transition-colors group-focus-within:text-primary" for="email">Email Address</label>
+<div class="relative">
+<input class="w-full bg-transparent border-0 border-b border-surface-variant px-0 py-sm font-body-md text-on-surface focus:ring-0 focus:border-transparent placeholder-transparent transition-all peer" id="email" name="email" placeholder=" " required="" type="email"/>
+<!-- Custom animated bottom line -->
+<div class="input-line absolute bottom-0 left-0 w-full h-[2px] bg-primary"></div>
+</div>
+</div>
+<!-- Input Group: Password -->
+<div class="relative group pb-unit">
+<div class="flex justify-between items-baseline mb-xs">
+<label class="block font-headline-md text-headline-md text-on-surface transition-colors group-focus-within:text-primary" for="password">Password</label>
+</div>
+<div class="relative">
+<input class="w-full bg-transparent border-0 border-b border-surface-variant px-0 py-sm font-body-md text-on-surface focus:ring-0 focus:border-transparent placeholder-transparent transition-all peer pr-10" id="password" name="password" placeholder=" " required="" type="password"/>
+<button aria-label="Toggle password visibility" class="absolute right-0 top-1/2 -translate-y-1/2 text-on-surface-variant/50 hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility_off">visibility_off</span>
+</button>
+<!-- Custom animated bottom line -->
+<div class="input-line absolute bottom-0 left-0 w-full h-[2px] bg-primary"></div>
+</div>
+<!-- Forgot Password Link -->
+<div class="mt-xs text-right">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors inline-flex items-center gap-unit" href="#">
+                            Forgot password?
+                        </a>
+</div>
+</div>
+<!-- Actions -->
+<div class="pt-sm space-y-sm animate-fade-up stagger-2">
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm py-4 px-md rounded-lg hover:scale-[0.98] transition-transform duration-200 shadow-[0_20px_40px_rgba(229,211,179,0.15)] flex justify-center items-center gap-xs group" type="submit">
+                        Sign In
+                        <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</form>
+<!-- Divider -->
+<div class="flex items-center my-lg animate-fade-up stagger-3">
+<div class="flex-grow h-px bg-on-surface/5"></div>
+<span class="px-md font-label-sm text-label-sm text-on-surface-variant/50 uppercase tracking-widest">or</span>
+<div class="flex-grow h-px bg-on-surface/5"></div>
+</div>
+<!-- Sign Up Prompt -->
+<div class="text-center animate-fade-up stagger-4">
+<p class="font-body-md text-on-surface-variant">
+                    Don't have an account? 
+                    <a class="text-primary font-medium hover:opacity-80 transition-opacity border-b border-primary/30 pb-unit" href="#">Create one</a>
+</p>
+</div>
+</div>
+</main>
+<script>
+        // Simple password toggle logic
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.querySelector('button[aria-label="Toggle password visibility"]');
+            const passwordInput = document.getElementById('password');
+            const icon = toggleBtn.querySelector('.material-symbols-outlined');
+
+            if (toggleBtn && passwordInput && icon) {
+                toggleBtn.addEventListener('click', () => {
+                    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                    passwordInput.setAttribute('type', type);
+                    
+                    if (type === 'text') {
+                        icon.textContent = 'visibility';
+                        icon.setAttribute('data-icon', 'visibility');
+                    } else {
+                        icon.textContent = 'visibility_off';
+                        icon.setAttribute('data-icon', 'visibility_off');
+                    }
+                });
+            }
+        });
+    </script>
+</body></html>

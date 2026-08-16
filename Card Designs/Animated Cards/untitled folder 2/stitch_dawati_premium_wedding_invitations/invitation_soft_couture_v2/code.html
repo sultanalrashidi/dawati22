@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Soft Couture Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#2f1314",
+                        "on-primary-fixed-variant": "#51452d",
+                        "secondary": "#7b5455",
+                        "tertiary-fixed": "#e0e1f5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "primary-fixed": "#f3e0c0",
+                        "on-primary-container": "#675a41",
+                        "outline-variant": "#cec5b9",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#d6c4a5",
+                        "on-background": "#1b1c1c",
+                        "background": "#fcf9f8",
+                        "on-surface": "#1b1c1c",
+                        "on-primary-fixed": "#231a06",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-variant": "#e4e2e1",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-high": "#eae7e7",
+                        "secondary-fixed": "#ffdad9",
+                        "error": "#ba1a1a",
+                        "primary-container": "#e5d3b3",
+                        "tertiary": "#5b5d6e",
+                        "surface-container-highest": "#e4e2e1",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "tertiary-container": "#d3d4e8",
+                        "secondary-container": "#fdcbcb",
+                        "surface-dim": "#dcd9d9",
+                        "outline": "#7d766c",
+                        "primary": "#6a5d43",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "surface-container": "#f0eded",
+                        "on-surface-variant": "#4c463d",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#303030",
+                        "on-secondary-container": "#795354",
+                        "surface": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "surface-tint": "#6a5d43",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#603d3e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "xl": "80px",
+                        "margin-desktop": "120px",
+                        "gutter": "20px",
+                        "margin-mobile": "20px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["DM Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "label-sm": ["DM Sans"],
+                        "headline-md": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            overflow-x: hidden;
+        }
+        .reveal-layer {
+            position: absolute;
+            inset: 0;
+            background-color: theme('colors.surface-bright');
+            z-index: 40;
+            transition: transform 1.5s cubic-bezier(0.77, 0, 0.175, 1);
+            transform-origin: top;
+        }
+        .reveal-layer.open {
+            transform: translateY(-100%);
+        }
+        .reveal-layer-2 {
+            position: absolute;
+            inset: 0;
+            background-color: theme('colors.primary-container');
+            z-index: 39;
+            transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1);
+            transition-delay: 0.1s;
+            transform-origin: top;
+        }
+        .reveal-layer-2.open {
+            transform: translateY(-100%);
+        }
+        .content-fade {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+            transition-delay: 0.5s;
+        }
+        .content-fade.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .glow-shadow {
+            box-shadow: 0 10px 40px -10px theme('colors.primary-container');
+        }
+        .organic-shape {
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen relative font-body-md text-body-md selection:bg-primary-container selection:text-on-primary-container">
+<!-- Reveal Layers -->
+<div class="reveal-layer flex items-center justify-center" id="reveal1">
+<div class="text-center">
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-primary mb-sm">دعوة خاصة</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">السيدة أم فلان</p>
+<button class="mt-lg px-xl py-sm bg-primary-container text-on-primary-container rounded-full font-label-sm text-label-sm tracking-widest hover:scale-95 transition-transform glow-shadow" onclick="openInvitation()">
+                افتح الدعوة
+            </button>
+</div>
+</div>
+<div class="reveal-layer-2" id="reveal2"></div>
+<!-- Main Canvas -->
+<main class="w-full max-w-[1280px] mx-auto min-h-screen pb-32">
+<!-- Hero Section -->
+<section class="relative min-h-[80vh] flex flex-col items-center justify-center px-margin-mobile content-fade" id="heroContent">
+<div class="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+<div class="absolute -top-[20%] -right-[10%] w-[60vw] h-[60vw] bg-secondary-fixed-dim rounded-full blur-3xl mix-blend-multiply"></div>
+<div class="absolute top-[40%] -left-[20%] w-[50vw] h-[50vw] bg-primary-container rounded-full blur-3xl mix-blend-multiply"></div>
+</div>
+<div class="relative z-10 text-center max-w-2xl mx-auto space-y-md">
+<div class="mb-lg">
+<span class="font-label-sm text-label-sm text-secondary tracking-widest uppercase">بكل حب وسرور</span>
+</div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary">
+                    SARA &amp; MOHAMMED
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
+                    نتشرف بدعوتكم لحضور حفل زفافنا ومشاركتنا فرحتنا في هذه الليلة السعيدة.
+                </p>
+<div class="pt-lg">
+<p class="font-headline-md text-headline-md-mobile text-on-surface">الخميس، ١٥ ديسمبر ٢٠٢٤</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">قاعة أورا، الرياض</p>
+</div>
+</div>
+<!-- Graphic Element -->
+<div class="mt-xl relative w-64 h-80 rounded-[100px] overflow-hidden shadow-sm border border-surface-variant/50">
+<div class="bg-cover bg-center w-full h-full" data-alt="A highly sophisticated, abstract soft-focus image featuring warm ivory and dusty rose silk fabric draped delicately, catching soft high-key lighting. The aesthetic is modern luxury and minimalist couture, avoiding any floral patterns, focusing on smooth textures and subtle tonal shifts." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAnChFliaH69k4cbu9DdZrDym0d7NVymchgZ3Ti-7FY8-yWuTeYpt9I-DvgH5Q6L3owesY-NKzWr6L00VbR1n2qMOVaplnhEUK0gtXIy4RxUQ6xF56VXFiYNp-un07GPBEVtZPVSwN6EKOTHfq-LDAbv7lH2iOP5Ap351cQem4qFAAey-nB9r-d3PDEIV-OXJlUZWcx4Rzrom3Nn3L6YtMig6mwAeeH_fXPoWIdksehoA10Zfj2VwLM')"></div>
+</div>
+</section>
+<!-- Details Section (Bento style) -->
+<section class="px-margin-mobile py-lg content-fade">
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Location -->
+<div class="md:col-span-2 bg-surface-container-lowest p-md rounded-2xl border border-surface-variant/30 flex flex-col justify-between min-h-[300px]">
+<div>
+<div class="w-12 h-12 rounded-full bg-primary-container/30 flex items-center justify-center mb-sm">
+<span class="material-symbols-outlined text-primary" data-icon="location_on" data-weight="fill">location_on</span>
+</div>
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface mb-xs">الموقع</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">فندق الريتز كارلتون، قاعة الاحتفالات الكبرى، الرياض</p>
+</div>
+<div class="mt-auto pt-sm border-t border-surface-variant/20">
+<a class="inline-flex items-center gap-2 text-secondary font-label-sm text-label-sm hover:opacity-80 transition-opacity" href="#">
+                             عرض الخريطة
+                             <span class="material-symbols-outlined text-[16px] rtl:rotate-180" data-icon="arrow_forward">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Timing -->
+<div class="bg-surface-container-lowest p-md rounded-2xl border border-surface-variant/30 flex flex-col justify-between min-h-[300px]">
+<div>
+<div class="w-12 h-12 rounded-full bg-secondary-fixed-dim/30 flex items-center justify-center mb-sm">
+<span class="material-symbols-outlined text-secondary" data-icon="schedule" data-weight="fill">schedule</span>
+</div>
+<h3 class="font-headline-md text-headline-md-mobile text-on-surface mb-xs">الوقت</h3>
+<div class="space-y-xs font-body-md text-body-md text-on-surface-variant mt-sm">
+<div class="flex justify-between border-b border-surface-variant/20 pb-xs">
+<span>الاستقبال</span>
+<span>٨:٠٠ م</span>
+</div>
+<div class="flex justify-between border-b border-surface-variant/20 pb-xs">
+<span>الزفة</span>
+<span>١٠:٠٠ م</span>
+</div>
+<div class="flex justify-between pb-xs">
+<span>العشاء</span>
+<span>١١:٣٠ م</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RSVP Section -->
+<section class="px-margin-mobile py-lg content-fade">
+<div class="bg-primary-container/10 p-lg rounded-3xl border border-primary-container/30 text-center max-w-3xl mx-auto">
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-primary mb-sm">تأكيد الحضور</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">نرجو تأكيد حضوركم قبل تاريخ ١٠ ديسمبر</p>
+<div class="flex flex-col sm:flex-row justify-center gap-sm">
+<button class="px-xl py-sm bg-primary-container text-on-primary-container rounded-full font-label-sm text-label-sm hover:scale-[0.98] transition-transform glow-shadow">
+                         تأكيد الحضور
+                     </button>
+<button class="px-xl py-sm border border-outline text-on-surface rounded-full font-label-sm text-label-sm hover:bg-surface-variant/20 hover:scale-[0.98] transition-all">
+                         أعتذر عن الحضور
+                     </button>
+</div>
+</div>
+</section>
+</main>
+<script>
+        function openInvitation() {
+            document.getElementById('reveal1').classList.add('open');
+            document.getElementById('reveal2').classList.add('open');
+            
+            setTimeout(() => {
+                const fades = document.querySelectorAll('.content-fade');
+                fades.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('visible');
+                    }, index * 200);
+                });
+            }, 600);
+        }
+    </script>
+</body></html>

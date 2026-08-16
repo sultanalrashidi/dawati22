@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - إحصائيات الحضور</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&amp;family=Playfair+Display:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#fcf9f8",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "primary": "#6a5d43",
+                      "on-tertiary-container": "#595b6c",
+                      "inverse-primary": "#d6c4a5",
+                      "on-primary-fixed-variant": "#51452d",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "surface-tint": "#6a5d43",
+                      "on-secondary-fixed-variant": "#603d3e",
+                      "outline": "#7d766c",
+                      "on-surface-variant": "#4c463d",
+                      "on-primary-container": "#675a41",
+                      "inverse-surface": "#303030",
+                      "tertiary-container": "#d3d4e8",
+                      "error-container": "#ffdad6",
+                      "surface-container-low": "#f6f3f2",
+                      "surface-variant": "#e4e2e1",
+                      "on-secondary-fixed": "#2f1314",
+                      "surface-container": "#f0eded",
+                      "on-primary": "#ffffff",
+                      "surface-dim": "#dcd9d9",
+                      "surface-container-high": "#eae7e7",
+                      "on-error-container": "#93000a",
+                      "primary-container": "#e5d3b3",
+                      "background": "#fcf9f8",
+                      "secondary": "#7b5455",
+                      "secondary-fixed": "#ffdad9",
+                      "tertiary-fixed": "#e0e1f5",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "error": "#ba1a1a",
+                      "on-secondary-container": "#795354",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-background": "#1b1c1c",
+                      "inverse-on-surface": "#f3f0f0",
+                      "tertiary": "#5b5d6e",
+                      "on-tertiary-fixed": "#181b29",
+                      "surface": "#fcf9f8",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "primary-fixed": "#f3e0c0",
+                      "outline-variant": "#cec5b9",
+                      "on-surface": "#1b1c1c",
+                      "on-primary-fixed": "#231a06",
+                      "secondary-container": "#fdcbcb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "48px",
+                      "sm": "16px",
+                      "md": "24px",
+                      "gutter": "20px",
+                      "margin-desktop": "120px",
+                      "unit": "4px",
+                      "xs": "8px",
+                      "xl": "80px",
+                      "margin-mobile": "20px"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "headline-md": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "label-sm": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "display-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "body-lg": ["IBM Plex Sans Arabic", "sans-serif"],
+                      "body-md": ["IBM Plex Sans Arabic", "sans-serif"]
+              },
+              "fontSize": {
+                      "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                      "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 211, 179, 0.3);
+        }
+        .glow-shadow {
+            box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="flex justify-between items-center px-margin-mobile h-16 w-full fixed top-0 left-0 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl docked full-width top-0 z-50 flat no shadows bg-surface dark:bg-surface-dim">
+<button class="hover:scale-95 transition-transform duration-200 scale-95 active:scale-90 text-primary dark:text-primary-fixed-dim" data-icon="arrow_forward">
+<span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-center text-primary dark:text-primary-fixed-dim">إحصائيات الحضور</h1>
+<div class="w-6 h-6"></div> <!-- Empty div for balance -->
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto space-y-lg">
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Key Stats: Peak Time -->
+<div class="glass-panel rounded-xl p-md glow-shadow flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-xs" style="font-size: 32px; font-variation-settings: 'FILL' 0;">schedule</span>
+<p class="font-label-sm text-label-sm text-outline uppercase mb-1">وقت الذروة للدخول</p>
+<p class="font-headline-md text-headline-md text-on-surface">٨:٣٠ م - ٩:٠٠ م</p>
+</div>
+<!-- Key Stats: Avg Companions -->
+<div class="glass-panel rounded-xl p-md glow-shadow flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-xs" style="font-size: 32px; font-variation-settings: 'FILL' 0;">group_add</span>
+<p class="font-label-sm text-label-sm text-outline uppercase mb-1">متوسط المرافقين</p>
+<p class="font-headline-md text-headline-md text-on-surface">٢.٤ <span class="font-body-md text-body-md text-outline">/ دعوة</span></p>
+</div>
+<!-- Key Stats: Remaining Guests -->
+<div class="glass-panel rounded-xl p-md glow-shadow flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-xs" style="font-size: 32px; font-variation-settings: 'FILL' 0;">hourglass_empty</span>
+<p class="font-label-sm text-label-sm text-outline uppercase mb-1">الضيوف المتبقين</p>
+<p class="font-headline-md text-headline-md text-on-surface">٧٧ <span class="font-body-md text-body-md text-outline">شخص</span></p>
+</div>
+</div>
+<!-- Chart Section -->
+<div class="glass-panel rounded-xl p-md glow-shadow">
+<h2 class="font-body-lg text-body-lg text-on-surface mb-md">حجم الدخول بمرور الوقت</h2>
+<!-- Minimalist Bar Chart Representation -->
+<div class="h-48 w-full flex items-end justify-between gap-2 border-b border-outline-variant/30 pb-2 relative">
+<!-- Chart Bars -->
+<div class="w-1/6 bg-primary-container rounded-t-sm" style="height: 10%;"></div>
+<div class="w-1/6 bg-primary-container rounded-t-sm" style="height: 30%;"></div>
+<div class="w-1/6 bg-primary rounded-t-sm glow-shadow relative group" style="height: 80%;">
+<!-- Tooltip simulation -->
+<div class="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-inverse-surface text-inverse-on-surface font-label-sm text-label-sm py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                        ذروة
+                    </div>
+</div>
+<div class="w-1/6 bg-primary-container rounded-t-sm" style="height: 60%;"></div>
+<div class="w-1/6 bg-primary-container rounded-t-sm" style="height: 40%;"></div>
+<div class="w-1/6 bg-primary-container rounded-t-sm" style="height: 15%;"></div>
+</div>
+<!-- X-Axis Labels -->
+<div class="flex justify-between mt-2 font-label-sm text-label-sm text-outline">
+<span>٧:٠٠ م</span>
+<span>٨:٠٠ م</span>
+<span>٩:٠٠ م</span>
+<span>١٠:٠٠ م</span>
+</div>
+</div>
+<!-- Status Overview -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<!-- Arrived -->
+<div class="glass-panel rounded-xl p-md flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase mb-1">تم الحضور</p>
+<p class="font-headline-md text-headline-md text-on-surface">١٧٣ <span class="font-body-md text-body-md text-primary">(٦٩٪)</span></p>
+</div>
+</div>
+<!-- Not Arrived -->
+<div class="glass-panel rounded-xl p-md flex items-center gap-md">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-outline" style="font-variation-settings: 'FILL' 0;">pending</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-outline uppercase mb-1">لم يحضروا بعد</p>
+<p class="font-headline-md text-headline-md text-on-surface">٧٧ <span class="font-body-md text-body-md text-outline">(٣١٪)</span></p>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on Desktop) -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center pt-2 pb-safe px-4 bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-xl docked full-width bottom-0 z-50 rounded-t-xl shadow-[0_-4px_20px_rgba(106,93,67,0.05)] md:hidden">
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary transition-colors scale-98 active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-label-sm text-label-sm mt-1">الرئيسية</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary transition-colors scale-98 active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="group">group</span>
+<span class="font-label-sm text-label-sm mt-1">الضيوف</span>
+</a>
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary transition-colors scale-98 active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="badge">badge</span>
+<span class="font-label-sm text-label-sm mt-1">المنظمين</span>
+</a>
+<!-- Active Tab implicitly assumed based on Settings/Stats context if needed, but keeping all inactive as per instructions unless exact match. "الإعدادات" is closest fallback if needed, but let's leave all neutral or highlight one if semantic fit. Let's highlight Home as fallback if no exact. Wait, rule says: "ONLY use semantic intent if there is no direct match". Stats might sit under Home or Settings. Let's highlight 'الرئيسية'. -->
+<a class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary transition-colors scale-98 active:scale-95 transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+<span class="font-label-sm text-label-sm mt-1">الإعدادات</span>
+</a>
+</nav>
+</body></html>

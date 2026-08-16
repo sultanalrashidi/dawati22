@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Grand Ballroom - Digital Invitation</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Import Playfair Display and DM Sans to match config */
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Playfair+Display:wght@500;600&display=swap');
+    </style>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Theme Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-error-container": "#93000a",
+                    "secondary-container": "#fdcbcb",
+                    "on-background": "#1b1c1c",
+                    "on-primary-container": "#675a41",
+                    "inverse-primary": "#d6c4a5",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary": "#7b5455",
+                    "primary-fixed": "#f3e0c0",
+                    "surface-container-low": "#f6f3f2",
+                    "primary-fixed-dim": "#d6c4a5",
+                    "inverse-surface": "#303030",
+                    "primary": "#6a5d43",
+                    "on-secondary-fixed-variant": "#603d3e",
+                    "error-container": "#ffdad6",
+                    "inverse-on-surface": "#f3f0f0",
+                    "tertiary-fixed-dim": "#c4c5d9",
+                    "outline": "#7d766c",
+                    "surface-container": "#f0eded",
+                    "surface-tint": "#6a5d43",
+                    "on-tertiary-container": "#595b6c",
+                    "tertiary": "#5b5d6e",
+                    "on-primary-fixed": "#231a06",
+                    "on-error": "#ffffff",
+                    "tertiary-fixed": "#e0e1f5",
+                    "surface-variant": "#e4e2e1",
+                    "surface-dim": "#dcd9d9",
+                    "surface": "#fcf9f8",
+                    "secondary-fixed": "#ffdad9",
+                    "error": "#ba1a1a",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#434656",
+                    "on-surface": "#1b1c1c",
+                    "primary-container": "#e5d3b3",
+                    "on-primary-fixed-variant": "#51452d",
+                    "on-secondary-container": "#795354",
+                    "on-surface-variant": "#4c463d",
+                    "on-tertiary-fixed": "#181b29",
+                    "tertiary-container": "#d3d4e8",
+                    "outline-variant": "#cec5b9",
+                    "surface-container-high": "#eae7e7",
+                    "surface-bright": "#fcf9f8",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed-dim": "#ecbbba",
+                    "surface-container-highest": "#e4e2e1",
+                    "background": "#fcf9f8",
+                    "on-secondary-fixed": "#2f1314"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "lg": "48px",
+                    "sm": "16px",
+                    "unit": "4px",
+                    "md": "24px",
+                    "margin-mobile": "20px",
+                    "margin-desktop": "120px",
+                    "xs": "8px",
+                    "gutter": "20px",
+                    "xl": "80px"
+            },
+            "fontFamily": {
+                    "label-sm": [
+                            "DM Sans"
+                    ],
+                    "headline-md": [
+                            "Playfair Display"
+                    ],
+                    "body-md": [
+                            "DM Sans"
+                    ],
+                    "display-lg": [
+                            "Playfair Display"
+                    ],
+                    "body-lg": [
+                            "DM Sans"
+                    ],
+                    "display-lg-mobile": [
+                            "Playfair Display"
+                    ]
+            },
+            "fontSize": {
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "1.0",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "headline-md": [
+                            "24px",
+                            {
+                                    "lineHeight": "1.3",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "body-md": [
+                            "16px",
+                            {
+                                    "lineHeight": "1.5",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "1.1",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "18px",
+                            {
+                                    "lineHeight": "1.6",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg-mobile": [
+                            "32px",
+                            {
+                                    "lineHeight": "1.2",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+</head>
+<body class="bg-surface-container-lowest text-on-surface antialiased h-screen w-full flex items-center justify-center overflow-hidden">
+<!-- Mobile Device Container to simulate 9:16 aspect ratio -->
+<div class="relative w-full h-full max-w-[430px] sm:max-h-[932px] sm:h-[95vh] sm:rounded-3xl sm:border border-outline-variant shadow-2xl overflow-hidden bg-cover bg-center flex flex-col items-center justify-center px-8 py-16 text-center" data-alt="A full-screen vertical ethereal background featuring abstract bokeh light effects and soft, glowing, sweeping gradient lines. The color palette consists entirely of warm Ivory and luminous, glowing Gold tones. The aesthetic is extremely soft, luxurious, and modern, resembling a high-end digital wedding invitation canvas. Soft, diffused lighting creates a dreamy and romantic atmosphere. No text or icons." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC_HoNSL-XXgkeBE8frrIFsfCamY9kDHuooWiGRNGjnHc0d52lyvVxZUptKqHVXV14jaFiQPzAK5okW07vvZZINuJyfBw6X5qt0dW-1tia9aObfuKQVmfTv5_iQlHsiK1JIYPnBgRCycjW0xkaoaLbQ-EhC2M26a_jFrDhnE_6CAvQXcY1ehW0ww78sL8q7kG2gYOMaNBx6zwDOTyWtwizI9akxY-SVUfxlbjpK3Fy_EFsRDebwV5Cu')">
+<!-- Subtle gradient overlay to ensure text readability -->
+<div class="absolute inset-0 bg-gradient-to-b from-surface-container-lowest/30 via-transparent to-surface-container-lowest/60 z-0"></div>
+<!-- Content Canvas -->
+<div class="relative z-10 flex flex-col items-center w-full h-full justify-between">
+<!-- Top Section: Bride & Groom -->
+<div class="mt-8">
+<h1 class="font-display-lg text-primary text-[56px] leading-[1.1] mb-2 tracking-tight">سارة</h1>
+<div class="font-headline-md text-primary-container mb-2">&amp;</div>
+<h1 class="font-display-lg text-primary text-[56px] leading-[1.1] tracking-tight">محمد</h1>
+</div>
+<!-- Middle Section: Guest & Invitation -->
+<div class="flex flex-col items-center gap-y-sm my-auto">
+<p class="font-body-md text-on-surface-variant max-w-[200px]">
+                    بكل حب وسعادة يسرنا<br/>دعوتكم لمشاركتنا فرحتنا
+                </p>
+<div class="w-8 h-[1px] bg-primary/30 my-2"></div>
+<h2 class="font-headline-md text-primary mt-2">أم خالد</h2>
+</div>
+<!-- Bottom Section: Details, Countdown, QR -->
+<div class="flex flex-col items-center w-full mb-4">
+<div class="font-body-sm text-on-surface-variant flex flex-col items-center gap-y-1 mb-8 opacity-90">
+<p>السبت 15 نوفمبر 2026</p>
+<p>09:00 مساءً</p>
+<p>قاعة النخبة - الرياض</p>
+</div>
+<!-- Countdown -->
+<div class="font-label-sm text-primary tracking-[0.2em] mb-10 bg-surface/40 backdrop-blur-md py-2 px-6 rounded-full border border-primary/10">
+                    12 : 08 : 42
+                </div>
+<!-- QR Code (Softly integrated) -->
+<div class="p-2 bg-surface/50 backdrop-blur-xl rounded-xl border border-primary/20 shadow-lg">
+<img class="w-16 h-16 object-cover opacity-80 mix-blend-multiply" data-alt="A highly stylized, minimalist QR code integrated seamlessly into a soft ivory background. The QR code pattern is rendered in a soft metallic gold color, maintaining scanning functionality while looking like a piece of abstract geometric art. Modern luxury aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-VH8t3bdwMPaj6ixL3CywGq07MW3KMWmi6izm1yNdlZ7zzJTkmMIDIbmm7jmmxr18c1wXv71RJKf7kXHKLVcuzaS-29OR0SUX7DK__PJOqCUMWmWc1mxcKaD4yAcqV7eQJeduG8mYVDpysIt0v5oafMi8tlj0_k8UwvpPfbIXfWn-M2Q3johBeQrKQfKZOeGIdnik3PHBgQKYSyPFIp_v6eJ7TUvuAwq0TrFTO4H66L3vuoWQB5ld"/>
+</div>
+</div>
+</div>
+</div>
+</body></html>

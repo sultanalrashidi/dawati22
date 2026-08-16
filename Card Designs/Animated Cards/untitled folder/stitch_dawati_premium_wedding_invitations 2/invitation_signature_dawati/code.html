@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Digital Invitation</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts as per Design System -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500&amp;family=Playfair+Display:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#fdcbcb",
+                        "on-background": "#1b1c1c",
+                        "on-primary-container": "#675a41",
+                        "inverse-primary": "#d6c4a5",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#7b5455",
+                        "primary-fixed": "#f3e0c0",
+                        "surface-container-low": "#f6f3f2",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "inverse-surface": "#303030",
+                        "primary": "#6a5d43",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f3f0f0",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "outline": "#7d766c",
+                        "surface-container": "#f0eded",
+                        "surface-tint": "#6a5d43",
+                        "on-tertiary-container": "#595b6c",
+                        "tertiary": "#5b5d6e",
+                        "on-primary-fixed": "#231a06",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#e0e1f5",
+                        "surface-variant": "#e4e2e1",
+                        "surface-dim": "#dcd9d9",
+                        "surface": "#fcf9f8",
+                        "secondary-fixed": "#ffdad9",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-surface": "#1b1c1c",
+                        "primary-container": "#e5d3b3",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-secondary-container": "#795354",
+                        "on-surface-variant": "#4c463d",
+                        "on-tertiary-fixed": "#181b29",
+                        "tertiary-container": "#d3d4e8",
+                        "outline-variant": "#cec5b9",
+                        "surface-container-high": "#eae7e7",
+                        "surface-bright": "#fcf9f8",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-container-highest": "#e4e2e1",
+                        "background": "#fcf9f8",
+                        "on-secondary-fixed": "#2f1314"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "sm": "16px",
+                        "unit": "4px",
+                        "md": "24px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "120px",
+                        "xs": "8px",
+                        "gutter": "20px",
+                        "xl": "80px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "body-md": ["DM Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-surface-container-highest min-h-screen flex items-center justify-center p-4 md:p-8 font-body-md text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<!-- The Invitation Card Canvas -->
+<!-- Represents a 9:16 vertical digital card -->
+<main class="relative w-full max-w-[400px] aspect-[9/16] bg-surface rounded-[2rem] shadow-2xl overflow-hidden flex flex-col items-center justify-center p-8 text-center isolate">
+<!-- Subtle Background Artwork / Fine-line gold work -->
+<!-- Using a placeholder for a specific, ultra-minimalist generative background -->
+<div class="absolute inset-0 -z-10 opacity-40 pointer-events-none" data-alt="A pristine, minimalist background pattern for a luxury wedding invitation. The base is a pure, soft ivory white. Exceedingly thin, delicate abstract geometric lines in a subtle champagne gold crisscross the canvas gracefully, leaving massive negative space. The style is modern, editorial, and sophisticated, evoking high-end editorial graphic design in light mode." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC5KEomxjqlIeRrDOBzxPkou9YXt9d1X4_w6Vlmni9S31KPz1F5dT2YgvBrkq0Yb07G9VRcuUhYMEhMU-JfEM_v0HTGbURBqOTXt1yaxCvbJ1Aex0uvKZhbOm787Gd-DVwQ7b8bmO0zSfp9DFucn_xYQz1f3FcqMuFcOgI6-dPQWRK2DiiUVyy8evwloDXhZgV5b8LmZ-lqjmgmXlwn22rE5xVU8BlNYsVP2nbq3tGV77j77WWfmJiZ')">
+</div>
+<!-- CSS-based decorative framing (Editorial/Minimalist) -->
+<div class="absolute inset-4 border border-outline-variant/30 rounded-3xl pointer-events-none"></div>
+<div class="absolute top-12 bottom-12 left-1/2 w-[1px] bg-outline-variant/20 -translate-x-1/2 pointer-events-none"></div>
+<!-- Content Stack -->
+<div class="relative z-10 flex flex-col items-center justify-between h-full py-8 w-full">
+<!-- Top Spacer / Minor Detail -->
+<div class="flex flex-col items-center gap-2 opacity-60">
+<span class="material-symbols-outlined text-primary text-xl">auto_awesome</span>
+</div>
+<!-- Central Focus: Bride & Groom Names -->
+<div class="flex flex-col items-center gap-4 mt-8">
+<h1 class="font-display-lg text-on-surface">سارة</h1>
+<span class="font-headline-md text-primary font-light italic">&amp;</span>
+<h1 class="font-display-lg text-on-surface">محمد</h1>
+</div>
+<!-- Guest Details Area -->
+<div class="flex flex-col items-center gap-3 mt-12 mb-8">
+<p class="font-body-md text-on-surface-variant max-w-[200px]">
+                    بكل حب وسعادة يسرنا<br/>دعوتكم لمشاركتنا فرحتنا
+                </p>
+<div class="h-[1px] w-12 bg-primary-container my-2"></div>
+<h2 class="font-display-lg-mobile text-primary tracking-wide">أم خالد</h2>
+</div>
+<!-- Event Specifics -->
+<div class="flex flex-col items-center gap-1 font-body-md text-on-surface-variant">
+<p>السبت 15 نوفمبر 2026</p>
+<p>09:00 مساءً</p>
+<p>قاعة النخبة - الرياض</p>
+</div>
+<!-- Countdown Timer -->
+<!-- Using LTR direction specifically to keep the digits in correct Western/Universal order as per design conventions, while overall context is RTL -->
+<div class="mt-8 mb-4 font-body-lg text-primary tracking-[0.2em] flex items-center justify-center opacity-80" dir="ltr">
+                12 : 08 : 42
+            </div>
+<!-- Minimalist QR Code Area -->
+<div class="mt-auto pt-8">
+<div class="w-16 h-16 bg-white p-1 rounded-sm border border-outline-variant/50 shadow-sm mx-auto">
+<!-- Placeholder for the actual QR code image -->
+<img class="w-full h-full object-cover opacity-80 mix-blend-multiply" data-alt="A clean, minimalist QR code graphic rendered in deep charcoal grey against a pure white background. The QR code pattern is sharp and precise, entirely devoid of ornate borders or heavy branding, fitting perfectly into a modern luxury aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQkVXLqsDa24D7F7fx-cEeXIr1YgFI_soKwBxDuhT5MzN4H_Cng6pqhaJuTHrpEiUQ5K78pjGdx9ORPJy2cKcdn3gDp7wGiTx8yPGNFDOxbW4gfja1vKk7qE2kb98iW5EdLhV1ONhw3AuMRl3lDyexUvh7_wKM03bhPh1yWLR0FDAuNzrq476rG5cWwz9toddAjyy6ojq0FKOPbVR69nI3O0mRLpDSzTDdnluW1JpJzkBi2-N1IBBM"/>
+</div>
+</div>
+</div>
+</main>
+</body></html>

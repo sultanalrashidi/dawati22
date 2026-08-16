@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+
+<html class="light" dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Proposal Sent - Dawati Marketplace</title>
+<!-- Fonts & Icons -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-dim": "#dcd9d9",
+                      "primary-fixed": "#f3e0c0",
+                      "on-secondary-fixed-variant": "#603d3e",
+                      "inverse-surface": "#303030",
+                      "on-surface-variant": "#4c463d",
+                      "surface-variant": "#e4e2e1",
+                      "secondary-fixed": "#ffdad9",
+                      "tertiary-fixed": "#e0e1f5",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "tertiary-container": "#d3d4e8",
+                      "surface-container-high": "#eae7e7",
+                      "on-primary": "#ffffff",
+                      "primary": "#6a5d43",
+                      "on-primary-fixed": "#231a06",
+                      "on-background": "#1b1c1c",
+                      "on-primary-fixed-variant": "#51452d",
+                      "secondary-container": "#fdcbcb",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-surface": "#1b1c1c",
+                      "surface": "#fcf9f8",
+                      "surface-container": "#f0eded",
+                      "primary-container": "#e5d3b3",
+                      "secondary": "#7b5455",
+                      "surface-tint": "#6a5d43",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed": "#181b29",
+                      "error-container": "#ffdad6",
+                      "background": "#fcf9f8",
+                      "surface-container-low": "#f6f3f2",
+                      "inverse-on-surface": "#f3f0f0",
+                      "on-secondary-container": "#795354",
+                      "inverse-primary": "#d6c4a5",
+                      "on-primary-container": "#675a41",
+                      "outline": "#7d766c",
+                      "surface-container-lowest": "#ffffff",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "on-secondary": "#ffffff",
+                      "tertiary": "#5b5d6e",
+                      "on-secondary-fixed": "#2f1314",
+                      "on-tertiary-container": "#595b6c",
+                      "surface-bright": "#fcf9f8",
+                      "on-tertiary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "outline-variant": "#cec5b9",
+                      "error": "#ba1a1a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "unit": "4px",
+                      "sm": "16px",
+                      "xl": "80px",
+                      "lg": "48px",
+                      "xs": "8px",
+                      "margin-desktop": "120px",
+                      "margin-mobile": "20px",
+                      "gutter": "20px",
+                      "md": "24px"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "DM Sans"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "label-sm": [
+                              "DM Sans"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        /* Custom styles for glowing shadow as per brand guidance */
+        .shadow-glow {
+            box-shadow: 0 20px 40px rgba(229, 211, 179, 0.15);
+        }
+        .btn-hover-scale {
+            transition: transform 0.2s ease;
+        }
+        .btn-hover-scale:hover {
+            transform: scale(0.98);
+        }
+      </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop relative overflow-hidden">
+<!-- Ambient Background Elements to enhance the luxury feel -->
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-container rounded-full blur-[120px] opacity-20 pointer-events-none"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[30%] h-[30%] bg-primary-fixed rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
+<main class="w-full max-w-2xl mx-auto relative z-10 flex flex-col items-center text-center">
+<!-- Success Icon -->
+<div class="w-24 h-24 mb-lg rounded-full bg-primary-container flex items-center justify-center shadow-glow">
+<span class="material-symbols-outlined text-on-primary-container text-[48px]" style="font-variation-settings: 'FILL' 0, 'wght' 300;">check_circle</span>
+</div>
+<!-- Typography -->
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-xs tracking-tight">Proposal Sent</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-lg max-w-md">
+            Your bid for the Royal Wedding Calligraphy Suite has been successfully submitted.
+        </p>
+<!-- Summary Card -->
+<div class="w-full bg-surface-container-lowest rounded-xl p-md md:p-lg border border-surface-variant/50 shadow-glow mb-lg text-left relative overflow-hidden">
+<!-- Decorative line -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-container to-primary-fixed-dim"></div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-md">Bid Summary</h2>
+<div class="space-y-sm">
+<div class="flex justify-between items-center py-xs border-b border-surface-variant/20">
+<span class="font-body-md text-body-md text-on-surface-variant">Project</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Royal Wedding Suite</span>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-surface-variant/20">
+<span class="font-body-md text-body-md text-on-surface-variant">Client</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">House of Al Saud</span>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-surface-variant/20">
+<span class="font-body-md text-body-md text-on-surface-variant">Estimated Delivery</span>
+<span class="font-body-md text-body-md text-on-surface font-medium">Oct 15, 2024</span>
+</div>
+<div class="flex justify-between items-center py-xs pt-sm">
+<span class="font-body-md text-body-md text-on-surface-variant">Proposed Amount</span>
+<span class="font-headline-md text-headline-md text-primary">$12,500</span>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="flex flex-col md:flex-row w-full gap-sm md:gap-md justify-center">
+<!-- Secondary Action (Ghost) -->
+<button class="btn-hover-scale px-lg py-sm rounded-lg border border-primary-container text-on-surface font-label-sm text-label-sm bg-transparent w-full md:w-auto">
+                Back to Marketplace
+            </button>
+<!-- Primary Action -->
+<button class="btn-hover-scale px-lg py-sm rounded-lg bg-primary-container text-on-primary-container font-label-sm text-label-sm shadow-glow w-full md:w-auto">
+                View My Proposals
+            </button>
+</div>
+</main>
+</body></html>

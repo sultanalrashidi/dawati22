@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati | دعوتي - Home</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#675a41",
+                        "on-background": "#1b1c1c",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-variant": "#e4e2e1",
+                        "inverse-primary": "#d6c4a5",
+                        "surface-dim": "#dcd9d9",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#fcf9f8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "tertiary": "#5b5d6e",
+                        "on-surface-variant": "#4c463d",
+                        "secondary": "#7b5455",
+                        "secondary-fixed": "#ffdad9",
+                        "tertiary-container": "#d3d4e8",
+                        "surface-container-high": "#eae7e7",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#6a5d43",
+                        "background": "#fcf9f8",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "on-error": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "on-secondary-container": "#795354",
+                        "outline": "#7d766c",
+                        "secondary-container": "#fdcbcb",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#cec5b9",
+                        "primary-container": "#e5d3b3",
+                        "on-surface": "#1b1c1c",
+                        "tertiary-fixed": "#e0e1f5",
+                        "primary-fixed": "#f3e0c0",
+                        "on-primary-fixed": "#231a06",
+                        "inverse-on-surface": "#f3f0f0",
+                        "inverse-surface": "#303030",
+                        "surface-bright": "#fcf9f8",
+                        "primary": "#6a5d43",
+                        "on-secondary-fixed": "#2f1314",
+                        "surface-container-highest": "#e4e2e1",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "120px",
+                        "xl": "80px",
+                        "xs": "8px",
+                        "md": "24px",
+                        "margin-mobile": "20px",
+                        "unit": "4px",
+                        "sm": "16px",
+                        "lg": "48px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["DM Sans"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Utilities for Hide Scrollbar */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Subtle glow for floating elements */
+        .glow-shadow {
+            box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.4);
+        }
+        
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased overflow-x-hidden w-full font-body-md pb-24 md:pb-0">
+<!-- TopAppBar (Hidden on Mobile, Visible on Desktop) -->
+<header class="hidden md:flex justify-between items-center w-full px-margin-mobile md:px-margin-desktop h-16 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl docked full-width top-0 z-50 fixed">
+<button aria-label="Menu" class="hover:opacity-80 transition-opacity flex items-center justify-center p-2 rounded-full text-primary dark:text-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed-dim tracking-tight">
+            Dawati | دعوتي
+        </h1>
+<div class="flex items-center gap-4">
+<nav class="hidden lg:flex gap-6 items-center">
+<!-- Active Tab -->
+<a class="font-label-sm text-label-sm text-primary font-bold hover:opacity-80 transition-opacity" href="#">الرئيسية</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:opacity-80 transition-opacity" href="#">تصاميم</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:opacity-80 transition-opacity" href="#">الباقات</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:opacity-80 transition-opacity" href="#">حجوزاتي</a>
+</nav>
+<button aria-label="Notifications" class="hover:opacity-80 transition-opacity flex items-center justify-center p-2 rounded-full text-primary dark:text-primary-fixed-dim">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+</div>
+</header>
+<!-- Mobile Top Brand (Visible only on Mobile) -->
+<div class="md:hidden flex justify-center items-center w-full h-16 pt-safe fixed top-0 bg-surface/80 backdrop-blur-xl z-40 border-b border-surface-variant/20">
+<h1 class="font-headline-md text-headline-md text-primary tracking-tight">
+            Dawati | دعوتي
+        </h1>
+</div>
+<!-- Main Content Canvas -->
+<main class="max-w-[1280px] mx-auto pt-20 md:pt-24 pb-lg px-margin-mobile md:px-margin-desktop space-y-lg">
+<!-- Hero Section -->
+<section class="relative w-full h-[60vh] md:h-[70vh] rounded-xl overflow-hidden flex items-end p-6 md:p-12">
+<div class="absolute inset-0 bg-surface-container-high">
+<img alt="Hero background" class="w-full h-full object-cover object-center absolute inset-0 mix-blend-overlay opacity-60" data-alt="A highly detailed, ultra-realistic photograph of an elegant Middle Eastern wedding venue. Soft, warm lighting illuminates a minimalist table setting adorned with premium stationery, white florals, and delicate crystal. The mood is sophisticated, luxurious, and serene, fitting a high-end editorial wedding magazine. The color palette features champagne, ivory, and subtle greenery. 8k resolution, cinematic lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAATDuaQyW2abWHsTWKwmVbgH3tRh4Nx-_I03lEvlSbz9Hyk7TJoXEex8f5XmJkiIr5aNwA993GYIQhMV_rV85F-ttaXkN5MFCJtbxanYqxqtluB-PqikhtoOm5cK4c-ODttDLbYhHkBHLohNb2LloUexp_oKu3ezOS6d7zSBIKqUj6wdViAwWxSQY5_vb-Y5M_LZdIjD0tpd83XU0fzIsW7wp-M32XKp4D4nZFPeIgBOf4gsNZmN2k"/>
+<div class="absolute inset-0 bg-gradient-to-t from-on-background/80 via-on-background/20 to-transparent"></div>
+</div>
+<div class="relative z-10 w-full max-w-2xl text-on-primary">
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg mb-4 text-white">دعوتك، بتفاصيلها.</h2>
+<p class="font-body-lg text-body-lg text-white/90 mb-8 max-w-md">نصمم لك دعوات زفاف إلكترونية تجمع بين الفخامة والتقنية، لتعكس رقي مناسبتك.</p>
+<button class="bg-primary-container text-on-primary-container px-8 py-4 rounded-full font-label-sm text-label-sm hover:scale-95 transition-transform duration-200 glow-shadow flex items-center gap-2">
+                    استعرض التصاميم
+                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-size: 18px;">arrow_left_alt</span>
+</button>
+</div>
+</section>
+<!-- Featured Designs (Horizontal Scroll) -->
+<section class="w-full">
+<div class="flex justify-between items-end mb-6">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-background">تصاميم مختارة</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">اكتشف أحدث تصاميمنا الحصرية</p>
+</div>
+<a class="hidden md:flex font-label-sm text-label-sm text-primary items-center gap-1 hover:opacity-80" href="#">
+                    عرض الكل
+                    <span class="material-symbols-outlined" style="font-size: 16px;">arrow_left_alt</span>
+</a>
+</div>
+<!-- Bento-ish Horizontal Scroll Container -->
+<div class="flex overflow-x-auto gap-4 no-scrollbar pb-6 -mx-margin-mobile px-margin-mobile md:mx-0 md:px-0">
+<!-- Card 1 (Large) -->
+<div class="min-w-[280px] md:min-w-[400px] flex-shrink-0 group cursor-pointer">
+<div class="relative h-[380px] rounded-xl overflow-hidden mb-4 bg-surface-container">
+<img alt="Design 1" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A meticulously styled mockup of a digital wedding invitation displayed on a sleek, modern smartphone resting on a marble surface. The invitation features elegant Arabic calligraphy and a minimalist floral design in deep green and gold. Soft natural window light highlights the texture of the marble. Premium, clean, and highly aesthetic editorial photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWkBdKaouSdiinMJrszwZcKYSusOxBFOZL0713zx0nDWrccI2qhH4I90qIGnilnI5FhXx9MCkZoLTDCpJVNp63bafvAjXUdrayZoQNm7ifLl9rd7lcFb3KwxA_2R4qMSmlDJai23s2jBLB5VhgxhffbGxBF5s6tSyJAwKfwm_W3y122kmkB6vqiJFksYRTQCA9ZW2Sj4_2GlPa5WUm0xeHU16GAnjoZBFdHaRuO1RLv8f5KnHzp-tK"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="absolute top-4 right-4 bg-surface/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+<span class="font-label-sm text-label-sm text-on-surface">ملكي</span>
+</div>
+</div>
+<h4 class="font-headline-md text-[20px] text-on-background">الزمرد الكلاسيكي</h4>
+<p class="font-body-md text-[14px] text-on-surface-variant mt-1">ابتداءً من ٢٥٠ ر.س</p>
+</div>
+<!-- Card 2 -->
+<div class="min-w-[240px] md:min-w-[320px] flex-shrink-0 group cursor-pointer mt-0 md:mt-8">
+<div class="relative h-[320px] rounded-xl overflow-hidden mb-4 bg-surface-container">
+<img alt="Design 2" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A minimalist digital wedding invitation design featuring a dusty rose and champagne color palette with abstract watercolor shapes. Displayed beautifully on a tablet leaning against a plain ivory wall. Beside the tablet is a single white rose. The lighting is bright, soft, and high-key, conveying a sense of quiet luxury and modern romance." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7YxjjkqacIjAkcViJXuEDPLa00vRpCRYgRWn95juu4PyKc8V2tV2gXk7bLKEQGznQnuLY4963Heg9ukGhizITGHwzfN2UMaYG-pe3H2KFZTslcXCX7jgDOS7k2fJhSg6VDt5xh_AIBNWYKh3fHRAYCWGYxYdDK-urBY4XopDgH13HDNa7DeijexdZKNFDTYX2zJZgYlb9Z_Sk3ygNOQUCiDY4o_Cy9A5m6CZdRQV2ixIy5E5iXKcc"/>
+<div class="absolute top-4 right-4 bg-surface/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+<span class="font-label-sm text-label-sm text-on-surface">عصري</span>
+</div>
+</div>
+<h4 class="font-headline-md text-[20px] text-on-background">همس الورد</h4>
+<p class="font-body-md text-[14px] text-on-surface-variant mt-1">ابتداءً من ١٨٠ ر.س</p>
+</div>
+<!-- Card 3 -->
+<div class="min-w-[240px] md:min-w-[320px] flex-shrink-0 group cursor-pointer">
+<div class="relative h-[350px] rounded-xl overflow-hidden mb-4 bg-surface-container">
+<img alt="Design 3" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A luxurious digital invitation mockup showcasing intricate gold foil detailing and deep charcoal background. The device is surrounded by subtle luxury elements like a silk ribbon and a wax seal stamp, photographed top-down on a dark slate textured background. Sophisticated, moody, and premium aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTF6nSDmvVIOXyKoEERMkZSOEUlSFunFjoo-Xj4A-Wbi1RVXEX8uqVGMTwkX2g3lKI4gN7u8R4JtIP_CYwUjHbtAL7SjRzDkHA4g4pDP8x4GZeEvD3L8yso7MhYWbcRr6PFmC7zZenr911tIug4I6xHv2TsYvcNmA329eNBbHXyf3ZbYY6tjJbgsLXOnOZue7tF13yFj_bZGZ6xLPKzQv25X94fWQXkd143_9xiD6t5GQ7wEJrhFQf"/>
+<div class="absolute top-4 right-4 bg-surface/90 backdrop-blur-md px-3 py-1 rounded-full border border-white/20">
+<span class="font-label-sm text-label-sm text-on-surface">فضي</span>
+</div>
+</div>
+<h4 class="font-headline-md text-[20px] text-on-background">ليلة البدر</h4>
+<p class="font-body-md text-[14px] text-on-surface-variant mt-1">ابتداءً من ٢٠٠ ر.س</p>
+</div>
+<!-- Card 4 -->
+<div class="min-w-[240px] md:min-w-[320px] flex-shrink-0 flex items-center justify-center">
+<a class="flex flex-col items-center justify-center gap-3 w-full h-[320px] rounded-xl border border-outline-variant hover:bg-surface-container-low transition-colors" href="#">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_left_alt</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-background">استعرض كافة التصاميم</span>
+</a>
+</div>
+</div>
+</section>
+<!-- How It Works Section (Glassmorphism Cards) -->
+<section class="py-lg relative">
+<div class="text-center mb-12">
+<h3 class="font-headline-md text-headline-md text-on-background">كيف تعمل دعوتي؟</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-md mx-auto">خمس خطوات بسيطة تفصلك عن إرسال دعوتك الأنيقة لضيوفك.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+<!-- Decorative connection line for desktop -->
+<div class="hidden md:block absolute top-12 left-0 right-0 h-[1px] bg-outline-variant/30 z-0"></div>
+<!-- Step 1 -->
+<div class="relative z-10 glass-panel p-6 rounded-xl flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center mb-4 text-primary border border-outline-variant/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 200; font-size: 32px;">palette</span>
+</div>
+<h4 class="font-label-sm text-label-sm text-on-background font-bold mb-2">١. اختر التصميم</h4>
+<p class="font-body-md text-[13px] text-on-surface-variant">تصفح مكتبتنا الواسعة واختر ما يناسب ذوقك.</p>
+</div>
+<!-- Step 2 -->
+<div class="relative z-10 glass-panel p-6 rounded-xl flex flex-col items-center text-center mt-0 md:mt-8">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center mb-4 text-primary border border-outline-variant/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 200; font-size: 32px;">edit_document</span>
+</div>
+<h4 class="font-label-sm text-label-sm text-on-background font-bold mb-2">٢. أدخل التفاصيل</h4>
+<p class="font-body-md text-[13px] text-on-surface-variant">زودنا بأسماء العرسان ومكان وزمان المناسبة.</p>
+</div>
+<!-- Step 3 -->
+<div class="relative z-10 glass-panel p-6 rounded-xl flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center mb-4 text-primary border border-outline-variant/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 200; font-size: 32px;">preview</span>
+</div>
+<h4 class="font-label-sm text-label-sm text-on-background font-bold mb-2">٣. عاين دعوتك</h4>
+<p class="font-body-md text-[13px] text-on-surface-variant">شاهد الشكل النهائي لدعوتك قبل الاعتماد.</p>
+</div>
+<!-- Step 4 -->
+<div class="relative z-10 glass-panel p-6 rounded-xl flex flex-col items-center text-center mt-0 md:mt-8">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center mb-4 text-primary border border-outline-variant/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 200; font-size: 32px;">credit_card</span>
+</div>
+<h4 class="font-label-sm text-label-sm text-on-background font-bold mb-2">٤. إتمام الدفع</h4>
+<p class="font-body-md text-[13px] text-on-surface-variant">ادفع بأمان عبر وسائل الدفع المعتمدة.</p>
+</div>
+<!-- Step 5 -->
+<div class="relative z-10 glass-panel p-6 rounded-xl flex flex-col items-center text-center">
+<div class="w-16 h-16 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center mb-4 text-primary border border-outline-variant/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'wght' 200; font-size: 32px;">send</span>
+</div>
+<h4 class="font-label-sm text-label-sm text-on-background font-bold mb-2">٥. شارك الفرحة</h4>
+<p class="font-body-md text-[13px] text-on-surface-variant">احصل على الرابط والباركود وشاركها مع ضيوفك.</p>
+</div>
+</div>
+</section>
+<!-- QR Feature Highlight (Asymmetric Layout) -->
+<section class="bg-surface-container-low rounded-[2rem] p-8 md:p-16 flex flex-col md:flex-row items-center gap-12 border border-outline-variant/10">
+<div class="w-full md:w-1/2 space-y-6">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container/30 text-primary font-label-sm text-[11px] border border-primary-container">
+<span class="material-symbols-outlined" style="font-size: 14px;">qr_code_scanner</span>
+                    ميزة حصرية
+                </div>
+<h3 class="font-headline-md text-[32px] md:text-[40px] text-on-background leading-tight">دخول سلس<br/>لضيوفك الكرام.</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">نظام متكامل لتأكيد الحضور وتوليد رموز QR فريدة لكل ضيف، لضمان تنظيم استثنائي واستقبال يليق بمناسبتك.</p>
+<ul class="space-y-3 font-body-md text-on-surface-variant pt-4">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-size: 20px;">check_circle</span>
+                        تأكيد الحضور بضغطة زر
+                    </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-size: 20px;">check_circle</span>
+                        إدارة قوائم المدعوين بسهولة
+                    </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary" style="font-size: 20px;">check_circle</span>
+                        مسح سريع عند بوابات القاعة
+                    </li>
+</ul>
+<button class="mt-4 px-6 py-3 border border-primary text-primary rounded-full font-label-sm text-label-sm hover:bg-primary hover:text-white transition-colors duration-300">
+                    تعرف على المزيد
+                </button>
+</div>
+<div class="w-full md:w-1/2 relative">
+<!-- Abstract visual representation of QR/Phones instead of direct image -->
+<div class="relative w-full aspect-square max-w-[400px] mx-auto">
+<div class="absolute inset-0 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="relative z-10 w-full h-full bg-surface rounded-2xl shadow-xl border border-outline-variant/20 p-4 flex flex-col items-center justify-center overflow-hidden">
+<img alt="QR Code Feature" class="w-full h-full object-contain" data-alt="A clean, minimalist 3D rendering showing a stylized smartphone screen displaying an elegant digital wedding invitation with a beautifully integrated QR code. The phone hovers slightly over a soft, off-white pedestal. The aesthetic is modern, tech-forward yet distinctly luxurious and tailored for a wedding context. Soft, diffuse studio lighting creates subtle shadows." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDqk_gHQHuo7K9XPetAVnwfEYh25dJQSEKz47AabM2loG-f7KpKvmYolKxnr425J9zDEcNPi2UDTdPPaY0ja7xVQerO_XSynoWOx_A5g_VtKdrQ6BaxMSzdxClT0G5FNLrtw5yTB130bGcrqKskNUauvQZjrhAyx9TTA3sP6jjWGSfngdT5KqZIpKszavTCeWQpGohcKl9hFHoH-BooD4khjP8VEIibdqNxTuK6jf5__Uw19yvFNhvS"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Packages Preview -->
+<section class="py-lg">
+<div class="flex justify-between items-end mb-8">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-background">باقات مصممة لك</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">اختر الباقة التي تناسب احتياجات مناسبتك</p>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Package 1 -->
+<div class="border border-outline-variant/30 rounded-2xl p-6 hover:border-primary/50 transition-colors bg-surface">
+<h4 class="font-label-sm text-label-sm text-on-surface-variant mb-2">الباقة الأساسية</h4>
+<div class="font-headline-md text-[32px] text-on-background mb-4">١٥٠ <span class="text-[16px] font-body-md text-on-surface-variant">ر.س</span></div>
+<p class="font-body-md text-[14px] text-on-surface-variant mb-6 h-12">مثالية للمناسبات العائلية الصغيرة والاحتفالات الخاصة.</p>
+<div class="w-full h-[1px] bg-outline-variant/20 mb-6"></div>
+<ul class="space-y-4 font-body-md text-[14px] text-on-background mb-8">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">done</span>
+                            تصميم دعوة ثابت
+                        </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">done</span>
+                            رابط ويب للمشاركة
+                        </li>
+<li class="flex items-center gap-3 text-on-surface-variant/50">
+<span class="material-symbols-outlined" style="font-size: 18px;">close</span>
+                            نظام تأكيد الحضور
+                        </li>
+</ul>
+<button class="w-full py-3 border border-primary text-primary rounded-full font-label-sm text-label-sm hover:bg-surface-container-low transition-colors">
+                        اختيار الباقة
+                    </button>
+</div>
+<!-- Package 2 (Featured) -->
+<div class="border border-primary rounded-2xl p-6 bg-surface-container-lowest shadow-lg relative transform md:-translate-y-4">
+<div class="absolute -top-3 right-6 bg-primary text-on-primary px-3 py-1 rounded-full font-label-sm text-[10px]">الأكثر طلباً</div>
+<h4 class="font-label-sm text-label-sm text-primary mb-2">الباقة الفضية</h4>
+<div class="font-headline-md text-[32px] text-on-background mb-4">٣٥٠ <span class="text-[16px] font-body-md text-on-surface-variant">ر.س</span></div>
+<p class="font-body-md text-[14px] text-on-surface-variant mb-6 h-12">الخيار المتكامل لتنظيم دعوات زفافك بكفاءة وأناقة.</p>
+<div class="w-full h-[1px] bg-outline-variant/20 mb-6"></div>
+<ul class="space-y-4 font-body-md text-[14px] text-on-background mb-8">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">done</span>
+                            تصميم دعوة متحرك (موشن)
+                        </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">done</span>
+                            رابط ويب مخصص
+                        </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">done</span>
+                            نظام تأكيد الحضور المتقدم
+                        </li>
+</ul>
+<button class="w-full py-3 bg-primary text-on-primary rounded-full font-label-sm text-label-sm hover:opacity-90 transition-opacity glow-shadow">
+                        اختيار الباقة
+                    </button>
+</div>
+<!-- Package 3 -->
+<div class="border border-outline-variant/30 rounded-2xl p-6 hover:border-primary/50 transition-colors bg-surface">
+<h4 class="font-label-sm text-label-sm text-on-surface-variant mb-2">الباقة الذهبية</h4>
+<div class="font-headline-md text-[32px] text-on-background mb-4">٦٠٠ <span class="text-[16px] font-body-md text-on-surface-variant">ر.س</span></div>
+<p class="font-body-md text-[14px] text-on-surface-variant mb-6 h-12">الرفاهية المطلقة، مع خدمات تنظيم وقوائم مدعوين ذكية.</p>
+<div class="w-full h-[1px] bg-outline-variant/20 mb-6"></div>
+<ul class="space-y-4 font-body-md text-[14px] text-on-background mb-8">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">done</span>
+                            كل مميزات الباقة الفضية
+                        </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">done</span>
+                            توليد رموز QR للضيوف
+                        </li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" style="font-size: 18px;">done</span>
+                            إرسال الدعوات عبر الواتساب تلقائياً
+                        </li>
+</ul>
+<button class="w-full py-3 border border-primary text-primary rounded-full font-label-sm text-label-sm hover:bg-surface-container-low transition-colors">
+                        اختيار الباقة
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Visible only on Mobile, Active: Home) -->
+<nav class="md:hidden bg-surface/90 dark:bg-inverse-surface/90 backdrop-blur-2xl shadow-[0_-8px_30px_rgb(229,211,179,0.08)] fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe">
+<!-- Item 1: Home (ACTIVE) -->
+<a aria-label="home" class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-secondary after:rounded-full after:mt-1 hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1; font-weight: 200;">home</span>
+<span class="font-label-sm text-label-sm mt-1">home</span>
+</a>
+<!-- Item 2: Designs -->
+<a aria-label="palette" class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-weight: 200;">palette</span>
+<span class="font-label-sm text-label-sm mt-1">palette</span>
+</a>
+<!-- Item 3: Packages/Tickets -->
+<a aria-label="confirmation_number" class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-weight: 200;">confirmation_number</span>
+<span class="font-label-sm text-label-sm mt-1">confirmation_number</span>
+</a>
+<!-- Item 4: Events/My Bookings -->
+<a aria-label="event" class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-weight: 200;">event</span>
+<span class="font-label-sm text-label-sm mt-1">event</span>
+</a>
+<!-- Item 5: Profile -->
+<a aria-label="person" class="flex flex-col items-center justify-center text-on-surface-variant/60 hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0; font-weight: 200;">person</span>
+<span class="font-label-sm text-label-sm mt-1">person</span>
+</a>
+</nav>
+<!-- Safe area spacing for mobile bottom bar -->
+<div class="h-20 md:hidden w-full"></div>
+</body></html>

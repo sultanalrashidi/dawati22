@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Event Details - Dawati</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&amp;family=Playfair+Display:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#fcf9f8",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#51452d",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "surface-container-high": "#eae7e7",
+                        "surface-bright": "#fcf9f8",
+                        "outline": "#7d766c",
+                        "on-tertiary-fixed": "#181b29",
+                        "inverse-surface": "#303030",
+                        "surface-container-low": "#f6f3f2",
+                        "inverse-on-surface": "#f3f0f0",
+                        "background": "#fcf9f8",
+                        "on-surface-variant": "#4c463d",
+                        "primary-fixed": "#f3e0c0",
+                        "on-secondary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary": "#7b5455",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "surface-container-highest": "#e4e2e1",
+                        "primary": "#6a5d43",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "outline-variant": "#cec5b9",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "inverse-primary": "#d6c4a5",
+                        "secondary-container": "#fdcbcb",
+                        "primary-container": "#e5d3b3",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-container": "#595b6c",
+                        "on-primary-fixed": "#231a06",
+                        "on-secondary-fixed": "#2f1314",
+                        "on-primary-container": "#675a41",
+                        "surface-dim": "#dcd9d9",
+                        "surface-tint": "#6a5d43",
+                        "surface-container": "#f0eded",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "on-secondary-container": "#795354",
+                        "on-error-container": "#93000a",
+                        "tertiary-container": "#d3d4e8",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "surface-variant": "#e4e2e1",
+                        "on-background": "#1b1c1c",
+                        "tertiary": "#5b5d6e",
+                        "tertiary-fixed": "#e0e1f5",
+                        "secondary-fixed": "#ffdad9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "120px",
+                        "md": "24px",
+                        "unit": "4px",
+                        "xs": "8px",
+                        "margin-mobile": "20px",
+                        "lg": "48px",
+                        "xl": "80px",
+                        "gutter": "20px",
+                        "sm": "16px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Playfair Display"],
+                        "label-sm": ["DM Sans"],
+                        "body-md": ["DM Sans"],
+                        "body-lg": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-image: url('https://lh3.googleusercontent.com/aida/AP1WRLsIkLMp6KUEFAHNCxxlYLkdffyywMqvrksWjh5-oA0DHR_4NhG7GuwlhQ3YTJAnHkXWR-0hYT0SzQBJoOlIeD30WhGTJ133cP45E_CUK9A9zKVqTJlEtCA5cTXyn3k8WooWJSOw5st0xvmZCavnW3EC9qztF07o64HfL7KcuR1um82laP4U-rDyax3QXEWbwOjZ7fm46v8awDqQzVabeBl-K1M2vvRkoxv5anOLLX0EfX1xan-40xqUfj8');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .input-elegant {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid theme('colors.outline-variant');
+            border-radius: 0;
+            padding: theme('spacing.xs') 0;
+            transition: all 0.3s ease;
+        }
+        .input-elegant:focus {
+            outline: none;
+            box-shadow: none;
+            border-bottom: 2px solid theme('colors.primary');
+        }
+    </style>
+</head>
+<body class="min-h-screen text-on-surface antialiased flex flex-col font-body-md">
+<!-- Top Navigation (Transactional/Task-focused, minimal shell) -->
+<header class="fixed top-0 w-full z-50 glass-panel border-b border-outline-variant/20">
+<div class="max-w-7xl mx-auto flex items-center justify-between px-margin-mobile h-16 w-full">
+<button aria-label="Go back" class="text-on-surface-variant hover:opacity-80 transition-opacity p-2 -ml-2 rounded-full">
+<span class="material-symbols-outlined" style="transform: scaleX(-1);">arrow_back</span>
+</button>
+<span class="font-headline-md text-headline-md text-primary tracking-wide">Event Details</span>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</div>
+</header>
+<!-- Main Content -->
+<main class="flex-grow flex items-center justify-center pt-24 pb-32 px-margin-mobile relative z-10">
+<div class="w-full max-w-lg glass-panel rounded-2xl p-8 shadow-[0_10px_40px_rgba(106,93,67,0.05)] border border-surface-container-highest/50 relative overflow-hidden">
+<!-- Decorative floral vector hint -->
+<div class="absolute top-0 right-0 w-32 h-32 opacity-10 pointer-events-none">
+<svg fill="none" viewbox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+<path class="text-primary" d="M50 0C50 27.6142 27.6142 50 0 50C27.6142 50 50 72.3858 50 100C50 72.3858 72.3858 50 100 50C72.3858 50 50 27.6142 50 0Z" fill="currentColor"></path>
+</svg>
+</div>
+<div class="text-center mb-12">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-on-surface mb-2">The Happy Couple</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Please enter the names exactly as they should appear on the invitation.</p>
+</div>
+<form action="#" class="space-y-8 relative z-10">
+<div class="space-y-6">
+<div class="relative">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-widest" for="groom_name">Groom's Name</label>
+<input class="input-elegant w-full font-headline-md text-headline-md text-primary placeholder:text-outline-variant/50 focus:ring-0" id="groom_name" name="groom_name" placeholder="e.g. Fahad" type="text"/>
+</div>
+<div class="flex items-center justify-center py-4">
+<span class="font-headline-md text-headline-md text-secondary italic px-4">&amp;</span>
+</div>
+<div class="relative">
+<label class="block font-label-sm text-label-sm text-on-surface-variant mb-1 uppercase tracking-widest" for="bride_name">Bride's Name</label>
+<input class="input-elegant w-full font-headline-md text-headline-md text-primary placeholder:text-outline-variant/50 focus:ring-0" id="bride_name" name="bride_name" placeholder="e.g. Sara" type="text"/>
+</div>
+</div>
+<div class="pt-8">
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm py-4 rounded-full uppercase tracking-widest hover:scale-[0.98] transition-transform duration-300 shadow-[0_10px_30px_rgba(229,211,179,0.2)]" type="submit">
+                        Continue
+                    </button>
+</div>
+</form>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_135 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_135" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_135');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  // Interactive Wedding Invitation Logic
+document.addEventListener('DOMContentLoaded', () => {
+    const cover = document.getElementById('invitation-cover');
+    const mainContent = document.getElementById('main-invitation-content');
+    const openBtn = document.getElementById('open-invitation-btn');
+    const rsvpAccept = document.getElementById('rsvp-accept');
+    const rsvpDecline = document.getElementById('rsvp-decline');
+    const rsvpSection = document.getElementById('rsvp-section');
+    const confirmationSection = document.getElementById('confirmation-section');
+    const entryCard = document.getElementById('entry-card');
+    const apologySection = document.getElementById('apology-section');
+
+    // 1. Opening Animation Sequence
+    if (openBtn) {
+        openBtn.addEventListener('click', () => {
+            // Fade out cover
+            cover.classList.add('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                cover.style.display = 'none';
+                mainContent.classList.remove('hidden');
+                
+                // Trigger reveal animations for content sections
+                const revealElements = mainContent.querySelectorAll('.reveal-on-open');
+                revealElements.forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('opacity-100', 'translate-y-0');
+                    }, index * 150);
+                });
+            }, 800);
+        });
+    }
+
+    // 2. RSVP Logic - Accept
+    if (rsvpAccept) {
+        rsvpAccept.addEventListener('click', () => {
+            rsvpSection.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                rsvpSection.classList.add('hidden');
+                confirmationSection.classList.remove('hidden');
+                setTimeout(() => {
+                    confirmationSection.classList.add('opacity-100', 'translate-y-0');
+                    
+                    // Reveal Entry Card
+                    setTimeout(() => {
+                        entryCard.classList.remove('hidden');
+                        setTimeout(() => {
+                            entryCard.classList.add('opacity-100', 'rotate-y-0');
+                        }, 100);
+                    }, 500);
+                }, 50);
+            }, 300);
+        });
+    }
+
+    // 3. RSVP Logic - Decline
+    if (rsvpDecline) {
+        rsvpDecline.addEventListener('click', () => {
+            rsvpSection.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                rsvpSection.classList.add('hidden');
+                apologySection.classList.remove('hidden');
+                setTimeout(() => {
+                    apologySection.classList.add('opacity-100', 'translate-y-0');
+                }, 50);
+            }, 300);
+        });
+    }
+
+    // 4. Live Countdown Logic
+    function updateCountdown() {
+        const targetDate = new Date('November 15, 2026 21:00:00').getTime();
+        const now = new Date().getTime();
+        const distance = targetDate - now;
+
+        if (distance < 0) return;
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+
+        const daysEl = document.getElementById('days-count');
+        const hoursEl = document.getElementById('hours-count');
+        const minutesEl = document.getElementById('minutes-count');
+
+        if (daysEl) daysEl.innerText = days.toString().padStart(2, '0');
+        if (hoursEl) hoursEl.innerText = hours.toString().padStart(2, '0');
+        if (minutesEl) minutesEl.innerText = minutes.toString().padStart(2, '0');
+    }
+
+    setInterval(updateCountdown, 1000);
+    updateCountdown();
+});
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_135 -->
+</body>
+</html>

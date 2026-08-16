@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إضافة ضيف - Dawati</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline": "#7d766c",
+                      "tertiary": "#5b5d6e",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "on-secondary-fixed": "#2f1314",
+                      "surface-bright": "#fcf9f8",
+                      "surface-container-high": "#eae7e7",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "surface-container-lowest": "#ffffff",
+                      "inverse-primary": "#d6c4a5",
+                      "on-error-container": "#93000a",
+                      "background": "#fcf9f8",
+                      "on-tertiary-fixed": "#181b29",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#675a41",
+                      "error": "#ba1a1a",
+                      "on-error": "#ffffff",
+                      "on-secondary-fixed-variant": "#603d3e",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "surface-tint": "#6a5d43",
+                      "outline-variant": "#cec5b9",
+                      "inverse-on-surface": "#f3f0f0",
+                      "on-primary-fixed": "#231a06",
+                      "primary-fixed": "#f3e0c0",
+                      "primary": "#6a5d43",
+                      "inverse-surface": "#303030",
+                      "surface-variant": "#e4e2e1",
+                      "secondary-fixed": "#ffdad9",
+                      "surface-dim": "#dcd9d9",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-secondary-container": "#795354",
+                      "secondary-container": "#fdcbcb",
+                      "surface-container-low": "#f6f3f2",
+                      "on-background": "#1b1c1c",
+                      "on-primary": "#ffffff",
+                      "on-tertiary-container": "#595b6c",
+                      "on-surface": "#1b1c1c",
+                      "on-secondary": "#ffffff",
+                      "surface": "#fcf9f8",
+                      "on-primary-fixed-variant": "#51452d",
+                      "surface-container": "#f0eded",
+                      "primary-container": "#e5d3b3",
+                      "on-surface-variant": "#4c463d",
+                      "tertiary-fixed": "#e0e1f5",
+                      "secondary": "#7b5455",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "tertiary-container": "#d3d4e8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "md": "24px",
+                      "xs": "8px",
+                      "margin-mobile": "20px",
+                      "lg": "48px",
+                      "xl": "80px",
+                      "unit": "4px",
+                      "gutter": "20px",
+                      "margin-desktop": "120px",
+                      "sm": "16px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "DM Sans"
+                      ],
+                      "label-sm": [
+                              "DM Sans"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(125, 118, 108, 0.3);
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(125, 118, 108, 0.5);
+        }
+        
+        /* Glassmorphism utilities */
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 211, 179, 0.3);
+        }
+        
+        /* Subtle glow shadow for primary buttons */
+        .glow-shadow {
+            box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.5);
+        }
+        
+        /* Input styling */
+        .minimal-input {
+            border: none;
+            border-bottom: 1px solid var(--tw-colors-outline-variant);
+            background: transparent;
+            border-radius: 0;
+            padding-inline-start: 0;
+            padding-inline-end: 0;
+            transition: all 0.3s ease;
+        }
+        .minimal-input:focus {
+            outline: none;
+            box-shadow: none;
+            border-bottom: 2px solid var(--tw-colors-primary-container);
+        }
+        
+        /* Hide number input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        
+        /* Toggle Switch Styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: var(--tw-colors-primary-container);
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: var(--tw-colors-primary-container);
+        }
+        
+        /* Checkbox styling */
+        .custom-checkbox {
+            appearance: none;
+            background-color: transparent;
+            margin: 0;
+            font: inherit;
+            color: currentColor;
+            width: 1.15em;
+            height: 1.15em;
+            border: 1px solid var(--tw-colors-outline);
+            border-radius: 0.15em;
+            display: grid;
+            place-content: center;
+        }
+        .custom-checkbox::before {
+            content: "";
+            width: 0.65em;
+            height: 0.65em;
+            transform: scale(0);
+            transition: 120ms transform ease-in-out;
+            box-shadow: inset 1em 1em var(--tw-colors-primary);
+            background-color: var(--tw-colors-primary);
+            transform-origin: center;
+            clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
+        }
+        .custom-checkbox:checked::before {
+            transform: scale(1);
+        }
+        .custom-checkbox:focus {
+            outline: max(2px, 0.15em) solid var(--tw-colors-primary-container);
+            outline-offset: max(2px, 0.15em);
+        }
+      </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top App Bar (Task-Focused: Close implies departure, but we'll use a simplified header) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-margin-mobile h-16 border-b border-surface-variant/30">
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity p-2 -ml-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">close</span>
+</button>
+<h1 class="font-headline-md text-headline-md-mobile text-primary tracking-tight">إضافة ضيف</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-32 px-margin-mobile max-w-[800px] mx-auto w-full">
+<form class="space-y-lg">
+<!-- Guest Details Section -->
+<section class="space-y-md glass-panel p-md rounded-xl">
+<h2 class="font-headline-md text-headline-md-mobile text-primary-fixed-variant mb-sm">تفاصيل الضيف</h2>
+<div class="space-y-sm">
+<label class="block">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-1 block">اسم الضيف الرئيسي</span>
+<input class="minimal-input w-full font-body-md text-body-md text-on-surface placeholder:text-outline-variant py-2" placeholder="أدخل الاسم الكامل" type="text"/>
+</label>
+</div>
+<div class="space-y-sm">
+<label class="block">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-1 block">رقم التواصل</span>
+<div class="flex items-end gap-3 border-b border-outline-variant focus-within:border-primary-container transition-colors pb-1">
+<span class="text-on-surface-variant font-body-md text-body-md mb-1" dir="ltr">+966</span>
+<input class="minimal-input w-full font-body-md text-body-md text-on-surface placeholder:text-outline-variant py-1 border-none focus:border-none focus:ring-0 px-0" dir="ltr" placeholder="5X XXX XXXX" type="tel"/>
+</div>
+</label>
+</div>
+<div class="space-y-sm">
+<label class="block">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-2 block">فئة الضيف</span>
+<div class="relative">
+<select class="minimal-input w-full font-body-md text-body-md text-on-surface py-2 appearance-none cursor-pointer bg-transparent">
+<option disabled="" selected="" value="">اختر الفئة</option>
+<option value="family">عائلة</option>
+<option value="friends">أصدقاء</option>
+<option value="colleagues">زملاء عمل</option>
+<option value="vvip">VVIP</option>
+</select>
+<span class="material-symbols-outlined absolute left-0 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</label>
+</div>
+</section>
+<!-- Companions Section -->
+<section class="space-y-md glass-panel p-md rounded-xl">
+<div class="flex justify-between items-center mb-sm">
+<h2 class="font-headline-md text-headline-md-mobile text-primary-fixed-variant">المرافقين</h2>
+</div>
+<div class="flex items-center justify-between py-2 border-b border-surface-variant/50">
+<span class="font-body-md text-body-md text-on-surface">عدد المرافقين</span>
+<div class="flex items-center gap-3">
+<button class="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-variant transition-colors" onclick="document.getElementById('comp_count').stepDown()" type="button">
+<span class="material-symbols-outlined" style="font-size: 18px;">remove</span>
+</button>
+<input class="w-12 text-center font-headline-md text-headline-md-mobile bg-transparent border-none p-0 text-primary" id="comp_count" max="10" min="0" type="number" value="0"/>
+<button class="w-8 h-8 rounded-full border border-outline-variant flex items-center justify-center text-on-surface-variant hover:bg-surface-variant transition-colors" onclick="document.getElementById('comp_count').stepUp()" type="button">
+<span class="material-symbols-outlined" style="font-size: 18px;">add</span>
+</button>
+</div>
+</div>
+<!-- Optional Companion Names (Hidden by default, shown if count > 0 ideally via JS, but we'll show a placeholder state) -->
+<div class="pt-sm">
+<label class="flex items-center gap-3 cursor-pointer group">
+<input class="custom-checkbox" type="checkbox"/>
+<span class="font-body-md text-body-md text-on-surface-variant group-hover:text-on-surface transition-colors">إضافة أسماء المرافقين (اختياري)</span>
+</label>
+<!-- Expanded names inputs would go here -->
+<div class="mt-4 space-y-3 hidden" id="companion_names_container">
+<input class="minimal-input w-full font-body-md text-body-md text-on-surface placeholder:text-outline-variant py-2 text-sm" placeholder="اسم المرافق 1" type="text"/>
+</div>
+</div>
+</section>
+<!-- Settings Section -->
+<section class="space-y-md glass-panel p-md rounded-xl">
+<h2 class="font-headline-md text-headline-md-mobile text-primary-fixed-variant mb-sm">إعدادات الدعوة</h2>
+<div class="flex items-center justify-between">
+<div>
+<span class="font-body-md text-body-md text-on-surface block">إرسال الدعوة تلقائياً</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1 block">سيتم إرسال رسالة نصية للضيف فور الحفظ</span>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-outline-variant z-10 transition-all duration-300" id="toggle1" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-surface-variant cursor-pointer transition-colors duration-300" for="toggle1"></label>
+</div>
+</div>
+</section>
+</form>
+</main>
+<!-- Bottom Action Area -->
+<div class="fixed bottom-0 w-full z-40 bg-surface/90 backdrop-blur-xl border-t border-surface-variant/30 px-margin-mobile py-4 pb-safe flex gap-4">
+<button class="flex-1 py-3 px-6 rounded-lg font-body-md text-body-md bg-transparent border border-outline-variant text-on-surface hover:bg-surface-variant transition-colors active:scale-95 duration-200" type="button">
+            إلغاء
+        </button>
+<button class="flex-[2] py-3 px-6 rounded-lg font-body-md text-body-md bg-primary-container text-on-primary-container glow-shadow hover:opacity-90 transition-all active:scale-95 duration-200 flex justify-center items-center gap-2" type="submit">
+<span>حفظ الضيف</span>
+<span class="material-symbols-outlined" style="font-size: 20px;">save</span>
+</button>
+</div>
+<script>
+        // Simple script to toggle companion names based on checkbox
+        document.querySelector('.custom-checkbox').addEventListener('change', function(e) {
+            const container = document.getElementById('companion_names_container');
+            const count = parseInt(document.getElementById('comp_count').value);
+            
+            if(e.target.checked && count > 0) {
+                container.classList.remove('hidden');
+                // In a real app, generate inputs based on count
+            } else {
+                container.classList.add('hidden');
+            }
+        });
+
+        document.getElementById('comp_count').addEventListener('change', function(e) {
+             const checkbox = document.querySelector('.custom-checkbox');
+             const container = document.getElementById('companion_names_container');
+             if(parseInt(e.target.value) === 0) {
+                 checkbox.checked = false;
+                 container.classList.add('hidden');
+             }
+        });
+    </script>
+</body></html>

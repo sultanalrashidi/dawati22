@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Upload Inspiration</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#cec5b9",
+                        "on-primary-container": "#675a41",
+                        "secondary-fixed": "#ffdad9",
+                        "on-primary-fixed": "#231a06",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-error": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "surface-container-high": "#eae7e7",
+                        "tertiary": "#5b5d6e",
+                        "inverse-primary": "#d6c4a5",
+                        "surface-tint": "#6a5d43",
+                        "on-error-container": "#93000a",
+                        "secondary": "#7b5455",
+                        "surface-bright": "#fcf9f8",
+                        "inverse-on-surface": "#f3f0f0",
+                        "outline": "#7d766c",
+                        "on-secondary-container": "#795354",
+                        "tertiary-fixed": "#e0e1f5",
+                        "on-tertiary-fixed": "#181b29",
+                        "primary-container": "#e5d3b3",
+                        "on-surface": "#1b1c1c",
+                        "on-secondary-fixed": "#2f1314",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "on-surface-variant": "#4c463d",
+                        "surface-variant": "#e4e2e1",
+                        "inverse-surface": "#303030",
+                        "on-primary": "#ffffff",
+                        "on-background": "#1b1c1c",
+                        "on-secondary": "#ffffff",
+                        "tertiary-container": "#d3d4e8",
+                        "on-tertiary": "#ffffff",
+                        "surface-dim": "#dcd9d9",
+                        "primary-fixed": "#f3e0c0",
+                        "background": "#fcf9f8",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-container-low": "#f6f3f2",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "surface": "#fcf9f8",
+                        "error-container": "#ffdad6",
+                        "primary": "#6a5d43",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#fdcbcb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "gutter": "20px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "margin-desktop": "120px",
+                        "xl": "80px",
+                        "margin-mobile": "20px",
+                        "unit": "4px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "label-sm": ["DM Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .halo-shadow {
+            box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.5); /* Primary Champagne halo */
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            box-shadow: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl transition-all duration-300">
+<div class="flex items-center justify-between px-margin-mobile w-full h-16 max-w-7xl mx-auto">
+<button aria-label="Back" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 w-10 h-10 flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Dawati</h1>
+<button aria-label="More options" class="text-primary hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 w-10 h-10 flex items-center justify-center rounded-full">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+</header>
+<main class="flex-grow pt-[104px] pb-32 px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto w-full">
+<!-- Header Section -->
+<div class="mb-lg max-w-2xl">
+<p class="font-label-sm text-label-sm text-primary mb-xs uppercase tracking-widest">الخطوة 2 من 3</p>
+<h2 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-sm">رفع الإلهام</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">شاركنا صوراً، رسومات، أو أفكار تعكس رؤيتك للتصميم. هذا سيساعدنا في إنشاء دعوة زفاف مثالية لك.</p>
+</div>
+<!-- Upload Area -->
+<div class="border border-dashed border-outline-variant rounded-xl bg-surface-container-low flex flex-col items-center justify-center p-lg mb-lg cursor-pointer hover:bg-surface-container transition-colors group relative overflow-hidden">
+<div class="w-16 h-16 rounded-full bg-primary-container flex items-center justify-center mb-sm group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="cloud_upload" style="font-variation-settings: 'FILL' 1;">cloud_upload</span>
+</div>
+<p class="font-headline-md text-headline-md-mobile text-on-surface mb-xs">اضغط هنا لرفع الملفات</p>
+<p class="font-body-md text-body-md text-on-surface-variant text-center">أو قم بسحب وإفلات الصور هنا<br/><span class="text-sm opacity-70">JPEG, PNG, PDF (الحد الأقصى 10MB)</span></p>
+<input accept="image/*,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" multiple="" type="file"/>
+</div>
+<!-- Uploaded Thumbnails Grid (Bento style) -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-sm mb-lg">
+<!-- Thumbnail 1 -->
+<div class="relative rounded-lg overflow-hidden group aspect-square">
+<img class="w-full h-full object-cover" data-alt="A delicate botanical illustration of a white rose with subtle green leaves, styled as a high-end editorial wedding stationery element, soft natural lighting, creamy off-white background, elegant modern luxury aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBf2bYHMAYj0y7WfJHsGF5gRZNy_5fNSjaCnDsYwnzzyff6xE9qY5er2e9RRmwE3DKkNY__PUeESmQWcnNA-Pi-Y7rL9Wpcvvj5nYSRTtCUu9GVEeaZu2XQADOBJvQPf_PAQ_SejHFsUxr3N4bbB-iQJCrtyfSH4XdkSSNhtgfehiOBMxKJ-pym3hkkBPbu68HlZ7ab03vrlsmSGZ7DGsxAT2g9luPc2EyxoyvDw-YfWN3n26UGohjT"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-xs">
+<button class="w-8 h-8 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-error hover:bg-error-container hover:text-on-error-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<!-- Thumbnail 2 -->
+<div class="relative rounded-lg overflow-hidden group aspect-square">
+<img class="w-full h-full object-cover" data-alt="A luxurious mood board composition featuring swatches of champagne silk fabric, delicate gold foil typography samples, and a sprig of dried eucalyptus, photographed overhead on a minimalist slate surface, warm elegant lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAt8RfCn-YGK43Z3nx9PTMqffIW2nYM6z8_y5t_PPsGDD8_Oesud3UIN1b0oN0dnPqI0rgCb2-5esRTwlOEbrBZR-G7_uzln892JHonVNoUqlIU6LMMLOC8pGBlcW0WYvtoUTDRO1hmxLMOKj6IwKxJjvedJcMB1FE9Ex5UoaX_oqM9cWM-UVWevwftncuIdA6FEgH48wiRN9LCkX1Bo2Le-GrV4E-irx-uogAzaDW2v_R4VoKodgIg"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-xs">
+<button class="w-8 h-8 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-error hover:bg-error-container hover:text-on-error-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<!-- Thumbnail 3 -->
+<div class="relative rounded-lg overflow-hidden group aspect-square">
+<img class="w-full h-full object-cover" data-alt="Close up of elegant Arabic calligraphy written in deep charcoal ink on textured cotton paper, showcasing fluid artistic strokes, soft dramatic side lighting, premium editorial style, high contrast minimalist composition." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAl9YRNlc_oQcdS0mmSgRfqStiHEE40Tv7TQEN0rHjeXVgRv2I30d98vANLrkoKDuozjrR4nZuO7gtD8VLhEphM2li_X9En-y9TmrDQZfLrwQ22Q7bMcwVcWtgsjbcxfMHjRLP7kRR0pskqmgtmKhSEzQWiGdSeInM_TePTLvtfWPrmP9gpDW9rGin53uk5lJHdielonfkSF8PiPfrJGX6lY4ZA5xz3DwVAEwoiNfsTV_UyoZrTF4M1"/>
+<div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-start justify-end p-xs">
+<button class="w-8 h-8 rounded-full bg-surface-container-lowest/90 backdrop-blur-sm flex items-center justify-center text-error hover:bg-error-container hover:text-on-error-container transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm" data-icon="close">close</span>
+</button>
+</div>
+</div>
+<!-- Empty slot for bento effect -->
+<div class="hidden md:flex border border-dashed border-outline-variant/50 rounded-lg items-center justify-center aspect-square bg-surface-container-lowest/50 text-outline-variant">
+<span class="material-symbols-outlined opacity-50" data-icon="add_photo_alternate">add_photo_alternate</span>
+</div>
+</div>
+<!-- Additional Notes -->
+<div class="mb-xl">
+<label class="block font-label-sm text-label-sm text-on-surface mb-xs uppercase tracking-wider" for="notes">ملاحظات إضافية للمصمم</label>
+<div class="relative">
+<textarea class="w-full bg-transparent border-0 border-b border-outline-variant text-on-surface font-body-md text-body-md focus:border-b-2 focus:border-primary transition-colors resize-none px-0 py-sm" id="notes" placeholder="أخبرنا عن الألوان المفضلة، أو أي تفاصيل خاصة تريد تضمينها..." rows="4"></textarea>
+</div>
+</div>
+<!-- Floating Action Area (Continue) -->
+<div class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-surface to-transparent pb-margin-mobile pt-lg px-margin-mobile md:px-margin-desktop z-40 flex justify-end">
+<div class="max-w-7xl mx-auto w-full flex justify-end">
+<button class="bg-primary-container text-on-primary-container font-body-md text-body-md px-xl py-sm rounded-full halo-shadow hover:opacity-90 active:scale-[0.98] transition-all duration-200 flex items-center gap-2">
+                    المتابعة
+                    <span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Suppressed Bottom Navigation for Linear Flow -->
+</body></html>

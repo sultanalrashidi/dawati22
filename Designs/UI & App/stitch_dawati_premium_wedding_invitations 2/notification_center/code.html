@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+
+<html dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Notifications</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "secondary-container": "#fdcbcb",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary": "#7b5455",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "inverse-primary": "#d6c4a5",
+                        "inverse-surface": "#303030",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "on-error-container": "#93000a",
+                        "tertiary": "#5b5d6e",
+                        "surface-dim": "#dcd9d9",
+                        "outline": "#7d766c",
+                        "outline-variant": "#cec5b9",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "surface": "#fcf9f8",
+                        "surface-bright": "#fcf9f8",
+                        "surface-tint": "#6a5d43",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "surface-container": "#f0eded",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-variant": "#e4e2e1",
+                        "primary": "#6a5d43",
+                        "on-surface-variant": "#4c463d",
+                        "on-surface": "#1b1c1c",
+                        "tertiary-container": "#d3d4e8",
+                        "on-primary-fixed-variant": "#51452d",
+                        "tertiary-fixed": "#e0e1f5",
+                        "on-secondary-container": "#795354",
+                        "on-primary-fixed": "#231a06",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-tertiary-container": "#595b6c",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "background": "#fcf9f8",
+                        "primary-fixed": "#f3e0c0",
+                        "on-secondary-fixed": "#2f1314",
+                        "secondary-fixed": "#ffdad9",
+                        "primary-container": "#e5d3b3",
+                        "surface-container-high": "#eae7e7",
+                        "on-background": "#1b1c1c",
+                        "on-primary-container": "#675a41",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#181b29"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "margin-desktop": "120px",
+                        "xs": "8px",
+                        "xl": "80px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "unit": "4px",
+                        "lg": "48px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "body-md": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "label-sm": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Subtle Glow Animation for Unread Items */
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+        .animate-pulse-glow {
+            animation: pulse-glow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        /* Hide scrollbar for tabs */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background antialiased min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16">
+<button class="text-on-surface-variant dark:text-outline hover:scale-95 transition-transform duration-200 active:scale-95 ease-out flex items-center justify-center p-2 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed tracking-tight">Dawati</h1>
+<button class="text-primary dark:text-primary-fixed hover:scale-95 transition-transform duration-200 active:scale-95 ease-out flex items-center justify-center p-2 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined fill" data-icon="notifications" data-weight="fill">notifications</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="pt-24 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-sm">
+<h2 class="font-headline-md text-headline-md text-on-surface">Notifications</h2>
+<button class="font-label-sm text-label-sm text-primary hover:text-on-primary-container transition-colors">Mark all as read</button>
+</div>
+<!-- Tabs -->
+<div class="flex gap-4 overflow-x-auto no-scrollbar pb-xs mb-lg">
+<button class="px-sm py-2 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm whitespace-nowrap transition-transform active:scale-95">All</button>
+<button class="px-sm py-2 rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-variant/30 transition-all active:scale-95">Requests</button>
+<button class="px-sm py-2 rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-variant/30 transition-all active:scale-95">Events</button>
+<button class="px-sm py-2 rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-variant/30 transition-all active:scale-95">System</button>
+</div>
+<!-- Notifications List -->
+<div class="flex flex-col gap-sm">
+<!-- Notification Item: Unread Draft -->
+<div class="relative flex gap-sm p-sm bg-surface-container-lowest rounded-xl border border-outline-variant/30 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<!-- Unread Indicator -->
+<div class="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full border-2 border-surface-container-lowest animate-pulse-glow z-10"></div>
+<div class="flex-shrink-0">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="Elara, Designer" class="w-full h-full object-cover" data-alt="A professional headshot of a female graphic designer in a bright, modern studio. Soft natural lighting illuminating her face. She has a warm expression. High-end editorial photography style, muted tones with a touch of warmth. 8k resolution, photorealistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpk5AN-AHBSPNM7vb_3p2PN82OwpbAZDfp9LX9htTsQRAl9w7Rfvv9_7yk0rzYamZAFZZpgCdd0wdaRZVjaNzqfS0XQxkTZvJVbWeJYH53n2cjq7xqMdK5Ad2qyJJrBaJq6zj71876NAxyl7EYTRO-Uds3eTjPlE7SB_oXq-DaESw5xAEL47qTkaYAqIydpzvDLsFLEC8eVL3B8RhkvfA3zSj4clZwoKWHFFWxrAQXBRcJ2yOguXAQ"/>
+</div>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-md text-body-md font-medium text-on-surface">New Design Draft Ready</h3>
+<span class="font-label-sm text-label-sm text-outline flex-shrink-0 ml-2">2m ago</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">Your 'Golden Sands' invitation is ready for review.</p>
+</div>
+</div>
+<!-- Notification Item: Unread RSVP -->
+<div class="relative flex gap-sm p-sm bg-surface-container-lowest rounded-xl border border-outline-variant/30 hover:bg-surface-container-low transition-colors cursor-pointer group">
+<!-- Unread Indicator -->
+<div class="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full border-2 border-surface-container-lowest z-10"></div>
+<div class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full bg-secondary-container/30 text-secondary">
+<span class="material-symbols-outlined" data-icon="how_to_reg">how_to_reg</span>
+</div>
+<div class="flex-grow">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-md text-body-md font-medium text-on-surface">Guest RSVP</h3>
+<span class="font-label-sm text-label-sm text-outline flex-shrink-0 ml-2">1h ago</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">Sarah Ahmed has confirmed attendance.</p>
+</div>
+</div>
+<!-- Notification Item: Read Message -->
+<div class="flex gap-sm p-sm rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex-shrink-0">
+<div class="w-12 h-12 rounded-full overflow-hidden border border-outline-variant/30 opacity-70">
+<img alt="Elara, Designer" class="w-full h-full object-cover" data-alt="A professional headshot of a female graphic designer in a bright, modern studio. Soft natural lighting illuminating her face. She has a warm expression. High-end editorial photography style, muted tones with a touch of warmth. 8k resolution, photorealistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDomZt-ZKVJZzsjMJsBPG_SGvejhUgxYbw2Gvbzu2Dvvn_5hyyePievadVep3p2L4JIjFtwPGS6-GQ3sZFJbkXNwgOsxdJjMA0hZkzhHbnLTGsGq8Z0U_NX2qFJiBzlzr_HMqiSyI6TdB8WBS5i-AL7N-6DYm62IVdnXtJ8wycm-arr3PtM3JC4OR3TrlRfD2llkx_K-Xmh-jehdWkdWlZP11hFoH2Gkx4VX106G4L0F4KG2-PgYca6"/>
+</div>
+</div>
+<div class="flex-grow opacity-70">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-md text-body-md text-on-surface">Designer Message</h3>
+<span class="font-label-sm text-label-sm text-outline flex-shrink-0 ml-2">3h ago</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">Elara sent you a new message regarding your brief.</p>
+</div>
+</div>
+<!-- Notification Item: Read Event Alert -->
+<div class="flex gap-sm p-sm rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full bg-surface-variant text-on-surface-variant opacity-70">
+<span class="material-symbols-outlined" data-icon="event">event</span>
+</div>
+<div class="flex-grow opacity-70">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-md text-body-md text-on-surface">Event Alert</h3>
+<span class="font-label-sm text-label-sm text-outline flex-shrink-0 ml-2">Yesterday</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">Your wedding at Dubai Opera starts in 48 hours.</p>
+</div>
+</div>
+<!-- Notification Item: System Alert -->
+<div class="flex gap-sm p-sm rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
+<div class="flex-shrink-0 flex items-center justify-center w-12 h-12 rounded-full bg-primary-container/20 text-primary opacity-70">
+<span class="material-symbols-outlined" data-icon="check_circle">check_circle</span>
+</div>
+<div class="flex-grow opacity-70">
+<div class="flex justify-between items-start mb-1">
+<h3 class="font-body-md text-body-md text-on-surface">Payment Successful</h3>
+<span class="font-label-sm text-label-sm text-outline flex-shrink-0 ml-2">2d ago</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant leading-relaxed">Your final payment for 'Golden Sands' package has been processed.</p>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl border-t border-outline-variant/10 shadow-[0_-8px_30px_rgb(106,93,67,0.05)] md:hidden">
+<ul class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3">
+<li class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline opacity-60 hover:opacity-100 transition-opacity active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-label-sm text-label-sm">Discover</span>
+</li>
+<li class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline opacity-60 hover:opacity-100 transition-opacity active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="edit_note">edit_note</span>
+<span class="font-label-sm text-label-sm">Design</span>
+</li>
+<li class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline opacity-60 hover:opacity-100 transition-opacity active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="calendar_today">calendar_today</span>
+<span class="font-label-sm text-label-sm">Events</span>
+</li>
+<li class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline opacity-60 hover:opacity-100 transition-opacity active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="group">group</span>
+<span class="font-label-sm text-label-sm">Guests</span>
+</li>
+<li class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline opacity-60 hover:opacity-100 transition-opacity active:scale-90 transition-all duration-200">
+<span class="material-symbols-outlined mb-1" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</li>
+</ul>
+</nav>
+<script>
+        // Simple script to handle RTL toggle for demonstration if needed, 
+        // though the layout uses logical properties naturally via flexbox.
+        // Left here for potential future interactivity.
+        document.addEventListener('DOMContentLoaded', () => {
+            // Placeholder for interactive logic
+        });
+    </script>
+</body></html>

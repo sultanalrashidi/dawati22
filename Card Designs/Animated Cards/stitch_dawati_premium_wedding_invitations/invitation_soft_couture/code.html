@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SARA &amp; MOHAMMED - Soft Couture</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&amp;family=Playfair+Display:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#cec5b9",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#675a41",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-bright": "#fcf9f8",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "outline": "#7d766c",
+                        "primary-container": "#e5d3b3",
+                        "primary-fixed": "#f3e0c0",
+                        "surface-tint": "#6a5d43",
+                        "primary": "#6a5d43",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary-fixed": "#ffdad9",
+                        "on-background": "#1b1c1c",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "on-secondary-container": "#795354",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#fdcbcb",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-secondary-fixed": "#2f1314",
+                        "surface-dim": "#dcd9d9",
+                        "surface-variant": "#e4e2e1",
+                        "tertiary": "#5b5d6e",
+                        "on-surface-variant": "#4c463d",
+                        "tertiary-fixed": "#e0e1f5",
+                        "inverse-surface": "#303030",
+                        "surface": "#fcf9f8",
+                        "surface-container-high": "#eae7e7",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1b1c1c",
+                        "surface-container": "#f0eded",
+                        "on-primary-fixed": "#231a06",
+                        "tertiary-container": "#d3d4e8",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-primary": "#ffffff",
+                        "background": "#fcf9f8",
+                        "surface-container-highest": "#e4e2e1",
+                        "secondary": "#7b5455",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "inverse-primary": "#d6c4a5",
+                        "on-secondary-fixed-variant": "#603d3e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "16px",
+                        "gutter": "20px",
+                        "md": "24px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "120px",
+                        "lg": "48px",
+                        "unit": "4px",
+                        "xl": "80px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "label-sm": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .soft-shadow {
+            box-shadow: 0 20px 40px -15px rgba(106, 93, 67, 0.08);
+        }
+        
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 211, 179, 0.3);
+        }
+        
+        .organic-shape {
+            border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased overflow-x-hidden min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl dark:bg-surface-dim/80 flex justify-between items-center px-margin-mobile h-16 flat no shadows">
+<button class="text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity duration-300 scale-95 duration-200">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md uppercase tracking-widest text-primary dark:text-primary-fixed">SARA &amp; MOHAMMED</h1>
+<button class="text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity duration-300 scale-95 duration-200">
+<span class="material-symbols-outlined">share</span>
+</button>
+</header>
+<!-- NavigationDrawer (Hidden by default, semantic shell placeholder) -->
+<nav class="hidden h-full w-80 max-w-[80vw] fixed left-0 top-0 z-[60] bg-surface dark:bg-surface-dim border-r border-outline-variant/20 shadow-[40px_0_60px_-15px_rgba(106,93,67,0.05)] flex flex-col p-md space-y-sm">
+<h2 class="font-headline-md text-headline-md text-primary mb-md">دعوتي - DAWATI</h2>
+<a class="flex items-center space-x-sm space-x-reverse text-primary dark:text-primary-fixed font-bold bg-primary-container/30 rounded-lg p-sm hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined">info</span>
+<span>تفاصيل الحفل</span>
+</a>
+<a class="flex items-center space-x-sm space-x-reverse text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined">auto_awesome</span>
+<span>برنامج الزفاف</span>
+</a>
+<a class="flex items-center space-x-sm space-x-reverse text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined">restaurant</span>
+<span>قائمة الطعام</span>
+</a>
+<a class="flex items-center space-x-sm space-x-reverse text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined">photo_library</span>
+<span>معرض الصور</span>
+</a>
+<a class="flex items-center space-x-sm space-x-reverse text-on-surface-variant dark:text-outline-variant p-sm hover:bg-surface-container-low transition-all duration-300 scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined">contact_support</span>
+<span>تواصل معنا</span>
+</a>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto min-h-screen flex flex-col items-center justify-center">
+<!-- Hero Section -->
+<section class="w-full flex flex-col md:flex-row items-center justify-center gap-lg relative">
+<!-- Abstract Background Element -->
+<div class="absolute inset-0 -z-10 flex items-center justify-center opacity-30 pointer-events-none">
+<div class="w-[300px] h-[300px] bg-primary-container/50 organic-shape blur-3xl mix-blend-multiply"></div>
+<div class="w-[200px] h-[200px] bg-secondary-container/40 organic-shape blur-2xl absolute -translate-x-20 translate-y-20"></div>
+</div>
+<!-- Content Card -->
+<div class="glass-panel p-lg rounded-2xl w-full max-w-2xl text-center soft-shadow relative overflow-hidden flex flex-col items-center gap-md">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-[0.2em]">You are joyfully invited to the wedding of</span>
+<h2 class="font-display-lg-mobile md:font-display-lg text-primary mt-sm mb-xs">سارة &amp; محمد</h2>
+<div class="h-px w-24 bg-primary/20 my-sm"></div>
+<p class="font-body-lg text-on-surface-variant max-w-md mx-auto leading-relaxed">
+                    نحن متحمسون لمشاركتكم فرحتنا في هذا اليوم المميز. نأمل أن تنضموا إلينا للاحتفال ببداية رحلتنا معاً.
+                </p>
+<div class="grid grid-cols-2 gap-md w-full max-w-sm mt-md">
+<div class="flex flex-col items-center gap-xs p-sm bg-surface/50 rounded-lg">
+<span class="material-symbols-outlined text-primary mb-1">calendar_today</span>
+<span class="font-body-md text-on-surface">الخميس، ٢٥ مايو</span>
+<span class="font-label-sm text-on-surface-variant">٢٠٢٤</span>
+</div>
+<div class="flex flex-col items-center gap-xs p-sm bg-surface/50 rounded-lg">
+<span class="material-symbols-outlined text-primary mb-1">schedule</span>
+<span class="font-body-md text-on-surface">٨:٠٠ مساءً</span>
+<span class="font-label-sm text-on-surface-variant">بتوقيت الرياض</span>
+</div>
+</div>
+<!-- RSVP Action -->
+<button class="mt-lg bg-primary-container text-on-primary-container px-xl py-sm rounded-full font-body-md hover:scale-95 transition-transform duration-300 shadow-[0_20px_40px_-10px_rgba(229,211,179,0.3)]">
+                    تأكيد الحضور
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface/90 backdrop-blur-2xl dark:bg-surface-container-highest/90 border-t border-primary/10 flat no shadows rounded-t-xl">
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-secondary dark:after:bg-secondary-fixed-dim after:rounded-full after:mt-1 scale-98 active:scale-95 transition-transform duration-200 hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-sm text-label-sm mt-1">الرئيسية</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant scale-98 active:scale-95 transition-transform duration-200 hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined">location_on</span>
+<span class="font-label-sm text-label-sm mt-1">الموقع</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant scale-98 active:scale-95 transition-transform duration-200 hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined">event_available</span>
+<span class="font-label-sm text-label-sm mt-1">التأكيد</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant scale-98 active:scale-95 transition-transform duration-200 hover:text-primary transition-colors duration-300">
+<span class="material-symbols-outlined">qr_code_2</span>
+<span class="font-label-sm text-label-sm mt-1">البطاقة</span>
+</button>
+</nav>
+</body></html>

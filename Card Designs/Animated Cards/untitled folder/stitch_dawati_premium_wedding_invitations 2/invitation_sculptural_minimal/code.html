@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html class="light" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>DAWATI - Sculptural Minimal Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#fdcbcb",
+                        "on-background": "#1b1c1c",
+                        "on-primary-container": "#675a41",
+                        "inverse-primary": "#d6c4a5",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#7b5455",
+                        "primary-fixed": "#f3e0c0",
+                        "surface-container-low": "#f6f3f2",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "inverse-surface": "#303030",
+                        "primary": "#6a5d43",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f3f0f0",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "outline": "#7d766c",
+                        "surface-container": "#f0eded",
+                        "surface-tint": "#6a5d43",
+                        "on-tertiary-container": "#595b6c",
+                        "tertiary": "#5b5d6e",
+                        "on-primary-fixed": "#231a06",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#e0e1f5",
+                        "surface-variant": "#e4e2e1",
+                        "surface-dim": "#dcd9d9",
+                        "surface": "#fcf9f8",
+                        "secondary-fixed": "#ffdad9",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-surface": "#1b1c1c",
+                        "primary-container": "#e5d3b3",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-secondary-container": "#795354",
+                        "on-surface-variant": "#4c463d",
+                        "on-tertiary-fixed": "#181b29",
+                        "tertiary-container": "#d3d4e8",
+                        "outline-variant": "#cec5b9",
+                        "surface-container-high": "#eae7e7",
+                        "surface-bright": "#fcf9f8",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-container-highest": "#e4e2e1",
+                        "background": "#fcf9f8",
+                        "on-secondary-fixed": "#2f1314",
+                        "stone": {
+                            50: '#fafafa',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            400: '#a8a29e',
+                            500: '#78716c',
+                            600: '#57534e',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917',
+                        },
+                        "champagne": {
+                            DEFAULT: "#E5D3B3",
+                            light: "#F7F1E5",
+                            dark: "#CBA469"
+                        }
+                    },
+                    borderRadius: {
+                        DEFAULT: "0.25rem",
+                        lg: "0.5rem",
+                        xl: "0.75rem",
+                        full: "9999px"
+                    },
+                    spacing: {
+                        lg: "48px",
+                        sm: "16px",
+                        unit: "4px",
+                        md: "24px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "120px",
+                        xs: "8px",
+                        gutter: "20px",
+                        xl: "80px"
+                    },
+                    fontFamily: {
+                        "label-sm": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "body-md": ["DM Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"]
+                    },
+                    fontSize: {
+                        "label-sm": ["12px", { lineHeight: "1.0", letterSpacing: "0.05em", fontWeight: "500" }],
+                        "headline-md": ["24px", { lineHeight: "1.3", fontWeight: "500" }],
+                        "body-md": ["16px", { lineHeight: "1.5", fontWeight: "400" }],
+                        "display-lg": ["48px", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "600" }],
+                        "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
+                        "display-lg-mobile": ["32px", { lineHeight: "1.2", fontWeight: "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 300, "GRAD" 0, "opsz" 24
+    }
+.bg-stone-texture {
+    background-color: #d6d3d1;
+    /* stone-300 approx for base */
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCxDw92P_9d8tWjb7ejHyjZHfU7iXsORuKWgOyynp7tCK10rxXBsqtiZbTqRmDghEbS4mG2-stkpNXDrPqgG4KxGOivCsvw0Yor7nAx4hqgiDuG_pusKxNcYwCNR1HFH-PFnU63rLD7XaejOtihXQ_fvrB0i0gptxLaW1nSR7VtHNjj4Oldi8ESMv8vVkikcm8obRRzD30ZrX3-xs5mq4G0SpPSEq0p50_B0cd7ei2DJLZheILLkgeO);
+    background-size: cover;
+    background-position: center
+    }
+.gold-gradient-text {
+    background: linear-gradient(135deg, #E5D3B3 0%, #CBA469 50%, #8A6D3B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent
+    }
+.minimal-shadow {
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1)
+    }
+/* Ensures absolute center alignment for the 3D element container */
+.sculptural-container {
+    perspective: 1000px
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface-container-highest min-h-screen flex items-center justify-center font-body-md text-on-surface antialiased p-4">
+<!-- Mobile Device Container -->
+<main class="relative w-full max-w-[430px] aspect-[9/16] bg-stone-texture rounded-[3rem] overflow-hidden minimal-shadow flex flex-col items-center py-12 px-6" data-alt="A highly textured, light stone surface background. The texture resembles smooth, polished limestone or minimalist concrete with subtle, natural variations in the light beige and grey tones. The lighting is soft and diffuse, creating a premium, serene, and modern luxury aesthetic suitable for a high-end editorial design canvas.">
+<!-- Top Spacer for notch -->
+<div class="h-8 w-full flex-shrink-0"></div>
+<!-- Sculptural Geometric Monogram -->
+<div class="sculptural-container w-48 h-56 mb-8 relative flex items-center justify-center flex-shrink-0" data-alt="A radical minimalist 3D geometric shape acting as a monogram. It resembles an abstract, faceted gem or a stylized architectural structure constructed from interlocking planes. The material appears to be a mix of brushed gold and matte dark charcoal or black stone. The lighting highlights the sharp edges and flat planes, creating a stark, high-contrast, sculptural look against a light background." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDkNrsUpM8R9xwWKg1PTc26vDoRthevy_OqtFNPzKfZsbHL4X3-6t23FdguiuVYZhD2ENj9c3NyLr2CpQxBf3A5h3p5duleP6zWb_nW4GMtu2N4Tv9cEmF95lK6w-6aL1n4qtJJ8wxAOC_uI-TcWLNWKEuuHOfoDRMvDoYArmi3E7BHALZ1rwwL38O_dsBkKpc_YyaHPb8L1DxmD7qjI51VN4LGW2YOgVDYpXH2sO1E4B4QO7nleyjP'); background-size: contain; background-repeat: no-repeat; background-position: center;">
+<!-- The actual image replaces this div's background in the pipeline, but we leave the div to hold space -->
+</div>
+<!-- Typography Section -->
+<div class="flex flex-col items-center w-full flex-grow justify-between text-center">
+<!-- Bride & Groom -->
+<div class="mb-6">
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-on-surface mb-2">سارة &amp; محمد</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant tracking-widest uppercase mt-4">Sculptural Minimal</p>
+</div>
+<!-- Guest Invitation Text -->
+<div class="mb-8">
+<p class="font-body-md text-on-surface mb-2">بكل حب وسعادة يسرنا</p>
+<p class="font-body-md text-on-surface mb-4">دعوتكم لتشاركونا فرحتنا</p>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold">أم خالد</h2>
+</div>
+<!-- Details -->
+<div class="flex flex-col items-center gap-1 mb-8">
+<p class="font-label-sm text-label-sm text-on-surface-variant">السبت 15 نوفمبر 2026</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">09:00 مساءً</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">قاعة النخبة - الرياض</p>
+</div>
+<!-- Countdown -->
+<div class="mb-8">
+<p class="font-headline-md text-headline-md tracking-widest text-on-surface" dir="ltr">12 : 08 : 42</p>
+</div>
+<!-- QR Code Placeholder -->
+<div class="w-16 h-16 bg-white/50 backdrop-blur-sm p-1 rounded-md flex items-center justify-center shadow-sm">
+<img class="w-full h-full object-cover rounded-sm" data-alt="A clean, sharp, minimalist QR code intended for a wedding invitation. The QR code is rendered in stark black against a pure white background to ensure scannability. It is simple, modern, and devoid of any decorative elements or logos within the code itself, fitting a high-end, radical minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAQY-4WPzQAiyhOzDOWAR2EfbGl8yG23dGmTCLs-T27S7F1ogqjMhNSSiObsQJK3PcNkuu1g3CSOHDcVhVDUtI8AeU_1IQFLz_riVPxsK063onMYH2WSVOUYOARvjCcOFOmj9Gvy6SfhNETLU0JYKG9QRhz0EzafZ1gqopj-E_oJEoKquSGIAgVs8meqMHoostepDDhFcBb8nt3qHZo10AyLLLOrdPgiKFnFbEMxeE20IxNEgeFj-O0"/>
+</div>
+</div>
+<!-- Bottom Spacer -->
+<div class="h-4 w-full flex-shrink-0"></div>
+</main>
+</body></html>

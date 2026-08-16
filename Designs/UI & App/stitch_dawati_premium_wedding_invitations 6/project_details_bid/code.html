@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+
+<html class="light" dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Project Details - Dawati Marketplace</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-dim": "#dcd9d9",
+                        "primary-fixed": "#f3e0c0",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "inverse-surface": "#303030",
+                        "on-surface-variant": "#4c463d",
+                        "surface-variant": "#e4e2e1",
+                        "secondary-fixed": "#ffdad9",
+                        "tertiary-fixed": "#e0e1f5",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "tertiary-container": "#d3d4e8",
+                        "surface-container-high": "#eae7e7",
+                        "on-primary": "#ffffff",
+                        "primary": "#6a5d43",
+                        "on-primary-fixed": "#231a06",
+                        "on-background": "#1b1c1c",
+                        "on-primary-fixed-variant": "#51452d",
+                        "secondary-container": "#fdcbcb",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-surface": "#1b1c1c",
+                        "surface": "#fcf9f8",
+                        "surface-container": "#f0eded",
+                        "primary-container": "#e5d3b3",
+                        "secondary": "#7b5455",
+                        "surface-tint": "#6a5d43",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#181b29",
+                        "error-container": "#ffdad6",
+                        "background": "#fcf9f8",
+                        "surface-container-low": "#f6f3f2",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-secondary-container": "#795354",
+                        "inverse-primary": "#d6c4a5",
+                        "on-primary-container": "#675a41",
+                        "outline": "#7d766c",
+                        "surface-container-lowest": "#ffffff",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-secondary": "#ffffff",
+                        "tertiary": "#5b5d6e",
+                        "on-secondary-fixed": "#2f1314",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-bright": "#fcf9f8",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#cec5b9",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "sm": "16px",
+                        "xl": "80px",
+                        "lg": "48px",
+                        "xs": "8px",
+                        "margin-desktop": "120px",
+                        "margin-mobile": "20px",
+                        "gutter": "20px",
+                        "md": "24px"
+                    },
+                    "fontFamily": {
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-md": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "label-sm": ["DM Sans"],
+                        "body-lg": ["DM Sans"],
+                        "display-lg": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-family: 'Material Symbols Outlined';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            line-height: 1;
+            letter-spacing: normal;
+            text-transform: none;
+            display: inline-block;
+            white-space: nowrap;
+            word-wrap: normal;
+            direction: ltr;
+            -webkit-font-feature-settings: 'liga';
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* Blur shadow utility for floating elements */
+        .shadow-glow {
+            box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col">
+<!-- Top Navigation (Task-focused page, so suppressed standard nav, showing back button) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-md bg-surface-container-low border-b border-surface-variant/10">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full max-w-7xl mx-auto">
+<button class="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity" onclick="window.history.back()">
+<span class="material-symbols-outlined" data-icon="arrow_back">arrow_back</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Back</span>
+</button>
+<div class="font-headline-md text-headline-md-mobile md:text-headline-md text-primary tracking-tight">Project Brief</div>
+<div class="w-8"></div> <!-- Spacer for center alignment -->
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-5xl mx-auto w-full">
+<!-- Header Section -->
+<div class="mb-lg animate-[fadeIn_0.5s_ease-out]">
+<div class="flex flex-wrap items-center gap-4 mb-4">
+<span class="px-3 py-1 rounded-full bg-primary-container/30 text-on-primary-container font-label-sm text-label-sm uppercase tracking-wider border border-primary-container/50">Wedding Invitation</span>
+<span class="flex items-center gap-1 text-outline font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]" data-icon="schedule">schedule</span>
+                    Posted 2 days ago
+                </span>
+</div>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-6">Bespoke Royal Wedding Suite with Arabic Calligraphy</h1>
+<div class="flex flex-wrap items-center gap-8 text-on-surface-variant border-y border-outline-variant/20 py-sm">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary/70" data-icon="payments">payments</span>
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase">Budget</div>
+<div class="font-headline-md text-[20px] text-primary">$3,500 - $5,000</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary/70" data-icon="event">event</span>
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase">Deadline</div>
+<div class="font-body-md font-medium text-on-surface">Oct 15, 2024</div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary/70" data-icon="group">group</span>
+<div>
+<div class="font-label-sm text-label-sm text-outline uppercase">Proposals</div>
+<div class="font-body-md font-medium text-on-surface">12 submitted</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Content Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-md">
+<!-- Main Details (Left Col) -->
+<div class="lg:col-span-2 space-y-md">
+<!-- Description Card -->
+<section class="bg-surface-container-lowest rounded-xl p-md md:p-lg border border-outline-variant/20 shadow-sm transition-all hover:shadow-glow duration-500">
+<h2 class="font-headline-md text-[20px] text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="description">description</span>
+                        Project Overview
+                    </h2>
+<div class="prose prose-p:text-on-surface-variant prose-p:font-body-md prose-p:leading-relaxed max-w-none space-y-4">
+<p>We are seeking a master calligrapher and invitation designer for a high-profile luxury wedding in Dubai. The aesthetic should merge traditional Arabic artistry with contemporary minimalist design.</p>
+<p>The suite must include a main invitation card, details insert, RSVP card, and custom envelope liners. The primary focus should be an exquisite, custom-designed monogram blending the initials of the bride and groom in a fluid, modern Arabic script.</p>
+<p>Materials will ultimately be printed on heavy cotton stock with deep letterpress and blind embossing techniques, so the digital designs must be meticulously prepared for these high-end print processes.</p>
+</div>
+</section>
+<!-- Requirements Card -->
+<section class="bg-surface-container-lowest rounded-xl p-md md:p-lg border border-outline-variant/20 shadow-sm transition-all hover:shadow-glow duration-500">
+<h2 class="font-headline-md text-[20px] text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="checklist">checklist</span>
+                        Specific Requirements
+                    </h2>
+<ul class="space-y-3">
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5 text-[20px]" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface-variant">Expertise in modern Arabic calligraphy (Thuluth or Diwani styles preferred).</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5 text-[20px]" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface-variant">Experience setting up files for letterpress and foil stamping.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5 text-[20px]" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface-variant">Ability to provide at least 3 initial concepts for the monogram.</span>
+</li>
+<li class="flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary mt-0.5 text-[20px]" data-icon="check_circle">check_circle</span>
+<span class="text-on-surface-variant">Fluency in both English and Arabic is highly desirable for typesetting.</span>
+</li>
+</ul>
+</section>
+<!-- Moodboard Section -->
+<section class="bg-surface-container-lowest rounded-xl p-md md:p-lg border border-outline-variant/20 shadow-sm">
+<h2 class="font-headline-md text-[20px] text-primary mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined" data-icon="palette">palette</span>
+                        Client Moodboard
+                    </h2>
+<p class="text-on-surface-variant text-sm mb-6">Inspiration provided by the client showing preferred tones and typography styles.</p>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+<div class="aspect-square rounded-lg overflow-hidden group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A macro shot of a luxurious wedding invitation printed on thick, textured cotton paper. The design features minimalist, modern typography deeply debossed into the paper without ink (blind deboss), illuminated by soft, natural studio lighting that highlights the paper's tactile quality. The color palette is strictly neutral, focusing on pristine whites and warm ivory tones. The aesthetic is extremely high-end, editorial, and sophisticated, reflecting a modern luxury brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDA_KJlop7iIpEEJFEcvQ1pBJH-zCh0NlgLurO64J8n777JXmfOKxj6t239Me6eAXBwqLzOY0fYGsxU3qy1s-PyipLiMa2ZBU2A_0S4slMHCQ80FhrgDXfxR0X3pDwWUM0SfQ9nvVizBPGiIUj-8HCeyOEiBkS1k0mV8228kFxlZIAjme7yfqu8GMaJQJeHjn3ZJa9yaVn5GYv-kfJ_L2_7Ft5Uk-YWItGo2j60nKB9G0IDg9vVOSES"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A close-up view of elegant, fluid modern Arabic calligraphy written in a metallic gold or champagne tone against a soft cream background. The stroke variation is dramatic and masterful, showing the texture of the ink. The lighting is warm and directional, casting a very subtle, sophisticated shadow from the thick ink. The overall mood is poetic, timeless, and perfectly aligned with a premium editorial visual language." src="https://lh3.googleusercontent.com/aida-public/AB6AXuARpYcItmzbRFYF1_XzW7vCZ7r7y6iMQ_UWnbqlb4hSb5_zMWLOFyom5ILQdpwPy4icndgXEMcF1Ro2moVzQjVUBJlI_-wWRxxnlLlZTCIjtv_kVQHeOjV19GQficqVt48v4WmnMIRawP2_V5TzsrJbYcuyqDoZ-710qxWELgGilHCmnz8Nw4XQuntv-uzyX1MTlEucbVuZrx0BFVrEtHov3lFxcjBTAO95OxbY3NAlnY5fQqKUpEkn"/>
+</div>
+<div class="aspect-[4/5] sm:aspect-square rounded-lg overflow-hidden group col-span-2 sm:col-span-1">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="An artistic flat-lay composition of a minimalist, high-end wedding stationery suite. The arrangement includes an envelope with a custom geometric liner, a crisp RSVP card, and a translucent vellum wrap. The items are resting on a smooth, pale stone surface. Soft, diffused daylight creates gentle shadows, emphasizing a quiet luxury aesthetic with a strict palette of soft greys, champagne, and charcoal. The styling is impeccable and uncluttered." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCS7aAKdtrLYGoZv6zqePD0pTfikbZU2x4R3-RawyR8y8KPFfR0e9Kc1K04Edj5GfCWnIg-5cNhka_WRp2gXUvHNiqfRDAY9WZO2LWAxvAz9qe1OBs-tiQXVmdKCbBg4dDP8fusGsIKjVusbVPQYqTC-QlyQZiisSfiyLrmivzkYop9HKaYx2iugBGca1O1f6XEfSGjScUkKeG5vz_8kNytrQ4QEIM4Y2bD3W_xfT0n0HFtQxJ-OAAE"/>
+</div>
+</div>
+</section>
+</div>
+<!-- Client Info & Action (Right Col) -->
+<div class="space-y-md">
+<!-- Client Card -->
+<section class="bg-surface-container-low rounded-xl p-md border border-outline-variant/10 shadow-sm sticky top-24">
+<h3 class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-4">About the Client</h3>
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-headline-md text-[20px]">
+                            E
+                        </div>
+<div>
+<div class="font-headline-md text-[18px] text-on-surface">Eventus Luxury</div>
+<div class="flex items-center gap-1 text-on-surface-variant text-sm mt-1">
+<span class="material-symbols-outlined text-[14px] text-primary" data-icon="location_on">location_on</span>
+                                Dubai, UAE
+                            </div>
+</div>
+</div>
+<div class="space-y-3 mb-6">
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Member since</span>
+<span class="font-medium text-on-surface">2021</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Projects posted</span>
+<span class="font-medium text-on-surface">14</span>
+</div>
+<div class="flex justify-between items-center text-sm">
+<span class="text-on-surface-variant">Hire rate</span>
+<span class="font-medium text-on-surface">85%</span>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/20">
+<div class="font-label-sm text-label-sm text-outline uppercase tracking-wider mb-2">Required Skills</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2 py-1 bg-surface rounded text-xs text-on-surface-variant border border-outline-variant/30">Arabic Calligraphy</span>
+<span class="px-2 py-1 bg-surface rounded text-xs text-on-surface-variant border border-outline-variant/30">Print Design</span>
+<span class="px-2 py-1 bg-surface rounded text-xs text-on-surface-variant border border-outline-variant/30">Typography</span>
+<span class="px-2 py-1 bg-surface rounded text-xs text-on-surface-variant border border-outline-variant/30">Adobe Illustrator</span>
+</div>
+</div>
+</section>
+</div>
+</div>
+</main>
+<!-- Floating Action Bar (Contextual) -->
+<div class="fixed bottom-0 left-0 w-full bg-surface/95 backdrop-blur-xl border-t border-outline-variant/10 p-4 md:p-6 z-40 transform translate-y-0 transition-transform duration-300" id="bottomAction">
+<div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+<div class="hidden sm:block">
+<div class="font-headline-md text-[18px] text-primary truncate max-w-md">Bespoke Royal Wedding Suite</div>
+<div class="text-on-surface-variant text-sm font-medium">$3,500 - $5,000 Budget</div>
+</div>
+<div class="flex w-full sm:w-auto gap-3">
+<button class="flex-1 sm:flex-none px-6 py-3 rounded-lg border border-primary text-primary font-body-md font-medium hover:bg-primary/5 transition-colors duration-200 flex items-center justify-center gap-2 group">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform" data-icon="bookmark_border">bookmark_border</span>
+<span class="hidden sm:inline">Save</span>
+</button>
+<button class="flex-[2] sm:flex-none px-8 py-3 rounded-lg bg-primary-container text-on-primary-container font-body-md font-medium hover:scale-[0.98] transition-transform duration-200 shadow-glow flex items-center justify-center gap-2 group">
+<span>Submit Proposal</span>
+<span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+        // Simple scroll detection to hide/show action bar subtly
+        let lastScroll = 0;
+        const actionBar = document.getElementById('bottomAction');
+        
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+            
+            // Only apply hide logic on mobile where screen space is premium
+            if (window.innerWidth < 768) {
+                if (currentScroll > lastScroll && currentScroll > 100) {
+                    actionBar.style.transform = 'translateY(100%)';
+                } else {
+                    actionBar.style.transform = 'translateY(0)';
+                }
+            }
+            lastScroll = currentScroll;
+        });
+    </script>
+</body></html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Editorial Wedding Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Amiri:ital,wght@0,400;0,700;1,400;1,700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-container": "#795354",
+                      "on-secondary-fixed": "#2f1314",
+                      "secondary": "#7b5455",
+                      "primary": "#6a5d43",
+                      "surface-container-highest": "#e4e2e1",
+                      "outline-variant": "#cec5b9",
+                      "tertiary": "#5b5d6e",
+                      "error": "#ba1a1a",
+                      "secondary-fixed": "#ffdad9",
+                      "on-error": "#ffffff",
+                      "surface-variant": "#e4e2e1",
+                      "secondary-container": "#fdcbcb",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "primary-container": "#e5d3b3",
+                      "inverse-on-surface": "#f3f0f0",
+                      "error-container": "#ffdad6",
+                      "on-background": "#1b1c1c",
+                      "surface-dim": "#dcd9d9",
+                      "inverse-primary": "#d6c4a5",
+                      "on-secondary": "#ffffff",
+                      "on-primary-container": "#675a41",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "on-primary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed": "#e0e1f5",
+                      "primary-fixed": "#f3e0c0",
+                      "on-surface": "#1b1c1c",
+                      "outline": "#7d766c",
+                      "surface-tint": "#6a5d43",
+                      "on-tertiary": "#ffffff",
+                      "background": "#fcf9f8",
+                      "on-primary-fixed": "#231a06",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "on-primary-fixed-variant": "#51452d",
+                      "surface-container": "#f0eded",
+                      "surface-container-high": "#eae7e7",
+                      "on-tertiary-container": "#595b6c",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "surface": "#fcf9f8",
+                      "on-tertiary-fixed": "#181b29",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed-variant": "#603d3e",
+                      "surface-bright": "#fcf9f8",
+                      "on-surface-variant": "#4c463d",
+                      "tertiary-container": "#d3d4e8",
+                      "inverse-surface": "#303030",
+                      "surface-container-low": "#f6f3f2"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xl": "80px",
+                      "sm": "16px",
+                      "unit": "4px",
+                      "lg": "48px",
+                      "md": "24px",
+                      "xs": "8px",
+                      "margin-desktop": "120px",
+                      "margin-mobile": "20px",
+                      "gutter": "20px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "label-sm": [
+                              "DM Sans"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "DM Sans"
+                      ],
+                      "arabic-display": [
+                              "Amiri", "serif"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .paper-texture {
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+        .editorial-text {
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex items-center justify-center p-4">
+<!-- Top Navigation (Shell logic: Suppressed for standalone invitation, but keeping structure if needed by context. Assuming hidden for true standalone.) -->
+<header class="hidden top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl">
+<button class="text-primary hover:opacity-70 transition-opacity scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<div class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg tracking-[0.2em] text-primary">DAWATI</div>
+<button class="text-primary hover:opacity-70 transition-opacity scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="shopping_bag">shopping_bag</span>
+</button>
+</header>
+<!-- Main Invitation Canvas: 9:16 aspect ratio roughly -->
+<main class="w-full max-w-sm aspect-[9/16] bg-surface-container-lowest shadow-2xl relative overflow-hidden flex flex-col items-center justify-between py-12 px-8 paper-texture border border-outline-variant/30">
+<!-- Top Editorial Accent -->
+<div class="w-full flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest editorial-text opacity-70">Vol. 10</span>
+<div class="h-px w-16 bg-primary/30 mt-2"></div>
+</div>
+<!-- The Names (Asymmetric, Large Arabic) -->
+<div class="flex flex-col w-full z-10 my-auto pl-4 relative">
+<h1 class="font-arabic-display text-7xl font-bold text-primary leading-none -ml-4" dir="rtl">
+                فاطمة
+            </h1>
+<span class="font-headline-md text-headline-md italic text-on-surface-variant opacity-60 ml-12 my-2">&amp;</span>
+<h1 class="font-arabic-display text-7xl font-bold text-primary leading-none text-right" dir="rtl">
+                أحمد
+            </h1>
+</div>
+<!-- Details Area -->
+<div class="w-full space-y-sm text-center">
+<p class="font-body-md text-body-md text-on-surface-variant">
+                Joyfully invite you to share<br/>in their celebration of marriage.
+            </p>
+<div class="w-8 h-px bg-primary mx-auto my-6"></div>
+<p class="font-headline-md text-headline-md text-primary tracking-wide">
+                15 . 10 . 2024
+            </p>
+<p class="font-body-md text-body-md text-on-surface-variant uppercase tracking-widest text-xs mt-2">
+                At Eight O'Clock in the Evening
+            </p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">
+                The Grand Atrium<br/>
+                Dubai, UAE
+            </p>
+</div>
+<!-- QR Code Area (Abstracted) -->
+<div class="mt-8 flex flex-col items-center gap-2">
+<div class="w-16 h-16 border-2 border-primary/20 flex items-center justify-center rounded-sm bg-surface">
+<span class="material-symbols-outlined text-primary/40 text-3xl" data-icon="qr_code_2">qr_code_2</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant tracking-widest uppercase">Scan to RSVP</span>
+</div>
+<!-- Decorative Floral/Abstract Element (Using background pattern instead of image) -->
+<div class="absolute -bottom-20 -right-20 w-64 h-64 rounded-full border border-primary/10 opacity-20 pointer-events-none"></div>
+<div class="absolute -top-10 -left-10 w-40 h-40 rounded-full border border-primary/10 opacity-20 pointer-events-none"></div>
+</main>
+<!-- Bottom Navigation (Suppressed for this canvas) -->
+</body></html>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>سارة &amp; محمد - دعوة زفاف</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-error-container": "#93000a",
+                        "secondary-container": "#fdcbcb",
+                        "on-background": "#1b1c1c",
+                        "on-primary-container": "#675a41",
+                        "inverse-primary": "#d6c4a5",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary": "#7b5455",
+                        "primary-fixed": "#f3e0c0",
+                        "surface-container-low": "#f6f3f2",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "inverse-surface": "#303030",
+                        "primary": "#6a5d43",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "error-container": "#ffdad6",
+                        "inverse-on-surface": "#f3f0f0",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "outline": "#7d766c",
+                        "surface-container": "#f0eded",
+                        "surface-tint": "#6a5d43",
+                        "on-tertiary-container": "#595b6c",
+                        "tertiary": "#5b5d6e",
+                        "on-primary-fixed": "#231a06",
+                        "on-error": "#ffffff",
+                        "tertiary-fixed": "#e0e1f5",
+                        "surface-variant": "#e4e2e1",
+                        "surface-dim": "#dcd9d9",
+                        "surface": "#fcf9f8",
+                        "secondary-fixed": "#ffdad9",
+                        "error": "#ba1a1a",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-surface": "#1b1c1c",
+                        "primary-container": "#e5d3b3",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-secondary-container": "#795354",
+                        "on-surface-variant": "#4c463d",
+                        "on-tertiary-fixed": "#181b29",
+                        "tertiary-container": "#d3d4e8",
+                        "outline-variant": "#cec5b9",
+                        "surface-container-high": "#eae7e7",
+                        "surface-bright": "#fcf9f8",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-container-highest": "#e4e2e1",
+                        "background": "#fcf9f8",
+                        "on-secondary-fixed": "#2f1314"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "sm": "16px",
+                        "unit": "4px",
+                        "md": "24px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "120px",
+                        "xs": "8px",
+                        "gutter": "20px",
+                        "xl": "80px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["DM Sans", "sans-serif"],
+                        "headline-md": ["Playfair Display", "serif"],
+                        "body-md": ["DM Sans", "sans-serif"],
+                        "display-lg": ["Playfair Display", "serif"],
+                        "body-lg": ["DM Sans", "sans-serif"],
+                        "display-lg-mobile": ["Playfair Display", "serif"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .arch-outer {
+            border-top-left-radius: 45vw;
+            border-top-right-radius: 45vw;
+        }
+        .arch-inner {
+            border-top-left-radius: 40vw;
+            border-top-right-radius: 40vw;
+        }
+        @media (min-width: 768px) {
+            .arch-outer {
+                border-top-left-radius: 200px;
+                border-top-right-radius: 200px;
+            }
+            .arch-inner {
+                border-top-left-radius: 180px;
+                border-top-right-radius: 180px;
+            }
+        }
+        
+        /* Subtle shimmer effect for the gold elements */
+        .gold-shimmer {
+            background: linear-gradient(110deg, #6a5d43 8%, #d6c4a5 18%, #6a5d43 33%);
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            animation: shimmer 5s linear infinite;
+        }
+        @keyframes shimmer {
+            to {
+                background-position-x: -200%;
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface-container-high text-on-surface antialiased min-h-screen flex items-center justify-center font-body-md">
+<!-- Card Canvas -->
+<main class="relative w-full h-[100dvh] md:h-[850px] md:w-[420px] bg-surface-bright overflow-hidden flex flex-col items-center shadow-[0_20px_50px_rgba(0,0,0,0.05)]">
+<!-- Subtle noise texture for premium paper feel -->
+<div class="absolute inset-0 opacity-20 pointer-events-none mix-blend-multiply bg-cover" data-alt="A seamless, high-resolution repeating texture of premium, slightly toothy watercolor paper in a warm ivory white. The lighting is perfectly flat to ensure it acts as a subtle background texture without distracting highlights or shadows. Modern luxury editorial style." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCIgACY6PWb8e-XyyfBxV3XGcY2BOqCUE1126Bi-NdCPV7jqpR7kfLuO3sW_WK3yhPRh5rBo5EpTsV-KJaznes8lzVF-wrLqFzY0fc0tHhWnYv5FNaD35weeZwlrfg7l0tmdNWa8aFKZOcd5QiFhzjnuq1od8b0QchblfV8Saqo6fxqD1BmKO8PAHilMj8_fksFywu4BIOjL1TpRnUgb_9nYocwWxDHYdEjOxnw3Wj1tGJR9d-ntcQX')"></div>
+<!-- Architectural Arch Framing -->
+<div class="absolute inset-4 md:inset-6 border-2 border-primary/40 arch-outer pointer-events-none transition-all duration-1000 ease-out"></div>
+<div class="absolute inset-6 md:inset-8 border border-primary/20 arch-inner pointer-events-none"></div>
+<!-- Content Payload -->
+<article class="relative z-10 flex flex-col items-center justify-between h-full w-full py-xl px-margin-mobile text-center">
+<!-- Top Whitespace for Balance -->
+<div class="h-8 md:h-12"></div>
+<!-- Bride & Groom -->
+<header class="flex flex-col items-center gap-y-2 transform transition-transform hover:scale-105 duration-700">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary">سارة</h1>
+<span class="font-headline-md text-headline-md text-primary/60 italic">&amp;</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary">محمد</h1>
+</header>
+<!-- Invitation Text -->
+<section class="max-w-[280px] space-y-md">
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                    بكل حب وسعادة يسرنا<br/>دعوتكم لمشاركتنا فرحتنا
+                </p>
+</section>
+<!-- Guest Name -->
+<section>
+<h2 class="font-headline-md text-headline-md text-primary-fixed-variant tracking-wide">أم خالد</h2>
+</section>
+<!-- Details -->
+<section class="font-label-sm text-label-sm text-on-surface-variant/80 space-y-unit uppercase tracking-widest flex flex-col items-center">
+<time datetime="2026-11-15">السبت 15 نوفمبر 2026</time>
+<time datetime="21:00">09:00 مساءً</time>
+<address class="not-italic">قاعة النخبة - الرياض</address>
+</section>
+<!-- Countdown -->
+<section class="font-body-lg text-body-lg text-primary tracking-[0.25em]" dir="ltr">
+<span class="opacity-80">12 : 08 : 42</span>
+</section>
+<!-- QR Code -->
+<footer class="mt-4 mb-2">
+<div class="p-1 bg-white rounded-sm shadow-sm border border-outline-variant/30">
+<img alt="مسح ضوئي للتفاصيل" class="w-16 h-16 object-contain opacity-90" data-alt="A minimalist, ultra-crisp QR code graphic rendered in deep charcoal grey on a pure white background. The pattern should be geometric and modern, suitable for scanning on a high-end digital wedding invitation. No playful icons or colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCz8xlGcflc0Kpq3h78XkHEspA6n9_pQqoJd0DVBYehIddpQv6yR49g8s1cyANd8-Cc5IsyZImjWQfjQ3T37ERbQyQAybIEmcNR5_-yF8dsKM5yplgjSPkF3buRvLJ19fLl2nA5Bj25Ot3pJqg3B9KsjZmng8nNTarUPJ0PZv-FM3xnBsJU3v6RMdsC2osHvV9XDXIN9TwWrSqZOYJQjElrhYiA8Zv6GcjhwJAckofrgTLCM6znoFPk"/>
+</div>
+</footer>
+</article>
+</main>
+</body></html>

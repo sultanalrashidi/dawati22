@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Premium User Profile</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-tint": "#6a5d43",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "on-tertiary-container": "#595b6c",
+                        "on-error": "#ffffff",
+                        "outline-variant": "#cec5b9",
+                        "on-tertiary-fixed": "#181b29",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "inverse-primary": "#d6c4a5",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-surface-variant": "#4c463d",
+                        "secondary-container": "#fdcbcb",
+                        "on-secondary-container": "#795354",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "surface-bright": "#fcf9f8",
+                        "surface-container-highest": "#e4e2e1",
+                        "inverse-on-surface": "#f3f0f0",
+                        "secondary-fixed": "#ffdad9",
+                        "on-background": "#1b1c1c",
+                        "surface-variant": "#e4e2e1",
+                        "tertiary-fixed": "#e0e1f5",
+                        "primary": "#6a5d43",
+                        "secondary": "#7b5455",
+                        "surface-container-high": "#eae7e7",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#675a41",
+                        "outline": "#7d766c",
+                        "surface-dim": "#dcd9d9",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "tertiary-container": "#d3d4e8",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#e5d3b3",
+                        "inverse-surface": "#303030",
+                        "error-container": "#ffdad6",
+                        "surface-container-low": "#f6f3f2",
+                        "primary-fixed": "#f3e0c0",
+                        "surface-container-lowest": "#ffffff",
+                        "tertiary": "#5b5d6e",
+                        "on-primary-fixed-variant": "#51452d",
+                        "surface": "#fcf9f8",
+                        "on-primary-fixed": "#231a06",
+                        "on-secondary-fixed": "#2f1314"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "md": "24px",
+                        "gutter": "20px",
+                        "lg": "48px",
+                        "xs": "8px",
+                        "xl": "80px",
+                        "margin-desktop": "120px",
+                        "margin-mobile": "20px",
+                        "sm": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["DM Sans"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "label-sm": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-fill .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl border-b-0 flat no shadows flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 transition-colors duration-300">
+<button aria-label="Menu" class="text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 flex items-center justify-center p-2 -ml-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim italic">Dawati</h1>
+<button aria-label="Notifications" class="text-primary dark:text-primary-fixed-dim hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 flex items-center justify-center p-2 -mr-2 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-secondary rounded-full"></span>
+</button>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 w-full max-w-[800px] mx-auto px-margin-mobile md:px-margin-desktop pt-24 pb-32">
+<!-- Profile Header -->
+<section class="flex flex-col items-center justify-center mb-lg">
+<div class="relative mb-4">
+<div class="w-24 h-24 rounded-full p-[3px] bg-gradient-to-tr from-primary-container to-primary shadow-[0_10px_40px_rgba(229,211,179,0.3)]">
+<img alt="Elara Vance Profile Picture" class="w-full h-full object-cover rounded-full border-2 border-surface-container-lowest" data-alt="A high-quality, professional headshot portrait of an elegant woman named Elara Vance, looking directly at the camera with a subtle, warm smile. She is set against a luxurious ivory background. The lighting is soft, studio-quality, creating a modern, premium aesthetic that fits perfectly into a sophisticated lifestyle application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCC2ntQ7kCfK0co-4uoHYcrI7CIHpftLQmedi6XgUZ1JIZ85yGN5neH6lJItK2-ZaQvr-P72a1MV1THDdymEaoTyXjHMITtlZqE34YCOH_3Mqg1HBEqHIloHLLxOMNh8KW28Ui5CHc5b5J2wxDO1Xi-rrgzq1i3mbI5wfJw7E3V5R_bgANU9JoJKp_Y9IdIdwnNGfNogRFvIoyqNphe9_WgiWY6M4sdfwUBvPRylYsNmYFqhrEhOLyG"/>
+</div>
+<button class="absolute bottom-0 right-0 w-8 h-8 bg-surface-container-lowest rounded-full flex items-center justify-center shadow-md border border-outline-variant/20 text-primary hover:bg-surface transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface mb-2">Elara Vance</h2>
+<div class="inline-flex items-center gap-2 px-4 py-1.5 bg-primary-container/30 text-primary-fixed-variant rounded-full border border-primary/10 backdrop-blur-sm">
+<span class="material-symbols-outlined text-[14px]">stars</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Premium Member</span>
+</div>
+</section>
+<!-- Settings Groups -->
+<div class="flex flex-col gap-md">
+<!-- Account Section -->
+<section>
+<h3 class="font-headline-md text-[18px] text-primary mb-3 px-2">Account</h3>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-[0_4px_20px_rgba(229,211,179,0.03)] overflow-hidden">
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors border-b border-outline-variant/10">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">person</span>
+<span class="font-body-md text-body-md">Personal Information</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors border-b border-outline-variant/10">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">credit_card</span>
+<span class="font-body-md text-body-md">Payment Methods</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">redeem</span>
+<span class="font-body-md text-body-md">My Packages</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</button>
+</div>
+</section>
+<!-- Security Section -->
+<section>
+<h3 class="font-headline-md text-[18px] text-primary mb-3 px-2">Security</h3>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-[0_4px_20px_rgba(229,211,179,0.03)] overflow-hidden">
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors border-b border-outline-variant/10">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">lock</span>
+<span class="font-body-md text-body-md">Change Password</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">verified_user</span>
+<span class="font-body-md text-body-md">Two-Factor Authentication</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-primary">On</span>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+</button>
+</div>
+</section>
+<!-- Preferences Section -->
+<section>
+<h3 class="font-headline-md text-[18px] text-primary mb-3 px-2">Preferences</h3>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-[0_4px_20px_rgba(229,211,179,0.03)] overflow-hidden">
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors border-b border-outline-variant/10">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">language</span>
+<span class="font-body-md text-body-md">Language</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-outline">English</span>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors border-b border-outline-variant/10">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">notifications_active</span>
+<span class="font-body-md text-body-md">Notifications</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">palette</span>
+<span class="font-body-md text-body-md">Theme</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-outline">Light</span>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</div>
+</button>
+</div>
+</section>
+<!-- Support Section -->
+<section>
+<h3 class="font-headline-md text-[18px] text-primary mb-3 px-2">Support</h3>
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant/30 shadow-[0_4px_20px_rgba(229,211,179,0.03)] overflow-hidden mb-6">
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors border-b border-outline-variant/10">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">help</span>
+<span class="font-body-md text-body-md">Help Center</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-4 hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-4 text-on-surface">
+<span class="material-symbols-outlined text-outline">policy</span>
+<span class="font-body-md text-body-md">Privacy Policy</span>
+</div>
+<span class="material-symbols-outlined text-outline-variant">chevron_right</span>
+</button>
+</div>
+<button class="w-full flex items-center justify-center gap-2 p-4 text-error bg-error-container/20 hover:bg-error-container/40 rounded-xl transition-colors mt-4">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-body-md text-body-md font-medium">Log Out</span>
+</button>
+</section>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center py-3 px-margin-mobile border-t-0 bg-surface/80 dark:bg-surface-container-low/80 backdrop-blur-xl z-50 rounded-t-xl shadow-[0_-4px_30px_rgba(229,211,179,0.08)]">
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary-fixed-variant transition-colors active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined mb-1">explore</span>
+<span class="font-label-sm text-label-sm">Discover</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary-fixed-variant transition-colors active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined mb-1">brush</span>
+<span class="font-label-sm text-label-sm">Design</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary-fixed-variant transition-colors active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined mb-1">event_note</span>
+<span class="font-label-sm text-label-sm">Events</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary-fixed-variant transition-colors active:scale-90 transition-transform duration-200">
+<span class="material-symbols-outlined mb-1">group</span>
+<span class="font-label-sm text-label-sm">Guests</span>
+</button>
+<!-- Active Tab: Profile -->
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim relative after:content-[''] after:w-1 after:h-1 after:bg-secondary after:rounded-full after:mt-1 hover:text-primary-fixed-variant transition-colors active:scale-90 transition-transform duration-200 icon-fill">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="font-label-sm text-label-sm font-bold">Profile</span>
+</button>
+</nav>
+</body></html>

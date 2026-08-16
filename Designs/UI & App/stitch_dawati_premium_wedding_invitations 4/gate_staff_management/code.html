@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>إدارة المنظمين</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-variant": "#e4e2e1",
+                        "surface-bright": "#fcf9f8",
+                        "secondary-fixed": "#ffdad9",
+                        "on-secondary": "#ffffff",
+                        "surface": "#fcf9f8",
+                        "secondary-container": "#fdcbcb",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#675a41",
+                        "primary-container": "#e5d3b3",
+                        "background": "#fcf9f8",
+                        "primary-fixed": "#f3e0c0",
+                        "outline": "#7d766c",
+                        "surface-container-high": "#eae7e7",
+                        "surface-dim": "#dcd9d9",
+                        "tertiary-container": "#d3d4e8",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e4e2e1",
+                        "secondary": "#7b5455",
+                        "surface-container": "#f0eded",
+                        "inverse-primary": "#d6c4a5",
+                        "on-tertiary-container": "#595b6c",
+                        "on-tertiary": "#ffffff",
+                        "on-secondary-fixed": "#2f1314",
+                        "primary": "#6a5d43",
+                        "outline-variant": "#cec5b9",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "tertiary": "#5b5d6e",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-background": "#1b1c1c",
+                        "inverse-surface": "#303030",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-primary-fixed": "#231a06",
+                        "surface-tint": "#6a5d43",
+                        "surface-container-low": "#f6f3f2",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-surface-variant": "#4c463d",
+                        "tertiary-fixed": "#e0e1f5",
+                        "on-tertiary-fixed": "#181b29",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "on-secondary-container": "#795354",
+                        "inverse-on-surface": "#f3f0f0"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "unit": "4px",
+                        "xl": "80px",
+                        "margin-desktop": "120px",
+                        "sm": "16px",
+                        "margin-mobile": "20px",
+                        "md": "24px",
+                        "lg": "48px",
+                        "gutter": "20px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["DM Sans"],
+                        "label-sm": ["DM Sans"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'DM Sans', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline-md, .font-display-lg, .font-display-lg-mobile { font-family: 'Playfair Display', serif; }
+        
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 211, 179, 0.3);
+        }
+        
+        .soft-shadow {
+            box-shadow: 0 8px 32px rgba(106, 93, 67, 0.05);
+        }
+        
+        .glow-shadow {
+            box-shadow: 0 12px 40px rgba(229, 211, 179, 0.2);
+        }
+        
+        /* Custom Toggle Switch Styles */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+        .toggle-switch input { 
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #dcd9d9;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        input:checked + .slider {
+            background-color: #6a5d43;
+        }
+        input:checked + .slider:before {
+            transform: translateX(20px);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl flex justify-between items-center px-margin-mobile h-16 w-full fixed top-0 left-0 docked full-width top-0 z-50 flat no shadows border-b border-surface-variant md:px-margin-desktop md:border-none">
+<button class="text-primary dark:text-primary-fixed-dim hover:scale-95 transition-transform duration-200 p-2 rounded-full hover:bg-surface-variant/50 focus:outline-none">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-center text-primary dark:text-primary-fixed-dim flex-grow">إدارة المنظمين</h1>
+<button class="text-outline dark:text-outline-variant hover:scale-95 transition-transform duration-200 p-2 rounded-full hover:bg-surface-variant/50 focus:outline-none">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto md:pt-32 flex flex-col gap-lg min-h-[calc(100vh-64px)]">
+<!-- Summary & Actions Row -->
+<div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-sm">
+<div>
+<p class="font-body-md text-body-md text-on-surface-variant">إجمالي المنظمين</p>
+<p class="font-display-lg-mobile text-display-lg-mobile text-primary">3</p>
+</div>
+<button class="hidden md:flex items-center justify-center gap-2 bg-primary-container text-on-primary-container px-6 py-3 rounded-full font-label-sm text-label-sm hover:scale-98 active:scale-95 transition-transform glow-shadow">
+<span class="material-symbols-outlined text-[18px]">add</span>
+                إضافة منظم جديد
+            </button>
+</div>
+<!-- Staff List (Bento Grid Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-md">
+<!-- Staff Card 1 -->
+<div class="glass-panel rounded-xl p-md flex flex-col gap-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold">أحمد محمود</h3>
+<p class="font-label-sm text-label-sm text-secondary">منظم دخول</p>
+</div>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox"/>
+<span class="slider"></span>
+</label>
+</div>
+<div class="w-full h-px bg-outline-variant/30 my-2"></div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] opacity-70">call</span>
+<span class="font-body-md text-body-md dir-ltr text-right w-full">+966 50 123 4567</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] opacity-70">mail</span>
+<span class="font-body-md text-body-md truncate">ahmed@example.com</span>
+</div>
+</div>
+<div class="mt-auto pt-sm flex justify-end">
+<button class="text-error font-label-sm text-label-sm flex items-center gap-1 hover:bg-error-container/50 px-3 py-1.5 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[16px]">person_remove</span>
+                        إزالة الصلاحية
+                    </button>
+</div>
+</div>
+<!-- Staff Card 2 -->
+<div class="glass-panel rounded-xl p-md flex flex-col gap-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-1 h-full bg-primary opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="flex justify-between items-start">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold">سارة خالد</h3>
+<p class="font-label-sm text-label-sm text-secondary">مشرف بوابة رئيسية</p>
+</div>
+</div>
+<label class="toggle-switch">
+<input checked="" type="checkbox"/>
+<span class="slider"></span>
+</label>
+</div>
+<div class="w-full h-px bg-outline-variant/30 my-2"></div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] opacity-70">call</span>
+<span class="font-body-md text-body-md dir-ltr text-right w-full">+966 55 987 6543</span>
+</div>
+<div class="flex items-center gap-2 text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] opacity-70">mail</span>
+<span class="font-body-md text-body-md truncate">sara@example.com</span>
+</div>
+</div>
+<div class="mt-auto pt-sm flex justify-end">
+<button class="text-error font-label-sm text-label-sm flex items-center gap-1 hover:bg-error-container/50 px-3 py-1.5 rounded-full transition-colors">
+<span class="material-symbols-outlined text-[16px]">person_remove</span>
+                        إزالة الصلاحية
+                    </button>
+</div>
+</div>
+<!-- Add New Card (Empty State Trigger) -->
+<button class="glass-panel rounded-xl p-md flex flex-col items-center justify-center gap-sm min-h-[220px] border-dashed border-2 border-outline-variant/50 hover:bg-surface-variant/30 hover:border-primary/50 transition-all group cursor-pointer">
+<div class="w-16 h-16 rounded-full bg-primary-container/50 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+<span class="material-symbols-outlined text-[32px]">add</span>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface mt-2">إضافة منظم جديد</p>
+<p class="font-label-sm text-label-sm text-outline text-center px-4">أرسل دعوة لمنظم جديد للوصول إلى لوحة التحكم</p>
+</button>
+</div>
+<!-- Empty State Example (Hidden by default, shown for completeness) -->
+<div class="hidden flex-col items-center justify-center py-xl text-center">
+<span class="material-symbols-outlined text-outline/30" style="font-size: 80px; font-variation-settings: 'wght' 100;">badge</span>
+<p class="font-body-lg text-body-lg text-on-surface mt-4">لا يوجد منظمون مضافون حالياً</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2 max-w-sm">قم بإضافة منظمين لمساعدتك في إدارة الدخول والضيوف في مناسبتك.</p>
+</div>
+</main>
+<!-- Mobile FAB for adding staff -->
+<button class="md:hidden fixed bottom-24 left-margin-mobile w-14 h-14 bg-primary-container text-on-primary-container rounded-full flex items-center justify-center glow-shadow hover:scale-95 transition-transform z-40 focus:outline-none">
+<span class="material-symbols-outlined">add</span>
+</button>
+<!-- BottomNavBar -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center pt-2 pb-safe px-4 bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-xl docked full-width bottom-0 z-50 rounded-t-xl shadow-[0_-4px_20px_rgba(106,93,67,0.05)] h-20">
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary transition-colors scale-98 active:scale-95 w-16">
+<span class="material-symbols-outlined mb-1">home</span>
+<span class="font-label-sm text-label-sm">الرئيسية</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary transition-colors scale-98 active:scale-95 w-16">
+<span class="material-symbols-outlined mb-1">group</span>
+<span class="font-label-sm text-label-sm">الضيوف</span>
+</button>
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-secondary after:rounded-full after:mt-1 scale-98 active:scale-95 w-16 relative">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">badge</span>
+<span class="font-label-sm text-label-sm">المنظمين</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary transition-colors scale-98 active:scale-95 w-16">
+<span class="material-symbols-outlined mb-1">tune</span>
+<span class="font-label-sm text-label-sm">الإعدادات</span>
+</button>
+</nav>
+<!-- Top Navigation Cluster (Desktop Only) -->
+<nav class="hidden md:flex fixed top-0 left-0 w-full h-16 justify-center items-center gap-xl z-50 pointer-events-none">
+<div class="flex gap-lg pointer-events-auto">
+<button class="text-outline hover:text-primary transition-colors font-label-sm flex flex-col items-center justify-center h-16 px-4">
+                الرئيسية
+            </button>
+<button class="text-outline hover:text-primary transition-colors font-label-sm flex flex-col items-center justify-center h-16 px-4">
+                الضيوف
+            </button>
+<button class="text-primary font-label-sm flex flex-col items-center justify-center h-16 px-4 relative after:content-[''] after:absolute after:bottom-2 after:w-1 after:h-1 after:bg-primary after:rounded-full">
+                المنظمين
+            </button>
+</div>
+</nav>
+</body></html>

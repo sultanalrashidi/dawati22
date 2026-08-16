@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>Dawati - Payout Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary-container": "#595b6c",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "surface-container": "#f0eded",
+                        "on-error-container": "#93000a",
+                        "surface-container-high": "#eae7e7",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "surface": "#fcf9f8",
+                        "background": "#fcf9f8",
+                        "on-primary-fixed-variant": "#51452d",
+                        "tertiary": "#5b5d6e",
+                        "inverse-primary": "#d6c4a5",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "outline": "#7d766c",
+                        "surface-variant": "#e4e2e1",
+                        "surface-tint": "#6a5d43",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-low": "#f6f3f2",
+                        "tertiary-container": "#d3d4e8",
+                        "on-primary-fixed": "#231a06",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "inverse-surface": "#303030",
+                        "secondary-container": "#fdcbcb",
+                        "secondary": "#7b5455",
+                        "on-secondary-container": "#795354",
+                        "outline-variant": "#cec5b9",
+                        "tertiary-fixed": "#e0e1f5",
+                        "error": "#ba1a1a",
+                        "primary-container": "#e5d3b3",
+                        "on-primary-container": "#675a41",
+                        "on-surface": "#1b1c1c",
+                        "primary": "#6a5d43",
+                        "on-tertiary": "#ffffff",
+                        "secondary-fixed": "#ffdad9",
+                        "on-secondary-fixed": "#2f1314",
+                        "error-container": "#ffdad6",
+                        "surface-dim": "#dcd9d9",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#4c463d",
+                        "on-background": "#1b1c1c",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed": "#181b29",
+                        "primary-fixed": "#f3e0c0",
+                        "surface-container-lowest": "#ffffff"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "xs": "8px",
+                        "md": "24px",
+                        "lg": "48px",
+                        "margin-mobile": "20px",
+                        "gutter": "20px",
+                        "sm": "16px",
+                        "xl": "80px",
+                        "unit": "4px",
+                        "margin-desktop": "120px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "label-sm": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-md": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            -webkit-tap-highlight-color: transparent;
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Input minimal styles */
+        .minimal-input {
+            border: none;
+            border-bottom: 1px solid theme('colors.outline-variant');
+            background: transparent;
+            border-radius: 0;
+            padding: theme('spacing.xs') 0;
+            transition: border-color 0.3s ease;
+        }
+        .minimal-input:focus {
+            outline: none;
+            box-shadow: none;
+            border-bottom: 2px solid theme('colors.primary-container');
+        }
+        
+        /* Glow shadow */
+        .glow-shadow {
+            box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.4);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col md:flex-row pb-safe font-body-md">
+<!-- TopAppBar (Mobile & Desktop Header) -->
+<header class="docked full-width top-0 sticky z-50 bg-surface/80 dark:bg-surface-container-low/80 backdrop-blur-md shadow-[0_20px_40px_-15px_rgba(106,93,67,0.08)] bg-surface/80 backdrop-blur-xl">
+<div class="flex justify-between items-center px-margin-mobile py-sm w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-sm">
+<!-- Avatar instead of icon for Designer Profile -->
+<div class="w-10 h-10 rounded-full bg-surface-variant overflow-hidden border border-outline-variant/30 flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="A close-up, high-fashion portrait of a sophisticated designer in a bright, modern studio. Soft natural light illuminates their face, set against a pristine, minimal white background with subtle warm tones. The aesthetic is editorial, luxurious, and clean, fitting a premium brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDBCnIqUUKbMUZH7Z5s4t83-2XFeYw07cta59LVAx3FNJljT1gov7lWik88wjx7-mhYqcXHt6A1aFT1eEtcX-5tycV-6D02oBLbt0GkiC4lFggCJv0W2M61R3Qna-3Ze3qQm0TZ5pxEVktGgTTH2_2tE8oVM3BcQSbIM-e-LyGPywFSSlPMdgv5Xy_eWle8MwAdE5MsCOVVOxWghltODZ_rXXanB9jjl6GVYql6nzY1mbiUfLor-LHw"/>
+</div>
+</div>
+<div class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">
+                Dawati
+            </div>
+<button class="w-10 h-10 flex items-center justify-center text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 w-full max-w-3xl mx-auto px-margin-mobile md:px-lg py-lg md:py-margin-desktop mb-24 md:mb-0">
+<div class="mb-lg">
+<h1 class="font-headline-md text-headline-md text-on-surface mb-xs">Payout Settings</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage your financial details and linked accounts for seamless earnings transfers.</p>
+</div>
+<form class="space-y-lg">
+<!-- Linked Accounts Section -->
+<section class="bg-surface-bright rounded-xl p-md md:p-lg border border-outline-variant/30">
+<div class="flex items-center justify-between mb-md border-b border-outline-variant/10 pb-xs">
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface">Linked Accounts</h2>
+<span class="material-symbols-outlined text-primary" data-icon="account_balance">account_balance</span>
+</div>
+<div class="space-y-md">
+<!-- Existing Account Card -->
+<div class="flex items-center justify-between p-sm border border-outline-variant/40 rounded-lg bg-surface hover:bg-surface-container-low transition-colors">
+<div class="flex items-center gap-sm">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface font-medium">Chase Checking</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">**** **** 4092</p>
+</div>
+</div>
+<button class="text-error text-label-sm font-label-sm hover:opacity-80 transition-opacity" type="button">Remove</button>
+</div>
+<!-- Add New Account Action -->
+<button class="w-full py-sm border border-dashed border-outline-variant text-on-surface-variant font-body-md text-body-md flex items-center justify-center gap-xs rounded-lg hover:bg-surface-container-low transition-colors" type="button">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+                        Link New Bank Account
+                    </button>
+</div>
+</section>
+<!-- Tax Information Section -->
+<section class="bg-surface-bright rounded-xl p-md md:p-lg border border-outline-variant/30">
+<div class="flex items-center justify-between mb-md border-b border-outline-variant/10 pb-xs">
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface">Tax Information</h2>
+<span class="material-symbols-outlined text-primary" data-icon="receipt_long">receipt_long</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-md gap-y-lg">
+<div class="flex flex-col relative">
+<label class="font-label-sm text-label-sm text-on-surface-variant absolute -top-5 left-0">Legal Full Name</label>
+<input class="minimal-input font-body-lg text-body-lg text-on-surface w-full" type="text" value="Jane Doe Designer"/>
+</div>
+<div class="flex flex-col relative">
+<label class="font-label-sm text-label-sm text-on-surface-variant absolute -top-5 left-0">Tax ID (SSN / EIN)</label>
+<input class="minimal-input font-body-lg text-body-lg text-on-surface w-full" type="password" value="*********"/>
+</div>
+<div class="flex flex-col relative md:col-span-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant absolute -top-5 left-0">Billing Address</label>
+<input class="minimal-input font-body-lg text-body-lg text-on-surface w-full" type="text" value="123 Luxury Lane, Suite 400"/>
+</div>
+<div class="flex flex-col relative">
+<label class="font-label-sm text-label-sm text-on-surface-variant absolute -top-5 left-0">City</label>
+<input class="minimal-input font-body-lg text-body-lg text-on-surface w-full" type="text" value="New York"/>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="flex flex-col relative">
+<label class="font-label-sm text-label-sm text-on-surface-variant absolute -top-5 left-0">State</label>
+<input class="minimal-input font-body-lg text-body-lg text-on-surface w-full" type="text" value="NY"/>
+</div>
+<div class="flex flex-col relative">
+<label class="font-label-sm text-label-sm text-on-surface-variant absolute -top-5 left-0">ZIP Code</label>
+<input class="minimal-input font-body-lg text-body-lg text-on-surface w-full" type="text" value="10001"/>
+</div>
+</div>
+</div>
+</section>
+<!-- Save Action -->
+<div class="pt-md flex justify-end">
+<button class="bg-primary-container text-on-primary-container font-body-lg text-body-lg px-xl py-sm rounded-lg glow-shadow hover:opacity-90 active:scale-95 transition-all duration-200" type="button">
+                    Save Changes
+                </button>
+</div>
+</form>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden docked full-width bottom-0 fixed z-50 bg-surface/80 dark:bg-surface-container-highest/80 backdrop-blur-lg border-t border-outline-variant/10 shadow-[0_-10px_40px_rgba(106,93,67,0.05)]">
+<div class="fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe">
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined mb-1" data-icon="assignment_turned_in">assignment_turned_in</span>
+<span class="font-label-sm text-label-sm">Tasks</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined mb-1" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-label-sm text-label-sm">Messages</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined mb-1" data-icon="payments">payments</span>
+<span class="font-label-sm text-label-sm">Earnings</span>
+</button>
+<!-- Active State: Settings -->
+<button class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:w-1 after:h-1 after:bg-secondary-fixed-dim after:rounded-full after:mt-1 hover:text-primary transition-colors active:scale-90 transition-transform duration-150">
+<span class="material-symbols-outlined mb-1 filled-icon" data-icon="settings" data-weight="fill">settings</span>
+<span class="font-label-sm text-label-sm font-medium">Settings</span>
+</button>
+</div>
+</nav>
+</body></html>

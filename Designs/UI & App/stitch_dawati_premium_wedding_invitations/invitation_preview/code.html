@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Design Preview - Dawati</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600&amp;family=Playfair+Display:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#675a41",
+                        "on-background": "#1b1c1c",
+                        "on-primary": "#ffffff",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-variant": "#e4e2e1",
+                        "inverse-primary": "#d6c4a5",
+                        "surface-dim": "#dcd9d9",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-tertiary": "#ffffff",
+                        "surface": "#fcf9f8",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "tertiary": "#5b5d6e",
+                        "on-surface-variant": "#4c463d",
+                        "secondary": "#7b5455",
+                        "secondary-fixed": "#ffdad9",
+                        "tertiary-container": "#d3d4e8",
+                        "surface-container-high": "#eae7e7",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#6a5d43",
+                        "background": "#fcf9f8",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "on-error": "#ffffff",
+                        "surface-container": "#f0eded",
+                        "on-secondary-container": "#795354",
+                        "outline": "#7d766c",
+                        "secondary-container": "#fdcbcb",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-secondary": "#ffffff",
+                        "outline-variant": "#cec5b9",
+                        "primary-container": "#e5d3b3",
+                        "on-surface": "#1b1c1c",
+                        "tertiary-fixed": "#e0e1f5",
+                        "primary-fixed": "#f3e0c0",
+                        "on-primary-fixed": "#231a06",
+                        "inverse-on-surface": "#f3f0f0",
+                        "inverse-surface": "#303030",
+                        "surface-bright": "#fcf9f8",
+                        "primary": "#6a5d43",
+                        "on-secondary-fixed": "#2f1314",
+                        "surface-container-highest": "#e4e2e1",
+                        "error": "#ba1a1a"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "120px",
+                        "xl": "80px",
+                        "xs": "8px",
+                        "md": "24px",
+                        "margin-mobile": "20px",
+                        "unit": "4px",
+                        "sm": "16px",
+                        "lg": "48px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["DM Sans"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 211, 179, 0.3);
+        }
+        .gold-accent {
+            color: #d6c4a5;
+        }
+        .invitation-card {
+            box-shadow: 0 20px 40px -10px rgba(106, 93, 67, 0.15);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col font-body-md overflow-x-hidden antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation (Shell suppressed for this focused transactional view, keeping only a minimal back/close action) -->
+<header class="fixed top-0 w-full z-50 glass-panel border-b-0 h-16 flex items-center justify-between px-margin-mobile md:px-margin-desktop transition-all duration-300">
+<button aria-label="Back" class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">arrow_forward</span>
+</button>
+<div class="font-headline-md text-headline-md text-primary tracking-tight">Dawati | دعوتي</div>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-24 pb-32 px-margin-mobile md:px-margin-desktop flex flex-col items-center justify-center relative min-h-screen">
+<!-- Background Ambient Element (Subtle) -->
+<div class="absolute inset-0 z-0 overflow-hidden pointer-events-none opacity-40">
+<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-container rounded-full mix-blend-multiply filter blur-[100px] animate-pulse" style="animation-duration: 8s;"></div>
+<div class="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-secondary-container rounded-full mix-blend-multiply filter blur-[120px] animate-pulse" style="animation-duration: 12s;"></div>
+</div>
+<!-- Invitation Preview Container -->
+<div class="relative z-10 w-full max-w-2xl mx-auto flex flex-col items-center gap-8">
+<!-- Context Text -->
+<div class="text-center space-y-2 opacity-0 animate-fade-in-up" style="animation-delay: 0.1s;">
+<h1 class="font-headline-md text-headline-md text-on-background">معاينة التصميم</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">تأكد من التفاصيل قبل الحفظ</p>
+</div>
+<!-- The Card -->
+<div class="invitation-card bg-surface rounded-2xl w-full aspect-[3/4] relative overflow-hidden flex flex-col items-center justify-center p-8 md:p-12 text-center opacity-0 animate-fade-in-up" style="animation-delay: 0.2s;">
+<!-- Card Background Image/Texture -->
+<div class="absolute inset-0 z-0 opacity-20 bg-cover bg-center" data-alt="A highly detailed, subtle luxury floral pattern background texture in light ivory and pale gold. The design is elegant, minimalist, and reminiscent of high-end wedding stationery. Delicate embossed botanical elements are visible under soft, diffused lighting. The overall mood is romantic, serene, and sophisticated." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDGNipvn_rHAsFj-qmRuQVHNX8tdrcegtAD3xMV9IgTli7yo2fNdBJLh2dZq5i-D09-9SJoBb7Mt0WF5hVaMiCqODd5wU7vEJ793GKIzK0jmTxBFO023XuOyjcjtOe10-nlfnbGDUBHzKh9x8R8TAN5q_Sns2e1ESVF8sndsp-YscI0Jasg8TIDMuaU9oNlWVL9lBXb0bNxGnDjNh__PvbtoLMF8vxjiEp3GxObOkt8zrTQbOry4BSw');"></div>
+<!-- Card Border Overlay -->
+<div class="absolute inset-4 z-10 border border-primary/20 rounded-xl pointer-events-none"></div>
+<!-- Content Layer -->
+<div class="relative z-20 flex flex-col items-center justify-between h-full w-full py-8">
+<!-- Header -->
+<div class="space-y-4">
+<span class="material-symbols-outlined text-primary text-4xl font-light">favorite</span>
+<div class="font-headline-md text-headline-md text-primary tracking-widest">دعوة زفاف</div>
+</div>
+<!-- Names -->
+<div class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-background py-8 flex flex-col items-center gap-4">
+<span>فهد</span>
+<span class="text-secondary font-headline-md text-headline-md italic">&amp;</span>
+<span>سارة</span>
+</div>
+<!-- Details -->
+<div class="space-y-6 font-body-md text-body-md text-on-surface-variant w-full max-w-xs">
+<div class="flex items-center justify-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm">calendar_today</span>
+<span>الخميس، ١٥ ديسمبر ٢٠٢٤</span>
+</div>
+<div class="flex items-center justify-center gap-3">
+<span class="material-symbols-outlined text-primary text-sm">schedule</span>
+<span>٨:٠٠ مساءً</span>
+</div>
+<div class="flex items-center justify-center gap-3 border-t border-b border-primary/10 py-4 my-4">
+<span class="material-symbols-outlined text-primary text-sm">location_on</span>
+<span>قاعة الاحتفالات الكبرى، الرياض</span>
+</div>
+</div>
+<!-- Guest & QR -->
+<div class="mt-8 flex flex-col items-center gap-4">
+<div class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">ضيف الشرف</div>
+<div class="font-body-lg text-body-lg text-on-background font-medium border-b border-primary/30 pb-1 px-4 min-w-[200px] text-center">
+                            أحمد بن محمد
+                        </div>
+<div class="mt-6 w-24 h-24 bg-white p-2 rounded-lg shadow-sm border border-surface-variant flex items-center justify-center">
+<!-- Placeholder for QR Code, using a simple icon for layout purposes -->
+<span class="material-symbols-outlined text-on-surface-variant text-4xl">qr_code_2</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Fixed Bottom Actions Panel -->
+<div class="fixed bottom-0 left-0 w-full glass-panel z-50 p-4 md:p-6 pb-safe border-t border-surface-variant/30 flex justify-center shadow-[0_-20px_40px_rgba(106,93,67,0.05)] transform translate-y-full animate-slide-up" style="animation-delay: 0.4s; animation-fill-mode: forwards;">
+<div class="w-full max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-4 justify-between">
+<div class="flex items-center gap-3 w-full sm:w-auto">
+<button class="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-3 rounded-full border border-primary text-primary hover:bg-primary/5 transition-colors font-label-sm text-label-sm group">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">visibility</span>
+<span>مشاهدة الدعوة</span>
+</button>
+<button aria-label="حفظ" class="flex-none flex items-center justify-center w-12 h-12 rounded-full border border-surface-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-[20px] group-hover:scale-110 transition-transform">bookmark_border</span>
+</button>
+</div>
+<button class="w-full sm:w-auto flex-grow max-w-xs flex items-center justify-center gap-2 px-8 py-3 rounded-full bg-primary-container text-on-primary-container hover:scale-[0.98] transition-transform font-label-sm text-label-sm font-semibold shadow-[0_10px_30px_-10px_rgba(229,211,179,0.5)]">
+<span>اختيار هذا التصميم</span>
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+</button>
+</div>
+</div>
+<!-- Simple Animations Styles -->
+<style>
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-slide-up {
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</body></html>

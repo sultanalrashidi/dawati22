@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Invitation Designs Gallery</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&amp;family=Playfair+Display:ital,wght@0,500;0,600;1,500;1,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#e0e1f5",
+                        "secondary-fixed": "#ffdad9",
+                        "surface-dim": "#dcd9d9",
+                        "surface": "#fcf9f8",
+                        "tertiary-container": "#d3d4e8",
+                        "outline": "#7d766c",
+                        "inverse-surface": "#303030",
+                        "secondary-container": "#fdcbcb",
+                        "on-secondary-container": "#795354",
+                        "on-background": "#1b1c1c",
+                        "surface-bright": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary": "#ffffff",
+                        "tertiary": "#5b5d6e",
+                        "on-primary-fixed": "#231a06",
+                        "on-secondary-fixed": "#2f1314",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-variant": "#e4e2e1",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "outline-variant": "#cec5b9",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "on-surface-variant": "#4c463d",
+                        "surface-container-high": "#eae7e7",
+                        "background": "#fcf9f8",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed": "#181b29",
+                        "inverse-on-surface": "#f3f0f0",
+                        "primary": "#6a5d43",
+                        "surface-container": "#f0eded",
+                        "on-primary-container": "#675a41",
+                        "secondary": "#7b5455",
+                        "error": "#ba1a1a",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#e5d3b3",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "inverse-primary": "#d6c4a5",
+                        "surface-tint": "#6a5d43",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#f3e0c0",
+                        "on-primary-fixed-variant": "#51452d",
+                        "tertiary-fixed-dim": "#c4c5d9"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "20px",
+                        "xl": "80px",
+                        "sm": "16px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "120px",
+                        "md": "24px",
+                        "unit": "4px",
+                        "lg": "48px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["DM Sans"],
+                        "body-lg": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "label-sm": ["DM Sans"],
+                        "display-lg": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .rtl { direction: rtl; }
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        .dark .glass-panel {
+            background: rgba(35, 26, 6, 0.4);
+        }
+        .card-glow {
+            box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.2);
+        }
+        .dark .card-glow {
+            box-shadow: 0 10px 40px -10px rgba(106, 93, 67, 0.2);
+        }
+        /* Custom scrollbar for horizontal tabs */
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-surface-container-low text-on-surface antialiased font-body-md min-h-screen rtl flex flex-col pb-24">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface/80 backdrop-blur-xl">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 w-full">
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary dark:text-primary-fixed-dim italic">Dawati</h1>
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-grow pt-24 px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto w-full">
+<!-- Header Text -->
+<section class="mb-lg text-center">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-xs">تصاميم الدعوات</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant">اختر من مجموعتنا الحصرية</p>
+</section>
+<!-- Tabs -->
+<nav class="mb-lg overflow-x-auto hide-scrollbar">
+<ul class="flex space-x-sm rtl:space-x-reverse px-2 py-1">
+<li>
+<button class="px-md py-sm rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm whitespace-nowrap active:scale-95 transition-transform">
+                        المميزة
+                    </button>
+</li>
+<li>
+<button class="px-md py-sm rounded-full bg-transparent text-outline font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">
+                        بسيطة
+                    </button>
+</li>
+<li>
+<button class="px-md py-sm rounded-full bg-transparent text-outline font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">
+                        دراماتيكية
+                    </button>
+</li>
+<li>
+<button class="px-md py-sm rounded-full bg-transparent text-outline font-label-sm text-label-sm whitespace-nowrap hover:bg-surface-variant active:scale-95 transition-all">
+                        تقليدية
+                    </button>
+</li>
+</ul>
+</nav>
+<!-- Gallery Grid -->
+<section class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-gutter mb-xl">
+<!-- Card 1: Ivory Editorial -->
+<article class="group cursor-pointer">
+<div class="relative aspect-[3/4] bg-[#F9F6F0] rounded-lg p-md flex flex-col items-center justify-center border border-primary/10 overflow-hidden card-glow transition-transform duration-300 group-hover:-translate-y-1 group-hover:shadow-[0_15px_40px_-10px_rgba(229,211,179,0.4)]">
+<div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gradient-to-t from-black/5 to-transparent"></div>
+<div class="text-center z-10 flex flex-col h-full justify-between py-md">
+<span class="font-label-sm text-label-sm text-outline tracking-widest uppercase">دعوة زفاف</span>
+<div class="space-y-4">
+<h3 class="font-display-lg-mobile text-display-lg-mobile text-primary leading-tight">سارة<br/>&amp;<br/>محمد</h3>
+</div>
+<div class="space-y-2">
+<p class="font-body-md text-body-md text-on-surface-variant">١٥ نوفمبر ٢٠٢٦</p>
+<p class="font-label-sm text-label-sm text-outline">أم خالد</p>
+<div class="mt-sm inline-block p-1 bg-white border border-primary/10">
+<span class="material-symbols-outlined text-outline text-[20px]" data-icon="qr_code_2">qr_code_2</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-xs text-center">
+<p class="font-label-sm text-label-sm text-on-surface">Ivory Editorial</p>
+</div>
+</article>
+<!-- Card 2: Midnight Luxury -->
+<article class="group cursor-pointer">
+<div class="relative aspect-[3/4] bg-[#1A1C1D] rounded-lg p-md flex flex-col items-center justify-center border border-white/5 overflow-hidden card-glow transition-transform duration-300 group-hover:-translate-y-1">
+<div class="absolute inset-0 border-[1px] border-[#D4AF37]/30 m-4 rounded-sm"></div>
+<div class="text-center z-10 flex flex-col h-full justify-between py-md">
+<span class="font-label-sm text-label-sm text-[#D4AF37] tracking-widest uppercase opacity-80">دعوة زفاف</span>
+<div class="space-y-4">
+<h3 class="font-display-lg-mobile text-display-lg-mobile text-[#F9F6F0] leading-tight">سارة<br/>&amp;<br/>محمد</h3>
+</div>
+<div class="space-y-2">
+<p class="font-body-md text-body-md text-[#F9F6F0]/80">١٥ نوفمبر ٢٠٢٦</p>
+<p class="font-label-sm text-label-sm text-[#D4AF37]">أم خالد</p>
+<div class="mt-sm inline-block p-1 bg-white/10 border border-[#D4AF37]/30 backdrop-blur-sm">
+<span class="material-symbols-outlined text-[#D4AF37] text-[20px]" data-icon="qr_code_2">qr_code_2</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-xs text-center">
+<p class="font-label-sm text-label-sm text-on-surface">Midnight Luxury</p>
+</div>
+</article>
+<!-- Card 3: Soft Champagne -->
+<article class="group cursor-pointer">
+<div class="relative aspect-[3/4] bg-gradient-to-br from-[#FFF8E7] to-[#E5D3B3] rounded-lg p-md flex flex-col items-center justify-center border border-white overflow-hidden card-glow transition-transform duration-300 group-hover:-translate-y-1">
+<div class="text-center z-10 flex flex-col h-full justify-between py-md">
+<span class="font-label-sm text-label-sm text-[#6A5D43] tracking-widest uppercase">دعوة زفاف</span>
+<div class="space-y-4">
+<h3 class="font-headline-md text-headline-md text-[#4C463D] leading-tight italic">سارة &amp; محمد</h3>
+</div>
+<div class="space-y-2">
+<p class="font-body-md text-body-md text-[#6A5D43]">١٥ نوفمبر ٢٠٢٦</p>
+<p class="font-label-sm text-label-sm text-[#7D766C]">أم خالد</p>
+<div class="mt-sm inline-block p-1 bg-white/50 border border-white">
+<span class="material-symbols-outlined text-[#6A5D43] text-[20px]" data-icon="qr_code_2">qr_code_2</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-xs text-center">
+<p class="font-label-sm text-label-sm text-on-surface">Soft Champagne</p>
+</div>
+</article>
+<!-- Card 4: Modern Arabic -->
+<article class="group cursor-pointer">
+<div class="relative aspect-[3/4] bg-surface rounded-lg p-md flex flex-col items-center justify-center border border-outline-variant overflow-hidden card-glow transition-transform duration-300 group-hover:-translate-y-1">
+<div class="absolute right-0 top-0 bottom-0 w-12 bg-primary/5"></div>
+<div class="text-center z-10 flex flex-col h-full justify-between py-md">
+<span class="font-label-sm text-label-sm text-primary tracking-widest uppercase">دعوة زفاف</span>
+<div class="space-y-4">
+<h3 class="text-[40px] font-bold text-on-surface leading-none" style="font-family: Arial, sans-serif;">سارة<br/>محمد</h3>
+</div>
+<div class="space-y-2">
+<p class="font-body-md text-body-md text-on-surface-variant">١٥ نوفمبر ٢٠٢٦</p>
+<p class="font-label-sm text-label-sm text-outline">أم خالد</p>
+<div class="mt-sm inline-block p-1 bg-white border border-outline-variant">
+<span class="material-symbols-outlined text-outline text-[20px]" data-icon="qr_code_2">qr_code_2</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-xs text-center">
+<p class="font-label-sm text-label-sm text-on-surface">Modern Arabic</p>
+</div>
+</article>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full flex justify-around items-center py-3 px-margin-mobile border-t border-primary/5 bg-surface/80 dark:bg-surface-container-low/80 backdrop-blur-xl z-50 rounded-t-xl shadow-[0_-4px_30px_rgba(229,211,179,0.08)] md:hidden">
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary-fixed-variant transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined text-[24px] mb-1" data-icon="explore" style="font-variation-settings: 'wght' 300;">explore</span>
+<span class="font-label-sm text-label-sm">Discover</span>
+</button>
+<button class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim relative after:content-[''] after:w-1 after:h-1 after:bg-secondary after:rounded-full after:mt-1 hover:text-primary-fixed-variant transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined text-[24px] mb-1" data-icon="brush" style="font-variation-settings: 'wght' 300, 'FILL' 1;">brush</span>
+<span class="font-label-sm text-label-sm">Design</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary-fixed-variant transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined text-[24px] mb-1" data-icon="event_note" style="font-variation-settings: 'wght' 300;">event_note</span>
+<span class="font-label-sm text-label-sm">Events</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary-fixed-variant transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined text-[24px] mb-1" data-icon="group" style="font-variation-settings: 'wght' 300;">group</span>
+<span class="font-label-sm text-label-sm">Guests</span>
+</button>
+<button class="flex flex-col items-center justify-center text-outline dark:text-outline-variant hover:text-primary-fixed-variant transition-colors active:scale-90 duration-200">
+<span class="material-symbols-outlined text-[24px] mb-1" data-icon="person" style="font-variation-settings: 'wght' 300;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</button>
+</nav>
+</body></html>

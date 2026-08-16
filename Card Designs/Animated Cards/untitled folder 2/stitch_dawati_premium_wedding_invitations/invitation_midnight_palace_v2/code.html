@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Midnight Palace Theme</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;700&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#2f1314",
+                        "on-primary-fixed-variant": "#51452d",
+                        "secondary": "#7b5455",
+                        "tertiary-fixed": "#e0e1f5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#1a1b26", // Midnight Palace Dark Surface
+                        "primary-fixed": "#f3e0c0",
+                        "on-primary-container": "#675a41",
+                        "outline-variant": "#cec5b9",
+                        "surface-container-low": "#151620", // Midnight Palace Darker Surface
+                        "on-tertiary-fixed": "#181b29",
+                        "on-primary": "#1a1b26",
+                        "inverse-primary": "#d6c4a5",
+                        "on-background": "#fdfaf6", // Warm Ivory Text
+                        "background": "#0f1016", // Deep Navy/Charcoal Background
+                        "on-surface": "#fdfaf6", // Warm Ivory Text
+                        "on-primary-fixed": "#231a06",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-variant": "#2a2b3d",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#1a1b26",
+                        "surface-container-high": "#232536",
+                        "secondary-fixed": "#ffdad9",
+                        "error": "#ba1a1a",
+                        "primary-container": "#E5D3B3", // Champagne Accent
+                        "tertiary": "#5b5d6e",
+                        "surface-container-highest": "#2c2e42",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "tertiary-container": "#d3d4e8",
+                        "secondary-container": "#fdcbcb",
+                        "surface-dim": "#0a0a0f",
+                        "outline": "#7d766c",
+                        "primary": "#E5D3B3", // Champagne Accent
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "surface-container": "#1d1f2e",
+                        "on-surface-variant": "#d3cbbb",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#fdfaf6",
+                        "on-secondary-container": "#795354",
+                        "surface": "#13141c", // Base Surface
+                        "on-tertiary-fixed-variant": "#434656",
+                        "surface-tint": "#E5D3B3",
+                        "surface-container-lowest": "#050508",
+                        "on-secondary-fixed-variant": "#603d3e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "xl": "80px",
+                        "margin-desktop": "120px",
+                        "gutter": "20px",
+                        "margin-mobile": "20px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["DM Sans", "sans-serif"],
+                        "display-lg": ["Playfair Display", "serif"],
+                        "display-lg-mobile": ["Playfair Display", "serif"],
+                        "body-lg": ["DM Sans", "sans-serif"],
+                        "label-sm": ["DM Sans", "sans-serif"],
+                        "headline-md": ["Playfair Display", "serif"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .champagne-gradient-text {
+            background: linear-gradient(135deg, theme('colors.primary') 0%, #fff6e5 50%, theme('colors.primary') 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .glow-shadow {
+            box-shadow: 0 0 40px 5px rgba(229, 211, 179, 0.08);
+        }
+
+        .glass-panel {
+            background: rgba(19, 20, 28, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 211, 179, 0.1);
+        }
+
+        /* Initial Reveal Animation */
+        .reveal-overlay {
+            position: fixed;
+            inset: 0;
+            background: theme('colors.background');
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.5s ease-in-out, visibility 1.5s ease-in-out;
+        }
+
+        .reveal-overlay.hidden-overlay {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .reveal-content {
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+
+        .reveal-content.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen relative flex flex-col items-center">
+<!-- Reveal Overlay -->
+<div class="reveal-overlay" id="revealOverlay">
+<div class="reveal-content flex flex-col items-center gap-md">
+<span class="material-symbols-outlined text-[64px] text-primary font-light" style="font-variation-settings: 'wght' 100;">door_open</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg champagne-gradient-text text-center">
+                SARA &amp; MOHAMMED
+            </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant tracking-wider mt-sm">دخول القصر</p>
+<button class="mt-lg px-xl py-sm bg-primary text-on-primary rounded-full font-label-sm text-label-sm uppercase tracking-widest hover:scale-95 transition-transform duration-300" id="enterBtn">
+                فتح الدعوة
+            </button>
+</div>
+</div>
+<!-- Main Content Canvas -->
+<main class="w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-xl flex-grow flex flex-col items-center gap-xl opacity-0 transition-opacity duration-1000" id="mainCanvas">
+<!-- Hero Section -->
+<section class="w-full min-h-[70vh] flex flex-col items-center justify-center relative rounded-xl overflow-hidden glass-panel glow-shadow p-lg mt-16 fade-in-up">
+<div class="absolute inset-0 z-0">
+<div class="bg-cover bg-center w-full h-full opacity-40" data-alt="A luxurious dark palace interior at night, subtly illuminated by warm architectural lighting and distant chandeliers. High-contrast, deep navy and charcoal tones with soft champagne gold glowing accents. Architectural shadows create depth and mystery. Serene, premium editorial style, modern luxury." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBN-j9_TfIZx99ErQzzEWK-ss6NkB4HhrcAJ2collpv5cSV_bg_y88bhL2EemKrE6tZqdmkRaBIJJAobWKF2afeUEl2Lt2fvQe4m9q7XSSo6Q5gnQevtYxeEigD1ONPCvT6pvsuwFJyiOZPjvFDGoLl7EpeL_e5rL8ipp-ikaVY92XBZxFVQRTLC-i1Zk_1gLRQTl4cCoeF0ftZGQlH-oCqKreJ4nK5tnHIJvA3InGxbBR1JqLcMoV6')"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+</div>
+<div class="relative z-10 flex flex-col items-center text-center gap-md">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-[0.2em] mb-sm">يسرنا دعوتكم</span>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg champagne-gradient-text leading-tight mb-md">
+                    SARA &amp;<br/>MOHAMMED
+                </h1>
+<div class="h-[1px] w-24 bg-primary/30 my-sm"></div>
+<p class="font-body-lg text-body-lg text-on-surface mb-sm">
+                    حضوركم يكتمل به الفرح
+                </p>
+<div class="glass-panel px-lg py-sm rounded-full inline-block mt-xs border-primary/20">
+<span class="font-headline-md text-headline-md text-primary">الضيفة الكريمة: أم فلان</span>
+</div>
+</div>
+</section>
+<!-- Event Details Bento Grid -->
+<section class="w-full grid grid-cols-1 md:grid-cols-3 gap-gutter fade-in-up">
+<!-- Date & Time Card -->
+<div class="glass-panel p-lg rounded-xl flex flex-col items-center justify-center text-center gap-sm md:col-span-2 glow-shadow">
+<span class="material-symbols-outlined text-[40px] text-primary mb-xs" style="font-variation-settings: 'wght' 200;">calendar_month</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">موعد الزفاف</h2>
+<div class="flex flex-col items-center mt-sm gap-xs">
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary">الجمعة، ١٥ نوفمبر</span>
+<span class="font-body-lg text-body-lg text-on-surface-variant">الساعة ٨:٠٠ مساءً</span>
+</div>
+</div>
+<!-- Location Card -->
+<div class="glass-panel p-lg rounded-xl flex flex-col items-center justify-center text-center gap-sm glow-shadow">
+<span class="material-symbols-outlined text-[40px] text-primary mb-xs" style="font-variation-settings: 'wght' 200;">location_on</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">المكان</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-sm">قصر المؤتمرات والمناسبات<br/>القاعة الملكية</p>
+<button class="mt-md px-md py-xs border border-primary text-primary rounded-full font-label-sm text-label-sm uppercase hover:bg-primary/10 hover:scale-95 transition-all duration-300">
+                    عرض الخريطة
+                </button>
+</div>
+</section>
+<!-- RSVP Section -->
+<section class="w-full glass-panel p-xl rounded-xl flex flex-col items-center text-center gap-lg glow-shadow mb-xl fade-in-up">
+<div class="flex flex-col items-center gap-sm">
+<span class="material-symbols-outlined text-[40px] text-primary mb-xs" style="font-variation-settings: 'wght' 200;">drafts</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">تأكيد الحضور</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">
+                    نرجو تأكيد حضوركم قبل تاريخ ١٠ نوفمبر لنتمكن من استقبالكم بأفضل صورة.
+                </p>
+</div>
+<div class="flex gap-md w-full max-w-md justify-center">
+<button class="flex-1 py-sm bg-primary text-on-primary rounded-lg font-label-sm text-label-sm uppercase tracking-widest hover:scale-95 transition-transform duration-300">
+                    تأكيد الحضور
+                </button>
+<button class="flex-1 py-sm border border-outline-variant text-on-surface-variant rounded-lg font-label-sm text-label-sm uppercase tracking-widest hover:bg-surface-variant hover:scale-95 transition-all duration-300">
+                    أعتذر
+                </button>
+</div>
+</section>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const revealOverlay = document.getElementById('revealOverlay');
+            const revealContent = document.querySelector('.reveal-content');
+            const enterBtn = document.getElementById('enterBtn');
+            const mainCanvas = document.getElementById('mainCanvas');
+            const fadeElements = document.querySelectorAll('.fade-in-up');
+
+            // Initial animation for reveal content
+            setTimeout(() => {
+                revealContent.classList.add('active');
+            }, 300);
+
+            // Handle entry
+            enterBtn.addEventListener('click', () => {
+                revealOverlay.classList.add('hidden-overlay');
+                
+                // Show main content
+                setTimeout(() => {
+                    mainCanvas.style.opacity = '1';
+                    
+                    // Trigger scroll animations for visible elements
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                entry.target.classList.add('visible');
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, { threshold: 0.1 });
+
+                    fadeElements.forEach(el => observer.observe(el));
+                }, 800);
+            });
+        });
+    </script>
+</body></html>

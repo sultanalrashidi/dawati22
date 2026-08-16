@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Contemporary Floral Invitation</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#cec5b9",
+                      "on-tertiary-fixed": "#181b29",
+                      "on-tertiary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-primary-container": "#675a41",
+                      "inverse-on-surface": "#f3f0f0",
+                      "surface-container-lowest": "#ffffff",
+                      "on-tertiary-container": "#595b6c",
+                      "surface-bright": "#fcf9f8",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "outline": "#7d766c",
+                      "primary-container": "#e5d3b3",
+                      "primary-fixed": "#f3e0c0",
+                      "surface-tint": "#6a5d43",
+                      "primary": "#6a5d43",
+                      "on-error-container": "#93000a",
+                      "surface-container-low": "#f6f3f2",
+                      "secondary-fixed": "#ffdad9",
+                      "on-background": "#1b1c1c",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "on-secondary-container": "#795354",
+                      "on-error": "#ffffff",
+                      "secondary-container": "#fdcbcb",
+                      "on-primary-fixed-variant": "#51452d",
+                      "on-secondary-fixed": "#2f1314",
+                      "surface-dim": "#dcd9d9",
+                      "surface-variant": "#e4e2e1",
+                      "tertiary": "#5b5d6e",
+                      "on-surface-variant": "#4c463d",
+                      "tertiary-fixed": "#e0e1f5",
+                      "inverse-surface": "#303030",
+                      "surface": "#fcf9f8",
+                      "surface-container-high": "#eae7e7",
+                      "error-container": "#ffdad6",
+                      "on-surface": "#1b1c1c",
+                      "surface-container": "#f0eded",
+                      "on-primary-fixed": "#231a06",
+                      "tertiary-container": "#d3d4e8",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "on-primary": "#ffffff",
+                      "background": "#fcf9f8",
+                      "surface-container-highest": "#e4e2e1",
+                      "secondary": "#7b5455",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "inverse-primary": "#d6c4a5",
+                      "on-secondary-fixed-variant": "#603d3e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "sm": "16px",
+                      "gutter": "20px",
+                      "md": "24px",
+                      "margin-mobile": "20px",
+                      "margin-desktop": "120px",
+                      "lg": "48px",
+                      "unit": "4px",
+                      "xl": "80px",
+                      "xs": "8px"
+              },
+              "fontFamily": {
+                      "body-md": ["DM Sans"],
+                      "display-lg-mobile": ["Playfair Display"],
+                      "body-lg": ["DM Sans"],
+                      "headline-md": ["Playfair Display"],
+                      "display-lg": ["Playfair Display"],
+                      "label-sm": ["DM Sans"]
+              },
+              "fontSize": {
+                      "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                      "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-stagger {
+            opacity: 0;
+            animation: fadeUp 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .delay-100 { animation-delay: 100ms; }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+        .delay-400 { animation-delay: 400ms; }
+        
+        .glow-shadow {
+            box-shadow: 0 20px 40px -10px rgba(229, 211, 179, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased overflow-x-hidden selection:bg-primary-container selection:text-primary">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl dark:bg-surface-dim/80 flex justify-between items-center px-margin-mobile h-16 transition-all duration-300" id="top-nav">
+<!-- Leading Icon -->
+<button aria-label="Menu" class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity duration-300 scale-95 duration-200">
+            menu
+        </button>
+<!-- Headline -->
+<h1 class="font-headline-md text-headline-md uppercase tracking-widest text-primary dark:text-primary-fixed" dir="ltr">
+            SARA &amp; MOHAMMED
+        </h1>
+<!-- Trailing Icon -->
+<button aria-label="Share" class="material-symbols-outlined text-on-surface-variant hover:opacity-80 transition-opacity duration-300 scale-95 duration-200">
+            share
+        </button>
+<!-- Desktop Navigation Cluster (Hidden on Mobile) -->
+<nav aria-label="Desktop Navigation" class="hidden md:flex absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 space-x-8 rtl:space-x-reverse">
+<a class="font-body-md text-body-md text-primary font-bold hover:opacity-80 transition-opacity" href="#">الرئيسية</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">تفاصيل الحفل</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">الموقع</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">معرض الصور</a>
+</nav>
+</header>
+<main class="pb-32 md:pb-0">
+<!-- Hero Section -->
+<section class="relative min-h-[90vh] flex flex-col justify-center items-center px-margin-mobile md:px-margin-desktop overflow-hidden">
+<!-- Background Floral Image -->
+<div class="absolute inset-0 z-0 opacity-40">
+<div class="w-full h-full bg-cover bg-center" data-alt="A soft-focus, ethereal photograph of delicate 3D-rendered porcelain rose petals floating gently against an ivory background. The lighting is bright and high-key, emphasizing a modern feminine aesthetic. The color palette consists of soft ivory, dusty rose, and pale champagne tones. The mood is romantic, serene, and contemporary, perfectly suited for a luxury editorial wedding invitation." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCqn-7ui0fH4lAo8B5GLYotjL3uznE3_Wv6Z-aboykAdaju21FHHviQl4rW4Vgp97UQnF8d_eOY2UKJEQ0aL5xLejk0KELClphsA1i_PiwOlULRJZ-p3UiAdqotTkxUwCuXi7sHJ7MQ69yEe_2uybOBFlcSXz2IBO1YYM154nAQ6jOfJKRK16z3493GoLricVrtCuYGisFBYL_nvPp9PR5dO3I2Du-bN1D2lFLvevTZ4Y9xp1m5Tu__')"></div>
+<!-- Subtle Gradient Overlay -->
+<div class="absolute inset-0 bg-gradient-to-b from-surface/30 via-transparent to-surface"></div>
+</div>
+<div class="relative z-10 text-center flex flex-col items-center mt-16 max-w-3xl mx-auto">
+<span class="font-label-sm text-label-sm text-secondary uppercase tracking-[0.2em] mb-sm animate-stagger">Contemporary Floral</span>
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-md animate-stagger delay-100" dir="ltr">
+                    Sara &amp; Mohammed
+                </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl max-w-lg mx-auto animate-stagger delay-200 leading-relaxed">
+                    نتشرف بدعوتكم لمشاركتنا فرحة العمر وبداية رحلتنا معاً. حضوركم يضيء ليلتنا ويكمل سعادتنا.
+                </p>
+<div class="animate-stagger delay-300">
+<button class="bg-primary-container text-on-primary-container px-10 py-4 rounded-full font-body-md text-body-md hover:scale-95 active:scale-90 transition-transform duration-300 flex items-center gap-2 glow-shadow">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+                        تأكيد الحضور
+                    </button>
+</div>
+</div>
+<!-- Floating Decorative Petal -->
+<div class="absolute top-1/4 right-[-5%] w-64 h-64 opacity-60 blur-[2px] animate-[pulse_6s_ease-in-out_infinite] hidden md:block">
+<img class="w-full h-full object-contain transform rotate-12" data-alt="A close-up of a single, translucent 3D-rendered porcelain petal in a soft dusty rose hue. The petal catches light softly, appearing delicate and modern, floating against a clean background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCTMQgMet0ni0NsziFc6k-TEATwN-FsiV-qYC0ZLD6EqvfuGaeChV_RwsMn_CimivW7dQWro6yheVKdSMEK4tOjPq6pvvPaFneHZV-h_cfE85DWzVpUbIAema3Fb4fcMGvklgNf8qijXpJKTMVv4ICv8e3F5xcMbzmJRWxcIrHxsDWiLhKMkKBx8zDCQbHZCXqhuNp_CyC6RJ4X3KAn2r2Xkv3cWDogv5GqvaD0G2kIwRbrJbTQyA_"/>
+</div>
+</section>
+<!-- Bento Grid Details -->
+<section class="px-margin-mobile md:px-margin-desktop py-xl">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter max-w-6xl mx-auto">
+<!-- Date & Time Card -->
+<div class="md:col-span-8 bg-surface-container-lowest rounded-2xl p-md md:p-lg border border-primary-container/30 relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/20 rounded-bl-full -z-0 transition-transform duration-700 group-hover:scale-110"></div>
+<div class="relative z-10 flex flex-col h-full justify-between">
+<div>
+<span class="material-symbols-outlined text-secondary mb-sm" style="font-variation-settings: 'FILL' 1;">calendar_month</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">الزمان</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">يوم الخميس، الموافق ٢٥ مايو ٢٠٢٤</p>
+</div>
+<div class="mt-lg">
+<p class="font-display-lg-mobile text-display-lg-mobile text-primary font-light">08:00 <span class="font-body-md text-body-md text-on-surface-variant ml-2">مساءً</span></p>
+</div>
+</div>
+</div>
+<!-- Location Card -->
+<div class="md:col-span-4 bg-primary-container/20 rounded-2xl p-md md:p-lg border border-primary-container/50 flex flex-col justify-between items-start hover:bg-primary-container/30 transition-colors duration-500">
+<div>
+<span class="material-symbols-outlined text-primary mb-sm">location_on</span>
+<h3 class="font-headline-md text-headline-md text-primary mb-2">المكان</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-md">قاعة الخزامى للمناسبات والمؤتمرات، الرياض</p>
+</div>
+<button class="font-label-sm text-label-sm text-primary uppercase tracking-wider border-b border-primary pb-1 hover:opacity-70 transition-opacity">
+                        عرض الخريطة
+                    </button>
+</div>
+<!-- Dress Code Card -->
+<div class="md:col-span-4 bg-surface-container-lowest rounded-2xl p-md md:p-lg border border-primary-container/30 text-center flex flex-col items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant/50 mb-sm text-[32px]">checkroom</span>
+<h3 class="font-body-lg text-body-lg text-primary mb-1">الزي الرسمي</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">نرجو الالتزام بالزي الرسمي</p>
+</div>
+<!-- Note Card -->
+<div class="md:col-span-8 bg-surface-container-lowest rounded-2xl p-md md:p-lg border border-primary-container/30 flex items-center gap-md">
+<div class="w-16 h-16 rounded-full bg-secondary-fixed/50 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary">info</span>
+</div>
+<div>
+<h3 class="font-body-lg text-body-lg text-primary mb-1">ملاحظة هامة</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">نعتذر عن استقبال الأطفال، ونتمنى لهم نوماً هنيئاً.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Gallery / Visual Anchor -->
+<section class="px-margin-mobile md:px-margin-desktop py-xl bg-surface-container-low/50">
+<div class="max-w-6xl mx-auto flex flex-col md:flex-row gap-lg items-center">
+<div class="w-full md:w-1/2 space-y-md">
+<h2 class="font-headline-md text-headline-md text-primary">لحظات لا تنسى</h2>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                        بانتظاركم لنصنع معاً ذكريات تخلد في القلب، في ليلة تتزين بحضوركم وتكتمل بفرحتكم معنا.
+                    </p>
+</div>
+<div class="w-full md:w-1/2 relative">
+<div class="aspect-[4/5] rounded-2xl overflow-hidden rounded-tr-[80px] rounded-bl-[80px]">
+<img class="w-full h-full object-cover" data-alt="A sophisticated, modern still-life photograph featuring a minimal arrangement of fresh, dusty rose peonies in a sleek champagne-colored vase. The setting is a clean, bright ivory studio with soft, diffused natural light creating gentle shadows. The aesthetic is contemporary, elegant, and perfectly aligned with a luxury editorial wedding theme." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDLVraV9dbciQVqKwzQ6d5kDhLV2-iu7GuRtSLXPCQvfnndnmPys478GdEwiYbd1zHp38SyjnPXKQC4rMNidjjPxjrlkBAOL5GIyQogE8wAWHudMLYWcrSgXgjcGykGT_QvLO4JiVF_3LmobYDIhbu-HvVYqA-rOv0l_jWQGtE1-O_8eJusCLqIuPy6VtMaPJwPPn_cPDwZR52bZFqWB0ZV1J9tfuMPN8AAYt-DnqjiqNEq9jgKUuR2"/>
+</div>
+<!-- Decorative element -->
+<div class="absolute -bottom-6 -left-6 w-32 h-32 bg-primary-container rounded-full -z-10 blur-xl opacity-50"></div>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface/90 backdrop-blur-2xl dark:bg-surface-container-highest/90 border-t border-primary/10 rounded-t-xl transition-transform duration-300">
+<!-- Tab 1: Home (Active) -->
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-secondary dark:after:bg-secondary-fixed-dim after:rounded-full after:mt-1 hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">home</span>
+<span class="font-label-sm text-label-sm">الرئيسية</span>
+</a>
+<!-- Tab 2: Location (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">location_on</span>
+<span class="font-label-sm text-label-sm">الموقع</span>
+</a>
+<!-- Tab 3: RSVP (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">event_available</span>
+<span class="font-label-sm text-label-sm">التأكيد</span>
+</a>
+<!-- Tab 4: Card (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined mb-1 text-[24px]">qr_code_2</span>
+<span class="font-label-sm text-label-sm">البطاقة</span>
+</a>
+</nav>
+<!-- Simple interaction script -->
+<script>
+        // Optional: Add scroll listener to add border to top nav
+        const topNav = document.getElementById('top-nav');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 20) {
+                topNav.classList.add('border-b', 'border-primary/10', 'shadow-sm');
+            } else {
+                topNav.classList.remove('border-b', 'border-primary/10', 'shadow-sm');
+            }
+        });
+    </script>
+</body></html>

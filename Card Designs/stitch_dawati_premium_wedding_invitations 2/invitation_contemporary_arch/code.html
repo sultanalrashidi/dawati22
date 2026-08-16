@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Contemporary Arch Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Amiri:ital,wght@0,400;0,700;1,400&amp;family=Tajawal:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-container": "#795354",
+                        "on-secondary-fixed": "#2f1314",
+                        "secondary": "#7b5455",
+                        "primary": "#6a5d43",
+                        "surface-container-highest": "#e4e2e1",
+                        "outline-variant": "#cec5b9",
+                        "tertiary": "#5b5d6e",
+                        "error": "#ba1a1a",
+                        "secondary-fixed": "#ffdad9",
+                        "on-error": "#ffffff",
+                        "surface-variant": "#e4e2e1",
+                        "secondary-container": "#fdcbcb",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "primary-container": "#e5d3b3",
+                        "inverse-on-surface": "#f3f0f0",
+                        "error-container": "#ffdad6",
+                        "on-background": "#1b1c1c",
+                        "surface-dim": "#dcd9d9",
+                        "inverse-primary": "#d6c4a5",
+                        "on-secondary": "#ffffff",
+                        "on-primary-container": "#675a41",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-primary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#e0e1f5",
+                        "primary-fixed": "#f3e0c0",
+                        "on-surface": "#1b1c1c",
+                        "outline": "#7d766c",
+                        "surface-tint": "#6a5d43",
+                        "on-tertiary": "#ffffff",
+                        "background": "#fcf9f8",
+                        "on-primary-fixed": "#231a06",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "on-primary-fixed-variant": "#51452d",
+                        "surface-container": "#f0eded",
+                        "surface-container-high": "#eae7e7",
+                        "on-tertiary-container": "#595b6c",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "surface": "#fcf9f8",
+                        "on-tertiary-fixed": "#181b29",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "surface-bright": "#fcf9f8",
+                        "on-surface-variant": "#4c463d",
+                        "tertiary-container": "#d3d4e8",
+                        "inverse-surface": "#303030",
+                        "surface-container-low": "#f6f3f2",
+                        "stone": {
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            300: '#d6d3d1',
+                            400: '#a8a29e',
+                            500: '#78716c',
+                            600: '#57534e',
+                            700: '#44403c',
+                            800: '#292524',
+                            900: '#1c1917',
+                        }
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px",
+                        "arch": "20rem 20rem 0 0"
+                    },
+                    "spacing": {
+                        "xl": "80px",
+                        "sm": "16px",
+                        "unit": "4px",
+                        "lg": "48px",
+                        "md": "24px",
+                        "xs": "8px",
+                        "margin-desktop": "120px",
+                        "margin-mobile": "20px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Playfair Display"],
+                        "label-sm": ["DM Sans"],
+                        "body-lg": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "body-md": ["DM Sans"],
+                        "arabic-display": ["Amiri", "serif"],
+                        "arabic-sans": ["Tajawal", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "500"}],
+                        "label-sm": ["12px", {"lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                        "display-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "600"}],
+                        "display-lg": ["48px", {"lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "1.5", "fontWeight": "400"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .arch-container {
+            clip-path: path('M 0,200 C 0,89.54 89.54,0 200,0 C 310.46,0 400,89.54 400,200 L 400,800 L 0,800 Z');
+        }
+        /* Maintain aspect ratio */
+        .aspect-9-16 {
+            aspect-ratio: 9 / 16;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex items-center justify-center p-sm md:p-lg">
+<!-- Standalone Invitation Card Wrapper -->
+<main class="relative w-full max-w-[400px] aspect-9-16 bg-surface-container-lowest shadow-2xl rounded-2xl overflow-hidden flex flex-col items-center justify-between p-md border border-outline-variant/30">
+<!-- Background Texture/Subtle Image -->
+<div class="absolute inset-0 z-0 opacity-20 pointer-events-none" data-alt="A subtle, high-key abstract texture resembling premium heavy stock stationery paper in cream and stone hues. The lighting is soft and diffused, creating a serene and sophisticated atmosphere suitable for a luxury wedding invitation background." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCaMpkgGiAWMn-his70fdKgADor3rJ7lJ85PtrCKOk1BI6A4S_rXq4UcAGDluPIoYXD837QcUmwuwJDXHl5eZVoBEQBAQnQrNxn-Ut16eZiCCcJay4ZknrdGe710-cPDASri5cJ8_4APgHk__DCU9EK5VH49PXAx_3Gw0GommfhU52g-72aV7KKX6kG-NoezufFoWfkKrgZCB_9a_K3JvEF6suxvhm7ku8b4-a-qPcAt2vBb0DLZV11')"></div>
+<!-- Arch Element (Compositional Frame) -->
+<div class="absolute inset-x-4 top-4 bottom-1/4 bg-surface-container-low rounded-arch border border-primary/20 z-10 flex flex-col items-center pt-xl px-sm text-center">
+<!-- Inviter Names / Intro -->
+<div class="mb-lg opacity-80 font-arabic-sans text-sm tracking-wide text-primary">
+                يتشرف السيد والسيدة
+            </div>
+<div class="font-arabic-display text-2xl md:text-3xl text-primary mb-2">
+                عائلة آل مكتوم
+            </div>
+<div class="opacity-80 font-arabic-sans text-sm tracking-wide text-primary mb-xl">
+                بدعوتكم لحضور حفل زفاف نجليهما
+            </div>
+<!-- Couple Names -->
+<div class="flex flex-col items-center gap-4 my-auto w-full">
+<h1 class="font-arabic-display text-4xl md:text-5xl text-on-surface whitespace-nowrap">
+                    أحمد
+                </h1>
+<div class="w-12 border-t border-primary/40"></div>
+<h1 class="font-arabic-display text-4xl md:text-5xl text-on-surface whitespace-nowrap">
+                    فاطمة
+                </h1>
+</div>
+<!-- Date & Time (Within Arch) -->
+<div class="mt-auto mb-lg text-primary font-arabic-sans">
+<div class="text-lg font-medium mb-1">الخميس، ٢٤ أكتوبر ٢٠٢٤</div>
+<div class="text-sm opacity-80">الساعة الثامنة مساءً</div>
+</div>
+</div>
+<!-- Lower Section (Outside Arch) -->
+<div class="relative z-20 w-full mt-auto pt-4 flex flex-col items-center text-center">
+<!-- Guest Name Highlight -->
+<div class="mb-sm">
+<p class="font-arabic-sans text-xs text-on-surface-variant mb-1">الدعوة مخصصة لـ</p>
+<div class="bg-primary-container/30 px-6 py-2 rounded-full border border-primary/10">
+<span class="font-arabic-display text-xl text-primary">أم خالد</span>
+</div>
+</div>
+<!-- Location -->
+<div class="font-arabic-sans text-sm text-on-surface-variant mb-lg flex flex-col items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary/70">location_on</span>
+                فندق الريتز كارلتون، قاعة الاحتفالات الكبرى
+            </div>
+<!-- QR Code Area (Stylized) -->
+<div class="w-24 h-24 bg-surface rounded-lg p-2 shadow-sm border border-outline-variant/30 flex items-center justify-center">
+<!-- Placeholder for actual QR code -->
+<div class="w-full h-full border border-dashed border-primary/40 flex items-center justify-center rounded-sm text-primary/40">
+<span class="material-symbols-outlined">qr_code_2</span>
+</div>
+</div>
+<p class="font-arabic-sans text-[10px] text-on-surface-variant mt-2 opacity-70">
+                يرجى إبراز الرمز عند الدخول
+            </p>
+</div>
+</main>
+</body></html>

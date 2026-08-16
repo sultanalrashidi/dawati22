@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SARA &amp; MOHAMMED - Midnight Palace</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#cec5b9",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#675a41",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-bright": "#fcf9f8",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "outline": "#7d766c",
+                        "primary-container": "#e5d3b3",
+                        "primary-fixed": "#f3e0c0",
+                        "surface-tint": "#6a5d43",
+                        "primary": "#6a5d43",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary-fixed": "#ffdad9",
+                        "on-background": "#1b1c1c",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "on-secondary-container": "#795354",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#fdcbcb",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-secondary-fixed": "#2f1314",
+                        "surface-dim": "#dcd9d9",
+                        "surface-variant": "#e4e2e1",
+                        "tertiary": "#5b5d6e",
+                        "on-surface-variant": "#4c463d",
+                        "tertiary-fixed": "#e0e1f5",
+                        "inverse-surface": "#303030",
+                        "surface": "#fcf9f8",
+                        "surface-container-high": "#eae7e7",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1b1c1c",
+                        "surface-container": "#f0eded",
+                        "on-primary-fixed": "#231a06",
+                        "tertiary-container": "#d3d4e8",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-primary": "#ffffff",
+                        "background": "#fcf9f8",
+                        "surface-container-highest": "#e4e2e1",
+                        "secondary": "#7b5455",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "inverse-primary": "#d6c4a5",
+                        "on-secondary-fixed-variant": "#603d3e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "sm": "16px",
+                        "gutter": "20px",
+                        "md": "24px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "120px",
+                        "lg": "48px",
+                        "unit": "4px",
+                        "xl": "80px",
+                        "xs": "8px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "label-sm": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 211, 179, 0.3);
+        }
+        
+        .premium-shadow {
+            box-shadow: 0 20px 40px -10px rgba(106, 93, 67, 0.08);
+        }
+        
+        .reveal-anim {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        
+        .reveal-anim.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Ambient luxury glow */
+        .ambient-glow::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 120%;
+            height: 120%;
+            background: radial-gradient(circle, rgba(229, 211, 179, 0.15) 0%, rgba(252, 249, 248, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Ambient Background Effect -->
+<div class="fixed inset-0 pointer-events-none z-[-1]" style="background: radial-gradient(circle at 50% 0%, rgba(229, 211, 179, 0.05) 0%, transparent 50%);"></div>
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl dark:bg-surface-dim/80 flex justify-between items-center px-margin-mobile h-16 flat no shadows">
+<button class="text-primary dark:text-primary-fixed scale-95 duration-200 hover:opacity-80 transition-opacity duration-300">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md uppercase tracking-widest text-primary dark:text-primary-fixed font-headline-md text-headline-md text-primary dark:text-primary-fixed">SARA &amp; MOHAMMED</h1>
+<button class="text-primary dark:text-primary-fixed scale-95 duration-200 hover:opacity-80 transition-opacity duration-300">
+<span class="material-symbols-outlined">share</span>
+</button>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto overflow-hidden">
+<!-- Hero Reveal -->
+<section class="min-h-[70vh] flex flex-col justify-center items-center text-center relative mb-lg reveal-anim">
+<div class="ambient-glow absolute inset-0"></div>
+<div class="glass-panel p-lg rounded-2xl w-full max-w-2xl premium-shadow relative z-10 overflow-hidden">
+<!-- Decorative elements -->
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary-container to-transparent opacity-50"></div>
+<p class="font-label-sm text-label-sm text-primary tracking-widest mb-md uppercase">The Midnight Palace</p>
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-surface mb-md">Sara &amp; Mohammed</h2>
+<div class="h-px w-24 bg-outline-variant mx-auto mb-md opacity-50"></div>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-md mx-auto">
+                    We request the honor of your presence to celebrate our union in an evening of elegance and timeless memories.
+                </p>
+</div>
+</section>
+<!-- Details Bento Grid -->
+<section class="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-xl reveal-anim" style="transition-delay: 200ms;">
+<!-- Date & Time (Spans 8 columns on desktop) -->
+<div class="md:col-span-8 glass-panel p-md md:p-lg rounded-xl premium-shadow flex flex-col justify-between min-h-[300px]">
+<div class="flex items-start justify-between">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 0;">calendar_today</span>
+<p class="font-label-sm text-label-sm text-outline tracking-widest uppercase">The Date</p>
+</div>
+<div class="mt-xl">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm">Friday, 15th of November</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Arrival at 8:00 PM<br/>Dinner served at 10:30 PM</p>
+</div>
+</div>
+<!-- Location (Spans 4 columns) -->
+<div class="md:col-span-4 glass-panel p-md rounded-xl premium-shadow flex flex-col justify-between min-h-[300px] relative overflow-hidden group">
+<div class="absolute inset-0 bg-cover bg-center opacity-10 group-hover:opacity-20 transition-opacity duration-700" data-alt="An atmospheric, moody architectural shot of a grand luxury palace entrance at night. Deep charcoal skies contrast with warm, glowing golden light spilling from elegant arched windows. Minimalist composition, high-end editorial photography style, conveying a sense of mysterious and exclusive evening arrival." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDNf23pOpT3JQGItWqUCDUH9OpEWYq9bwmmJBccZNQ54wUPQ8lmhKVLNivv_u0GlctmqtVAivsGXQO9OLMfqL-OtJfz3eBRaRYKAen-m79Iv2mf4D-oUQR1Oouo42UjGcFFui4M6h_Y2plIg36nV_T40CImJ7a6B66W6NGOy2A7aS5U3_VO-0K4PeMVVABmLOs-PrIb_qqNA-ql_HOTuWne-2jnAUEVfyawnPSFNmlHkRNWIEyAjoG1')"></div>
+<div class="relative z-10 flex items-start justify-between">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 0;">location_city</span>
+<p class="font-label-sm text-label-sm text-outline tracking-widest uppercase">The Venue</p>
+</div>
+<div class="relative z-10 mt-xl">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm">Ritz-Carlton</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-sm">Grand Ballroom<br/>Riyadh, Saudi Arabia</p>
+<button class="text-primary font-label-sm text-label-sm tracking-widest uppercase hover:opacity-80 transition-opacity border-b border-primary/30 pb-1">View Map</button>
+</div>
+</div>
+</section>
+<!-- RSVP Section -->
+<section class="max-w-xl mx-auto text-center reveal-anim" style="transition-delay: 400ms;">
+<div class="h-px w-full bg-gradient-to-r from-transparent via-outline-variant to-transparent mb-xl opacity-30"></div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-sm">Kindly RSVP</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg">Please confirm your attendance by the 1st of November.</p>
+<div class="flex flex-col sm:flex-row gap-sm justify-center">
+<button class="bg-primary-container text-on-primary-container px-xl py-sm rounded-lg font-label-sm text-label-sm tracking-widest uppercase hover:scale-98 transition-transform duration-200 shadow-[0_20px_40px_-10px_rgba(229,211,179,0.15)]">
+                    Accept with Pleasure
+                </button>
+<button class="border border-primary-container text-on-surface px-xl py-sm rounded-lg font-label-sm text-label-sm tracking-widest uppercase hover:bg-surface-container-low hover:scale-98 transition-all duration-200">
+                    Decline with Regret
+                </button>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/90 backdrop-blur-2xl dark:bg-surface-container-highest/90 border-t border-primary/10 flat no shadows fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe">
+<!-- الرئيسيّة (Active) -->
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-secondary dark:after:bg-secondary-fixed-dim after:rounded-full after:mt-1 hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300, 'FILL' 1;">home</span>
+<span class="font-label-sm text-label-sm">الرئيسيّة</span>
+</a>
+<!-- الموقع (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300, 'FILL' 0;">location_on</span>
+<span class="font-label-sm text-label-sm">الموقع</span>
+</a>
+<!-- التأكيد (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300, 'FILL' 0;">event_available</span>
+<span class="font-label-sm text-label-sm">التأكيد</span>
+</a>
+<!-- البطاقة (Inactive) -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'wght' 300, 'FILL' 0;">qr_code_2</span>
+<span class="font-label-sm text-label-sm">البطاقة</span>
+</a>
+</nav>
+<script>
+        // Simple Intersection Observer for reveal animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.1 });
+
+            document.querySelectorAll('.reveal-anim').forEach(el => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body></html>

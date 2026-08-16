@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html class="light" dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>Dawati - Designer Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface": "#fcf9f8",
+                        "surface-dim": "#dcd9d9",
+                        "outline-variant": "#cec5b9",
+                        "background": "#fcf9f8",
+                        "error-container": "#ffdad6",
+                        "on-primary-container": "#675a41",
+                        "inverse-primary": "#d6c4a5",
+                        "inverse-surface": "#303030",
+                        "surface-container": "#f0eded",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-bright": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "primary": "#6a5d43",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#fdcbcb",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "on-error": "#ffffff",
+                        "on-surface": "#1b1c1c",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-variant": "#e4e2e1",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "primary-fixed": "#f3e0c0",
+                        "outline": "#7d766c",
+                        "on-tertiary-container": "#595b6c",
+                        "on-background": "#1b1c1c",
+                        "primary-container": "#e5d3b3",
+                        "tertiary-container": "#d3d4e8",
+                        "on-surface-variant": "#4c463d",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-secondary-container": "#795354",
+                        "on-tertiary-fixed": "#181b29",
+                        "tertiary-fixed": "#e0e1f5",
+                        "on-primary-fixed": "#231a06",
+                        "on-secondary-fixed": "#2f1314",
+                        "surface-container-high": "#eae7e7",
+                        "surface-tint": "#6a5d43",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-primary": "#ffffff",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary-fixed": "#ffdad9",
+                        "tertiary": "#5b5d6e",
+                        "secondary": "#7b5455",
+                        "on-primary-fixed-variant": "#51452d"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-mobile": "20px",
+                        "lg": "48px",
+                        "sm": "16px",
+                        "md": "24px",
+                        "margin-desktop": "120px",
+                        "xl": "80px",
+                        "unit": "4px",
+                        "xs": "8px",
+                        "gutter": "20px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Playfair Display", "serif"],
+                        "headline-md": ["Playfair Display", "serif"],
+                        "body-md": ["DM Sans", "sans-serif"],
+                        "body-lg": ["DM Sans", "sans-serif"],
+                        "display-lg-mobile": ["Playfair Display", "serif"],
+                        "label-sm": ["DM Sans", "sans-serif"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen flex flex-col pt-20 md:pt-24 pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="bg-surface/80 backdrop-blur-xl shadow-[0_20px_40px_-15px_rgba(106,93,67,0.08)] flex justify-between items-center px-margin-mobile py-sm w-full full-width top-0 sticky z-50 transition-all duration-300">
+<div class="flex items-center gap-xs">
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Dawati</span>
+</div>
+<!-- Desktop Nav -->
+<nav class="hidden md:flex gap-lg items-center">
+<a class="text-primary font-medium hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#">Tasks</a>
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#">Messages</a>
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#">Earnings</a>
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#">Settings</a>
+</nav>
+<div class="flex items-center gap-md">
+<button class="text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200 flex items-center justify-center p-2 rounded-full hover:bg-surface-variant/50">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30 shrink-0">
+<img alt="Designer Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a female designer in her 30s. Soft, warm natural lighting emphasizing a welcoming, sophisticated aura. High-key light-mode aesthetic with ivory and champagne tones in the background, matching a premium, modern luxury design system." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD23oYIEi54AzK57qdEXWas55wUhfNVaeewOnQsKKD81kMRYSCLKH6UrKwSsc8Yu207t_-pagPk8DNJdSee2cLbyI9el3hThkW0YNkF7z8kCxpsL1LcZeBlf1ESp61CBP27PSJn6-BxtGt3_IVZh5ER8veS64lNBcZ7xj_A25Xfv5W9Snj5pmfR1n1a_TBSmopRLgEDCZFV2JKMuoKe1VV3e75v5zwpfzdl4dd7xnJPBdKazs-H0Cjh"/>
+</div>
+</div>
+</header>
+<main class="flex-grow w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop py-lg">
+<!-- Welcome Section -->
+<section class="mb-xl animate-fade-in-up">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-2">Welcome back, Elara.</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Here is a summary of your ongoing elegance.</p>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter md:gap-md">
+<!-- Active Projects Summary -->
+<div class="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-gutter md:gap-md">
+<!-- Stat Card 1 -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/20 shadow-[0_10px_30px_-15px_rgba(106,93,67,0.05)] hover:-translate-y-1 transition-transform duration-300">
+<div class="flex items-center gap-sm mb-md">
+<div class="w-12 h-12 rounded-full bg-primary-container flex items-center justify-center text-on-primary-container">
+<span class="material-symbols-outlined">mark_email_unread</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary">3 New Briefs</h2>
+</div>
+<p class="text-on-surface-variant">Awaiting your creative review.</p>
+<button class="mt-md font-label-sm text-label-sm text-primary uppercase tracking-widest hover:opacity-80 transition-opacity flex items-center gap-1 group">
+                        Review <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-surface-container-lowest rounded-xl p-md border border-outline-variant/20 shadow-[0_10px_30px_-15px_rgba(106,93,67,0.05)] hover:-translate-y-1 transition-transform duration-300">
+<div class="flex items-center gap-sm mb-md">
+<div class="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined">palette</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary">5 In Progress</h2>
+</div>
+<p class="text-on-surface-variant">Active designs in development.</p>
+<button class="mt-md font-label-sm text-label-sm text-primary uppercase tracking-widest hover:opacity-80 transition-opacity flex items-center gap-1 group">
+                        Manage <span class="material-symbols-outlined text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Recent Earnings Widget -->
+<div class="md:col-span-4 bg-surface-container-lowest rounded-xl p-md border border-outline-variant/20 shadow-[0_10px_30px_-15px_rgba(106,93,67,0.05)] flex flex-col">
+<div class="flex justify-between items-start mb-md">
+<h3 class="font-headline-md text-headline-md text-primary">Earnings</h3>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</div>
+<div class="mb-sm">
+<span class="font-display-lg text-display-lg text-on-background">$4,250</span>
+<span class="font-label-sm text-label-sm text-secondary ml-2 bg-secondary-fixed-dim/20 px-2 py-1 rounded-full">+12% this month</span>
+</div>
+<!-- Subtle Growth Chart Placeholder -->
+<div class="flex-grow mt-auto pt-4 relative overflow-hidden rounded-lg h-24">
+<div class="absolute inset-0 bg-gradient-to-t from-primary-container/30 to-transparent"></div>
+<svg class="absolute bottom-0 w-full h-full" preserveaspectratio="none" viewbox="0 0 100 100">
+<path d="M0,100 L0,80 Q25,90 50,60 T100,40 L100,100 Z" fill="rgba(229, 211, 179, 0.4)" stroke="none"></path>
+<path d="M0,80 Q25,90 50,60 T100,40" fill="none" stroke="#6a5d43" stroke-width="2" vector-effect="non-scaling-stroke"></path>
+</svg>
+</div>
+</div>
+<!-- Urgent Tasks List -->
+<div class="md:col-span-12 mt-lg">
+<h3 class="font-headline-md text-headline-md text-primary mb-md pb-xs border-b border-outline-variant/20">Urgent Tasks</h3>
+<div class="space-y-sm">
+<!-- Task Item 1 -->
+<div class="flex items-start md:items-center justify-between p-md bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-[0_5px_15px_-10px_rgba(106,93,67,0.05)] hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="flex items-start gap-md">
+<div class="w-10 h-10 rounded-full bg-error-container text-on-error-container flex items-center justify-center shrink-0 mt-1 md:mt-0">
+<span class="material-symbols-outlined">priority_high</span>
+</div>
+<div>
+<h4 class="font-body-lg text-body-lg text-on-background group-hover:text-primary transition-colors">Submit Final Draft for The Alara Wedding</h4>
+<p class="text-on-surface-variant mt-1 text-sm">Due today at 5:00 PM</p>
+</div>
+</div>
+<button class="hidden md:flex bg-primary-container text-on-primary-container px-4 py-2 rounded-lg font-label-sm text-label-sm uppercase tracking-wider hover:scale-95 transition-transform shadow-[0_10px_30px_-10px_rgba(229,211,179,0.4)]">
+                            Upload
+                        </button>
+</div>
+<!-- Task Item 2 -->
+<div class="flex items-start md:items-center justify-between p-md bg-surface-container-lowest rounded-xl border border-outline-variant/20 shadow-[0_5px_15px_-10px_rgba(106,93,67,0.05)] hover:bg-surface-container-low transition-colors group cursor-pointer">
+<div class="flex items-start gap-md">
+<div class="w-10 h-10 rounded-full bg-surface-variant text-on-surface-variant flex items-center justify-center shrink-0 mt-1 md:mt-0">
+<span class="material-symbols-outlined">chat</span>
+</div>
+<div>
+<h4 class="font-body-lg text-body-lg text-on-background group-hover:text-primary transition-colors">Client Message: Revisions for Royal Estate Branding</h4>
+<p class="text-on-surface-variant mt-1 text-sm">Received 2 hours ago</p>
+</div>
+</div>
+<button class="hidden md:flex border border-outline-variant text-on-surface-variant px-4 py-2 rounded-lg font-label-sm text-label-sm uppercase tracking-wider hover:bg-surface-variant/50 transition-colors">
+                            Reply
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="md:hidden bg-surface/80 border-t border-outline-variant/10 shadow-[0_-10px_40px_rgba(106,93,67,0.05)] fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe z-50 backdrop-blur-lg">
+<a class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:w-1 after:h-1 after:bg-secondary-fixed-dim after:rounded-full after:mt-1 hover:text-primary transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="assignment_turned_in">assignment_turned_in</span>
+<span class="font-label-sm text-label-sm mt-1">Tasks</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-label-sm text-label-sm mt-1">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-label-sm text-label-sm mt-1">Earnings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-label-sm text-label-sm mt-1">Settings</span>
+</a>
+</nav>
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 16px); }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</body></html>

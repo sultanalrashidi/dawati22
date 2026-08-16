@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Espresso &amp; Cream Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed": "#2f1314",
+                      "on-primary-fixed-variant": "#51452d",
+                      "secondary": "#7b5455",
+                      "tertiary-fixed": "#e0e1f5",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "surface-bright": "#fcf9f8",
+                      "primary-fixed": "#f3e0c0",
+                      "on-primary-container": "#675a41",
+                      "outline-variant": "#cec5b9",
+                      "surface-container-low": "#f6f3f2",
+                      "on-tertiary-fixed": "#181b29",
+                      "on-primary": "#ffffff",
+                      "inverse-primary": "#d6c4a5",
+                      "on-background": "#1b1c1c",
+                      "background": "#fcf9f8",
+                      "on-surface": "#1b1c1c",
+                      "on-primary-fixed": "#231a06",
+                      "on-tertiary-container": "#595b6c",
+                      "surface-variant": "#e4e2e1",
+                      "on-tertiary": "#ffffff",
+                      "inverse-on-surface": "#f3f0f0",
+                      "surface-container-high": "#eae7e7",
+                      "secondary-fixed": "#ffdad9",
+                      "error": "#ba1a1a",
+                      "primary-container": "#e5d3b3",
+                      "tertiary": "#5b5d6e",
+                      "surface-container-highest": "#e4e2e1",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "tertiary-container": "#d3d4e8",
+                      "secondary-container": "#fdcbcb",
+                      "surface-dim": "#dcd9d9",
+                      "outline": "#7d766c",
+                      "primary": "#6a5d43",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "surface-container": "#f0eded",
+                      "on-surface-variant": "#4c463d",
+                      "on-error-container": "#93000a",
+                      "inverse-surface": "#303030",
+                      "on-secondary-container": "#795354",
+                      "surface": "#fcf9f8",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "surface-tint": "#6a5d43",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed-variant": "#603d3e"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "lg": "48px",
+                      "md": "24px",
+                      "sm": "16px",
+                      "xs": "8px",
+                      "xl": "80px",
+                      "margin-desktop": "120px",
+                      "gutter": "20px",
+                      "margin-mobile": "20px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "body-md": [
+                              "DM Sans"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ],
+                      "label-sm": [
+                              "DM Sans"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ]
+              },
+              "fontSize": {
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        /* Custom Espresso Theme Overrides for this specific view */
+        :root {
+            --espresso-bg: #2b1f1a;
+            --espresso-surface: #3a2a24;
+            --cream-text: #f8f4eb;
+            --champagne-accent: #e5d3b3;
+        }
+        body {
+            background-color: var(--espresso-bg);
+            color: var(--cream-text);
+        }
+        .text-cream { color: var(--cream-text); }
+        .bg-espresso-surface { background-color: var(--espresso-surface); }
+        .border-champagne { border-color: var(--champagne-accent); }
+        .text-champagne { color: var(--champagne-accent); }
+        .bg-champagne { background-color: var(--champagne-accent); }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Reveal Animation */
+        .reveal-container {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: unfoldReveal 1.2s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+        }
+
+        @keyframes unfoldReveal {
+            0% { opacity: 0; transform: translateY(40px) scale(0.98); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+    </style>
+</head>
+<body class="min-h-screen font-body-md flex flex-col items-center justify-center p-margin-mobile md:p-margin-desktop overflow-x-hidden selection:bg-champagne selection:text-espresso-bg">
+<!-- Main Invitation Envelope/Card -->
+<main class="w-full max-w-2xl mx-auto relative z-10 reveal-container">
+<!-- Elegant Grain Texture Overlay -->
+<div class="absolute inset-0 opacity-10 pointer-events-none mix-blend-overlay" style="background-image: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.85%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E');"></div>
+<div class="bg-espresso-surface border border-champagne/20 rounded-xl p-8 md:p-16 shadow-[0_20px_50px_rgba(0,0,0,0.5)] relative overflow-hidden backdrop-blur-sm text-center">
+<!-- Corner Accents -->
+<div class="absolute top-4 left-4 w-12 h-12 border-t border-l border-champagne/30 rounded-tl-lg"></div>
+<div class="absolute top-4 right-4 w-12 h-12 border-t border-r border-champagne/30 rounded-tr-lg"></div>
+<div class="absolute bottom-4 left-4 w-12 h-12 border-b border-l border-champagne/30 rounded-bl-lg"></div>
+<div class="absolute bottom-4 right-4 w-12 h-12 border-b border-r border-champagne/30 rounded-br-lg"></div>
+<!-- Header / Bismillah -->
+<div class="mb-8 reveal-container delay-100">
+<p class="font-headline-md text-headline-md-mobile md:text-headline-md text-champagne italic opacity-80 mb-2">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</p>
+<div class="w-16 h-px bg-gradient-to-r from-transparent via-champagne/50 to-transparent mx-auto"></div>
+</div>
+<!-- Guest Name (Personalized) -->
+<div class="mb-12 reveal-container delay-200">
+<p class="font-label-sm text-label-sm tracking-widest uppercase text-champagne/70 mb-3">Honoring the presence of</p>
+<h2 class="font-display-lg text-display-lg-mobile md:text-display-lg text-cream mb-4" dir="rtl">أم فلان</h2>
+</div>
+<!-- The Couple -->
+<div class="mb-16 reveal-container delay-300">
+<p class="font-body-md text-body-md text-cream/80 mb-6 max-w-md mx-auto">
+                    Together with their families, joyfully invite you to celebrate the marriage of
+                </p>
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-champagne leading-tight">
+                    SARA<br/>
+<span class="font-headline-md text-headline-md italic text-cream/50 text-xl md:text-2xl block my-2">&amp;</span>
+                    MOHAMMED
+                </h1>
+</div>
+<!-- Event Details Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16 text-left border-t border-b border-champagne/10 py-8 reveal-container delay-300">
+<div class="flex flex-col items-center md:items-start text-center md:text-left">
+<span class="material-symbols-outlined text-champagne mb-3 text-3xl" data-weight="fill">event</span>
+<h3 class="font-headline-md text-headline-md text-cream mb-1">Friday</h3>
+<p class="font-body-md text-body-md text-cream/70">October 25th, 2024<br/>8:00 PM</p>
+</div>
+<div class="flex flex-col items-center md:items-start text-center md:text-left">
+<span class="material-symbols-outlined text-champagne mb-3 text-3xl" data-weight="fill">location_on</span>
+<h3 class="font-headline-md text-headline-md text-cream mb-1">The Grand Hall</h3>
+<p class="font-body-md text-body-md text-cream/70">Riyadh Diplomatic Quarter<br/>Saudi Arabia</p>
+</div>
+</div>
+<!-- Action Button -->
+<div class="reveal-container delay-300">
+<button class="bg-champagne text-[#2b1f1a] font-label-sm text-label-sm tracking-[0.1em] uppercase px-10 py-4 rounded-full hover:scale-95 transition-transform duration-300 ease-out shadow-[0_0_30px_rgba(229,211,179,0.15)] flex items-center justify-center mx-auto gap-2">
+                    RSVP Now
+                    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Decorative background elements -->
+<div class="fixed top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-champagne/5 rounded-full blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-[#4a3428]/20 rounded-full blur-[100px]"></div>
+</div>
+</body></html>

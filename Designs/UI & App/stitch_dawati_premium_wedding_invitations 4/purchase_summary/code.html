@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ملخص الشراء - Dawati</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-fixed-variant": "#51452d",
+                        "inverse-on-surface": "#f3f0f0",
+                        "error": "#ba1a1a",
+                        "surface-variant": "#e4e2e1",
+                        "secondary-container": "#fdcbcb",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "tertiary": "#5b5d6e",
+                        "primary-fixed": "#f3e0c0",
+                        "surface": "#fcf9f8",
+                        "on-error": "#ffffff",
+                        "on-surface-variant": "#4c463d",
+                        "outline": "#7d766c",
+                        "surface-container-low": "#f6f3f2",
+                        "on-secondary-container": "#795354",
+                        "on-primary-container": "#675a41",
+                        "on-tertiary-container": "#595b6c",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e4e2e1",
+                        "inverse-surface": "#303030",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "secondary-fixed": "#ffdad9",
+                        "surface-tint": "#6a5d43",
+                        "inverse-primary": "#d6c4a5",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#e5d3b3",
+                        "tertiary-container": "#d3d4e8",
+                        "on-surface": "#1b1c1c",
+                        "surface-dim": "#dcd9d9",
+                        "on-primary": "#ffffff",
+                        "on-primary-fixed": "#231a06",
+                        "surface-container": "#f0eded",
+                        "on-tertiary-fixed": "#181b29",
+                        "surface-bright": "#fcf9f8",
+                        "background": "#fcf9f8",
+                        "error-container": "#ffdad6",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#6a5d43",
+                        "tertiary-fixed": "#e0e1f5",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "secondary": "#7b5455",
+                        "on-secondary-fixed": "#2f1314",
+                        "outline-variant": "#cec5b9",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "on-background": "#1b1c1c",
+                        "surface-container-high": "#eae7e7"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "margin-desktop": "120px",
+                        "xl": "80px",
+                        "sm": "16px",
+                        "gutter": "20px",
+                        "unit": "4px",
+                        "md": "24px",
+                        "xs": "8px",
+                        "margin-mobile": "20px",
+                        "lg": "48px"
+                    },
+                    "fontFamily": {
+                        "headline-md": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "label-sm": ["DM Sans"],
+                        "body-md": ["DM Sans"],
+                        "body-lg": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                },
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'DM Sans', sans-serif; }
+        h1, h2, h3, h4, h5, h6, .font-headline-md { font-family: 'Playfair Display', serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .glass-panel { background: rgba(252, 249, 248, 0.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(229, 211, 179, 0.3); }
+        .glow-shadow { box-shadow: 0 20px 40px rgba(229, 211, 179, 0.15); }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation (Transactional - No Shell Nav, Just Back Button) -->
+<nav class="fixed top-0 w-full z-50 px-margin-mobile md:px-margin-desktop h-16 flex items-center justify-between glass-panel">
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-on-surface group-hover:text-primary transition-colors">arrow_forward</span>
+</button>
+<span class="font-headline-md text-headline-md text-on-surface">ملخص الطلب</span>
+</div>
+<div class="font-headline-md text-headline-md text-primary tracking-tight">Dawati | دعوتي</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-grow pt-[100px] pb-lg px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto w-full">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg">
+<!-- Left Column: Summary Details (Desktop: col-8) -->
+<div class="lg:col-span-8 flex flex-col gap-md">
+<!-- Package Detail Card -->
+<section class="bg-surface rounded-xl p-md glow-shadow border border-surface-variant">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">inventory_2</span>
+                        الباقة المختارة
+                    </h2>
+<div class="flex flex-col md:flex-row gap-md items-start">
+<!-- Thumbnail -->
+<div class="w-full md:w-32 h-40 rounded-lg overflow-hidden shrink-0 border border-outline-variant relative group">
+<img alt="Design Preview" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A beautifully crafted digital wedding invitation displayed on a modern smartphone screen. The design features elegant gold foil accents, sophisticated typography, and soft watercolor floral motifs. High-end editorial style lighting, luxurious feel, soft ivory background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRJM7r1ZTIaVOcVzrPE92fFv_8lCYsPbrEBEnlQuhpCANbh6XR4-eumF6aKv2_hYphale3lvWczltzLBnUvVb2VxXkMN2dIU5XhLSXI6v_guQVgFVLW5ca6CCIGMgJbVI0mx-ZRJhQgF2HpbbAa9S_DhODqVccGts-0hJ1eU4R23sLYGtZiq9F-EDXnzwm1-UuDLcaAMXw5vpl4ARKFdjL3v0xoDklMYFPZ_S3v52oQGJgajd6ohL1"/>
+<div class="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors"></div>
+</div>
+<!-- Details -->
+<div class="flex-grow space-y-4 w-full">
+<div>
+<h3 class="font-body-lg text-body-lg text-on-surface font-semibold mb-1">باقة "رويال" الذهبية</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">تصميم مخصص، دعم للغات متعددة، إدارة RSVP كاملة</p>
+</div>
+<div class="grid grid-cols-2 gap-4 pt-4 border-t border-surface-variant/50">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant block mb-1 uppercase tracking-wider">عدد الدعوات</span>
+<span class="font-body-lg text-body-lg text-on-surface">٥٠٠ مدعو</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant block mb-1 uppercase tracking-wider">المدة</span>
+<span class="font-body-lg text-body-lg text-on-surface">١٢ شهر</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Payment Method Selection -->
+<section class="bg-surface rounded-xl p-md glow-shadow border border-surface-variant mt-sm">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-md flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+                        طريقة الدفع
+                    </h2>
+<div class="space-y-sm">
+<!-- Apple Pay Option -->
+<label class="flex items-center justify-between p-4 rounded-lg border-2 border-primary-container bg-surface-container-low cursor-pointer hover:bg-surface-container transition-colors relative overflow-hidden group">
+<div class="flex items-center gap-4">
+<div class="w-6 h-6 rounded-full border border-primary flex items-center justify-center">
+<div class="w-3 h-3 bg-primary rounded-full"></div>
+</div>
+<span class="font-body-lg text-body-lg text-on-surface">Apple Pay</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors text-3xl">payments</span>
+<!-- Highlight Glow -->
+<div class="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
+</label>
+<!-- Mada Option -->
+<label class="flex items-center justify-between p-4 rounded-lg border border-outline-variant cursor-pointer hover:border-primary-container hover:bg-surface-container-lowest transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-6 h-6 rounded-full border border-outline-variant group-hover:border-primary transition-colors flex items-center justify-center"></div>
+<span class="font-body-lg text-body-lg text-on-surface">مدى (Mada)</span>
+</div>
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors text-3xl">credit_card</span>
+</label>
+<!-- Credit Card Option -->
+<label class="flex items-center justify-between p-4 rounded-lg border border-outline-variant cursor-pointer hover:border-primary-container hover:bg-surface-container-lowest transition-colors group">
+<div class="flex items-center gap-4">
+<div class="w-6 h-6 rounded-full border border-outline-variant group-hover:border-primary transition-colors flex items-center justify-center"></div>
+<span class="font-body-lg text-body-lg text-on-surface">البطاقة الائتمانية</span>
+</div>
+<div class="flex gap-2">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors">credit_card</span>
+</div>
+</label>
+</div>
+</section>
+</div>
+<!-- Right Column: Final Price Breakdown & CTA (Desktop: col-4) -->
+<div class="lg:col-span-4 relative">
+<!-- Sticky Container for Desktop -->
+<div class="sticky top-[100px] bg-surface rounded-xl p-md glow-shadow border border-primary-container flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-md">تفاصيل السعر</h2>
+<div class="space-y-4 mb-lg flex-grow">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-body-md text-body-md">باقة "رويال"</span>
+<span class="font-body-md text-body-md">١,٥٠٠ ر.س</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-body-md text-body-md">إضافات مخصصة (تصميم خاص)</span>
+<span class="font-body-md text-body-md">٣٠٠ ر.س</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-body-md text-body-md">ضريبة القيمة المضافة (١٥٪)</span>
+<span class="font-body-md text-body-md">٢٧٠ ر.س</span>
+</div>
+<hr class="border-surface-variant my-4"/>
+<div class="flex justify-between items-end">
+<span class="font-body-lg text-body-lg font-semibold text-on-surface">الإجمالي</span>
+<span class="font-headline-md text-headline-md text-primary font-bold">٢,٠٧٠ ر.س</span>
+</div>
+</div>
+<!-- Discount Code (Minimalist) -->
+<div class="relative mb-lg">
+<input class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 px-0 py-2 font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/50 transition-colors" placeholder="كود الخصم (اختياري)" type="text"/>
+<button class="absolute left-0 top-1/2 -translate-y-1/2 font-label-sm text-label-sm text-primary hover:text-on-primary-container transition-colors uppercase tracking-widest font-bold">تطبيق</button>
+</div>
+<!-- CTA -->
+<button class="w-full bg-primary-container text-on-primary-container font-body-lg text-body-lg font-semibold py-4 px-6 rounded-lg hover:bg-primary hover:text-on-primary transition-all duration-300 transform active:scale-[0.98] flex items-center justify-center gap-2 glow-shadow">
+                        تأكيد الشراء
+                        <span class="material-symbols-outlined">lock</span>
+</button>
+<p class="font-label-sm text-label-sm text-on-surface-variant/70 text-center mt-4 flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+                        معاملة آمنة ومشفرة
+                    </p>
+</div>
+</div>
+</div>
+</main>
+</body></html>

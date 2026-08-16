@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SARA &amp; MOHAMMED - Dawati</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400..700;1,400..700&amp;family=Playfair+Display:ital,wght@0,400..800;1,400..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#2f1314",
+                        "on-primary-fixed-variant": "#51452d",
+                        "secondary": "#7b5455",
+                        "tertiary-fixed": "#e0e1f5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#3A1116", /* Deep Burgundy */
+                        "primary-fixed": "#f3e0c0",
+                        "on-primary-container": "#675a41",
+                        "outline-variant": "#cec5b9",
+                        "surface-container-low": "#45161C", /* Slightly lighter Burgundy */
+                        "on-tertiary-fixed": "#181b29",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#d6c4a5",
+                        "on-background": "#FDF8F5", /* Warm Ivory */
+                        "background": "#2C0B10", /* Very Deep Burgundy */
+                        "on-surface": "#FDF8F5", /* Warm Ivory */
+                        "on-primary-fixed": "#231a06",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-variant": "#551D24",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-high": "#551D24",
+                        "secondary-fixed": "#ffdad9",
+                        "error": "#ba1a1a",
+                        "primary-container": "#e5d3b3",
+                        "tertiary": "#5b5d6e",
+                        "surface-container-highest": "#66242D",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "tertiary-container": "#d3d4e8",
+                        "secondary-container": "#fdcbcb",
+                        "surface-dim": "#1E060A",
+                        "outline": "#7d766c",
+                        "primary": "#E5D3B3", /* Champagne */
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "surface-container": "#4A1820",
+                        "on-surface-variant": "#EAE0D5", /* Soft ivory for variants */
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#FDF8F5",
+                        "on-secondary-container": "#795354",
+                        "surface": "#3A1116", /* Deep Burgundy */
+                        "on-tertiary-fixed-variant": "#434656",
+                        "surface-tint": "#E5D3B3",
+                        "surface-container-lowest": "#2C0B10",
+                        "on-secondary-fixed-variant": "#603d3e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "xl": "80px",
+                        "margin-desktop": "120px",
+                        "gutter": "20px",
+                        "margin-mobile": "20px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["DM Sans", "sans-serif"],
+                        "display-lg": ["Playfair Display", "serif"],
+                        "display-lg-mobile": ["Playfair Display", "serif"],
+                        "body-lg": ["DM Sans", "sans-serif"],
+                        "label-sm": ["DM Sans", "sans-serif"],
+                        "headline-md": ["Playfair Display", "serif"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        .velvet-fade-enter {
+            opacity: 0;
+            transform: translateY(10px) scale(0.98);
+        }
+        .velvet-fade-enter-active {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .champagne-glow {
+            box-shadow: 0 0 40px 5px rgba(229, 211, 179, 0.08);
+        }
+
+        .champagne-border {
+            border: 1px solid theme('colors.primary');
+        }
+        
+        .champagne-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(229, 211, 179, 0.3), transparent);
+        }
+
+        /* Glassmorphism for floating UI */
+        .glass-panel {
+            background: rgba(58, 17, 22, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(229, 211, 179, 0.1);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col relative overflow-x-hidden font-body-md text-body-md">
+<!-- Top Navigation (Shell suppressed for linear flow, but Dawati brand kept subtle) -->
+<header class="fixed top-0 w-full z-50 glass-panel px-margin-mobile md:px-margin-desktop h-16 flex justify-between items-center transition-all duration-300 hidden" id="topNav">
+<div class="font-headline-md text-headline-md text-primary tracking-tight">Dawati | دعوتي</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-grow w-full max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-xl flex flex-col items-center justify-center min-h-screen relative z-10" id="mainCanvas">
+<!-- Scene 1: Envelope / Cover -->
+<section class="w-full max-w-md flex flex-col items-center text-center velvet-fade-enter velvet-fade-enter-active" id="scene-cover">
+<p class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-md opacity-80">دعوة خاصة لحضور حفل زفاف</p>
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-on-background mb-lg">
+<span class="block mb-xs">SARA</span>
+<span class="block text-primary font-headline-md text-headline-md italic mb-xs">&amp;</span>
+<span class="block">MOHAMMED</span>
+</h1>
+<div class="champagne-divider w-24 mb-lg"></div>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-xl">إلى السيدة الفاضلة:<br/><strong class="text-on-background font-medium block mt-2 text-xl">أم فلان</strong></p>
+<button class="bg-primary text-on-primary-fixed px-xl py-sm rounded-full font-label-sm text-label-sm uppercase tracking-widest hover:scale-95 transition-transform duration-300 champagne-glow flex items-center gap-2" onclick="transitionTo('scene-details')">
+<span>فتح الدعوة</span>
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">search_music_note</span>
+</button>
+</section>
+<!-- Scene 2: Details (Hidden initially) -->
+<section class="w-full max-w-2xl hidden flex-col items-center text-center" id="scene-details">
+<div class="w-full bg-surface-container-low rounded-2xl p-lg champagne-border relative overflow-hidden">
+<!-- Decorative BG Element -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full blur-2xl -mt-10 -mr-10"></div>
+<div class="absolute bottom-0 left-0 w-40 h-40 bg-primary/5 rounded-full blur-3xl -mb-10 -ml-10"></div>
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-primary mb-md relative z-10">تفاصيل الحفل</h2>
+<div class="flex flex-col gap-sm text-on-surface-variant relative z-10 font-body-lg text-body-lg">
+<p>نتشرف بدعوتكم لمشاركتنا فرحتنا</p>
+<p class="font-headline-md text-headline-md text-on-background my-sm">يوم الجمعة، ١٥ أكتوبر ٢٠٢٤</p>
+<div class="flex items-center justify-center gap-2 text-primary">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span>الساعة الثامنة مساءً</span>
+</div>
+</div>
+<div class="champagne-divider w-full my-lg relative z-10"></div>
+<div class="relative z-10 mb-lg">
+<h3 class="font-label-sm text-label-sm text-primary uppercase tracking-widest mb-sm">الموقع</h3>
+<p class="font-body-lg text-body-lg text-on-background mb-2">قاعة ليلتي، الرياض</p>
+<!-- Map Placeholder -->
+<div class="w-full h-48 mt-md rounded-xl overflow-hidden champagne-border grayscale hover:grayscale-0 transition-all duration-700">
+<img class="w-full h-full object-cover" data-alt="A highly detailed overhead map view of a luxury wedding venue in Riyadh, rendered in a sophisticated, minimalist architectural style. The map uses a deep burgundy and champagne color palette, with elegant thin gold lines delineating roads and building footprints. Soft glowing highlights mark the main entrance. Modern luxury aesthetic, dark mode styling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5x2pLVqCiKQ5FSD7-gEQz-6lUU5vUsl3T7W44JDve62MDdtx2FZa-8_pfFjh2c1cvALk80kgkUwIwBF0Us5YJqe9LbAUQlXR1N1qLCNw1L_Lgyqyl4lFwinDSwCkEdMz-Rc3xNW2ygnCvxd_e5vcYz7w7YO6nvJwtqP2uZoYip9uDlC3-TdWnNYCvxF6BhoeqIo1e80toAr9PkHMQuJiTDjRSWC-dgvTv7f6VcjjD8xDbRxkhuh9r"/>
+</div>
+</div>
+<button class="bg-primary text-on-primary-fixed w-full py-md rounded-xl font-label-sm text-label-sm uppercase tracking-widest hover:scale-95 transition-transform duration-300 champagne-glow mt-sm" onclick="transitionTo('scene-rsvp')">
+                    تأكيد الحضور
+                </button>
+</div>
+</section>
+<!-- Scene 3: RSVP (Hidden initially) -->
+<section class="w-full max-w-md hidden flex-col items-center" id="scene-rsvp">
+<h2 class="font-display-lg-mobile text-display-lg-mobile text-primary mb-xl text-center">تأكيد الحضور</h2>
+<form class="w-full flex flex-col gap-lg" onsubmit="event.preventDefault(); transitionTo('scene-ticket');">
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-primary mb-1">الاسم الكريم</label>
+<input class="bg-transparent border-0 border-b border-surface-variant text-on-background font-body-lg text-body-lg focus:ring-0 focus:border-primary transition-colors pb-2 px-0 opacity-70" disabled="" type="text" value="أم فلان"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-primary mb-3">هل ستشرفنا بحضورك؟</label>
+<div class="flex gap-4">
+<label class="flex-1 flex items-center justify-center p-sm rounded-xl border border-primary text-primary cursor-pointer hover:bg-primary/10 transition-colors">
+<input checked="" class="sr-only" name="rsvp" type="radio" value="yes"/>
+<span class="font-body-md text-body-md">بكل سرور</span>
+</label>
+<label class="flex-1 flex items-center justify-center p-sm rounded-xl border border-surface-variant text-on-surface-variant cursor-pointer hover:bg-surface-variant/30 transition-colors">
+<input class="sr-only" name="rsvp" type="radio" value="no"/>
+<span class="font-body-md text-body-md">أعتذر</span>
+</label>
+</div>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-primary mb-1">عدد المرافقين</label>
+<select class="bg-transparent border-0 border-b border-surface-variant text-on-background font-body-lg text-body-lg focus:ring-0 focus:border-primary transition-colors pb-2 px-0 appearance-none">
+<option class="bg-surface text-on-background" value="0">بدون مرافقين</option>
+<option class="bg-surface text-on-background" value="1">مرافق واحد</option>
+<option class="bg-surface text-on-background" value="2">مرافقين إثنين</option>
+</select>
+</div>
+<button class="bg-primary text-on-primary-fixed w-full py-md rounded-xl font-label-sm text-label-sm uppercase tracking-widest hover:scale-95 transition-transform duration-300 champagne-glow mt-md" type="submit">
+                    إرسال
+                </button>
+</form>
+</section>
+<!-- Scene 4: Entry Ticket (Hidden initially) -->
+<section class="w-full max-w-sm hidden flex-col items-center" id="scene-ticket">
+<p class="font-body-lg text-body-lg text-primary mb-lg text-center">شكراً لتأكيد حضورك، بانتظارك!</p>
+<div class="w-full bg-on-background rounded-2xl p-md flex flex-col items-center relative overflow-hidden shadow-2xl">
+<!-- Ticket styling details -->
+<div class="absolute top-1/2 -left-4 w-8 h-8 bg-background rounded-full -translate-y-1/2"></div>
+<div class="absolute top-1/2 -right-4 w-8 h-8 bg-background rounded-full -translate-y-1/2"></div>
+<div class="w-full border-t-2 border-dashed border-outline-variant absolute top-1/2 left-0 -translate-y-1/2 opacity-30"></div>
+<div class="pb-lg text-center w-full">
+<p class="font-label-sm text-label-sm text-on-primary-container uppercase tracking-widest mb-1">بطاقة دخول</p>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-xs">أم فلان</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">مقعد واحد</p>
+</div>
+<div class="pt-lg w-full flex flex-col items-center">
+<!-- QR Code Placeholder -->
+<div class="w-32 h-32 bg-white p-2 rounded-lg mb-sm">
+<img class="w-full h-full object-contain" data-alt="A high contrast, minimalist QR code designed for a luxury event ticket. The QR pattern is sharp black on a pure white background, free of any complex branding in the center to maintain scanability, adhering to a clean, premium modern aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBB0UEbvX3ACVySyFDarS9Yw3_xPlnqXmGrDHZvdNJrhMIIRJyGoQ1fLz8rJ6CtngaiGcJ4HzJ8QH3WJD1XifaWgz5KEVEPZnRT7jglcbKKfrLuD1OBSulCS4gusLe92wg2SFynhBIEHlTpMDc7cUht5Ree8B7KGn64HiVo4GTw9coDFUD8lUROAT0dvApV9v8fPGL3fzyt2XtytPV46Z27tov8eeaoNVfuAC5OzQl1rbliSSMr-TY-"/>
+</div>
+<p class="font-label-sm text-label-sm text-outline tracking-[0.2em]">TCKT-9482-XR</p>
+</div>
+</div>
+<button class="mt-xl font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2 hover:text-primary transition-colors" onclick="location.reload()">
+<span class="material-symbols-outlined text-sm">replay</span>
+                إعادة العرض
+            </button>
+</section>
+</main>
+<script>
+        function transitionTo(sceneId) {
+            const currentActive = document.querySelector('section:not(.hidden)');
+            const nextScene = document.getElementById(sceneId);
+            
+            if(currentActive && nextScene) {
+                // Exit animation
+                currentActive.style.opacity = '0';
+                currentActive.style.transform = 'translateY(-10px) scale(0.98)';
+                currentActive.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                
+                setTimeout(() => {
+                    currentActive.classList.add('hidden');
+                    currentActive.style.cssText = ''; // Reset inline styles
+                    
+                    nextScene.classList.remove('hidden');
+                    // Force reflow
+                    void nextScene.offsetWidth;
+                    
+                    nextScene.classList.add('velvet-fade-enter');
+                    requestAnimationFrame(() => {
+                        nextScene.classList.add('velvet-fade-enter-active');
+                        nextScene.classList.remove('velvet-fade-enter');
+                    });
+                    
+                }, 600);
+            }
+        }
+        
+        // Add subtle floating animation to interactive elements
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('mouseenter', () => {
+                btn.style.transform = 'scale(0.98)';
+            });
+            btn.addEventListener('mouseleave', () => {
+                btn.style.transform = 'scale(1)';
+            });
+        });
+    </script>
+</body></html>

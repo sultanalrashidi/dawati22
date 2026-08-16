@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>مسح الدعوة - Dawati</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+                "on-primary-container": "#675a41",
+                "on-background": "#1b1c1c",
+                "on-primary": "#ffffff",
+                "secondary-fixed-dim": "#ecbbba",
+                "surface-container-low": "#f6f3f2",
+                "on-tertiary-container": "#595b6c",
+                "surface-variant": "#e4e2e1",
+                "inverse-primary": "#d6c4a5",
+                "surface-dim": "#dcd9d9",
+                "error-container": "#ffdad6",
+                "on-tertiary-fixed": "#181b29",
+                "on-tertiary": "#ffffff",
+                "surface": "#fcf9f8",
+                "surface-container-lowest": "#ffffff",
+                "on-primary-fixed-variant": "#51452d",
+                "on-secondary-fixed-variant": "#603d3e",
+                "tertiary": "#5b5d6e",
+                "on-surface-variant": "#4c463d",
+                "secondary": "#7b5455",
+                "secondary-fixed": "#ffdad9",
+                "tertiary-container": "#d3d4e8",
+                "surface-container-high": "#eae7e7",
+                "tertiary-fixed-dim": "#c4c5d9",
+                "on-error-container": "#93000a",
+                "surface-tint": "#6a5d43",
+                "background": "#fcf9f8",
+                "primary-fixed-dim": "#d6c4a5",
+                "on-error": "#ffffff",
+                "surface-container": "#f0eded",
+                "on-secondary-container": "#795354",
+                "outline": "#7d766c",
+                "secondary-container": "#fdcbcb",
+                "on-tertiary-fixed-variant": "#434656",
+                "on-secondary": "#ffffff",
+                "outline-variant": "#cec5b9",
+                "primary-container": "#e5d3b3",
+                "on-surface": "#1b1c1c",
+                "tertiary-fixed": "#e0e1f5",
+                "primary-fixed": "#f3e0c0",
+                "on-primary-fixed": "#231a06",
+                "inverse-on-surface": "#f3f0f0",
+                "inverse-surface": "#303030",
+                "surface-bright": "#fcf9f8",
+                "primary": "#6a5d43",
+                "on-secondary-fixed": "#2f1314",
+                "surface-container-highest": "#e4e2e1",
+                "error": "#ba1a1a"
+        },
+        "borderRadius": {
+                "DEFAULT": "0.25rem",
+                "lg": "0.5rem",
+                "xl": "0.75rem",
+                "full": "9999px"
+        },
+        "spacing": {
+                "margin-desktop": "120px",
+                "xl": "80px",
+                "xs": "8px",
+                "md": "24px",
+                "margin-mobile": "20px",
+                "unit": "4px",
+                "sm": "16px",
+                "lg": "48px",
+                "gutter": "20px"
+        },
+        "fontFamily": {
+                "label-sm": [
+                        "DM Sans"
+                ],
+                "body-lg": [
+                        "DM Sans"
+                ],
+                "headline-md": [
+                        "Playfair Display"
+                ],
+                "display-lg-mobile": [
+                        "Playfair Display"
+                ],
+                "display-lg": [
+                        "Playfair Display"
+                ],
+                "body-md": [
+                        "DM Sans"
+                ]
+        },
+        "fontSize": {
+                "label-sm": [
+                        "12px",
+                        {
+                                "lineHeight": "1.0",
+                                "letterSpacing": "0.05em",
+                                "fontWeight": "500"
+                        }
+                ],
+                "body-lg": [
+                        "18px",
+                        {
+                                "lineHeight": "1.6",
+                                "fontWeight": "400"
+                        }
+                ],
+                "headline-md": [
+                        "24px",
+                        {
+                                "lineHeight": "1.3",
+                                "fontWeight": "500"
+                        }
+                ],
+                "display-lg-mobile": [
+                        "32px",
+                        {
+                                "lineHeight": "1.2",
+                                "fontWeight": "600"
+                        }
+                ],
+                "display-lg": [
+                        "48px",
+                        {
+                                "lineHeight": "1.1",
+                                "letterSpacing": "-0.02em",
+                                "fontWeight": "600"
+                        }
+                ],
+                "body-md": [
+                        "16px",
+                        {
+                                "lineHeight": "1.5",
+                                "fontWeight": "400"
+                        }
+                ]
+        }
+},
+    },
+  }
+</script>
+<style>
+    /* Utility for scanner overlay */
+    .scanner-overlay {
+        background: radial-gradient(circle, transparent 20%, rgba(0,0,0,0.7) 80%);
+    }
+    
+    .scanner-box {
+        position: relative;
+    }
+    .scanner-box::before,
+    .scanner-box::after {
+        content: '';
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--tw-colors-primary-container);
+        border-radius: 8px;
+    }
+    
+    .scanner-box::before {
+        top: -4px;
+        left: -4px;
+        border-right: none;
+        border-bottom: none;
+    }
+    
+    .scanner-box::after {
+        bottom: -4px;
+        right: -4px;
+        border-left: none;
+        border-top: none;
+    }
+    
+    .scanner-box-inner::before,
+    .scanner-box-inner::after {
+        content: '';
+        position: absolute;
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--tw-colors-primary-container);
+        border-radius: 8px;
+    }
+    
+    .scanner-box-inner::before {
+        top: -4px;
+        right: -4px;
+        border-left: none;
+        border-bottom: none;
+    }
+    
+    .scanner-box-inner::after {
+        bottom: -4px;
+        left: -4px;
+        border-right: none;
+        border-top: none;
+    }
+
+    /* Scanning line animation */
+    @keyframes scan {
+        0% { transform: translateY(0); opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { transform: translateY(240px); opacity: 0; }
+    }
+    .scan-line {
+        animation: scan 2s linear infinite;
+    }
+</style>
+</head>
+<body class="bg-black text-white h-screen w-screen overflow-hidden flex flex-col items-center justify-between font-body-md text-body-md antialiased select-none">
+<!-- Camera Viewport (Simulated) -->
+<div class="absolute inset-0 z-0">
+<div class="bg-cover bg-center w-full h-full opacity-60" data-alt="A blurry, out of focus view of a well-lit modern luxury event entrance hall with soft champagne lighting. The scene is slightly distorted as if viewed through a smartphone camera lens actively trying to focus on a QR code. The overall color palette is warm and inviting, heavily featuring subtle creams and dusty roses. The aesthetic is premium editorial and serene." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCGfX2cPszy1ld-E5cLvog04HYPtick1EsAfAtXykRH3a9V3FM8gNO_nBpbY_uNBcB2-wgxIn2N53MRRSCahx63s8qI2DNXlDjLZmnjIBQ4moJLfxLFttAJMLKqPqWn5mwfjhm6zfY_IWHnxV1BritJr0L4I4sC_7rK39_wwXkIsHd84tADnETDXXlraXpi9EZ7De0bMc_bs8BsZ3gy63h0U8o696_RkdwdNle7U4fRA_Cr7RUarJ95')"></div>
+<div class="absolute inset-0 scanner-overlay"></div>
+</div>
+<!-- Top Area: Header -->
+<header class="w-full z-10 pt-safe mt-6 px-margin-mobile flex justify-center items-center relative">
+<!-- Close Button (Ghost Style) -->
+<button class="absolute right-margin-mobile w-10 h-10 rounded-full border border-primary-container flex items-center justify-center text-primary-container hover:scale-95 transition-transform">
+<span class="material-symbols-outlined font-light" data-icon="close">close</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary-container tracking-tight">مسح الدعوة</h1>
+</header>
+<!-- Center Area: Scanner Box & Instructions -->
+<main class="z-10 flex flex-col items-center justify-center w-full flex-grow">
+<!-- Scanner Frame -->
+<div class="relative w-64 h-64 sm:w-80 sm:h-80 scanner-box mb-8">
+<div class="absolute inset-0 scanner-box-inner"></div>
+<!-- Animated Scanning Line -->
+<div class="absolute top-0 left-0 w-full h-0.5 bg-primary-container shadow-[0_0_10px_2px_rgba(229,211,179,0.8)] scan-line"></div>
+<!-- Target Center Indicator -->
+<div class="absolute inset-0 flex items-center justify-center opacity-30">
+<span class="material-symbols-outlined text-4xl text-primary-container" data-icon="qr_code_scanner">qr_code_scanner</span>
+</div>
+</div>
+<!-- Instructions -->
+<p class="font-body-lg text-body-lg text-white/90 text-center max-w-[250px] leading-relaxed drop-shadow-md">
+            وجّه الكاميرا نحو رمز QR
+        </p>
+</main>
+<!-- Bottom Area: Controls -->
+<footer class="w-full z-10 pb-safe mb-10 px-margin-mobile flex justify-center items-center">
+<!-- Flash Toggle -->
+<button class="flex flex-col items-center gap-2 group" onclick="this.classList.toggle('text-primary-container'); this.classList.toggle('text-white/60');">
+<div class="w-14 h-14 rounded-full bg-white/10 backdrop-blur-md border border-white/20 flex items-center justify-center group-hover:scale-95 transition-transform group-[.text-primary-container]:bg-primary-container/20 group-[.text-primary-container]:border-primary-container">
+<span class="material-symbols-outlined text-2xl" data-icon="flashlight_on">flashlight_on</span>
+</div>
+<span class="font-label-sm text-label-sm uppercase tracking-widest opacity-80">إضاءة</span>
+</button>
+</footer>
+</body></html>

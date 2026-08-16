@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html class="light" dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>Dawati - Messages</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#fcf9f8",
+                      "surface-dim": "#dcd9d9",
+                      "outline-variant": "#cec5b9",
+                      "background": "#fcf9f8",
+                      "error-container": "#ffdad6",
+                      "on-primary-container": "#675a41",
+                      "inverse-primary": "#d6c4a5",
+                      "inverse-surface": "#303030",
+                      "surface-container": "#f0eded",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "surface-bright": "#fcf9f8",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "primary": "#6a5d43",
+                      "surface-container-lowest": "#ffffff",
+                      "secondary-container": "#fdcbcb",
+                      "on-tertiary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "on-error": "#ffffff",
+                      "on-surface": "#1b1c1c",
+                      "on-secondary-fixed-variant": "#603d3e",
+                      "inverse-on-surface": "#f3f0f0",
+                      "surface-variant": "#e4e2e1",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "primary-fixed": "#f3e0c0",
+                      "outline": "#7d766c",
+                      "on-tertiary-container": "#595b6c",
+                      "on-background": "#1b1c1c",
+                      "primary-container": "#e5d3b3",
+                      "tertiary-container": "#d3d4e8",
+                      "on-surface-variant": "#4c463d",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "on-secondary-container": "#795354",
+                      "on-tertiary-fixed": "#181b29",
+                      "tertiary-fixed": "#e0e1f5",
+                      "on-primary-fixed": "#231a06",
+                      "on-secondary-fixed": "#2f1314",
+                      "surface-container-high": "#eae7e7",
+                      "surface-tint": "#6a5d43",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-primary": "#ffffff",
+                      "surface-container-low": "#f6f3f2",
+                      "secondary-fixed": "#ffdad9",
+                      "tertiary": "#5b5d6e",
+                      "secondary": "#7b5455",
+                      "on-primary-fixed-variant": "#51452d"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "20px",
+                      "lg": "48px",
+                      "sm": "16px",
+                      "md": "24px",
+                      "margin-desktop": "120px",
+                      "xl": "80px",
+                      "unit": "4px",
+                      "xs": "8px",
+                      "gutter": "20px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "DM Sans"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "label-sm": [
+                              "DM Sans"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .pt-safe { padding-top: env(safe-area-inset-top); }
+        
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(252, 249, 248, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+        
+        /* Subtle scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cec5b9;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #7d766c;
+        }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased min-h-screen flex flex-col pt-safe overflow-hidden">
+<!-- TopAppBar -->
+<header class="bg-surface/80 dark:bg-surface-container-low/80 backdrop-blur-md docked full-width top-0 sticky z-50 shadow-[0_20px_40px_-15px_rgba(106,93,67,0.08)] flex justify-between items-center px-margin-mobile py-sm w-full hidden md:flex">
+<div class="flex items-center gap-md">
+<h1 class="font-display-lg text-display-lg text-primary tracking-tight">Dawati</h1>
+</div>
+<nav class="flex items-center gap-lg">
+<a class="text-on-surface-variant font-label-sm text-label-sm hover:opacity-80 transition-opacity flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]">assignment_turned_in</span>
+                Tasks
+            </a>
+<a class="text-primary font-medium font-label-sm text-label-sm hover:opacity-80 transition-opacity flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">chat_bubble_outline</span>
+                Messages
+            </a>
+<a class="text-on-surface-variant font-label-sm text-label-sm hover:opacity-80 transition-opacity flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]">payments</span>
+                Earnings
+            </a>
+<a class="text-on-surface-variant font-label-sm text-label-sm hover:opacity-80 transition-opacity flex items-center gap-xs" href="#">
+<span class="material-symbols-outlined text-[18px]">settings</span>
+                Settings
+            </a>
+</nav>
+<div class="flex items-center gap-sm">
+<button class="text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant/30">
+<img alt="Designer Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a female graphic designer in a bright, modern studio. She is smiling softly, wearing a minimalist beige top. Soft, diffused natural light illuminates her face, highlighting the subtle textures of her clothing and hair. The background is slightly out of focus, suggesting a creative workspace with high-end aesthetics." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCyL3HB8EEz3-PDoYSm66Yp8FQ7ceWsh2DPrvVwHoTOzXN2fvuwsMmt7pD1K-ZkfNflFSAWQW6uHCHQ3e3LH41bI-wYan9jLe_Vqeu-NwONwXAGihTz5sSTtSm-FAgyGWcqALg0w4UB3M3v5ozHkJnidLuCKEy8Zd08rbKoP4xIzBjmDMonCIBLe3rQD5VxCma7CW3ZWBwyS-zvU3DQwUnc1iA-gDg_b9NPK9PXi41S_1yYfDyVw1iB"/>
+</div>
+</div>
+</header>
+<!-- Main Content - Chat Interface -->
+<main class="flex-grow flex flex-col md:flex-row overflow-hidden relative">
+<!-- Sidebar: Chat List (Hidden on small screens when a chat is open, but visible for this layout) -->
+<aside class="w-full md:w-1/3 lg:w-1/4 bg-surface-container-low border-r border-outline-variant/10 flex flex-col h-full overflow-hidden">
+<div class="px-margin-mobile py-md border-b border-outline-variant/10">
+<h2 class="font-headline-md text-headline-md-mobile text-on-surface">Messages</h2>
+<div class="mt-sm relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/50 text-[20px]">search</span>
+<input class="w-full bg-surface border-b border-outline-variant/30 focus:border-primary focus:border-b-2 outline-none py-2 pl-10 pr-3 font-body-md text-body-md transition-all duration-300" placeholder="Search conversations..." type="text"/>
+</div>
+</div>
+<div class="overflow-y-auto flex-grow pb-24 md:pb-0">
+<!-- Active Chat Item -->
+<button class="w-full text-left p-margin-mobile bg-surface-variant/30 border-l-2 border-primary hover:bg-surface-variant/50 transition-colors flex items-start gap-sm">
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+<img alt="Client Avatar" class="w-full h-full object-cover" data-alt="A candid photo of a stylish young couple laughing together outdoors. They are dressed in elegant, muted tones. The lighting is warm golden hour sunlight, creating a romantic and premium atmosphere. The background is softly blurred foliage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4EC4kz9xfVnre9AwFZ9doJQltNIl5TowYC2TI8gYe7BsbU7-UlIfbue_h1iRd4irhjvd9Fdg8ZtYEtNy3GejG7dWP8-k6uVZ0Zvh8pKQbmBiYtDKbg1rcjhaAd_FiSvdKa15L_zI45vOD7xWuGvp73ot6HSJhHM7oNIEE8q9YsT6J-kTScPcqK9tnlHF6U0HE90gEf8IbmxqmGqcwAvgBUPyvU7E7WvhoKSauffZ2U_FCW73nw6cb"/>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-body-md text-body-md font-medium text-on-surface truncate">Sarah &amp; James</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 whitespace-nowrap ml-2">10:42 AM</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate">The floral wreath looks perfect. Can we...</p>
+</div>
+</button>
+<!-- Inactive Chat Item 1 -->
+<button class="w-full text-left p-margin-mobile hover:bg-surface-variant/20 transition-colors flex items-start gap-sm border-b border-outline-variant/5">
+<div class="w-12 h-12 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface-variant font-medium text-lg flex-shrink-0">
+                        EA
+                    </div>
+<div class="flex-grow min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-body-md text-body-md font-medium text-on-surface truncate">Emma Adams</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 whitespace-nowrap ml-2">Yesterday</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate opacity-70">Thank you! We'll review and get back.</p>
+</div>
+</button>
+<!-- Inactive Chat Item 2 -->
+<button class="w-full text-left p-margin-mobile hover:bg-surface-variant/20 transition-colors flex items-start gap-sm border-b border-outline-variant/5">
+<div class="w-12 h-12 rounded-full overflow-hidden flex-shrink-0">
+<img alt="Client Avatar" class="w-full h-full object-cover" data-alt="A close-up portrait of a mature woman smiling softly, wearing a silk blouse. The background is a sophisticated interior with warm, ambient lighting. The mood is calm and refined, fitting a luxury service context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHll8FglMDPjtrgOikHBGhwVYXWBr3dhx-od8OPllnsitBnr77hNHtFIO5o7HT-RoCbjaAvpyUYt7ri08rOGyZejfYfNODb2Q2OhGRZ7sCPri-ODizIeOtNtd1ppef3QTWITupoo1kHvY1dbrcJsgpYi9vb5AS0-_kIhyigDkbi7S5kPSrnUWgFKvLW5YcgGMG9O6VU9xpSqMAFTnBxBrKqEuaTnCZSsat4gkLuqB9XuDnBo_i0ytw"/>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex justify-between items-baseline mb-1">
+<h3 class="font-body-md text-body-md font-medium text-on-surface truncate">Noura Al-Saud</h3>
+<span class="font-label-sm text-label-sm text-on-surface-variant/70 whitespace-nowrap ml-2">Mon</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant truncate opacity-70">Could you adjust the gold foil on the...</p>
+</div>
+</button>
+</div>
+</aside>
+<!-- Main Chat Area -->
+<section class="flex-grow flex flex-col h-full bg-surface relative">
+<!-- Chat Header -->
+<header class="px-margin-mobile py-sm border-b border-outline-variant/10 flex items-center justify-between glass-panel z-10 sticky top-0 md:static">
+<div class="flex items-center gap-sm">
+<button class="md:hidden text-on-surface-variant hover:text-primary transition-colors p-2 -ml-2">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex items-center gap-sm">
+<div class="w-10 h-10 rounded-full overflow-hidden">
+<img alt="Sarah &amp; James" class="w-full h-full object-cover" data-alt="A candid photo of a stylish young couple laughing together outdoors. They are dressed in elegant, muted tones. The lighting is warm golden hour sunlight, creating a romantic and premium atmosphere. The background is softly blurred foliage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDsAhoRofrJTDCB-RAzLOih19gEKXKMYRoNUTlg_5Z_98cd4bxKmw82doumBbSZMjSST45sbtdyhbPrKm-vgDtSBDFwvtUVsL50dQjgml7XdU8VlJejYKip-4DBWcvYvGra9gtjcc_8z9k_qJsH-Lt1xt3yF1Hjsxow3Swz7Bci-Y2mYr68z9f-0hfbyvxdJiBT-00GzfIIOwoLoRDcx342HtWv7m__ziP7WN5FpPebpmnlF5OyhoBo"/>
+</div>
+<div>
+<h2 class="font-headline-md text-[18px] md:text-headline-md text-on-surface leading-tight">Sarah &amp; James</h2>
+<p class="font-label-sm text-label-sm text-primary">Botanical Elegance Suite</p>
+</div>
+</div>
+</div>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">info</span>
+</button>
+</header>
+<!-- Chat Messages -->
+<div class="flex-grow overflow-y-auto p-margin-mobile flex flex-col gap-md pb-32 md:pb-margin-mobile relative z-0">
+<!-- Date Divider -->
+<div class="text-center my-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant/60 uppercase tracking-wider bg-surface-container-low px-3 py-1 rounded-full">Today, Oct 12</span>
+</div>
+<!-- Client Message -->
+<div class="flex items-end gap-xs self-start max-w-[85%] md:max-w-[70%]">
+<div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 hidden sm:block mb-1">
+<img alt="Client" class="w-full h-full object-cover" data-alt="A candid photo of a stylish young couple laughing together outdoors. They are dressed in elegant, muted tones. The lighting is warm golden hour sunlight, creating a romantic and premium atmosphere. The background is softly blurred foliage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCoxdFgtxRMZLVbRIdvTWxpApuM4iqiamqmCdzLH9uLtxWyCLZSv_3wWHiVd_RdQK1vLkyJT04KgKpr5DJ1wNraYjthVRWHwdOHIMzI7N24b0WTnCncl0OCWx-9fQ22AiYmbR07Fy9JPxBdebZWA-kW0o8qYe2antbn20nJRfbJz1PhTE5Jgf3Kjr7K_RvlBHe3SM0IowVlEGCnSdW4thQEGY45nMDiHPruKKAzcaJlxNzOmDm8iE9"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="bg-surface-container-high text-on-surface p-4 rounded-2xl rounded-bl-none shadow-sm font-body-md text-body-md">
+                            Hi! We loved the initial concepts you sent over yesterday. The botanical theme is exactly what we envisioned.
+                        </div>
+<span class="font-label-sm text-[10px] text-on-surface-variant/50 ml-1">09:15 AM</span>
+</div>
+</div>
+<!-- Designer (Me) Message -->
+<div class="flex items-end gap-xs self-end max-w-[85%] md:max-w-[70%]">
+<div class="flex flex-col gap-1 items-end">
+<div class="bg-primary-container text-on-primary-container p-4 rounded-2xl rounded-br-none shadow-sm font-body-md text-body-md">
+                            Wonderful! I'm so glad the botanical direction resonates with you both. I've been refining the wreath detail based on your note about preferring olive branches.
+                        </div>
+<span class="font-label-sm text-[10px] text-on-surface-variant/50 mr-1">09:45 AM</span>
+</div>
+</div>
+<!-- Designer (Me) Message with Attachment -->
+<div class="flex items-end gap-xs self-end max-w-[85%] md:max-w-[70%] mt-xs">
+<div class="flex flex-col gap-1 items-end w-full">
+<div class="bg-primary-container text-on-primary-container p-2 rounded-2xl rounded-br-none shadow-sm w-full md:w-96">
+<!-- Shared Design Preview Card -->
+<div class="bg-surface rounded-xl overflow-hidden shadow-sm border border-outline-variant/20">
+<div class="aspect-[4/3] w-full relative bg-surface-container-low group cursor-pointer">
+<img alt="Design Draft Preview" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A flat lay photograph of a luxurious wedding invitation suite on a textured linen background. The invitations feature delicate watercolor olive branch motifs and elegant, classic serif typography printed with gold foil accents. The color palette is soft sage, ivory, and dusty rose. A vintage wax seal and a silk ribbon are elegantly arranged next to the paper goods. High-key, natural diffused lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYO0jaMrrjbXrnVMZM1EHHX09X-DCaqozXW8RJBTUUea7LjMkjIylLNPI-ykjCSUhjRTZ0N3N7RLFjSObq4ACp2CB2l_dUdz7f1uR_cfIVmKw2ldu89dMEgPNuqF1p5Fqhn6aXYyXqUnmdXTZnjUm0EIStsH2GAsLHpIRVMwY3GpqOgV-r3B0egMQU60tuZz4Q15RudIcprhsaOIn19hJuUq-w6QN2nfke42JNY4d9a1tY6cZbLRGy"/>
+<div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<div class="bg-white/80 backdrop-blur-sm p-2 rounded-full text-on-surface">
+<span class="material-symbols-outlined">zoom_in</span>
+</div>
+</div>
+</div>
+<div class="p-3">
+<h4 class="font-body-md text-[14px] font-medium text-on-surface">Draft_v2_OliveBranch.pdf</h4>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">2.4 MB • Shared just now</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1 mt-1 mr-1">
+<span class="font-label-sm text-[10px] text-on-surface-variant/50">10:30 AM</span>
+<span class="material-symbols-outlined text-[14px] text-primary">done_all</span>
+</div>
+</div>
+</div>
+<!-- Client Message -->
+<div class="flex items-end gap-xs self-start max-w-[85%] md:max-w-[70%] mt-md">
+<div class="w-8 h-8 rounded-full overflow-hidden flex-shrink-0 hidden sm:block mb-1">
+<img alt="Client" class="w-full h-full object-cover" data-alt="A candid photo of a stylish young couple laughing together outdoors. They are dressed in elegant, muted tones. The lighting is warm golden hour sunlight, creating a romantic and premium atmosphere. The background is softly blurred foliage." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTnrrP5UpUKl9QdnaRYewh-s5VODAD8cwldksCtCN9A4LnGq8GJ2zd7dX4BOVS3CeARPuEcfShMD7V84gBeG9-VgeC3kVIzmkNPg-I_XAm32eXXArzn5f98-sNiPAKRDV0lByzKBMD8oBYzJWC4e8wbXTsuUgmPJTYYvLTYtJ1RQq0ABWXYNjul_06ruYr7-7kXDMycKrvrVgZVz8mJiL2rnZOWbr-uQ4eaYjv6r3zoon-ObcZH0Ax"/>
+</div>
+<div class="flex flex-col gap-1">
+<div class="bg-surface-container-high text-on-surface p-4 rounded-2xl rounded-bl-none shadow-sm font-body-md text-body-md">
+                            Oh wow, that looks beautiful! The olive branches add exactly the right touch of elegance we were hoping for. 
+                        </div>
+</div>
+</div>
+<!-- Client Message -->
+<div class="flex items-end gap-xs self-start max-w-[85%] md:max-w-[70%] mt-xs">
+<div class="w-8 h-8 rounded-full flex-shrink-0 hidden sm:block mb-1 opacity-0"></div> <!-- Spacer for alignment -->
+<div class="flex flex-col gap-1">
+<div class="bg-surface-container-high text-on-surface p-4 rounded-2xl rounded-bl-none shadow-sm font-body-md text-body-md">
+                            The floral wreath looks perfect. Can we just make sure the date is slightly larger on the main card?
+                        </div>
+<span class="font-label-sm text-[10px] text-on-surface-variant/50 ml-1">10:42 AM</span>
+</div>
+</div>
+</div>
+<!-- Message Input Area -->
+<div class="glass-panel p-margin-mobile border-t border-outline-variant/10 absolute bottom-0 left-0 w-full z-20 pb-safe md:static md:pb-margin-mobile">
+<div class="flex items-end gap-sm bg-surface rounded-2xl border border-outline-variant/30 p-2 shadow-sm focus-within:border-primary focus-within:shadow-[0_4px_20px_rgba(229,211,179,0.2)] transition-all duration-300">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors flex-shrink-0 rounded-full hover:bg-surface-variant/30">
+<span class="material-symbols-outlined text-[22px]">attach_file</span>
+</button>
+<textarea class="w-full bg-transparent border-none outline-none font-body-md text-body-md resize-none py-2 px-1 max-h-32 min-h-[40px]" placeholder="Write a message..." rows="1"></textarea>
+<button class="p-2 bg-primary-container text-on-primary-container rounded-xl hover:opacity-90 transition-opacity flex-shrink-0 active:scale-95 flex items-center justify-center h-10 w-10">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+<div class="flex gap-4 mt-3 px-2 hidden md:flex">
+<button class="text-label-sm font-label-sm text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">draft</span> Share Draft
+                    </button>
+<button class="text-label-sm font-label-sm text-on-surface-variant hover:text-primary transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">payments</span> Request Approval
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="bg-surface/80 dark:bg-surface-container-highest/80 backdrop-blur-lg border-t border-outline-variant/10 shadow-[0_-10px_40px_rgba(106,93,67,0.05)] docked full-width bottom-0 fixed z-50 fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe md:hidden">
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined text-[24px]">assignment_turned_in</span>
+<span class="font-label-sm text-[10px] mt-1">Tasks</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:w-1 after:h-1 after:bg-secondary-fixed-dim after:rounded-full after:mt-1 hover:text-primary transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined text-[24px]" style="font-variation-settings: 'FILL' 1;">chat_bubble_outline</span>
+<span class="font-label-sm text-[10px] mt-1 font-medium">Messages</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined text-[24px]">payments</span>
+<span class="font-label-sm text-[10px] mt-1">Earnings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined text-[24px]">settings</span>
+<span class="font-label-sm text-[10px] mt-1">Settings</span>
+</a>
+</nav>
+<script>
+        // Auto-resize textarea
+        const textarea = document.querySelector('textarea');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            if(this.value === '') {
+                this.style.height = '40px';
+            }
+        });
+    </script>
+</body></html>

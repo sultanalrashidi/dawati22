@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Review &amp; Create - Dawati</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400..500&amp;family=Playfair+Display:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface": "#fcf9f8",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed-variant": "#51452d",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary-fixed-variant": "#603d3e",
+                      "surface-container-high": "#eae7e7",
+                      "surface-bright": "#fcf9f8",
+                      "outline": "#7d766c",
+                      "on-tertiary-fixed": "#181b29",
+                      "inverse-surface": "#303030",
+                      "surface-container-low": "#f6f3f2",
+                      "inverse-on-surface": "#f3f0f0",
+                      "background": "#fcf9f8",
+                      "on-surface-variant": "#4c463d",
+                      "primary-fixed": "#f3e0c0",
+                      "on-secondary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "secondary": "#7b5455",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "surface-container-highest": "#e4e2e1",
+                      "primary": "#6a5d43",
+                      "error": "#ba1a1a",
+                      "on-primary": "#ffffff",
+                      "on-surface": "#1b1c1c",
+                      "outline-variant": "#cec5b9",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "inverse-primary": "#d6c4a5",
+                      "secondary-container": "#fdcbcb",
+                      "primary-container": "#e5d3b3",
+                      "on-tertiary": "#ffffff",
+                      "on-tertiary-container": "#595b6c",
+                      "on-primary-fixed": "#231a06",
+                      "on-secondary-fixed": "#2f1314",
+                      "on-primary-container": "#675a41",
+                      "surface-dim": "#dcd9d9",
+                      "surface-tint": "#6a5d43",
+                      "surface-container": "#f0eded",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "on-secondary-container": "#795354",
+                      "on-error-container": "#93000a",
+                      "tertiary-container": "#d3d4e8",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "surface-variant": "#e4e2e1",
+                      "on-background": "#1b1c1c",
+                      "tertiary": "#5b5d6e",
+                      "tertiary-fixed": "#e0e1f5",
+                      "secondary-fixed": "#ffdad9"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "120px",
+                      "md": "24px",
+                      "unit": "4px",
+                      "xs": "8px",
+                      "margin-mobile": "20px",
+                      "lg": "48px",
+                      "xl": "80px",
+                      "gutter": "20px",
+                      "sm": "16px"
+              },
+              "fontFamily": {
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "label-sm": [
+                              "DM Sans"
+                      ],
+                      "body-md": [
+                              "DM Sans"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "display-lg": [
+                              "Playfair Display"
+                      ]
+              },
+              "fontSize": {
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+          .material-symbols-outlined {
+              font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+          }
+          .icon-fill {
+              font-variation-settings: 'FILL' 1;
+          }
+          .glass-panel {
+              backdrop-filter: blur(20px);
+              -webkit-backdrop-filter: blur(20px);
+          }
+          .glow-shadow {
+              box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.5);
+          }
+          .fade-in {
+              animation: fadeIn 0.8s ease-out forwards;
+          }
+          @keyframes fadeIn {
+              from { opacity: 0; transform: translateY(10px); }
+              to { opacity: 1; transform: translateY(0); }
+          }
+      </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md antialiased flex flex-col">
+<!-- Top Navigation (Hidden on transactional flow, replaced with simple back button) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl flex justify-between items-center px-margin-mobile md:px-margin-desktop h-16 transition-all duration-300">
+<button class="flex items-center text-primary hover:opacity-80 transition-opacity group">
+<span class="material-symbols-outlined mr-2 group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="font-label-sm text-label-sm tracking-wider uppercase">Back</span>
+</button>
+<div class="font-headline-md text-headline-md tracking-widest text-primary">
+            Dawati
+        </div>
+<div class="w-20"></div> <!-- Spacer for center alignment -->
+</header>
+<main class="flex-grow pt-24 pb-32 px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto w-full">
+<div class="text-center mb-lg fade-in">
+<h1 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-xs">Review &amp; Create</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto">Your digital invitation is ready. Review the details below before finalizing your event.</p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-lg lg:gap-xl items-start">
+<!-- Invitation Preview (Left/Top) -->
+<div class="lg:col-span-5 order-2 lg:order-1 fade-in" style="animation-delay: 0.2s;">
+<div class="relative rounded-2xl overflow-hidden shadow-lg border border-outline-variant/30 aspect-[9/16] max-w-md mx-auto lg:mx-0">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLsIkLMp6KUEFAHNCxxlYLkdffyywMqvrksWjh5-oA0DHR_4NhG7GuwlhQ3YTJAnHkXWR-0hYT0SzQBJoOlIeD30WhGTJ133cP45E_CUK9A9zKVqTJlEtCA5cTXyn3k8WooWJSOw5st0xvmZCavnW3EC9qztF07o64HfL7KcuR1um82laP4U-rDyax3QXEWbwOjZ7fm46v8awDqQzVabeBl-K1M2vvRkoxv5anOLLX0EfX1xan-40xqUfj8"/>
+<!-- Minimal overlay for realism -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
+</div>
+<div class="mt-xs text-center font-label-sm text-label-sm text-on-surface-variant/70 uppercase tracking-widest">
+                    Digital Invitation Preview
+                </div>
+</div>
+<!-- Event Details (Right/Bottom) -->
+<div class="lg:col-span-7 order-1 lg:order-2 flex flex-col gap-md fade-in" style="animation-delay: 0.1s;">
+<!-- Details Card -->
+<div class="bg-surface-container-low rounded-xl p-md md:p-lg border border-outline-variant/20">
+<h2 class="font-headline-md text-headline-md text-primary mb-md border-b border-outline-variant/10 pb-xs">Event Summary</h2>
+<dl class="grid grid-cols-1 sm:grid-cols-2 gap-y-sm gap-x-md">
+<div class="flex flex-col">
+<dt class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase tracking-wider mb-1">Event Type</dt>
+<dd class="font-body-lg text-body-lg text-on-surface flex items-center">
+<span class="material-symbols-outlined text-secondary mr-2 text-sm">favorite</span>
+                                Wedding Reception
+                            </dd>
+</div>
+<div class="flex flex-col">
+<dt class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase tracking-wider mb-1">Hosts</dt>
+<dd class="font-body-lg text-body-lg text-on-surface">Fahad &amp; Sara</dd>
+</div>
+<div class="col-span-1 sm:col-span-2 my-2 border-t border-outline-variant/10"></div>
+<div class="flex flex-col">
+<dt class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase tracking-wider mb-1">Date</dt>
+<dd class="font-body-lg text-body-lg text-on-surface flex items-center">
+<span class="material-symbols-outlined text-secondary mr-2 text-sm">calendar_today</span>
+                                Friday, October 25th, 2024
+                            </dd>
+</div>
+<div class="flex flex-col">
+<dt class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase tracking-wider mb-1">Time</dt>
+<dd class="font-body-lg text-body-lg text-on-surface flex items-center">
+<span class="material-symbols-outlined text-secondary mr-2 text-sm">schedule</span>
+                                8:00 PM - 1:00 AM
+                            </dd>
+</div>
+<div class="col-span-1 sm:col-span-2 my-2 border-t border-outline-variant/10"></div>
+<div class="flex flex-col col-span-1 sm:col-span-2">
+<dt class="font-label-sm text-label-sm text-on-surface-variant/70 uppercase tracking-wider mb-1">Location</dt>
+<dd class="font-body-lg text-body-lg text-on-surface flex items-start">
+<span class="material-symbols-outlined text-secondary mr-2 mt-1 text-sm">location_on</span>
+<div>
+<span class="block">The Ritz-Carlton Grand Ballroom</span>
+<span class="text-on-surface-variant text-sm block mt-1">Al Hada Area, Riyadh, Saudi Arabia</span>
+</div>
+</dd>
+</div>
+</dl>
+</div>
+<!-- Settings Summary -->
+<div class="bg-surface-container-low rounded-xl p-md border border-outline-variant/20 flex items-center justify-between">
+<div class="flex items-center">
+<div class="w-10 h-10 rounded-full bg-primary-container/30 flex items-center justify-center mr-4">
+<span class="material-symbols-outlined text-primary">visibility</span>
+</div>
+<div>
+<div class="font-body-md text-on-surface font-medium">Privacy Settings</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Private Event • Invitation Only</div>
+</div>
+</div>
+<button class="text-primary hover:text-secondary transition-colors font-label-sm uppercase tracking-wider">Edit</button>
+</div>
+<!-- Action Area -->
+<div class="mt-lg flex flex-col items-center">
+<button class="w-full md:w-auto min-w-[280px] bg-primary-container text-on-primary-container font-body-lg text-body-lg py-4 px-xl rounded-full glow-shadow hover:scale-[0.98] transition-transform duration-200 flex items-center justify-center group">
+<span>Create Event</span>
+<span class="material-symbols-outlined ml-2 group-hover:translate-x-1 transition-transform">celebration</span>
+</button>
+<p class="font-label-sm text-label-sm text-on-surface-variant/70 mt-4 text-center">
+                        Next step: You can add guests and manage RSVPs after creation.
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<!-- Suppressed BottomNavBar for transactional page -->
+</body></html>

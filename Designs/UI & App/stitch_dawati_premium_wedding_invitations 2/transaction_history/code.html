@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+
+<html dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Earnings History - Dawati</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&amp;family=DM+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config injected from design system -->
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary-container": "#595b6c",
+                      "on-tertiary-fixed-variant": "#434656",
+                      "surface-container": "#f0eded",
+                      "on-error-container": "#93000a",
+                      "surface-container-high": "#eae7e7",
+                      "on-secondary-fixed-variant": "#603d3e",
+                      "surface": "#fcf9f8",
+                      "background": "#fcf9f8",
+                      "on-primary-fixed-variant": "#51452d",
+                      "tertiary": "#5b5d6e",
+                      "inverse-primary": "#d6c4a5",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#fcf9f8",
+                      "outline": "#7d766c",
+                      "surface-variant": "#e4e2e1",
+                      "surface-tint": "#6a5d43",
+                      "secondary-fixed-dim": "#ecbbba",
+                      "inverse-on-surface": "#f3f0f0",
+                      "surface-container-low": "#f6f3f2",
+                      "tertiary-container": "#d3d4e8",
+                      "on-primary-fixed": "#231a06",
+                      "primary-fixed-dim": "#d6c4a5",
+                      "tertiary-fixed-dim": "#c4c5d9",
+                      "inverse-surface": "#303030",
+                      "secondary-container": "#fdcbcb",
+                      "secondary": "#7b5455",
+                      "on-secondary-container": "#795354",
+                      "outline-variant": "#cec5b9",
+                      "tertiary-fixed": "#e0e1f5",
+                      "error": "#ba1a1a",
+                      "primary-container": "#e5d3b3",
+                      "on-primary-container": "#675a41",
+                      "on-surface": "#1b1c1c",
+                      "primary": "#6a5d43",
+                      "on-tertiary": "#ffffff",
+                      "secondary-fixed": "#ffdad9",
+                      "on-secondary-fixed": "#2f1314",
+                      "error-container": "#ffdad6",
+                      "surface-dim": "#dcd9d9",
+                      "surface-container-highest": "#e4e2e1",
+                      "on-error": "#ffffff",
+                      "on-surface-variant": "#4c463d",
+                      "on-background": "#1b1c1c",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary-fixed": "#181b29",
+                      "primary-fixed": "#f3e0c0",
+                      "surface-container-lowest": "#ffffff"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "xs": "8px",
+                      "md": "24px",
+                      "lg": "48px",
+                      "margin-mobile": "20px",
+                      "gutter": "20px",
+                      "sm": "16px",
+                      "xl": "80px",
+                      "unit": "4px",
+                      "margin-desktop": "120px"
+              },
+              "fontFamily": {
+                      "display-lg": [
+                              "Playfair Display"
+                      ],
+                      "headline-md": [
+                              "Playfair Display"
+                      ],
+                      "body-lg": [
+                              "DM Sans"
+                      ],
+                      "label-sm": [
+                              "DM Sans"
+                      ],
+                      "display-lg-mobile": [
+                              "Playfair Display"
+                      ],
+                      "body-md": [
+                              "DM Sans"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "1.1",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "1.3",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "1.6",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "1.0",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-lg-mobile": [
+                              "32px",
+                              {
+                                      "lineHeight": "1.2",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "1.5",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .material-symbols-outlined {
+          font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+          font-variation-settings: 'FILL' 1, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen pb-[100px] md:pb-0">
+<!-- Mobile Top App Bar -->
+<header class="md:hidden flex justify-between items-center px-margin-mobile py-sm w-full bg-surface/80 dark:bg-surface-container-low/80 backdrop-blur-md full-width top-0 sticky z-50 shadow-[0_20px_40px_-15px_rgba(106,93,67,0.08)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="Designer Profile" class="w-full h-full object-cover" data-alt="A professional headshot of an elegant wedding planner. The photo is high-key with soft natural lighting, reflecting a luxurious and sophisticated style in a bright modern studio setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCEOCLKVlU80G2rrunvlgpKW6w0T4UoQAFm_S2fbKIFu4oj8OTnqTpJGOvyzSZgr82ZDdI360gQ4maIjAg73clF3uN-JbrZgRMUhKkt1mdU9skOYsufmmqZkG8TWP28nPDgs-Lde0CsOtkd0c0L94KScrzhuckvPfqHk71DEegb0q1GG9veBH9-78Oq3kzmQ_qBcTGwCb68LVv_nFpriZIH4rLMaW5mwFYhw-wbb3xh6w_4QCjiySVg"/>
+</div>
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Dawati</span>
+</div>
+<button aria-label="notifications" class="text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</header>
+<!-- Desktop Top Navigation (Hidden on Mobile) -->
+<nav class="hidden md:flex justify-between items-center px-margin-desktop py-md w-full bg-surface/80 dark:bg-surface-container-low/80 backdrop-blur-md sticky top-0 z-50 shadow-[0_20px_40px_-15px_rgba(106,93,67,0.08)]">
+<div class="flex items-center gap-lg">
+<span class="font-display-lg text-display-lg text-primary tracking-tight">Dawati</span>
+<div class="flex gap-md">
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity font-label-sm text-label-sm uppercase" href="#">Tasks</a>
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity font-label-sm text-label-sm uppercase" href="#">Messages</a>
+<a class="text-primary font-medium hover:opacity-80 transition-opacity font-label-sm text-label-sm uppercase" href="#">Earnings</a>
+<a class="text-on-surface-variant hover:opacity-80 transition-opacity font-label-sm text-label-sm uppercase" href="#">Settings</a>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button aria-label="notifications" class="text-primary dark:text-primary-fixed hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<div class="w-10 h-10 rounded-full overflow-hidden bg-surface-container-highest">
+<img alt="Designer Profile" class="w-full h-full object-cover" data-alt="A professional headshot of an elegant wedding planner. The photo is high-key with soft natural lighting, reflecting a luxurious and sophisticated style in a bright modern studio setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDv_sZYD-LFDABABpqM_8181VD10s9Ovs48RtuUzgSP1P6aY_aNQ_2FWcx0cA7Il_17eKw84jVghVKydqFsnI5JoLOAp5cVHxziEvD-Twgo4RJzGL3W25v6GZAVbmuGOSqUXS0ytzd1t4P68_MVexCXJlNK3avB9WZF91ojdB4h-SGSgGL5FqAFkcQaO9fc_uO2AY-BV6PWeXVhFL5OLmRVrvunxP0gMHgD9ipSYUPJOcM3vLnnNcte"/>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-lg md:py-[64px]">
+<!-- Header Section -->
+<section class="mb-lg">
+<h1 class="font-headline-md text-headline-md-mobile md:text-headline-md text-primary mb-2">Earnings History</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Review your commissions and payouts.</p>
+</section>
+<!-- Summary Cards -->
+<section class="grid grid-cols-1 md:grid-cols-2 gap-md mb-lg">
+<div class="bg-surface p-md rounded-lg shadow-[0_10px_30px_-15px_rgba(106,93,67,0.05)] border border-primary-container/30 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Available Balance</h3>
+<p class="font-display-lg-mobile text-display-lg-mobile text-primary">SAR 12,450.00</p>
+<button class="mt-4 px-4 py-2 bg-primary-container text-on-primary-container rounded-DEFAULT font-label-sm text-label-sm uppercase hover:opacity-90 active:scale-95 transition-all">Withdraw</button>
+</div>
+<div class="bg-surface p-md rounded-lg shadow-[0_10px_30px_-15px_rgba(106,93,67,0.05)] border border-primary-container/30">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-2">Total Earnings (YTD)</h3>
+<p class="font-headline-md text-headline-md-mobile text-on-surface">SAR 84,200.00</p>
+<div class="flex items-center gap-2 mt-4 text-secondary text-sm">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+15% from last month</span>
+</div>
+</div>
+</section>
+<!-- Filter Chips -->
+<section class="flex gap-3 overflow-x-auto no-scrollbar pb-4 mb-4">
+<button class="px-4 py-2 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm whitespace-nowrap transition-colors border border-transparent">
+                All Transactions
+            </button>
+<button class="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap transition-colors border border-outline-variant/30">
+                Commissions
+            </button>
+<button class="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap transition-colors border border-outline-variant/30">
+                Payouts
+            </button>
+<button class="px-4 py-2 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap transition-colors border border-outline-variant/30 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">calendar_month</span> Date Range
+            </button>
+</section>
+<!-- Transactions List -->
+<section class="bg-surface rounded-xl shadow-[0_10px_40px_-15px_rgba(106,93,67,0.05)] border border-outline-variant/20 overflow-hidden">
+<div class="divide-y divide-outline-variant/10">
+<!-- Item 1: Commission -->
+<div class="p-md hover:bg-surface-container-lowest transition-colors flex justify-between items-center group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet" data-weight="fill">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-medium text-on-surface group-hover:text-primary transition-colors">Al-Fayed Nuptials</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Project Commission • Oct 24, 2023</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-lg text-body-lg font-medium text-primary">+ SAR 4,500</p>
+<p class="font-label-sm text-label-sm text-primary/70 mt-1">Cleared</p>
+</div>
+</div>
+<!-- Item 2: Payout -->
+<div class="p-md hover:bg-surface-container-lowest transition-colors flex justify-between items-center group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-medium text-on-surface">Bank Transfer - SABB</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Payout • Oct 20, 2023</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-lg text-body-lg font-medium text-on-surface">- SAR 10,000</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant/70 mt-1">Completed</p>
+</div>
+</div>
+<!-- Item 3: Commission -->
+<div class="p-md hover:bg-surface-container-lowest transition-colors flex justify-between items-center group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet" data-weight="fill">account_balance_wallet</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-medium text-on-surface group-hover:text-primary transition-colors">Mansour Corporate Gala</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Project Commission • Oct 15, 2023</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-lg text-body-lg font-medium text-primary">+ SAR 8,200</p>
+<p class="font-label-sm text-label-sm text-primary/70 mt-1">Cleared</p>
+</div>
+</div>
+<!-- Item 4: Pending -->
+<div class="p-md hover:bg-surface-container-lowest transition-colors flex justify-between items-center group opacity-70">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-full border border-dashed border-primary-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" data-icon="pending">pending</span>
+</div>
+<div>
+<p class="font-body-lg text-body-lg font-medium text-on-surface group-hover:text-primary transition-colors">Dar Al-Hekma Graduation</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">Project Commission • Expected Oct 30</p>
+</div>
+</div>
+<div class="text-right">
+<p class="font-body-lg text-body-lg font-medium text-on-surface-variant">+ SAR 3,100</p>
+<p class="font-label-sm text-label-sm text-secondary mt-1">Pending Clearance</p>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-outline-variant/10 text-center">
+<button class="font-label-sm text-label-sm text-primary uppercase tracking-wider hover:opacity-80 transition-opacity">Load More</button>
+</div>
+</section>
+</main>
+<!-- Mobile Bottom Navigation -->
+<nav class="md:hidden fixed bottom-0 left-0 w-full flex justify-around items-center px-4 py-3 pb-safe bg-surface/80 dark:bg-surface-container-highest/80 backdrop-blur-lg border-t border-outline-variant/10 shadow-[0_-10px_40px_rgba(106,93,67,0.05)] z-50">
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150 group" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="assignment_turned_in">assignment_turned_in</span>
+<span class="font-label-sm text-[10px]">Tasks</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150 group" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="chat_bubble_outline">chat_bubble_outline</span>
+<span class="font-label-sm text-[10px]">Messages</span>
+</a>
+<!-- Active Tab: Earnings -->
+<a class="flex flex-col items-center justify-center text-primary relative after:content-[''] after:w-1 after:h-1 after:bg-secondary-fixed-dim after:rounded-full after:mt-1 hover:text-primary transition-colors active:scale-90 transition-transform duration-150" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="payments">payments</span>
+<span class="font-label-sm text-[10px]">Earnings</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 transition-transform duration-150 group" href="#">
+<span class="material-symbols-outlined mb-1" data-icon="settings">settings</span>
+<span class="font-label-sm text-[10px]">Settings</span>
+</a>
+</nav>
+</body></html>

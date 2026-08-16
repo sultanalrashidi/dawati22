@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Editorial Style Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Subtle fabric texture overlay */
+        .fabric-texture {
+            position: relative;
+        }
+        .fabric-texture::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "outline-variant": "#cec5b9",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#675a41",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-lowest": "#ffffff",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-bright": "#fcf9f8",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "outline": "#7d766c",
+                        "primary-container": "#e5d3b3",
+                        "primary-fixed": "#f3e0c0",
+                        "surface-tint": "#6a5d43",
+                        "primary": "#6a5d43",
+                        "on-error-container": "#93000a",
+                        "surface-container-low": "#f6f3f2",
+                        "secondary-fixed": "#ffdad9",
+                        "on-background": "#1b1c1c",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "on-secondary-container": "#795354",
+                        "on-error": "#ffffff",
+                        "secondary-container": "#fdcbcb",
+                        "on-primary-fixed-variant": "#51452d",
+                        "on-secondary-fixed": "#2f1314",
+                        "surface-dim": "#dcd9d9",
+                        "surface-variant": "#e4e2e1",
+                        "tertiary": "#5b5d6e",
+                        "on-surface-variant": "#4c463d",
+                        "tertiary-fixed": "#e0e1f5",
+                        "inverse-surface": "#303030",
+                        "surface": "#fcf9f8",
+                        "surface-container-high": "#eae7e7",
+                        "error-container": "#ffdad6",
+                        "on-surface": "#1b1c1c",
+                        "surface-container": "#f0eded",
+                        "on-primary-fixed": "#231a06",
+                        "tertiary-container": "#d3d4e8",
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-primary": "#ffffff",
+                        "background": "#fcf9f8",
+                        "surface-container-highest": "#e4e2e1",
+                        "secondary": "#7b5455",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "inverse-primary": "#d6c4a5",
+                        "on-secondary-fixed-variant": "#603d3e"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "sm": "16px",
+                        "gutter": "20px",
+                        "md": "24px",
+                        "margin-mobile": "20px",
+                        "margin-desktop": "120px",
+                        "lg": "48px",
+                        "unit": "4px",
+                        "xl": "80px",
+                        "xs": "8px"
+                    },
+                    fontFamily: {
+                        "body-md": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "headline-md": ["Playfair Display"],
+                        "display-lg": ["Playfair Display"],
+                        "label-sm": ["DM Sans"]
+                    },
+                    fontSize: {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen flex flex-col items-center justify-center fabric-texture">
+<!-- Mobile Wrapper simulating phone screen -->
+<main class="w-full max-w-[430px] h-[100dvh] bg-surface relative overflow-hidden shadow-2xl flex flex-col">
+<!-- TopAppBar Shared Component (Not mapped to style rules since active/inactive logic is tricky on a single landing page, but injected anyway) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 backdrop-blur-xl dark:bg-surface-dim/80 flex justify-between items-center px-margin-mobile h-16 max-w-[430px]">
+<button aria-label="Menu" class="hover:opacity-80 transition-opacity duration-300 scale-95 duration-200 text-primary dark:text-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined font-headline-md text-headline-md">menu</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary dark:text-primary-fixed uppercase tracking-widest text-center flex-1">
+                SARA &amp; MOHAMMED
+            </h1>
+<button aria-label="Share" class="hover:opacity-80 transition-opacity duration-300 scale-95 duration-200 text-primary dark:text-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined font-headline-md text-headline-md">share</span>
+</button>
+</header>
+<!-- Main Content Area - Editorial Style -->
+<div class="flex-1 overflow-y-auto pt-16 pb-24 px-gutter hide-scrollbar">
+<!-- Hero Image -->
+<div class="w-full aspect-[3/4] mt-sm mb-lg relative overflow-hidden">
+<img class="w-full h-full object-cover grayscale opacity-90 mix-blend-multiply" data-alt="A high-fashion editorial portrait of a couple holding hands subtly, shot from behind in a minimalist, light-drenched studio. The focus is on the luxurious fabric of their garments and the elegant interplay of light and shadow, evoking a premium, sophisticated editorial style with a warm white and charcoal palette." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMSsNq9soLBI0dw-w2eU19_lYUIfNQh6rnRWJgyG3pi4JdJ5W_RJC-i7tp8kIcYCdf-DdFeiB-Ky7HiIJL6TNb7fcnI3QZyHmd-ZGoQ57Jnue_MWR2Mi-UQ-EOjRW_Cd9culbcjbCitV6v4VOYazhthneyhAHye22rsZLdajln-d8iWy5FYdCcXB7i-YSxzpcJ6Ou0nk6geGg0K41pG4IFPVB5SC4bVCuANY7V1QNma83J_MXRdkPu"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent"></div>
+</div>
+<!-- Typography Hero -->
+<div class="text-center mb-xl">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-[0.2em] mb-sm">We invite you to celebrate</p>
+<div class="flex flex-col items-center justify-center gap-xs" dir="ltr">
+<span class="font-display-lg-mobile text-display-lg-mobile text-on-surface font-light uppercase tracking-tighter leading-none">Sara</span>
+<span class="font-headline-md text-headline-md text-primary/60 italic">&amp;</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-on-surface font-light uppercase tracking-tighter leading-none">Mohammed</span>
+</div>
+<div class="mt-md pt-md border-t border-outline-variant/30 w-1/2 mx-auto"></div>
+<p class="mt-sm font-body-lg text-body-lg text-on-surface-variant leading-relaxed px-sm" dir="rtl">
+                    نتشرف بدعوتكم لحضور حفل زفافنا ومشاركتنا فرحتنا في هذا اليوم الاستثنائي.
+                </p>
+</div>
+<!-- Details Bento -->
+<div class="grid grid-cols-2 gap-sm mb-xl">
+<div class="bg-surface-container-low p-md flex flex-col justify-between items-center text-center aspect-square border border-outline-variant/20 hover:bg-surface-container transition-colors duration-300">
+<span class="material-symbols-outlined text-primary mb-sm text-[28px]" style="font-variation-settings: 'wght' 200;">calendar_month</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-xs">التاريخ</p>
+<p class="font-body-lg text-body-lg text-on-surface">١٥ سبتمبر ٢٠٢٤</p>
+</div>
+</div>
+<div class="bg-surface-container-low p-md flex flex-col justify-between items-center text-center aspect-square border border-outline-variant/20 hover:bg-surface-container transition-colors duration-300">
+<span class="material-symbols-outlined text-primary mb-sm text-[28px]" style="font-variation-settings: 'wght' 200;">schedule</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase mb-xs">الوقت</p>
+<p class="font-body-lg text-body-lg text-on-surface">٨:٠٠ مساءً</p>
+</div>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full bg-primary-container text-on-primary-container font-body-md py-sm px-md flex items-center justify-center gap-sm hover:scale-[0.98] transition-transform duration-300 active:scale-95 mb-lg group">
+<span>تأكيد الحضور</span>
+<span class="material-symbols-outlined text-[18px] group-hover:-translate-x-1 transition-transform duration-300">arrow_forward</span>
+</button>
+<div class="h-20"></div> <!-- Spacer for bottom nav -->
+</div>
+<!-- BottomNavBar Shared Component -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-surface/90 backdrop-blur-2xl border-t border-primary/10 rounded-t-xl max-w-[430px]">
+<!-- الرئيسية (Active) -->
+<button class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim after:content-[''] after:w-1 after:h-1 after:bg-secondary dark:after:bg-secondary-fixed-dim after:rounded-full after:mt-1 hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200 flex-1">
+<span class="material-symbols-outlined mb-1 text-[20px]" style="font-variation-settings: 'wght' 300;">home</span>
+<span class="font-label-sm text-label-sm">الرئيسية</span>
+</button>
+<!-- الموقع (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200 flex-1">
+<span class="material-symbols-outlined mb-1 text-[20px]" style="font-variation-settings: 'wght' 300;">location_on</span>
+<span class="font-label-sm text-label-sm">الموقع</span>
+</button>
+<!-- التأكيد (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200 flex-1">
+<span class="material-symbols-outlined mb-1 text-[20px]" style="font-variation-settings: 'wght' 300;">event_available</span>
+<span class="font-label-sm text-label-sm">التأكيد</span>
+</button>
+<!-- البطاقة (Inactive) -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-colors duration-300 scale-98 active:scale-95 transition-transform duration-200 flex-1">
+<span class="material-symbols-outlined mb-1 text-[20px]" style="font-variation-settings: 'wght' 300;">qr_code_2</span>
+<span class="font-label-sm text-label-sm">البطاقة</span>
+</button>
+</nav>
+</main>
+<style>
+        /* Utility for hiding scrollbar but allowing scroll */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</body></html>

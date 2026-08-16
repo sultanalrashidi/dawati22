@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - Modern Saudi Theme</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;500;600&amp;family=Playfair+Display:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#2f1314",
+                        "on-primary-fixed-variant": "#51452d",
+                        "secondary": "#7b5455",
+                        "tertiary-fixed": "#e0e1f5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "primary-fixed": "#f3e0c0",
+                        "on-primary-container": "#675a41",
+                        "outline-variant": "#cec5b9",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#d6c4a5",
+                        "on-background": "#1b1c1c",
+                        "background": "#fcf9f8",
+                        "on-surface": "#1b1c1c",
+                        "on-primary-fixed": "#231a06",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-variant": "#e4e2e1",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-high": "#eae7e7",
+                        "secondary-fixed": "#ffdad9",
+                        "error": "#ba1a1a",
+                        "primary-container": "#e5d3b3",
+                        "tertiary": "#5b5d6e",
+                        "surface-container-highest": "#e4e2e1",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "tertiary-container": "#d3d4e8",
+                        "secondary-container": "#fdcbcb",
+                        "surface-dim": "#dcd9d9",
+                        "outline": "#7d766c",
+                        "primary": "#6a5d43",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "surface-container": "#f0eded",
+                        "on-surface-variant": "#4c463d",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#303030",
+                        "on-secondary-container": "#795354",
+                        "surface": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "surface-tint": "#6a5d43",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#603d3e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "xl": "80px",
+                        "margin-desktop": "120px",
+                        "gutter": "20px",
+                        "margin-mobile": "20px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["DM Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "label-sm": ["DM Sans"],
+                        "headline-md": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .reveal-element {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-element.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .najdi-pattern {
+            background-image: radial-gradient(circle at 100% 100%, transparent -10%, var(--tw-colors-primary-container) 110%);
+            mask-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 20L20 40L0 20L20 0Z' fill='none' stroke='currentColor' stroke-width='1'/%3E%3C/svg%3E");
+        }
+        .glow-shadow {
+            box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md antialiased min-h-screen overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Top Navigation (Mobile) -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl md:hidden">
+<div class="flex justify-between items-center px-margin-mobile h-16 w-full">
+<button class="text-on-surface-variant hover:opacity-80 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Dawati</h1>
+<button class="text-on-surface-variant hover:opacity-80 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="pt-24 pb-32 md:pt-16 md:pb-16 max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop">
+<!-- Hero Section: Structured Geometric Reveal -->
+<section class="relative min-h-[70vh] flex flex-col items-center justify-center text-center overflow-hidden rounded-xl bg-surface-container-low glow-shadow">
+<div class="absolute inset-0 najdi-pattern opacity-10 pointer-events-none"></div>
+<div class="relative z-10 w-full max-w-2xl mx-auto px-gutter reveal-element">
+<p class="font-label-sm text-label-sm text-on-surface-variant tracking-[0.2em] uppercase mb-lg">بكل سرور ندعوكم لحضور حفل زفاف</p>
+<h2 class="font-display-lg-mobile md:font-display-lg text-display-lg-mobile md:text-display-lg text-primary mb-md" dir="ltr">SARA &amp; MOHAMMED</h2>
+<div class="h-px w-24 bg-primary-container mx-auto my-lg"></div>
+<p class="font-body-lg text-body-lg text-on-background/80 mb-sm">الضيوف الكرام، يسعدنا مشاركتكم فرحتنا</p>
+<p class="font-headline-md text-headline-md text-secondary mt-lg">الضيفة: أم فلان</p>
+</div>
+</section>
+<!-- Event Details: Bento Grid -->
+<section class="mt-xl grid grid-cols-1 md:grid-cols-3 gap-gutter reveal-element">
+<!-- Date & Time -->
+<div class="col-span-1 md:col-span-2 bg-surface p-lg rounded-xl border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute -right-10 -top-10 w-40 h-40 bg-primary-container/20 rounded-full blur-3xl group-hover:bg-primary-container/30 transition-colors"></div>
+<span class="material-symbols-outlined text-primary mb-md" style="font-variation-settings: 'FILL' 0;">calendar_today</span>
+<h3 class="font-headline-md text-headline-md text-on-background mb-sm">الزمان</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">الجمعة، ١٥ أكتوبر ٢٠٢٦</p>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">الساعة ٨:٠٠ مساءً</p>
+</div>
+<!-- Location -->
+<div class="col-span-1 bg-surface p-lg rounded-xl border border-outline-variant/30 relative overflow-hidden group">
+<div class="absolute -left-10 -bottom-10 w-40 h-40 bg-secondary-container/20 rounded-full blur-3xl group-hover:bg-secondary-container/30 transition-colors"></div>
+<span class="material-symbols-outlined text-secondary mb-md" style="font-variation-settings: 'FILL' 0;">location_on</span>
+<h3 class="font-headline-md text-headline-md text-on-background mb-sm">المكان</h3>
+<p class="font-body-lg text-body-lg text-on-surface-variant">قاعة الرياض الكبرى</p>
+<button class="mt-md text-primary font-label-sm text-label-sm uppercase flex items-center gap-xs hover:opacity-80 transition-opacity">
+<span>عرض الخريطة</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</section>
+<!-- RSVP Form: Minimalist -->
+<section class="mt-xl max-w-xl mx-auto bg-surface-container-low p-lg rounded-xl reveal-element">
+<div class="text-center mb-lg">
+<h3 class="font-headline-md text-headline-md text-primary mb-xs">تأكيد الحضور</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">نرجو تأكيد حضوركم قبل تاريخ ١ أكتوبر</p>
+</div>
+<form class="space-y-md">
+<div class="relative">
+<label class="font-label-sm text-label-sm text-on-surface-variant absolute -top-4 right-0">عدد الحضور</label>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary-container focus:border-b-2 focus:ring-0 px-0 py-sm text-on-background font-body-lg text-body-lg transition-colors" max="5" min="1" placeholder="1" type="number"/>
+</div>
+<div class="relative mt-lg">
+<label class="font-label-sm text-label-sm text-on-surface-variant absolute -top-4 right-0">ملاحظات غذائية</label>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary-container focus:border-b-2 focus:ring-0 px-0 py-sm text-on-background font-body-lg text-body-lg transition-colors" placeholder="لا يوجد" type="text"/>
+</div>
+<button class="w-full mt-lg bg-primary-container text-on-primary-container font-headline-md text-headline-md py-sm rounded-lg hover:scale-[0.98] active:scale-95 transition-transform duration-200 glow-shadow" type="button">
+                    تأكيد
+                </button>
+</form>
+</section>
+<!-- Atmospheric Image Grid -->
+<section class="mt-xl grid grid-cols-2 md:grid-cols-4 gap-sm reveal-element">
+<div class="col-span-2 md:col-span-2 h-64 md:h-80 rounded-lg overflow-hidden relative group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A sophisticated architectural detail of modern Riyadh building, featuring warm beige stone textures and precise geometric lines. Soft, natural sunlight highlights the minimalist luxury aesthetic, creating serene shadows. High-end editorial photography style, muted tones with subtle champagne accents." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAd1x-ohZkjVidlIzur7KjX5iY-QkkvdZwnr9pA42R3SGWl6BoDrWGgGjI8_scP_yPgPTVBa1DYJqrS3V0sb3ETVPEZUyqgUIRixBVAYThON322zIdEqRCuOX8lN9GZq4V0j7LpQ8BCyNCn4tvMcVnVqOktLo7YuYL_iQSH9Ft4kBICw9R472Aj69TnRsxME_9Ox1gwl1GNGDIp4P7F0iM82zIQONqFgfLLA6Y5WvRoIqBUR-4-rMt1"/>
+</div>
+<div class="col-span-1 md:col-span-1 h-64 md:h-80 rounded-lg overflow-hidden relative group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Close-up of a premium wedding invitation card in champagne and deep charcoal, resting on a textured ivory surface. Minimalist typography and a subtle Najdi geometric pattern subtly embossed. Soft diffused lighting, luxurious and serene mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDxkEhWvNRxpofRMRgHDMTZ_lZffyupqSsKe8vUm5uueGVJin_OO8kweFkUf6zN5bh7C1_w0hSlSAxZ3hr06KeaWr-4DHCA2CM4I67uKxSEcIrdG1FQtnde0F4Mq4eYGtSDr5KhhkxBcIwufbJIg3ciTl19_sgvpWAPNxJDxbJ8M_jHdEHP00t14go0MXYWNvUBgrWiLq4NHXTr_0_ymcs4QLhpD_BIz8w2aoya2rFBhA74TN7W3FTE"/>
+</div>
+<div class="col-span-1 md:col-span-1 h-64 md:h-80 rounded-lg overflow-hidden relative group">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="Abstract composition of warm desert sand meeting modern glass architecture. Soft beige and champagne color palette, reflecting a blend of traditional Saudi heritage and modern 2026 luxury. Serene, minimal, and highly textured." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAo2eU_bl8PS2A7LKpx0rnuLmLgAfhuGr_zQNgSw5T9FcvA_3rTaR1H8osDwSVkhv9tFbXqUrTVT22OrP-HmwsHeMQj44P8GwBBFAo9csxHDlDIUhCMltpW7nPXCWcNKYTakmEqVwYQrTT0SqWzFBzmHUHWKkN8UywYFAP1xlLQeLkHnvgjCv56CIo-6WMS93_tTQZADKs1HmoipYC75o1JPa3ORN5buvHnnoZ3BuvxCjysz9nErcw1"/>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (Mobile) -->
+<nav class="fixed bottom-0 w-full z-50 pb-safe md:hidden bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-xl shadow-[0_-4px_30px_rgba(229,211,179,0.08)]">
+<div class="flex justify-around items-center h-20 px-2 w-full">
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">home</span>
+<span class="font-label-sm text-label-sm">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary font-bold relative after:content-[''] after:absolute after:-bottom-1 after:w-1 after:h-1 after:bg-secondary after:rounded-full hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">mail</span>
+<span class="font-label-sm text-label-sm">Invitations</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">event</span>
+<span class="font-label-sm text-label-sm">Events</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant opacity-60 hover:text-primary transition-colors active:scale-90 duration-200" href="#">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</div>
+</nav>
+<script>
+        // Simple Intersection Observer for reveal animations
+        document.addEventListener('DOMContentLoaded', () => {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: "0px 0px -50px 0px"
+            });
+
+            document.querySelectorAll('.reveal-element').forEach((el) => {
+                observer.observe(el);
+            });
+        });
+    </script>
+</body></html>

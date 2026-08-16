@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati - تفاصيل الضيف</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&amp;family=Playfair+Display:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#7d766c",
+                        "tertiary": "#5b5d6e",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "on-secondary-fixed": "#2f1314",
+                        "surface-bright": "#fcf9f8",
+                        "surface-container-high": "#eae7e7",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-primary": "#d6c4a5",
+                        "on-error-container": "#93000a",
+                        "background": "#fcf9f8",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-container": "#675a41",
+                        "error": "#ba1a1a",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#603d3e",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "surface-tint": "#6a5d43",
+                        "outline-variant": "#cec5b9",
+                        "inverse-on-surface": "#f3f0f0",
+                        "on-primary-fixed": "#231a06",
+                        "primary-fixed": "#f3e0c0",
+                        "primary": "#6a5d43",
+                        "inverse-surface": "#303030",
+                        "surface-variant": "#e4e2e1",
+                        "secondary-fixed": "#ffdad9",
+                        "surface-dim": "#dcd9d9",
+                        "surface-container-highest": "#e4e2e1",
+                        "on-secondary-container": "#795354",
+                        "secondary-container": "#fdcbcb",
+                        "surface-container-low": "#f6f3f2",
+                        "on-background": "#1b1c1c",
+                        "on-primary": "#ffffff",
+                        "on-tertiary-container": "#595b6c",
+                        "on-surface": "#1b1c1c",
+                        "on-secondary": "#ffffff",
+                        "surface": "#fcf9f8",
+                        "on-primary-fixed-variant": "#51452d",
+                        "surface-container": "#f0eded",
+                        "primary-container": "#e5d3b3",
+                        "on-surface-variant": "#4c463d",
+                        "tertiary-fixed": "#e0e1f5",
+                        "secondary": "#7b5455",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "tertiary-container": "#d3d4e8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "md": "24px",
+                        "xs": "8px",
+                        "margin-mobile": "20px",
+                        "lg": "48px",
+                        "xl": "80px",
+                        "unit": "4px",
+                        "gutter": "20px",
+                        "margin-desktop": "120px",
+                        "sm": "16px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Playfair Display"],
+                        "headline-md": ["Playfair Display"],
+                        "body-md": ["DM Sans"],
+                        "label-sm": ["DM Sans"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["DM Sans"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }],
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'DM Sans', sans-serif; background-color: #fcf9f8; color: #1b1c1c; }
+        .font-playfair { font-family: 'Playfair Display', serif; }
+        .glass-panel { background: rgba(252, 249, 248, 0.7); backdrop-filter: blur(20px); border: 1px solid rgba(229, 211, 179, 0.3); }
+        .glow-shadow { box-shadow: 0 10px 40px -10px rgba(229, 211, 179, 0.4); }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-24 md:pb-0">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 bg-surface/80 dark:bg-surface-dim/80 backdrop-blur-xl flex justify-between items-center px-margin-mobile h-16 shadow-none border-none">
+<button class="text-on-surface-variant hover:opacity-80 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="arrow_forward" data-weight="regular">arrow_forward</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight">Dawati</h1>
+<button class="text-on-surface-variant hover:opacity-80 active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="more_vert" data-weight="regular">more_vert</span>
+</button>
+</header>
+<main class="pt-24 px-margin-mobile max-w-[1280px] mx-auto md:px-margin-desktop space-y-lg">
+<!-- Guest Header -->
+<section class="flex flex-col items-center text-center space-y-md">
+<div class="relative w-32 h-32 rounded-full overflow-hidden border-2 border-primary-container p-1">
+<img alt="Guest Profile" class="w-full h-full object-cover rounded-full" data-alt="A sophisticated, high-quality portrait photograph of an elegant guest attending a luxury event. Soft, natural lighting highlights their features against a muted, blurred background. The style is editorial and premium, consistent with a high-end wedding or gala." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVKSbKBkhKKx48V78MJkYxjCPO-0u-ax9IuhKqa3ULFjHKFDYyJlF1ejJz8l2eVcWB03viWj7RXtIu7TCh_hLfHfIoMGPed4JcBQhxvxcZylVRTId7n2rejAXlAdkl4coDMVbu3BIPac7AiXuOCIN_SMfb1oyPbnsgoRwiNRrZAHKjWdeXAwio3Sm8dPCDHJTkaoKmuYqddcevCMd22owKN3_GttxiBKLnijcziBKqjIZ2uCPixton"/>
+</div>
+<div>
+<h2 class="font-headline-md text-headline-md font-playfair text-on-surface">أحمد عبد الله</h2>
+<div class="inline-flex items-center space-x-2 space-x-reverse mt-2 px-4 py-1.5 rounded-full bg-primary-container/20 text-primary">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle" data-weight="fill">check_circle</span>
+<span class="font-label-sm text-label-sm">مؤكد الحضور</span>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg">
+<!-- Left Column: Details & Stats -->
+<div class="md:col-span-8 space-y-lg">
+<!-- Statistics Bento -->
+<div class="grid grid-cols-3 gap-4">
+<div class="glass-panel p-md rounded-xl text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-2">المسموح</p>
+<p class="font-display-lg-mobile text-display-lg-mobile text-primary font-playfair">3</p>
+</div>
+<div class="glass-panel p-md rounded-xl text-center relative overflow-hidden">
+<div class="absolute inset-0 bg-primary/5"></div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-2 relative z-10">تم الحضور</p>
+<p class="font-display-lg-mobile text-display-lg-mobile text-primary font-playfair relative z-10">1</p>
+</div>
+<div class="glass-panel p-md rounded-xl text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant mb-2">المتبقي</p>
+<p class="font-display-lg-mobile text-display-lg-mobile text-outline font-playfair">2</p>
+</div>
+</div>
+<!-- Companions List -->
+<section>
+<h3 class="font-headline-md text-headline-md-mobile font-playfair text-on-surface mb-md">المرافقون</h3>
+<div class="glass-panel rounded-xl overflow-hidden divide-y divide-on-surface/5">
+<div class="flex items-center justify-between p-4 hover:bg-surface-variant/20 transition-colors">
+<div class="flex items-center space-x-4 space-x-reverse">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface">سارة عبد الله</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">زوجة</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-primary" data-icon="check_circle" data-weight="fill">check_circle</span>
+</div>
+<div class="flex items-center justify-between p-4 hover:bg-surface-variant/20 transition-colors">
+<div class="flex items-center space-x-4 space-x-reverse">
+<div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</div>
+<div>
+<p class="font-body-md text-body-md text-on-surface">خالد عبد الله</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant">ابن</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline-variant" data-icon="pending" data-weight="regular">pending</span>
+</div>
+</div>
+</section>
+<!-- Actions -->
+<section class="space-y-4">
+<button class="w-full md:w-auto bg-primary-container text-on-primary-container font-body-md text-body-md py-4 px-8 rounded-full hover:scale-[0.98] transition-transform duration-200 flex items-center justify-center space-x-2 space-x-reverse glow-shadow">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+<span>إعادة إرسال الدعوة</span>
+</button>
+<div class="flex flex-col md:flex-row gap-4">
+<button class="flex-1 bg-transparent border border-primary-container text-primary font-body-md text-body-md py-3 px-6 rounded-full hover:bg-primary-container/10 transition-colors flex items-center justify-center space-x-2 space-x-reverse">
+<span class="material-symbols-outlined" data-icon="edit">edit</span>
+<span>تعديل التفاصيل</span>
+</button>
+<button class="flex-1 bg-transparent border border-error/20 text-error font-body-md text-body-md py-3 px-6 rounded-full hover:bg-error/5 transition-colors flex items-center justify-center space-x-2 space-x-reverse">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+<span>إزالة الضيف</span>
+</button>
+</div>
+</section>
+</div>
+<!-- Right Column: Card Preview & QR -->
+<div class="md:col-span-4 space-y-lg">
+<!-- Card Preview -->
+<div class="glass-panel p-4 rounded-xl">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant mb-4 uppercase tracking-wider text-center">معاينة الدعوة</h3>
+<div class="aspect-[3/4] rounded-lg overflow-hidden relative shadow-sm border border-outline-variant/30">
+<img alt="Invitation Preview" class="w-full h-full object-cover" data-alt="A beautifully designed luxury digital invitation card. The design features minimalist typography, elegant gold foil accents, and a subtle champagne background texture. The overall aesthetic is high-end editorial, suitable for a premium event." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDebb7gZT_urFJGopV44IEblpBFxWcEZeX0iTIRvAkNUGJpH81DkGx1wWWy5TftCGzWHPyjS33SnY6Daeu_E9ph3E8636IPyMEsE5CkXMLsEo77kXYMYMDG_MdRXzz2oGOqC9yY47FdCd0yfJGqTk6wOtY9S8SFmCKl_qv-3x1cB9NBIvyFspdTOIrEVAogU_POJZsXweShUXlaJpX4j04AkyodMCFuqGdftb70q_VO3UewJxmuuUMA"/>
+</div>
+</div>
+<!-- QR Code -->
+<div class="glass-panel p-md rounded-xl flex flex-col items-center justify-center text-center">
+<div class="bg-white p-4 rounded-lg mb-4 shadow-sm">
+<img alt="Guest QR Code" class="w-32 h-32" data-alt="A clean, high-contrast QR code generated in strict black and white, suitable for digital scanning. The design is simple and functional, sitting on a pristine white background with no additional decorative elements." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6nxkZETckpP2P89MQ0pKhMPk-0QXIVjEl3lt_ZZqGX0jKD2QiTFwtHszPeh0IiBYF23GFfmQw3gU0zoFWpnREjQVZyWxLpTghcCMcE8vo_RR8ZFemoC4vVUPV3I2-w4qpDnWKZbr3F9fi4LTlxWH_d1GCPc49zjCeXcOdV7QXfSCJ89-wJ4grm_mJiV3eTSYA1UdlJ6LPvT-aJk65dFHydYY6WZPMGj0-JRO-MTX6itZo6eULdNy5"/>
+</div>
+<p class="font-body-md text-body-md text-on-surface">رمز الدخول الخاص</p>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">يستخدم لتسجيل الدخول عند الباب</p>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Hidden on MD up, visible on Mobile) -->
+<!-- Note: Following semantic rules, this might be suppressed on a deep detail page, but included here as per general layout requirement if considered top-level for demonstration, though 'Guest Details' implies a sub-page. I will suppress it based on the rule: "Task-Focused: Any sub-page featuring a 'Close' or 'Back' action". The TopAppBar has a back arrow, so BottomNavBar is suppressed. -->
+</body></html>

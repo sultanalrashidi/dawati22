@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="ltr" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dawati Signature - SARA &amp; MOHAMMED</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS Setup -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary-fixed": "#2f1314",
+                        "on-primary-fixed-variant": "#51452d",
+                        "secondary": "#7b5455",
+                        "tertiary-fixed": "#e0e1f5",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "surface-bright": "#fcf9f8",
+                        "primary-fixed": "#f3e0c0",
+                        "on-primary-container": "#675a41",
+                        "outline-variant": "#cec5b9",
+                        "surface-container-low": "#f6f3f2",
+                        "on-tertiary-fixed": "#181b29",
+                        "on-primary": "#ffffff",
+                        "inverse-primary": "#d6c4a5",
+                        "on-background": "#1b1c1c",
+                        "background": "#fcf9f8",
+                        "on-surface": "#1b1c1c",
+                        "on-primary-fixed": "#231a06",
+                        "on-tertiary-container": "#595b6c",
+                        "surface-variant": "#e4e2e1",
+                        "on-tertiary": "#ffffff",
+                        "inverse-on-surface": "#f3f0f0",
+                        "surface-container-high": "#eae7e7",
+                        "secondary-fixed": "#ffdad9",
+                        "error": "#ba1a1a",
+                        "primary-container": "#e5d3b3",
+                        "tertiary": "#5b5d6e",
+                        "surface-container-highest": "#e4e2e1",
+                        "primary-fixed-dim": "#d6c4a5",
+                        "secondary-fixed-dim": "#ecbbba",
+                        "tertiary-container": "#d3d4e8",
+                        "secondary-container": "#fdcbcb",
+                        "surface-dim": "#dcd9d9",
+                        "outline": "#7d766c",
+                        "primary": "#6a5d43",
+                        "tertiary-fixed-dim": "#c4c5d9",
+                        "surface-container": "#f0eded",
+                        "on-surface-variant": "#4c463d",
+                        "on-error-container": "#93000a",
+                        "inverse-surface": "#303030",
+                        "on-secondary-container": "#795354",
+                        "surface": "#fcf9f8",
+                        "on-tertiary-fixed-variant": "#434656",
+                        "surface-tint": "#6a5d43",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#603d3e"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "48px",
+                        "md": "24px",
+                        "sm": "16px",
+                        "xs": "8px",
+                        "xl": "80px",
+                        "margin-desktop": "120px",
+                        "gutter": "20px",
+                        "margin-mobile": "20px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "body-md": ["DM Sans"],
+                        "display-lg": ["Playfair Display"],
+                        "display-lg-mobile": ["Playfair Display"],
+                        "body-lg": ["DM Sans"],
+                        "label-sm": ["DM Sans"],
+                        "headline-md": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "body-md": ["16px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+                        "display-lg-mobile": ["32px", { "lineHeight": "1.2", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }],
+                        "label-sm": ["12px", { "lineHeight": "1.0", "letterSpacing": "0.05em", "fontWeight": "500" }],
+                        "headline-md": ["24px", { "lineHeight": "1.3", "fontWeight": "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Base styles */
+        body {
+            background-color: #fcf9f8;
+            color: #1b1c1c;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* Reveal Animation */
+        .reveal-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background-color: #fcf9f8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transition: transform 1.2s cubic-bezier(0.77, 0, 0.175, 1), opacity 0.8s ease;
+        }
+
+        .reveal-layer.hidden {
+            transform: translateY(-100%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .envelope-flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background-color: #e5d3b3;
+            clip-path: polygon(0 0, 100% 0, 50% 100%);
+            transform-origin: top;
+            transition: transform 1s cubic-bezier(0.77, 0, 0.175, 1);
+            z-index: 2;
+        }
+
+        .reveal-layer.opening .envelope-flap {
+            transform: rotateX(180deg);
+        }
+        
+        .seal {
+            width: 80px;
+            height: 80px;
+            background-color: #6a5d43;
+            border-radius: 50%;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fcf9f8;
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(106,93,67,0.3);
+            transition: transform 0.3s ease, opacity 0.5s ease;
+        }
+
+        .seal:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        .reveal-layer.opening .seal {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(0.5);
+            pointer-events: none;
+        }
+
+        .letter-content {
+            position: absolute;
+            bottom: 0;
+            width: 80%;
+            height: 80%;
+            background: white;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            transform: translateY(100%);
+            transition: transform 1s cubic-bezier(0.19, 1, 0.22, 1) 0.5s;
+            z-index: 1;
+        }
+
+        .reveal-layer.opening .letter-content {
+            transform: translateY(0);
+        }
+
+        /* Glassmorphism Utilities */
+        .glass-card {
+            background: rgba(252, 249, 248, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(229, 211, 179, 0.3);
+            box-shadow: 0 20px 40px -15px rgba(106,93,67,0.08);
+        }
+
+        .glass-nav {
+            background: rgba(252, 249, 248, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+
+        /* Typography accents */
+        .arabic-accent {
+            font-family: 'Playfair Display', serif; /* Fallback for visual weight */
+            direction: rtl;
+        }
+        
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease, transform 1s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .glow-shadow {
+            box-shadow: 0 15px 40px -10px rgba(229, 211, 179, 0.6);
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md bg-background text-on-background antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- Reveal Animation Overlay -->
+<div class="reveal-layer" id="revealOverlay">
+<div class="envelope-flap"></div>
+<div class="seal" id="openSeal">S&amp;M</div>
+<div class="letter-content rounded-t-3xl border border-outline-variant/20 p-8 text-center">
+<span class="font-headline-md text-headline-md text-primary mb-4 block">You are invited</span>
+<h2 class="font-display-lg text-display-lg text-on-surface mb-6">SARA &amp; MOHAMMED</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-8">A celebration of love.</p>
+<div class="w-16 h-[1px] bg-primary mx-auto mb-8"></div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest">Opening...</p>
+</div>
+</div>
+<!-- Main Content Container -->
+<div class="opacity-0 transition-opacity duration-1000 min-h-screen flex flex-col relative" id="mainContent">
+<!-- Navigation (from JSON - Modified for Wedding Context context) -->
+<header class="glass-nav full-width top-0 sticky z-50 shadow-[0_20px_40px_-15px_rgba(106,93,67,0.08)] border-b border-outline-variant/10">
+<div class="max-w-7xl mx-auto flex justify-between items-center px-margin-mobile md:px-margin-desktop py-sm w-full">
+<!-- Leading -->
+<div class="flex items-center gap-4">
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight md:font-display-lg md:text-display-lg">Dawati</span>
+</div>
+<!-- Center Links (Desktop) -->
+<nav class="hidden md:flex gap-8">
+<a class="font-label-sm text-label-sm text-primary font-medium hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#event">The Event</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#details">Details</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:opacity-80 transition-opacity active:scale-95 transition-transform duration-200" href="#rsvp">RSVP</a>
+</nav>
+<!-- Trailing -->
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-primary dark:text-primary-fixed hover:bg-surface-variant/50 transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</button>
+</div>
+</div>
+</header>
+<main class="flex-grow w-full max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop pt-lg pb-xl">
+<!-- Hero Section -->
+<section class="relative min-h-[80vh] flex flex-col justify-center items-center text-center mb-xl fade-in-up">
+<!-- Decorative Frame -->
+<div class="absolute inset-0 border border-primary-container/30 m-4 md:m-8 pointer-events-none rounded-2xl">
+<div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-4">
+<span class="material-symbols-outlined text-primary text-2xl">favorite</span>
+</div>
+</div>
+<div class="z-10 max-w-3xl mx-auto px-4">
+<p class="font-label-sm text-label-sm text-primary tracking-widest uppercase mb-8">Welcome, أم فلان</p>
+<div class="space-y-4 mb-12">
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface tracking-tight">SARA <span class="font-body-md text-on-surface-variant mx-2">&amp;</span> MOHAMMED</h1>
+<h2 class="font-headline-md text-headline-md text-primary arabic-accent text-3xl md:text-5xl">سارة و محمد</h2>
+</div>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mx-auto leading-relaxed mb-12">
+                        We joyfully invite you to share in our happiness as we unite in marriage. Join us for an evening of celebration, elegance, and love.
+                    </p>
+<div class="flex flex-col md:flex-row gap-6 justify-center items-center">
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-outline uppercase mb-2">Date</span>
+<span class="font-headline-md text-headline-md text-on-surface">15 . 10 . 2026</span>
+</div>
+<div class="hidden md:block w-[1px] h-12 bg-outline-variant/30"></div>
+<div class="flex flex-col items-center">
+<span class="font-label-sm text-label-sm text-outline uppercase mb-2">Time</span>
+<span class="font-headline-md text-headline-md text-on-surface">20:00 AST</span>
+</div>
+</div>
+</div>
+<!-- Background Image Integration -->
+<div class="bg-cover bg-center w-full h-full" data-alt="A subtle, highly abstract architectural background in modern luxury style. Soft beige and champagne tones, minimalist archways, gentle lighting, no harsh lines, creating a serene, empty, high-end editorial canvas for a wedding invitation. Soft shadows, 8k resolution, elegant minimalism." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDvSI7ZIBz0weg7d4hojGudIpE6F-zoLmdXkMDcJoM4lx73XCC1rmE1eTK06fXDWFRnU6tK54eMO1cmcmjs042IY8RzKU4fzVaF8J0zQohdsRUPENr9aPZsvjNH0sApWihcAF1BVhZBRnBUAxu9v0BYhezUFpq7JQcCjP15X19atvR8aIzJyRFM-MfVsnj4taS2QmCJqIZs6O-uu20IFZhUtSvn15LZiugyT8b-e1QqXaIIlbmpeU56')"></div>
+</section>
+<!-- Bento Grid Details Section -->
+<section class="mb-xl pt-lg" id="event">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Location Card (Large) -->
+<div class="md:col-span-8 glass-card rounded-2xl p-8 md:p-12 flex flex-col justify-between relative overflow-hidden group fade-in-up">
+<div class="z-10 relative">
+<div class="w-12 h-12 rounded-full bg-primary-container/30 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-primary">location_on</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">The Ritz-Carlton</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6 max-w-sm">
+                                Al Hada Area, Mekkah Road, Riyadh, Saudi Arabia. Valet parking provided.
+                            </p>
+<button class="px-6 py-3 border border-primary text-primary hover:bg-primary/5 rounded-full transition-colors duration-300 font-label-sm text-label-sm uppercase tracking-widest inline-flex items-center gap-2 group-active:scale-95">
+                                View Map <span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+<!-- Map Image Placeholder -->
+<div class="bg-cover bg-left" data-alt="A beautifully styled, minimalist map graphic of Riyadh, focusing on luxury hotel district. Rendered in monochromatic champagne and beige tones with subtle gold line work. High-end editorial style, clean, uncluttered, abstract representation of location." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuB30qnRDGsNCMMuuU6zLBdsrpjiI-0egZWH0czFfKOykLgXpRv3KukJ9pAcaZ1a_YClz3tYANogl3N1rMBG1smYVp9FWfO_VkHghmX2THNwTcgBi0Jz0z_k4Klq-nm9XjnIJ20cgg4uqw8DE6Hd_xKndfqYrZfiyXsAC3L1tRVacpNEQQkHguekJhDJUqxmnSBnYIpVSssti-8oCRIFORGqwcTYVxuY3Cj_rIvNfbchCooGaqFDHzqa'); clip-path: polygon(20% 0%, 100% 0, 100% 100%, 0% 100%);"></div>
+</div>
+<!-- Dress Code Card (Small) -->
+<div class="md:col-span-4 glass-card rounded-2xl p-8 flex flex-col justify-center items-center text-center fade-in-up" style="transition-delay: 100ms;">
+<div class="w-12 h-12 rounded-full bg-surface-variant/50 flex items-center justify-center mb-6">
+<span class="material-symbols-outlined text-on-surface">checkroom</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-2">Dress Code</h3>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            Formal &amp; Traditional Elegance.
+                        </p>
+<div class="mt-6 flex gap-2">
+<div class="w-6 h-6 rounded-full bg-[#1A1A1A] border border-outline-variant/20 shadow-sm"></div>
+<div class="w-6 h-6 rounded-full bg-[#E5D3B3] border border-outline-variant/20 shadow-sm"></div>
+<div class="w-6 h-6 rounded-full bg-[#FFFFFF] border border-outline-variant/20 shadow-sm"></div>
+</div>
+</div>
+<!-- Itinerary / Flow Card -->
+<div class="md:col-span-12 glass-card rounded-2xl p-8 md:p-12 mt-6 fade-in-up" style="transition-delay: 200ms;">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-8 text-center">Evening Flow</h3>
+<div class="relative max-w-4xl mx-auto">
+<!-- Connecting Line -->
+<div class="absolute top-1/2 left-0 w-full h-[1px] bg-outline-variant/30 -translate-y-1/2 hidden md:block z-0"></div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-4 relative z-10">
+<!-- Step 1 -->
+<div class="flex flex-col items-center text-center bg-surface-bright/80 p-6 rounded-xl border border-surface-variant/50 shadow-sm">
+<span class="font-label-sm text-label-sm text-primary mb-2">20:00</span>
+<div class="w-3 h-3 rounded-full bg-primary mb-4 md:absolute md:top-1/2 md:-translate-y-1/2 ring-4 ring-surface-bright"></div>
+<h4 class="font-body-lg text-body-lg text-on-surface font-medium mb-1">Welcome Reception</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Arrival and greetings</p>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center text-center bg-surface-bright/80 p-6 rounded-xl border border-surface-variant/50 shadow-sm">
+<span class="font-label-sm text-label-sm text-primary mb-2">21:30</span>
+<div class="w-3 h-3 rounded-full bg-primary mb-4 md:absolute md:top-1/2 md:-translate-y-1/2 ring-4 ring-surface-bright"></div>
+<h4 class="font-body-lg text-body-lg text-on-surface font-medium mb-1">Dinner Service</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Culinary excellence</p>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center text-center bg-surface-bright/80 p-6 rounded-xl border border-surface-variant/50 shadow-sm">
+<span class="font-label-sm text-label-sm text-primary mb-2">23:00</span>
+<div class="w-3 h-3 rounded-full bg-primary mb-4 md:absolute md:top-1/2 md:-translate-y-1/2 ring-4 ring-surface-bright"></div>
+<h4 class="font-body-lg text-body-lg text-on-surface font-medium mb-1">Celebration</h4>
+<p class="font-body-md text-body-md text-on-surface-variant text-sm">Joyous moments</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- RSVP Section (Action Focused) -->
+<section class="py-xl mb-xl border-t border-outline-variant/20 fade-in-up" id="rsvp">
+<div class="max-w-2xl mx-auto text-center">
+<h3 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-on-surface mb-6">RSVP</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mb-12">
+                        Kindly respond by October 1st to ensure we can properly accommodate your presence.
+                    </p>
+<div class="bg-surface-container-low rounded-2xl p-8 shadow-sm border border-surface-variant">
+<form class="space-y-6 text-left">
+<div>
+<label class="font-label-sm text-label-sm text-on-surface mb-2 block uppercase tracking-wider">Guest Name</label>
+<input class="w-full bg-transparent border-0 border-b border-outline-variant focus:border-primary focus:ring-0 px-0 py-2 font-body-md text-on-surface opacity-70" readonly="" type="text" value="أم فلان"/>
+</div>
+<div class="pt-4">
+<label class="font-label-sm text-label-sm text-on-surface mb-4 block uppercase tracking-wider">Will you attend?</label>
+<div class="flex gap-4">
+<label class="flex-1 cursor-pointer">
+<input checked="" class="peer sr-only" name="attendance" type="radio" value="yes"/>
+<div class="text-center py-4 rounded-xl border border-outline-variant peer-checked:border-primary peer-checked:bg-primary-container/20 peer-checked:text-primary transition-all">
+<span class="font-body-lg text-body-lg">Joyfully Accept</span>
+</div>
+</label>
+<label class="flex-1 cursor-pointer">
+<input class="peer sr-only" name="attendance" type="radio" value="no"/>
+<div class="text-center py-4 rounded-xl border border-outline-variant peer-checked:border-primary peer-checked:bg-surface-variant peer-checked:text-on-surface transition-all">
+<span class="font-body-lg text-body-lg">Regretfully Decline</span>
+</div>
+</label>
+</div>
+</div>
+<div class="pt-6">
+<button class="w-full bg-primary-container text-on-primary-container font-label-sm text-label-sm uppercase tracking-widest py-4 rounded-xl glow-shadow hover:opacity-90 active:scale-95 transition-all duration-200" type="button">
+                                    Confirm Response
+                                </button>
+</div>
+</form>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-low border-t border-outline-variant/10 py-12 mt-auto">
+<div class="max-w-7xl mx-auto px-margin-mobile md:px-margin-desktop text-center">
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary tracking-tight opacity-50 block mb-4">Dawati</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">The Definitive Brand Experience 2026</p>
+</div>
+</footer>
+</div>
+<!-- Scripts for Interaction -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const seal = document.getElementById('openSeal');
+            const revealOverlay = document.getElementById('revealOverlay');
+            const mainContent = document.getElementById('mainContent');
+            const animatedElements = document.querySelectorAll('.fade-in-up');
+
+            // Intersection Observer for scroll animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target); // Run once
+                    }
+                });
+            }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+            // Envelope Opening Logic
+            seal.addEventListener('click', () => {
+                // 1. Start opening animation
+                revealOverlay.classList.add('opening');
+                
+                // 2. Wait for letter to come up, then fade out overlay and fade in main content
+                setTimeout(() => {
+                    revealOverlay.style.opacity = '0';
+                    mainContent.style.opacity = '1';
+                    
+                    // 3. Start observing elements for scroll animations after reveal
+                    setTimeout(() => {
+                        revealOverlay.classList.add('hidden');
+                        animatedElements.forEach(el => observer.observe(el));
+                    }, 800);
+
+                }, 2000); // Wait 2s before transitioning to main content
+            });
+        });
+    </script>
+</body></html>

@@ -1,0 +1,10 @@
+.DS_Store
+
+# Reference design mockups (kept locally, not part of the repo)
+/Card Designs/
+/Designs/
+
+# Common
+node_modules/
+.env
+.env.local

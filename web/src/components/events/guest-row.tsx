@@ -7,6 +7,12 @@ import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 
 type RsvpBadge = "accepted" | "declined" | "pending";
 
+const RSVP_BADGE_STYLE: Record<RsvpBadge, string> = {
+  accepted: "bg-success/10 text-success",
+  declined: "bg-danger/10 text-danger",
+  pending: "bg-surface-2 text-fg-muted",
+};
+
 export function GuestRow({
   eventId,
   locale,
@@ -14,6 +20,7 @@ export function GuestRow({
   guest,
   invitationUrl,
   waMessage,
+  rsvp,
 }: {
   eventId: string;
   locale: string;
@@ -27,6 +34,12 @@ export function GuestRow({
   const boundToggleBlock = toggleGuestBlockedAction.bind(null, guest.id, eventId, locale, !guest.isBlocked);
   const boundDelete = deleteGuestAction.bind(null, guest.id, eventId, locale);
   const waHref = `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
+  const rsvpLabel =
+    rsvp === "accepted"
+      ? dict.events.detail.rsvpAccepted
+      : rsvp === "declined"
+        ? dict.events.detail.rsvpDeclined
+        : dict.events.detail.rsvpPending;
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
@@ -36,6 +49,11 @@ export function GuestRow({
           {guest.isBlocked && (
             <span className="ms-2 rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">
               {dict.events.detail.blocked}
+            </span>
+          )}
+          {rsvp && (
+            <span className={`ms-2 rounded-full px-2 py-0.5 text-xs ${RSVP_BADGE_STYLE[rsvp]}`}>
+              {rsvpLabel}
             </span>
           )}
         </p>

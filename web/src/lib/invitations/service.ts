@@ -4,6 +4,21 @@ import { InvitationStatus, RsvpStatus } from "@/generated/prisma/client";
 
 export class InvitationError extends Error {}
 
+const ACCEPTED_LIKE = new Set<InvitationStatus>([
+  InvitationStatus.ACCEPTED,
+  InvitationStatus.VALID,
+  InvitationStatus.PARTIALLY_USED,
+  InvitationStatus.FULLY_USED,
+]);
+
+/** Collapses the full InvitationStatus lifecycle into the 3 buckets an owner cares about. */
+export function classifyRsvp(status: InvitationStatus | null | undefined): "accepted" | "declined" | "pending" {
+  if (!status) return "pending";
+  if (status === InvitationStatus.DECLINED) return "declined";
+  if (ACCEPTED_LIKE.has(status)) return "accepted";
+  return "pending";
+}
+
 export async function getInvitationByLinkToken(linkToken: string) {
   return prisma.invitation.findUnique({
     where: { linkToken },

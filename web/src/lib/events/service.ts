@@ -11,7 +11,7 @@ export async function listOwnedEvents(userId: string) {
     include: {
       theme: true,
       order: { include: { plan: true } },
-      guests: { select: { id: true } },
+      guests: { select: { id: true, invitation: { select: { status: true } } } },
     },
     orderBy: { createdAt: "desc" },
   });

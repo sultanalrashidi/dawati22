@@ -150,6 +150,7 @@
       "rsvpAccepted": "Accepted",
       "rsvpDeclined": "Declined",
       "rsvpPending": "Awaiting response",
+      "statsRemaining": "Remaining invitations",
       "checkedIn": "{in}/{allowed}",
       "gateStaffTitle": "Gate staff",
       "addGateStaff": "Add gate staff",

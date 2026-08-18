@@ -150,6 +150,7 @@
       "rsvpAccepted": "وافق",
       "rsvpDeclined": "اعتذر",
       "rsvpPending": "بانتظار الرد",
+      "statsRemaining": "الدعوات المتبقية",
       "checkedIn": "{in}/{allowed}",
       "gateStaffTitle": "موظفو البوابة",
       "addGateStaff": "إضافة موظف بوابة",

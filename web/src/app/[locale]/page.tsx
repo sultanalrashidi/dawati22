@@ -17,18 +17,23 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         {dict.home.heroTitle}
       </h1>
       <p className="text-balance text-lg text-fg-muted">{dict.home.heroSubtitle}</p>
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href={`/${locale}/login`}
-          className="h-11 items-center rounded-full bg-accent px-6 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong inline-flex"
-        >
-          {dict.home.ctaStart}
-        </Link>
-        <Link
-          href={`/${locale}/plans`}
-          className="h-11 items-center rounded-full border border-border px-6 text-sm font-medium text-fg transition-colors hover:bg-surface-2 inline-flex"
-        >
-          {dict.home.ctaPlans}
+      <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Link
+            href={`/${locale}/login`}
+            className="h-11 items-center rounded-full bg-accent px-6 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong inline-flex"
+          >
+            {dict.home.ctaStart}
+          </Link>
+          <Link
+            href={`/${locale}/plans`}
+            className="h-11 items-center rounded-full border border-border px-6 text-sm font-medium text-fg transition-colors hover:bg-surface-2 inline-flex"
+          >
+            {dict.home.ctaPlans}
+          </Link>
+        </div>
+        <Link href={`/${locale}/themes`} className="text-sm font-medium text-accent underline-offset-4 hover:underline">
+          {dict.home.ctaThemes}
         </Link>
       </div>
     </div>

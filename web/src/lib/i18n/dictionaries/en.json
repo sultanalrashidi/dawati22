@@ -65,7 +65,8 @@
     "heroTitle": "Your invitation, reimagined",
     "heroSubtitle": "Design your event's invitation and share an elegant interactive experience with your guests in seconds",
     "ctaStart": "Get started",
-    "ctaPlans": "Browse plans"
+    "ctaPlans": "Browse plans",
+    "ctaThemes": "Preview designs"
   },
   "plans": {
     "title": "Plans",

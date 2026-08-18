@@ -1,0 +1,13 @@
+# Unlike git-based deploys, `vercel` CLI deploys upload the whole local
+# directory as-is — without this, the local .env (local Postgres URL,
+# localhost NEXT_PUBLIC_APP_URL) gets uploaded and used during the build,
+# silently shadowing the correct values set in the Vercel dashboard for
+# build-time-inlined vars like NEXT_PUBLIC_APP_URL (server-only vars like
+# DATABASE_URL are read at runtime instead, so they weren't affected).
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.dev.vars
+.dev.vars.*

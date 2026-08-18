@@ -6,6 +6,7 @@ import { InvitationStatus } from "@/generated/prisma/client";
 import { InvitationView } from "@/components/guest/invitation-view";
 import { GuestMessage } from "@/components/guest/guest-message";
 import type { ThemeConfig } from "@/lib/themes/types";
+import type { ScheduleItem } from "@/lib/events/types";
 
 export default async function GuestInvitationPage({ params }: PageProps<"/i/[token]">) {
   const { token } = await params;
@@ -47,11 +48,18 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
         name: invitation.event.name,
         groomNameEn: invitation.event.groomNameEn,
         brideNameEn: invitation.event.brideNameEn,
+        groomNameAr: invitation.event.groomNameAr,
+        groomFamilyAr: invitation.event.groomFamilyAr,
+        brideNameAr: invitation.event.brideNameAr,
+        brideFamilyAr: invitation.event.brideFamilyAr,
+        familiesGreetingAr: invitation.event.familiesGreetingAr,
         invitationTextAr: invitation.event.invitationTextAr,
         eventDate: invitation.event.eventDate.toISOString(),
         locationName: invitation.event.locationName,
         mapUrl: invitation.event.mapUrl,
         musicYoutubeId: invitation.event.musicYoutubeId,
+        scheduleItems: invitation.event.scheduleItems as unknown as ScheduleItem[] | null,
+        notesAr: invitation.event.notesAr,
         rsvpRequired: invitation.event.rsvpRequired,
       }}
       guest={{ nameAr: invitation.guest.nameAr, allowedCount: invitation.guest.allowedCount }}

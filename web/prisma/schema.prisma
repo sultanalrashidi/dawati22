@@ -255,12 +255,21 @@ model Event {
   name                String
   groomNameEn         String
   brideNameEn         String
+  groomNameAr         String?
+  groomFamilyAr       String?
+  brideNameAr         String?
+  brideFamilyAr       String?
+  familiesGreetingAr  String?
   invitationTextAr    String
   eventDate           DateTime
   locationName        String
   mapUrl              String?
   coverImageUrl       String?
   musicYoutubeId      String?
+  /** Ordered list of { labelAr, time } — event-day schedule, e.g. reception/procession/dinner. */
+  scheduleItems       Json?
+  /** Free text, one note per line — e.g. "no children", dress code. */
+  notesAr             String?
   themeId             String
   theme               Theme                    @relation(fields: [themeId], references: [id])
   guestManagementMode EventGuestManagementMode @default(SELF)
@@ -352,6 +361,11 @@ model Rsvp {
   respondedAt  DateTime   @default(now())
   ipHash       String?
   userAgent    String?
+  guestNameAr  String?
+  guestPhone   String?
+  /** How many of the guest's allowed seats are actually attending — capped at Guest.allowedCount. */
+  partySize    Int?
+  messageAr    String?
 
   @@index([invitationId])
 }

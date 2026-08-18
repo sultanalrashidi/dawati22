@@ -10,11 +10,22 @@ const SAMPLE_EVENT = {
   name: "Sample",
   groomNameEn: "Sultan",
   brideNameEn: "Noura",
+  groomNameAr: "سلطان",
+  groomFamilyAr: "آل سعيد",
+  brideNameAr: "نورة",
+  brideFamilyAr: "آل مطلق",
+  familiesGreetingAr: "يسعدنا انضمامكم لنا في هذا اليوم",
   invitationTextAr: "يسعدنا دعوتكم لحضور حفل زفافنا ومشاركتنا فرحتنا",
   eventDate: new Date(Date.now() + 45 * 86_400_000).toISOString(),
   locationName: "قاعة الأمير الكبرى - الرياض",
   mapUrl: null,
   musicYoutubeId: null,
+  scheduleItems: [
+    { labelAr: "استقبال الضيوف", time: "٨:٠٠ م" },
+    { labelAr: "الزفة", time: "٩:٠٠ م" },
+    { labelAr: "العشاء", time: "١٠:٠٠ م" },
+  ],
+  notesAr: "عدم اصطحاب الأطفال\nالحضور بالزي الرسمي",
   rsvpRequired: true,
 };
 

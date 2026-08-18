@@ -119,6 +119,46 @@ export default async function NewEventPage({
           </label>
         </div>
 
+        <div className="grid grid-cols-2 gap-4">
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="text-fg-muted">{f.groomNameArLabel}</span>
+            <input
+              name="groomNameAr"
+              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="text-fg-muted">{f.groomFamilyArLabel}</span>
+            <input
+              name="groomFamilyAr"
+              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="text-fg-muted">{f.brideNameArLabel}</span>
+            <input
+              name="brideNameAr"
+              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5 text-sm">
+            <span className="text-fg-muted">{f.brideFamilyArLabel}</span>
+            <input
+              name="brideFamilyAr"
+              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+            />
+          </label>
+        </div>
+
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-fg-muted">{f.familiesGreetingLabel}</span>
+          <input
+            name="familiesGreetingAr"
+            placeholder={f.familiesGreetingPlaceholder}
+            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+          />
+        </label>
+
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="text-fg-muted">{f.invitationTextLabel}</span>
           <textarea
@@ -172,6 +212,28 @@ export default async function NewEventPage({
             className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
           />
           <span className="text-xs text-fg-muted">{f.musicUrlHint}</span>
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-fg-muted">{f.scheduleLabel}</span>
+          <textarea
+            name="scheduleItems"
+            rows={3}
+            placeholder={f.schedulePlaceholder}
+            dir="rtl"
+            className="rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent"
+          />
+          <span className="text-xs text-fg-muted">{f.scheduleHint}</span>
+        </label>
+
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-fg-muted">{f.notesLabel}</span>
+          <textarea
+            name="notesAr"
+            rows={3}
+            placeholder={f.notesPlaceholder}
+            className="rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent"
+          />
         </label>
 
         <div className="flex flex-col gap-2 text-sm">

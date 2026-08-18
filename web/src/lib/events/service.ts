@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
-import { EventGuestManagementMode, EventType, OrderStatus } from "@/generated/prisma/client";
+import { EventGuestManagementMode, EventType, OrderStatus, Prisma } from "@/generated/prisma/client";
+import type { ScheduleItem } from "@/lib/events/types";
 
 export class EventError extends Error {}
 
@@ -37,11 +38,18 @@ export interface CreateEventInput {
   name: string;
   groomNameEn: string;
   brideNameEn: string;
+  groomNameAr?: string;
+  groomFamilyAr?: string;
+  brideNameAr?: string;
+  brideFamilyAr?: string;
+  familiesGreetingAr?: string;
   invitationTextAr: string;
   eventDate: Date;
   locationName: string;
   mapUrl?: string;
   musicYoutubeId?: string;
+  scheduleItems?: ScheduleItem[];
+  notesAr?: string;
   themeId: string;
   guestManagementMode: EventGuestManagementMode;
   rsvpRequired: boolean;
@@ -64,11 +72,20 @@ export async function createEvent(userId: string, input: CreateEventInput) {
       name: input.name,
       groomNameEn: input.groomNameEn,
       brideNameEn: input.brideNameEn,
+      groomNameAr: input.groomNameAr || null,
+      groomFamilyAr: input.groomFamilyAr || null,
+      brideNameAr: input.brideNameAr || null,
+      brideFamilyAr: input.brideFamilyAr || null,
+      familiesGreetingAr: input.familiesGreetingAr || null,
       invitationTextAr: input.invitationTextAr,
       eventDate: input.eventDate,
       locationName: input.locationName,
       mapUrl: input.mapUrl || null,
       musicYoutubeId: input.musicYoutubeId || null,
+      scheduleItems: input.scheduleItems && input.scheduleItems.length > 0
+        ? (input.scheduleItems as unknown as Prisma.InputJsonValue)
+        : Prisma.JsonNull,
+      notesAr: input.notesAr || null,
       themeId: input.themeId,
       guestManagementMode: input.guestManagementMode,
       rsvpRequired: input.rsvpRequired,

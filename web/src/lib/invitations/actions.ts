@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { submitRsvp, getInvitationByLinkToken, InvitationError } from "@/lib/invitations/service";
+import { submitRsvp, getInvitationByLinkToken, InvitationError, type RsvpDetails } from "@/lib/invitations/service";
 import { sha256Hex } from "@/lib/security/tokens";
 import { renderQrDataUrl } from "@/lib/qr";
 import { RsvpStatus } from "@/generated/prisma/client";
@@ -11,13 +11,14 @@ export type RsvpActionState = { ok: boolean; error?: string; qrDataUrl?: string 
 
 export async function submitRsvpAction(
   linkToken: string,
-  response: "ACCEPTED" | "DECLINED"
+  response: "ACCEPTED" | "DECLINED",
+  details: RsvpDetails = {}
 ): Promise<RsvpActionState> {
   const hdrs = await headers();
   const ip = hdrs.get("x-forwarded-for") ?? "";
 
   try {
-    await submitRsvp(linkToken, response === "ACCEPTED" ? RsvpStatus.ACCEPTED : RsvpStatus.DECLINED, {
+    await submitRsvp(linkToken, response === "ACCEPTED" ? RsvpStatus.ACCEPTED : RsvpStatus.DECLINED, details, {
       ipHash: ip ? sha256Hex(ip) : undefined,
       userAgent: hdrs.get("user-agent") ?? undefined,
     });

@@ -1,12 +1,24 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition, type CSSProperties, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+  type CSSProperties,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
+import type { ScheduleItem } from "@/lib/events/types";
 import { fontVarFor } from "@/lib/themes/fonts";
 import { submitRsvpAction } from "@/lib/invitations/actions";
 import { ThemeDecor } from "@/components/guest/theme-decor";
 import { ShaderBackground } from "@/components/guest/shader-background";
+import { formatDualDate } from "@/lib/dates";
+import { buildGoogleCalendarUrl } from "@/lib/calendar-link";
 
 type GuestFacingStatus = "DRAFT" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED";
 
@@ -21,11 +33,18 @@ interface Props {
     name: string;
     groomNameEn: string;
     brideNameEn: string;
+    groomNameAr?: string | null;
+    groomFamilyAr?: string | null;
+    brideNameAr?: string | null;
+    brideFamilyAr?: string | null;
+    familiesGreetingAr?: string | null;
     invitationTextAr: string;
     eventDate: string;
     locationName: string;
     mapUrl: string | null;
     musicYoutubeId?: string | null;
+    scheduleItems?: ScheduleItem[] | null;
+    notesAr?: string | null;
     rsvpRequired: boolean;
   };
   guest: { nameAr: string; allowedCount: number };
@@ -194,6 +213,11 @@ export function InvitationView({
   const [currentQr, setCurrentQr] = useState(qrDataUrl);
   const [rsvpError, setRsvpError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+  const [rsvpName, setRsvpName] = useState(guest.nameAr);
+  const [rsvpPhone, setRsvpPhone] = useState("");
+  const [attending, setAttending] = useState<boolean | null>(null);
+  const [rsvpPartySize, setRsvpPartySize] = useState(guest.allowedCount);
+  const [rsvpMessage, setRsvpMessage] = useState("");
   const countdown = useCountdown(event.eventDate);
   const g = dict.guest;
 
@@ -214,20 +238,34 @@ export function InvitationView({
     "--font-en-display": fontVarFor(theme.fonts.latinDisplay),
   };
 
-  function respond(response: "ACCEPTED" | "DECLINED") {
+  function respond(
+    response: "ACCEPTED" | "DECLINED",
+    details: { guestNameAr?: string; guestPhone?: string; partySize?: number; messageAr?: string },
+  ) {
     if (mode === "preview") {
       setCurrentStatus(response);
       return;
     }
     setRsvpError(null);
     startTransition(async () => {
-      const result = await submitRsvpAction(linkToken!, response);
+      const result = await submitRsvpAction(linkToken!, response, details);
       if (!result.ok) {
         setRsvpError(g.rsvpError);
         return;
       }
       setCurrentStatus(response);
       if (result.qrDataUrl) setCurrentQr(result.qrDataUrl);
+    });
+  }
+
+  function handleRsvpSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (attending === null) return;
+    respond(attending ? "ACCEPTED" : "DECLINED", {
+      guestNameAr: rsvpName.trim() || undefined,
+      guestPhone: rsvpPhone.trim() || undefined,
+      partySize: attending ? rsvpPartySize : undefined,
+      messageAr: rsvpMessage.trim() || undefined,
     });
   }
 
@@ -380,7 +418,23 @@ export function InvitationView({
     );
   }
 
-  const hasMoreAfterDetails = currentStatus !== "ACCEPTED" && currentStatus !== "DECLINED";
+  const dual = formatDualDate(new Date(event.eventDate));
+  const hasSchedule = Boolean(event.scheduleItems && event.scheduleItems.length > 0);
+  const notesList = (event.notesAr ?? "").split("\n").map((n) => n.trim()).filter(Boolean);
+  const hasNotes = notesList.length > 0;
+  const hasResponded = currentStatus === "ACCEPTED" || currentStatus === "DECLINED";
+  const hasRsvpForm = !hasResponded && event.rsvpRequired;
+  const somethingFollowsDetails = hasSchedule || hasNotes || hasRsvpForm || hasResponded;
+  const somethingFollowsSchedule = hasNotes || hasRsvpForm || hasResponded;
+  const somethingFollowsNotes = hasRsvpForm || hasResponded;
+  const calendarUrl = buildGoogleCalendarUrl({
+    title: event.name,
+    start: new Date(event.eventDate),
+    location: event.locationName,
+    details: event.invitationTextAr,
+  });
+  const groomLabel = event.groomNameAr || event.groomNameEn;
+  const brideLabel = event.brideNameAr || event.brideNameEn;
 
   return (
     <div
@@ -401,16 +455,52 @@ export function InvitationView({
       {/* Universal post-open flow: a scroll-snapped sequence of scenes, same
           structure for every theme — only palette/fonts/decoration differ. */}
       <div className="dawati-scene-container">
+        {/* Scene 1: reveal */}
         <Scene showHint>
           <p className="text-lg" style={{ fontFamily: "var(--font-en-display)" }}>
             {event.groomNameEn} &amp; {event.brideNameEn}
           </p>
           <div className="h-px w-16" style={{ background: "var(--color-accent)" }} />
+          <p className="text-sm text-[var(--color-fg-muted)]" style={{ fontFamily: "var(--font-ar-body)" }}>
+            {g.guestOf} <span className="text-[var(--color-fg)]">{guest.nameAr}</span>
+          </p>
           <p className="max-w-md whitespace-pre-line leading-loose text-[var(--color-fg-muted)]">
             {event.invitationTextAr}
           </p>
-          {theme.sections.showCountdown && countdown && (
-            <div className="mt-4 flex gap-4 rounded-2xl border border-[var(--color-accent)]/30 px-6 py-4">
+          <div className="mt-2 text-center">
+            <p className="text-lg text-[var(--color-fg)]">{dual.gregorian}</p>
+            <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{dual.hijri}</p>
+          </div>
+        </Scene>
+
+        {/* Scene 2: the two families */}
+        <Scene showHint>
+          <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.familiesHeading}</h2>
+          {event.familiesGreetingAr && (
+            <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-fg-muted)]">{event.familiesGreetingAr}</p>
+          )}
+          <div className="flex items-start justify-center gap-10">
+            <div className="text-center">
+              <p className="text-xl" style={{ fontFamily: "var(--font-ar-display)" }}>{groomLabel}</p>
+              {event.groomFamilyAr && (
+                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{g.familyPrefix} {event.groomFamilyAr}</p>
+              )}
+            </div>
+            <div className="mt-2 h-12 w-px" style={{ background: "var(--color-accent)", opacity: 0.4 }} />
+            <div className="text-center">
+              <p className="text-xl" style={{ fontFamily: "var(--font-ar-display)" }}>{brideLabel}</p>
+              {event.brideFamilyAr && (
+                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{g.familyPrefix} {event.brideFamilyAr}</p>
+              )}
+            </div>
+          </div>
+        </Scene>
+
+        {/* Scene 3: countdown */}
+        <Scene showHint>
+          <h2 className="text-xl text-[var(--color-fg-muted)]">{g.countdownTitle}</h2>
+          {countdown && (
+            <div className="flex gap-4 rounded-2xl border border-[var(--color-accent)]/30 px-6 py-4">
               {([
                 [countdown.days, g.days],
                 [countdown.hours, g.hours],
@@ -426,66 +516,148 @@ export function InvitationView({
           )}
         </Scene>
 
-        <Scene showHint>
-          <p className="text-sm uppercase tracking-[0.4em] text-[var(--color-accent)]" style={{ fontFamily: "var(--font-ar-body)" }}>
-            {g.guestOf}
-          </p>
-          <div className="relative px-10 py-6">
-            <span className="absolute start-0 top-0 h-4 w-4 border-s border-t" style={{ borderColor: "var(--color-accent)" }} />
-            <span className="absolute end-0 top-0 h-4 w-4 border-e border-t" style={{ borderColor: "var(--color-accent)" }} />
-            <span className="absolute start-0 bottom-0 h-4 w-4 border-s border-b" style={{ borderColor: "var(--color-accent)" }} />
-            <span className="absolute end-0 bottom-0 h-4 w-4 border-e border-b" style={{ borderColor: "var(--color-accent)" }} />
-            <h1 className="text-3xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
-              {guest.nameAr}
-            </h1>
-          </div>
-        </Scene>
-
-        <Scene showHint={hasMoreAfterDetails}>
+        {/* Scene 4: everything you need to know */}
+        <Scene showHint={somethingFollowsDetails}>
+          <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.detailsHeading}</h2>
           <div className="text-sm text-[var(--color-fg-muted)]">
-            <p className="text-lg text-[var(--color-fg)]">
-              {new Date(event.eventDate).toLocaleString("ar-SA", { dateStyle: "full", timeStyle: "short" })}
-            </p>
+            <p className="text-lg text-[var(--color-fg)]">{dual.gregorian} — {dual.time}</p>
             <p className="mt-2">{event.locationName}</p>
           </div>
-          {theme.sections.showMap && event.mapUrl && (
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {theme.sections.showMap && event.mapUrl && (
+              <a
+                href={event.mapUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="h-11 items-center rounded-full border border-[var(--color-accent)] px-6 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)] inline-flex"
+              >
+                {g.openMap}
+              </a>
+            )}
             <a
-              href={event.mapUrl}
+              href={calendarUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="h-11 items-center rounded-full border border-[var(--color-accent)] px-6 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)] inline-flex"
+              className="h-11 items-center rounded-full border border-[var(--color-fg-muted)]/40 px-6 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] inline-flex"
             >
-              {g.openMap}
+              {g.addToCalendar}
             </a>
-          )}
+          </div>
         </Scene>
 
-        {hasMoreAfterDetails && (
-          <Scene>
-            {event.rsvpRequired ? (
-              <div className="flex flex-col items-center gap-3">
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    disabled={isPending}
-                    onClick={() => respond("ACCEPTED")}
-                    className="h-11 rounded-full px-6 text-sm font-medium disabled:opacity-50"
-                    style={{ background: "var(--color-accent)", color: "var(--color-accent-fg)" }}
-                  >
-                    {g.accept}
-                  </button>
-                  <button
-                    type="button"
-                    disabled={isPending}
-                    onClick={() => respond("DECLINED")}
-                    className="h-11 rounded-full border border-[var(--color-fg-muted)] px-6 text-sm font-medium disabled:opacity-50"
-                  >
-                    {g.decline}
-                  </button>
+        {/* Scene 5: event schedule (only if the organizer set one) */}
+        {hasSchedule && (
+          <Scene showHint={somethingFollowsSchedule}>
+            <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.scheduleHeading}</h2>
+            <div className="flex w-full max-w-xs flex-col gap-3">
+              {event.scheduleItems!.map((item, i) => (
+                <div key={i} className="flex items-center justify-between gap-6 border-b border-[var(--color-accent)]/20 pb-2">
+                  <span>{item.labelAr}</span>
+                  <span className="text-[var(--color-fg-muted)]">{item.time}</span>
                 </div>
-                {rsvpError && <p className="text-sm text-red-400">{rsvpError}</p>}
+              ))}
+            </div>
+          </Scene>
+        )}
+
+        {/* Scene 6: notes for guests (only if the organizer set any) */}
+        {hasNotes && (
+          <Scene showHint={somethingFollowsNotes}>
+            <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.notesHeading}</h2>
+            <ul className="flex flex-col gap-2 text-[var(--color-fg-muted)]">
+              {notesList.map((note, i) => (
+                <li key={i}>{note}</li>
+              ))}
+            </ul>
+          </Scene>
+        )}
+
+        {/* Scene 7: RSVP form */}
+        {hasRsvpForm && (
+          <Scene>
+            <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.rsvpHeading}</h2>
+            <form onSubmit={handleRsvpSubmit} className="flex w-full max-w-sm flex-col gap-4 text-start">
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="text-[var(--color-fg-muted)]">{g.rsvpNameLabel}</span>
+                <input
+                  value={rsvpName}
+                  onChange={(e) => setRsvpName(e.target.value)}
+                  required
+                  className="h-11 rounded-lg border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-3 text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="text-[var(--color-fg-muted)]">{g.rsvpPhoneLabel}</span>
+                <input
+                  type="tel"
+                  dir="ltr"
+                  value={rsvpPhone}
+                  onChange={(e) => setRsvpPhone(e.target.value)}
+                  className="h-11 rounded-lg border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-3 text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                />
+              </label>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAttending(true)}
+                  aria-pressed={attending === true}
+                  className="h-11 flex-1 rounded-full text-sm font-medium transition-colors"
+                  style={
+                    attending === true
+                      ? { background: "var(--color-accent)", color: "var(--color-accent-fg)" }
+                      : { border: "1px solid var(--color-accent)", color: "var(--color-accent)" }
+                  }
+                >
+                  {g.attendingChoice}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAttending(false)}
+                  aria-pressed={attending === false}
+                  className="h-11 flex-1 rounded-full text-sm font-medium transition-colors"
+                  style={
+                    attending === false
+                      ? { background: "var(--color-fg-muted)", color: "var(--color-bg)" }
+                      : { border: "1px solid var(--color-fg-muted)", color: "var(--color-fg-muted)" }
+                  }
+                >
+                  {g.decline}
+                </button>
               </div>
-            ) : null}
+              {attending === true && guest.allowedCount > 1 && (
+                <label className="flex flex-col gap-1.5 text-sm">
+                  <span className="text-[var(--color-fg-muted)]">{g.rsvpPartySizeLabel}</span>
+                  <select
+                    value={rsvpPartySize}
+                    onChange={(e) => setRsvpPartySize(Number(e.target.value))}
+                    className="h-11 rounded-lg border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-3 text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                  >
+                    {Array.from({ length: guest.allowedCount }, (_, i) => i + 1).map((n) => (
+                      <option key={n} value={n}>{n}</option>
+                    ))}
+                  </select>
+                </label>
+              )}
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="text-[var(--color-fg-muted)]">{g.rsvpMessageLabel}</span>
+                <textarea
+                  value={rsvpMessage}
+                  onChange={(e) => setRsvpMessage(e.target.value)}
+                  rows={3}
+                  placeholder={g.rsvpMessagePlaceholder}
+                  className="rounded-lg border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-3 py-2 text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
+                />
+              </label>
+              <button
+                type="submit"
+                disabled={attending === null || isPending}
+                className="h-11 rounded-full text-sm font-medium disabled:opacity-50"
+                style={{ background: "var(--color-accent)", color: "var(--color-accent-fg)" }}
+              >
+                {g.rsvpSubmit}
+              </button>
+              {rsvpError && <p className="text-sm text-red-400">{rsvpError}</p>}
+            </form>
           </Scene>
         )}
 

@@ -18,16 +18,34 @@ export async function createEventAction(locale: string, formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const groomNameEn = String(formData.get("groomNameEn") ?? "").trim();
   const brideNameEn = String(formData.get("brideNameEn") ?? "").trim();
+  const groomNameAr = String(formData.get("groomNameAr") ?? "").trim();
+  const groomFamilyAr = String(formData.get("groomFamilyAr") ?? "").trim();
+  const brideNameAr = String(formData.get("brideNameAr") ?? "").trim();
+  const brideFamilyAr = String(formData.get("brideFamilyAr") ?? "").trim();
+  const familiesGreetingAr = String(formData.get("familiesGreetingAr") ?? "").trim();
   const invitationTextAr = String(formData.get("invitationTextAr") ?? "").trim();
   const eventDateRaw = String(formData.get("eventDate") ?? "");
   const locationName = String(formData.get("locationName") ?? "").trim();
   const mapUrl = String(formData.get("mapUrl") ?? "").trim();
   const musicUrlRaw = String(formData.get("musicUrl") ?? "").trim();
+  const scheduleItemsRaw = String(formData.get("scheduleItems") ?? "").trim();
+  const notesAr = String(formData.get("notesAr") ?? "").trim();
   const themeId = String(formData.get("themeId") ?? "");
   const guestManagementMode = String(formData.get("guestManagementMode") ?? "SELF");
   const rsvpRequired = formData.get("rsvpRequired") === "on";
 
   const musicYoutubeId = musicUrlRaw ? extractYoutubeVideoId(musicUrlRaw) : null;
+  const scheduleItems = scheduleItemsRaw
+    ? scheduleItemsRaw
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => {
+          const [labelAr, time] = line.split("|").map((s) => s.trim());
+          return { labelAr: labelAr ?? "", time: time ?? "" };
+        })
+        .filter((item) => item.labelAr && item.time)
+    : undefined;
 
   const eventDate = new Date(eventDateRaw);
   const isValid =
@@ -53,11 +71,18 @@ export async function createEventAction(locale: string, formData: FormData) {
       name,
       groomNameEn,
       brideNameEn,
+      groomNameAr: groomNameAr || undefined,
+      groomFamilyAr: groomFamilyAr || undefined,
+      brideNameAr: brideNameAr || undefined,
+      brideFamilyAr: brideFamilyAr || undefined,
+      familiesGreetingAr: familiesGreetingAr || undefined,
       invitationTextAr,
       eventDate,
       locationName,
       mapUrl,
       musicYoutubeId: musicYoutubeId ?? undefined,
+      scheduleItems,
+      notesAr: notesAr || undefined,
       themeId,
       guestManagementMode:
         guestManagementMode === "ADMIN" ? EventGuestManagementMode.ADMIN : EventGuestManagementMode.SELF,

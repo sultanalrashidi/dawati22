@@ -290,6 +290,8 @@
     "rsvpPartySizeLabel": "عدد الأشخاص",
     "rsvpMessageLabel": "كلمة لنا",
     "rsvpMessagePlaceholder": "شاركونا أمنياتكم وكلماتكم الجميلة",
-    "rsvpSubmit": "إرسال التأكيد"
+    "rsvpSubmit": "إرسال التأكيد",
+    "nextSection": "التالي",
+    "previousSection": "السابق"
   }
 }

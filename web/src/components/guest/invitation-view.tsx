@@ -158,18 +158,57 @@ function useInView<T extends HTMLElement>(threshold = 0.3) {
   return [ref, inView] as const;
 }
 
-/** One full-height, scroll-snapped beat of the post-open guest experience. */
-function Scene({ children, showHint = false }: { children: ReactNode; showHint?: boolean }) {
+/**
+ * One full-height, scroll-snapped beat of the post-open guest experience.
+ * The forward/back chevrons are real buttons (not just decorative hints) —
+ * scroll-snap gesture physics vary a lot across phones/browsers, so tapping
+ * a neighboring scene into view always works as a fallback.
+ */
+function Scene({
+  children,
+  showHint = false,
+  showBackHint = false,
+  labels,
+}: {
+  children: ReactNode;
+  showHint?: boolean;
+  showBackHint?: boolean;
+  labels?: { next: string; previous: string };
+}) {
   const [ref, inView] = useInView<HTMLElement>();
+
+  function goTo(direction: 1 | -1) {
+    const el = ref.current;
+    const sibling = direction === 1 ? el?.nextElementSibling : el?.previousElementSibling;
+    sibling?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   return (
     <section ref={ref} className={`dawati-scene${inView ? " dawati-scene-in-view" : ""}`}>
+      {showBackHint && (
+        <button
+          type="button"
+          onClick={() => goTo(-1)}
+          aria-label={labels?.previous}
+          className="dawati-scroll-hint dawati-scroll-hint-up"
+        >
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="var(--color-accent)" strokeWidth="1.5">
+            <path d="M6 15l6-6 6 6" />
+          </svg>
+        </button>
+      )}
       {children}
       {showHint && (
-        <span className="dawati-scroll-hint" aria-hidden="true">
+        <button
+          type="button"
+          onClick={() => goTo(1)}
+          aria-label={labels?.next}
+          className="dawati-scroll-hint"
+        >
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="var(--color-accent)" strokeWidth="1.5">
             <path d="M6 9l6 6 6-6" />
           </svg>
-        </span>
+        </button>
       )}
     </section>
   );
@@ -220,6 +259,7 @@ export function InvitationView({
   const [rsvpMessage, setRsvpMessage] = useState("");
   const countdown = useCountdown(event.eventDate);
   const g = dict.guest;
+  const navLabels = { next: g.nextSection, previous: g.previousSection };
 
   function handleOpenClick() {
     setIsOpening(true);
@@ -456,7 +496,7 @@ export function InvitationView({
           structure for every theme — only palette/fonts/decoration differ. */}
       <div className="dawati-scene-container">
         {/* Scene 1: reveal */}
-        <Scene showHint>
+        <Scene showHint labels={navLabels}>
           <p className="text-lg" style={{ fontFamily: "var(--font-en-display)" }}>
             {event.groomNameEn} &amp; {event.brideNameEn}
           </p>
@@ -474,7 +514,7 @@ export function InvitationView({
         </Scene>
 
         {/* Scene 2: the two families */}
-        <Scene showHint>
+        <Scene showHint showBackHint labels={navLabels}>
           <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.familiesHeading}</h2>
           {event.familiesGreetingAr && (
             <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-fg-muted)]">{event.familiesGreetingAr}</p>
@@ -497,7 +537,7 @@ export function InvitationView({
         </Scene>
 
         {/* Scene 3: countdown */}
-        <Scene showHint>
+        <Scene showHint showBackHint labels={navLabels}>
           <h2 className="text-xl text-[var(--color-fg-muted)]">{g.countdownTitle}</h2>
           {countdown && (
             <div className="flex gap-4 rounded-2xl border border-[var(--color-accent)]/30 px-6 py-4">
@@ -517,7 +557,7 @@ export function InvitationView({
         </Scene>
 
         {/* Scene 4: everything you need to know */}
-        <Scene showHint={somethingFollowsDetails}>
+        <Scene showHint={somethingFollowsDetails} showBackHint labels={navLabels}>
           <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.detailsHeading}</h2>
           <div className="text-sm text-[var(--color-fg-muted)]">
             <p className="text-lg text-[var(--color-fg)]">{dual.gregorian} — {dual.time}</p>
@@ -547,7 +587,7 @@ export function InvitationView({
 
         {/* Scene 5: event schedule (only if the organizer set one) */}
         {hasSchedule && (
-          <Scene showHint={somethingFollowsSchedule}>
+          <Scene showHint={somethingFollowsSchedule} showBackHint labels={navLabels}>
             <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.scheduleHeading}</h2>
             <div className="flex w-full max-w-xs flex-col gap-3">
               {event.scheduleItems!.map((item, i) => (
@@ -562,7 +602,7 @@ export function InvitationView({
 
         {/* Scene 6: notes for guests (only if the organizer set any) */}
         {hasNotes && (
-          <Scene showHint={somethingFollowsNotes}>
+          <Scene showHint={somethingFollowsNotes} showBackHint labels={navLabels}>
             <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.notesHeading}</h2>
             <ul className="flex flex-col gap-2 text-[var(--color-fg-muted)]">
               {notesList.map((note, i) => (
@@ -574,7 +614,7 @@ export function InvitationView({
 
         {/* Scene 7: RSVP form */}
         {hasRsvpForm && (
-          <Scene>
+          <Scene showBackHint labels={navLabels}>
             <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.rsvpHeading}</h2>
             <form onSubmit={handleRsvpSubmit} className="flex w-full max-w-sm flex-col gap-4 text-start">
               <label className="flex flex-col gap-1.5 text-sm">
@@ -662,7 +702,7 @@ export function InvitationView({
         )}
 
         {currentStatus === "ACCEPTED" && (
-          <Scene>
+          <Scene showBackHint labels={navLabels}>
             {currentQr || mode === "preview" ? (
               <div className="flex flex-col items-center gap-3 rounded-2xl border border-[var(--color-accent)]/40 bg-[var(--color-surface)] p-6">
                 <p className="text-sm font-medium">{g.passTitle}</p>
@@ -682,7 +722,7 @@ export function InvitationView({
         )}
 
         {currentStatus === "DECLINED" && (
-          <Scene>
+          <Scene showBackHint labels={navLabels}>
             <p className="text-[var(--color-fg-muted)]">{g.thanksDecline}</p>
           </Scene>
         )}

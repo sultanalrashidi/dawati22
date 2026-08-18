@@ -60,7 +60,7 @@ export function ThemePreviewDialog({
       {trigger && <Dialog.Trigger render={trigger} />}
       <Dialog.Portal>
         <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/70" />
-        <Dialog.Popup className="fixed inset-0 z-50 overflow-y-auto outline-none">
+        <Dialog.Popup className="fixed inset-0 z-50 overflow-hidden outline-none">
           <div dir="rtl">
             <Dialog.Close className="fixed end-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/60">
               ✕

@@ -290,6 +290,8 @@
     "rsvpPartySizeLabel": "Number of guests",
     "rsvpMessageLabel": "A word for us",
     "rsvpMessagePlaceholder": "Share your wishes and kind words with us",
-    "rsvpSubmit": "Send confirmation"
+    "rsvpSubmit": "Send confirmation",
+    "nextSection": "Next",
+    "previousSection": "Previous"
   }
 }

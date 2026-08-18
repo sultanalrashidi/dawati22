@@ -123,7 +123,7 @@
       "invitationTextPlaceholder": "بكل الحب نتشرف بدعوتكم لمشاركتنا فرحتنا…",
       "dateLabel": "التاريخ والوقت",
       "locationNameLabel": "اسم المكان",
-      "mapUrlLabel": "رابط الموقع على الخريطة",
+      "mapUrlLabel": "رابط الموقع على الخريطة (اختياري)",
       "musicUrlLabel": "رابط أغنية يوتيوب (اختياري)",
       "musicUrlPlaceholder": "https://youtube.com/watch?v=...",
       "musicUrlHint": "تشتغل فقط إذا ضغط المدعو على زر تشغيل الموسيقى — اتركه فارغًا للدعوة بدون موسيقى",

@@ -5,8 +5,34 @@ import { usePathname } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
 import type { SessionUser } from "@/lib/auth/session";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { logoutAction } from "@/lib/auth/actions";
+
+const THEMES_ICON = (
+  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <rect x="3" y="6" width="14" height="14" rx="2" />
+    <path d="M7 6V4.5A1.5 1.5 0 0 1 8.5 3h9A1.5 1.5 0 0 1 19 4.5v11a1.5 1.5 0 0 1-1.5 1.5H16" />
+  </svg>
+);
+const EVENTS_ICON = (
+  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <rect x="3" y="5" width="18" height="16" rx="2" />
+    <path d="M3 10h18M8 3v4M16 3v4" />
+  </svg>
+);
+const ADMIN_ICON = (
+  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <rect x="3" y="3" width="7.5" height="7.5" rx="1.3" />
+    <rect x="13.5" y="3" width="7.5" height="7.5" rx="1.3" />
+    <rect x="3" y="13.5" width="7.5" height="7.5" rx="1.3" />
+    <rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.3" />
+  </svg>
+);
+const GATE_ICON = (
+  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M20 8V5.5A1.5 1.5 0 0 0 18.5 4H16M4 16v2.5A1.5 1.5 0 0 0 5.5 20H8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16" />
+    <rect x="9" y="9" width="6" height="6" rx="1" />
+  </svg>
+);
 
 export function SiteHeader({
   locale,
@@ -20,6 +46,18 @@ export function SiteHeader({
   const pathname = usePathname();
   const otherLocale: Locale = locale === "ar" ? "en" : "ar";
   const swappedPath = pathname.replace(`/${locale}`, `/${otherLocale}`) || `/${otherLocale}`;
+
+  // Mobile-visible quick-nav icon: browse themes when signed out, otherwise
+  // jump straight to the signed-in user's own home base — the desktop nav
+  // above is hidden below `sm`, so this is the only way in on a phone.
+  const quickNav =
+    user?.role === "ADMIN"
+      ? { href: `/${locale}/admin`, label: dict.nav.admin, icon: ADMIN_ICON }
+      : user?.role === "GATE_STAFF"
+        ? { href: `/${locale}/gate`, label: dict.nav.gate, icon: GATE_ICON }
+        : user?.role === "CUSTOMER"
+          ? { href: `/${locale}/events`, label: dict.nav.myEvents, icon: EVENTS_ICON }
+          : { href: `/${locale}/themes`, label: dict.nav.themes, icon: THEMES_ICON };
 
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-bg/90 backdrop-blur">
@@ -54,15 +92,12 @@ export function SiteHeader({
 
         <div className="flex items-center gap-2">
           <Link
-            href={`/${locale}/themes`}
-            aria-label={dict.nav.themes}
-            title={dict.nav.themes}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+            href={quickNav.href}
+            aria-label={quickNav.label}
+            title={quickNav.label}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg sm:hidden"
           >
-            <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.6">
-              <rect x="3" y="6" width="14" height="14" rx="2" />
-              <path d="M7 6V4.5A1.5 1.5 0 0 1 8.5 3h9A1.5 1.5 0 0 1 19 4.5v11a1.5 1.5 0 0 1-1.5 1.5H16" />
-            </svg>
+            {quickNav.icon}
           </Link>
           <Link
             href={swappedPath}
@@ -70,7 +105,6 @@ export function SiteHeader({
           >
             {dict.nav.language}
           </Link>
-          <ThemeToggle label={dict.nav.theme} />
           {user ? (
             <form action={logoutAction}>
               <input type="hidden" name="locale" value={locale} />

@@ -41,6 +41,7 @@ export interface CreateEventInput {
   eventDate: Date;
   locationName: string;
   mapUrl?: string;
+  musicYoutubeId?: string;
   themeId: string;
   guestManagementMode: EventGuestManagementMode;
   rsvpRequired: boolean;
@@ -67,6 +68,7 @@ export async function createEvent(userId: string, input: CreateEventInput) {
       eventDate: input.eventDate,
       locationName: input.locationName,
       mapUrl: input.mapUrl || null,
+      musicYoutubeId: input.musicYoutubeId || null,
       themeId: input.themeId,
       guestManagementMode: input.guestManagementMode,
       rsvpRequired: input.rsvpRequired,

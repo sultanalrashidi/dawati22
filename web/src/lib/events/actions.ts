@@ -5,6 +5,7 @@ import { requireUserOrThrow } from "@/lib/auth/guards";
 import { createEvent, EventError } from "@/lib/events/service";
 import { Role, EventType, EventGuestManagementMode } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
+import { extractYoutubeVideoId } from "@/lib/youtube";
 
 const EVENT_TYPES = new Set(Object.values(EventType));
 
@@ -21,9 +22,12 @@ export async function createEventAction(locale: string, formData: FormData) {
   const eventDateRaw = String(formData.get("eventDate") ?? "");
   const locationName = String(formData.get("locationName") ?? "").trim();
   const mapUrl = String(formData.get("mapUrl") ?? "").trim();
+  const musicUrlRaw = String(formData.get("musicUrl") ?? "").trim();
   const themeId = String(formData.get("themeId") ?? "");
   const guestManagementMode = String(formData.get("guestManagementMode") ?? "SELF");
   const rsvpRequired = formData.get("rsvpRequired") === "on";
+
+  const musicYoutubeId = musicUrlRaw ? extractYoutubeVideoId(musicUrlRaw) : null;
 
   const eventDate = new Date(eventDateRaw);
   const isValid =
@@ -35,7 +39,8 @@ export async function createEventAction(locale: string, formData: FormData) {
     invitationTextAr.length >= 5 &&
     !Number.isNaN(eventDate.getTime()) &&
     locationName.length >= 2 &&
-    themeId;
+    themeId &&
+    (!musicUrlRaw || musicYoutubeId);
 
   if (!isValid) {
     redirect(`/${safeLocale}/events/new?error=validation&orderId=${orderId}`);
@@ -52,6 +57,7 @@ export async function createEventAction(locale: string, formData: FormData) {
       eventDate,
       locationName,
       mapUrl,
+      musicYoutubeId: musicYoutubeId ?? undefined,
       themeId,
       guestManagementMode:
         guestManagementMode === "ADMIN" ? EventGuestManagementMode.ADMIN : EventGuestManagementMode.SELF,

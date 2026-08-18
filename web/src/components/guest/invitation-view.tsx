@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { fontVarFor } from "@/lib/themes/fonts";
 import { submitRsvpAction } from "@/lib/invitations/actions";
+import { ThemeDecor } from "@/components/guest/theme-decor";
 
 type GuestFacingStatus = "DRAFT" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED";
 
@@ -13,6 +14,8 @@ interface Props {
   /** Required in "live" mode (default); unused in "preview" mode. */
   linkToken?: string;
   theme: ThemeConfig;
+  /** Theme.category — drives which decorative motif kit renders (see theme-decor.tsx). */
+  themeCategory?: string;
   event: {
     name: string;
     groomNameEn: string;
@@ -21,6 +24,7 @@ interface Props {
     eventDate: string;
     locationName: string;
     mapUrl: string | null;
+    musicYoutubeId?: string | null;
     rsvpRequired: boolean;
   };
   guest: { nameAr: string; allowedCount: number };
@@ -33,6 +37,9 @@ interface Props {
    */
   mode?: "live" | "preview";
 }
+
+/** Opening-transition length in ms — kept in sync with the CSS animation durations below. */
+const OPENING_TRANSITION_MS = 650;
 
 const OPEN_ANIMATIONS: Record<ThemeConfig["motion"]["openStyle"], string> = {
   fade: "dawati-fade-in 0.9s ease-out",
@@ -52,6 +59,62 @@ function FakeQr() {
         <div key={i} className={filled ? "bg-black" : "bg-white"} />
       ))}
     </div>
+  );
+}
+
+function VinylIcon({ spinning }: { spinning: boolean }) {
+  return (
+    <svg
+      viewBox="0 0 32 32"
+      className="h-6 w-6"
+      style={{ animation: spinning ? "dawati-vinyl-spin 3s linear infinite" : "none" }}
+    >
+      <circle cx="16" cy="16" r="15" fill="#111" />
+      <circle cx="16" cy="16" r="11" fill="none" stroke="#333" strokeWidth="1" />
+      <circle cx="16" cy="16" r="7.5" fill="none" stroke="#333" strokeWidth="1" />
+      <circle cx="16" cy="16" r="4" fill="var(--color-accent)" />
+      <circle cx="16" cy="16" r="1.4" fill="#111" />
+    </svg>
+  );
+}
+
+/**
+ * Silent-by-default YouTube background music. The iframe is visually
+ * hidden and never autoplays — playback only starts from the explicit
+ * click on the vinyl toggle button, per product requirement.
+ */
+function MusicToggle({ videoId, label, pauseLabel }: { videoId: string; label: string; pauseLabel: string }) {
+  const [playing, setPlaying] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
+  function toggle() {
+    const win = iframeRef.current?.contentWindow;
+    if (!win) return;
+    const next = !playing;
+    win.postMessage(JSON.stringify({ event: "command", func: next ? "playVideo" : "pauseVideo", args: [] }), "*");
+    setPlaying(next);
+  }
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={playing ? pauseLabel : label}
+        title={playing ? pauseLabel : label}
+        className="fixed start-4 top-4 z-20 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg"
+        style={{ borderColor: "var(--color-accent)", background: "var(--color-surface)" }}
+      >
+        <VinylIcon spinning={playing} />
+      </button>
+      <iframe
+        ref={iframeRef}
+        src={`https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&controls=0&modestbranding=1&rel=0&playsinline=1`}
+        style={{ position: "fixed", width: 1, height: 1, opacity: 0, pointerEvents: "none", bottom: 0 }}
+        allow="autoplay"
+        title="background-music"
+      />
+    </>
   );
 }
 
@@ -80,6 +143,7 @@ export function InvitationView({
   dict,
   linkToken,
   theme,
+  themeCategory,
   event,
   guest,
   status,
@@ -87,12 +151,18 @@ export function InvitationView({
   mode = "live",
 }: Props) {
   const [opened, setOpened] = useState(false);
+  const [isOpening, setIsOpening] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
   const [currentQr, setCurrentQr] = useState(qrDataUrl);
   const [rsvpError, setRsvpError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const countdown = useCountdown(event.eventDate);
   const g = dict.guest;
+
+  function handleOpenClick() {
+    setIsOpening(true);
+    setTimeout(() => setOpened(true), OPENING_TRANSITION_MS);
+  }
 
   const vars: CSSProperties & Record<string, string> = {
     "--color-bg": theme.palette.bg,
@@ -127,6 +197,7 @@ export function InvitationView({
   const isEnvelope = theme.layout === "envelope-reveal";
   const isSplit = theme.layout === "split-portrait";
   const openAnimation = OPEN_ANIMATIONS[theme.motion.openStyle] ?? OPEN_ANIMATIONS.fade;
+  const hasSealOpen = theme.motion.openStyle === "envelope" || theme.motion.openStyle === "seal-break";
 
   if (!opened) {
     return (
@@ -134,16 +205,19 @@ export function InvitationView({
         style={vars}
         className={
           isSplit
-            ? "flex min-h-screen flex-row-reverse text-[var(--color-fg)]"
-            : "flex min-h-screen flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
+            ? "relative flex min-h-screen flex-row-reverse text-[var(--color-fg)]"
+            : "relative flex min-h-screen flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
         }
       >
+        {themeCategory && (
+          <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
+        )}
         {isSplit && <div className="w-3 shrink-0" style={{ background: "var(--color-accent)" }} />}
         <div
           className={
             isSplit
-              ? "flex flex-1 flex-col items-start justify-center gap-8 bg-[var(--color-bg)] px-8 text-start"
-              : "flex flex-col items-center gap-8"
+              ? "relative flex flex-1 flex-col items-start justify-center gap-8 bg-[var(--color-bg)] px-8 text-start"
+              : "relative flex flex-col items-center gap-8"
           }
         >
           <div
@@ -175,14 +249,38 @@ export function InvitationView({
               {event.groomNameEn} &amp; {event.brideNameEn}
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => setOpened(true)}
-            className="mt-6 h-12 rounded-full border border-[var(--color-accent)] px-8 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)]"
-            style={{ animation: "dawati-fade-in 1.2s ease-out" }}
-          >
-            {g.openInvitation}
-          </button>
+          {hasSealOpen ? (
+            <button
+              type="button"
+              onClick={handleOpenClick}
+              disabled={isOpening}
+              className="mt-6 flex flex-col items-center gap-3"
+              style={{ animation: "dawati-fade-in 1.2s ease-out" }}
+            >
+              <span
+                className="flex h-14 w-14 items-center justify-center rounded-full border-2"
+                style={{
+                  borderColor: "var(--color-accent)",
+                  background: "var(--color-surface)",
+                  animation: isOpening ? `dawati-seal-crack ${OPENING_TRANSITION_MS}ms ease-in forwards` : undefined,
+                }}
+              >
+                <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="var(--color-accent)" strokeWidth="1.2">
+                  <path d="M12 3 L14.5 9 L21 9.5 L16 14 L17.5 20.5 L12 17 L6.5 20.5 L8 14 L3 9.5 L9.5 9 Z" />
+                </svg>
+              </span>
+              <span className="text-sm font-medium text-[var(--color-accent)]">{g.openInvitation}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setOpened(true)}
+              className="mt-6 h-12 rounded-full border border-[var(--color-accent)] px-8 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)]"
+              style={{ animation: "dawati-fade-in 1.2s ease-out" }}
+            >
+              {g.openInvitation}
+            </button>
+          )}
         </div>
       </div>
     );
@@ -191,17 +289,23 @@ export function InvitationView({
   return (
     <div
       style={{ ...vars, animation: openAnimation }}
-      className="min-h-screen bg-[var(--color-bg)] px-6 py-16 text-[var(--color-fg)]"
+      className="relative min-h-screen bg-[var(--color-bg)] px-6 py-16 text-[var(--color-fg)]"
     >
+      {themeCategory && (
+        <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
+      )}
+      {event.musicYoutubeId && (
+        <MusicToggle videoId={event.musicYoutubeId} label={g.playMusic} pauseLabel={g.pauseMusic} />
+      )}
       <div
         className={
           isArch
-            ? "mx-auto flex max-w-md flex-col items-center gap-6 rounded-t-[160px] border-2 border-[var(--color-accent)] px-8 pb-10 pt-20 text-center"
+            ? "relative mx-auto flex max-w-md flex-col items-center gap-6 rounded-t-[160px] border-2 border-[var(--color-accent)] px-8 pb-10 pt-20 text-center"
             : isEnvelope
-              ? "mx-auto flex max-w-md flex-col items-center gap-6 border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-8 py-12 text-center shadow-lg"
+              ? "relative mx-auto flex max-w-md flex-col items-center gap-6 border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-8 py-12 text-center shadow-lg"
               : isSplit
-                ? "mx-auto flex max-w-md flex-col items-start gap-6 border-e-4 px-6 text-start"
-                : "mx-auto flex max-w-md flex-col items-center gap-6 text-center"
+                ? "relative mx-auto flex max-w-md flex-col items-start gap-6 border-e-4 px-6 text-start"
+                : "relative mx-auto flex max-w-md flex-col items-center gap-6 text-center"
         }
         style={isSplit ? { borderColor: "var(--color-accent)" } : undefined}
       >

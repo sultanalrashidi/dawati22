@@ -117,6 +117,9 @@
       "dateLabel": "Date & time",
       "locationNameLabel": "Venue name",
       "mapUrlLabel": "Map link",
+      "musicUrlLabel": "YouTube song link (optional)",
+      "musicUrlPlaceholder": "https://youtube.com/watch?v=...",
+      "musicUrlHint": "Only plays if the guest taps the music button — leave blank for no music",
       "themeLabel": "Theme",
       "guestManagementLabel": "Guest management",
       "guestManagementSelf": "I'll manage guests myself",
@@ -237,6 +240,8 @@
   "guest": {
     "openInvitation": "Open invitation",
     "openMap": "Open location",
+    "playMusic": "Play music",
+    "pauseMusic": "Pause music",
     "countdownTitle": "Counting down to the event",
     "days": "days",
     "hours": "hours",

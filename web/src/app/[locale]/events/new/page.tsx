@@ -162,6 +162,18 @@ export default async function NewEventPage({
           </label>
         </div>
 
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-fg-muted">{f.musicUrlLabel}</span>
+          <input
+            name="musicUrl"
+            type="url"
+            dir="ltr"
+            placeholder={f.musicUrlPlaceholder}
+            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+          />
+          <span className="text-xs text-fg-muted">{f.musicUrlHint}</span>
+        </label>
+
         <div className="flex flex-col gap-2 text-sm">
           <span className="text-fg-muted">{f.themeLabel}</span>
           <ThemePicker

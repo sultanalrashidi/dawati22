@@ -14,6 +14,7 @@ const SAMPLE_EVENT = {
   eventDate: new Date(Date.now() + 45 * 86_400_000).toISOString(),
   locationName: "قاعة الأمير الكبرى - الرياض",
   mapUrl: null,
+  musicYoutubeId: null,
   rsvpRequired: true,
 };
 
@@ -21,6 +22,7 @@ const SAMPLE_GUEST = { nameAr: "أم فيصل", allowedCount: 3 };
 
 export function ThemePreviewDialog({
   theme,
+  themeCategory,
   dict,
   trigger,
   open,
@@ -28,6 +30,7 @@ export function ThemePreviewDialog({
   previewKey,
 }: {
   theme: ThemeConfig;
+  themeCategory?: string;
   dict: Dictionary;
   /** A single button-like element (e.g. `<button>...</button>`) — rendered as the trigger itself, not wrapped in one. */
   trigger?: ReactElement;
@@ -55,6 +58,7 @@ export function ThemePreviewDialog({
               key={previewKey}
               dict={dict}
               theme={theme}
+              themeCategory={themeCategory}
               event={SAMPLE_EVENT}
               guest={SAMPLE_GUEST}
               status="SENT"

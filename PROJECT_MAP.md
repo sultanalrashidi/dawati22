@@ -61,6 +61,9 @@ Single Next.js app (`web/`), four surfaces:
 - `/gate` scanner: camera (`BarcodeDetector`, gracefully degrades) + manual entry, race-safe check-in, all denial states (full/blocked/cancelled/expired/unconfirmed/invalid).
 - `/admin`: dashboard metrics, users (block/unblock), events (view/cancel), orders (view), plans (full CRUD + status), gate staff (view), and a full theme/design manager (color/font/layout/motion/section editor, image upload with type/size validation, publish/hide/archive/restore/duplicate/delete, per-event assignment, versioning-safe edits).
 - Public `/themes` gallery and `/plans` page for pre-purchase browsing.
+- Optional background music: customer pastes a YouTube link at event creation (`Event.musicYoutubeId`, extracted/validated via `lib/youtube.ts`); the guest page never autoplays — a vinyl-icon toggle (`MusicToggle` in `invitation-view.tsx`) shows only when a link was set, and starts a hidden `youtube-nocookie.com` iframe via `postMessage` only on click.
+- Category decoration kits (`components/guest/theme-decor.tsx`): one hand-authored SVG motif kit per `Theme.category` (luxury/minimal/saudi/romantic/botanical/dark/experimental), rendered behind the card content in each theme's own accent color, with a subtle floating/swaying CSS animation — gives all 43 themes a distinct decorative layer without per-theme artwork.
+- Richer envelope-open interaction: themes with `motion.openStyle` of `"envelope"` or `"seal-break"` show a wax-seal badge instead of a plain button; clicking plays a crack/fold animation (`dawati-seal-crack` CSS keyframe) before the reveal.
 
 **Explicitly deferred** (see `web/README.md` for the full list): live Moyasar/Authentica traffic (real code, needs real env keys), Mada/Apple Pay (shown as "coming soon", same Moyasar integration point), an automated test suite (verification here was a manual tool-driven pass through every surface + a Postgres-level check after each), and a couple of smaller admin conveniences not in the original spec text (e.g. customer-facing guest-management-request review queue, in-app notification delivery beyond the DB record).
 
@@ -71,6 +74,8 @@ Single Next.js app (`web/`), four surfaces:
 - Once the dialog above became shared/reused across theme switches, `InvitationView`'s internal cover/RSVP state leaked across previews — previewing theme A through to "accepted", then switching to theme B, showed B already in the accepted/pass state. Fixed by adding a `previewKey` prop to `ThemePreviewDialog` (passed as the theme's `id` from both call sites) applied as `key={previewKey}` on `InvitationView`, forcing a clean remount on every theme switch. Verified: opening theme A → accept RSVP → close → open theme B now correctly starts at the cover screen.
 
 ## [ORPHANS & PENDING]
+
+**Product decision, explicit**: no photo upload for the couple anywhere in the invitation — decoration is illustrative/vector only (see theme-decor.tsx), never a real photo of any bride/groom. Don't reintroduce a photo-upload feature without re-confirming with the user.
 
 Nothing blocking — the four surfaces are wired end-to-end. Remaining polish, in priority order if continuing:
 

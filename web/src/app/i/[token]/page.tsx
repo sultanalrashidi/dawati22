@@ -42,6 +42,7 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
       dict={dict}
       linkToken={token}
       theme={invitation.event.theme.config as unknown as ThemeConfig}
+      themeCategory={invitation.event.theme.category}
       event={{
         name: invitation.event.name,
         groomNameEn: invitation.event.groomNameEn,
@@ -50,6 +51,7 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
         eventDate: invitation.event.eventDate.toISOString(),
         locationName: invitation.event.locationName,
         mapUrl: invitation.event.mapUrl,
+        musicYoutubeId: invitation.event.musicYoutubeId,
         rsvpRequired: invitation.event.rsvpRequired,
       }}
       guest={{ nameAr: invitation.guest.nameAr, allowedCount: invitation.guest.allowedCount }}

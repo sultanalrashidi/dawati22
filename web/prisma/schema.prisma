@@ -260,6 +260,7 @@ model Event {
   locationName        String
   mapUrl              String?
   coverImageUrl       String?
+  musicYoutubeId      String?
   themeId             String
   theme               Theme                    @relation(fields: [themeId], references: [id])
   guestManagementMode EventGuestManagementMode @default(SELF)

@@ -53,6 +53,7 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
   const action = theme ? updateThemeAction.bind(null, theme.id, locale) : createThemeAction.bind(null, locale);
   const [state, formAction, isPending] = useActionState<ThemeFormState, FormData>(action, null);
   const [config, setConfig] = useState<ThemeConfig>(theme?.config ?? DEFAULT_CONFIG);
+  const [category, setCategory] = useState(theme?.category ?? "");
   const a = dict.admin;
 
   function updatePalette(key: keyof ThemeConfig["palette"], value: string) {
@@ -77,7 +78,7 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-fg-muted">{a.category}</span>
-            <input name="category" defaultValue={theme?.category} required className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent" />
+            <input name="category" value={category} onChange={(e) => setCategory(e.target.value)} required className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent" />
           </label>
         </div>
 
@@ -230,6 +231,7 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
         </div>
         <ThemePreviewDialog
           theme={config}
+          themeCategory={category}
           dict={dict}
           trigger={
             <button

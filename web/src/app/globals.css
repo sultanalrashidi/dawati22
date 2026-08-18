@@ -106,6 +106,41 @@ body {
   to { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
+/* Cover-screen enrichment: an envelope flap folding open / a wax seal
+   cracking, played once on click before the reveal animation above. */
+@keyframes dawati-flap-fold {
+  from { transform: rotateX(0deg); }
+  to { transform: rotateX(-140deg); }
+}
+@keyframes dawati-seal-crack {
+  0% { transform: scale(1) rotate(0deg); opacity: 1; }
+  40% { transform: scale(1.15) rotate(-8deg); opacity: 1; }
+  100% { transform: scale(0.3) rotate(25deg); opacity: 0; }
+}
+
+/* Background music toggle (vinyl icon spins while playing). */
+@keyframes dawati-vinyl-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Category decoration kits — gentle floating/swaying motion. */
+@keyframes dawati-decor-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes dawati-decor-float-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+@keyframes dawati-decor-sway {
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50% { transform: rotate(3deg) translateY(-4px); }
+}
+.dawati-decor-float { animation: dawati-decor-float 4s ease-in-out infinite; }
+.dawati-decor-float-slow { animation: dawati-decor-float-slow 6s ease-in-out infinite; }
+.dawati-decor-sway { animation: dawati-decor-sway 5s ease-in-out infinite; transform-origin: top center; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

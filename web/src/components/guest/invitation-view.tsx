@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, useTransition, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition, type CSSProperties, type ReactNode } from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { fontVarFor } from "@/lib/themes/fonts";
@@ -117,6 +117,42 @@ function MusicToggle({ videoId, label, pauseLabel }: { videoId: string; label: s
         title="background-music"
       />
     </>
+  );
+}
+
+/** Fires once a scene first crosses into the viewport; stays true afterward. */
+function useInView<T extends HTMLElement>(threshold = 0.3) {
+  const ref = useRef<T>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setInView(true);
+      },
+      { threshold },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [threshold]);
+  return [ref, inView] as const;
+}
+
+/** One full-height, scroll-snapped beat of the post-open guest experience. */
+function Scene({ children, showHint = false }: { children: ReactNode; showHint?: boolean }) {
+  const [ref, inView] = useInView<HTMLElement>();
+  return (
+    <section ref={ref} className={`dawati-scene${inView ? " dawati-scene-in-view" : ""}`}>
+      {children}
+      {showHint && (
+        <span className="dawati-scroll-hint" aria-hidden="true">
+          <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="var(--color-accent)" strokeWidth="1.5">
+            <path d="M6 9l6 6 6-6" />
+          </svg>
+        </span>
+      )}
+    </section>
   );
 }
 
@@ -327,10 +363,16 @@ export function InvitationView({
             <button
               type="button"
               onClick={() => setOpened(true)}
-              className="mt-6 h-12 rounded-full border border-[var(--color-accent)] px-8 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)]"
+              className="mt-6 flex flex-col items-center gap-3"
               style={{ animation: "dawati-fade-in 1.2s ease-out" }}
             >
-              {g.openInvitation}
+              <span className="text-xs font-medium uppercase tracking-[0.3em] text-[var(--color-accent)]">{g.openInvitation}</span>
+              <span className="relative h-12 w-px overflow-hidden bg-[var(--color-accent)]/30">
+                <span
+                  className="absolute inset-x-0 top-0 h-3 w-full bg-[var(--color-accent)]"
+                  style={{ animation: "dawati-open-scan 2s ease-in-out infinite" }}
+                />
+              </span>
             </button>
           )}
         </div>
@@ -338,10 +380,12 @@ export function InvitationView({
     );
   }
 
+  const hasMoreAfterDetails = currentStatus !== "ACCEPTED" && currentStatus !== "DECLINED";
+
   return (
     <div
       style={{ ...vars, animation: openAnimation }}
-      className="relative min-h-screen overflow-hidden bg-[var(--color-bg)] px-6 py-16 text-[var(--color-fg)]"
+      className="relative h-screen overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
     >
       {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
       {themeCategory && (
@@ -350,63 +394,104 @@ export function InvitationView({
       {event.musicYoutubeId && (
         <MusicToggle videoId={event.musicYoutubeId} label={g.playMusic} pauseLabel={g.pauseMusic} />
       )}
-      <div
-        className={
-          isArch
-            ? "relative mx-auto flex max-w-md flex-col items-center gap-6 rounded-t-[160px] border-2 border-[var(--color-accent)] px-8 pb-10 pt-20 text-center"
-            : isEnvelope
-              ? "relative mx-auto flex max-w-md flex-col items-center gap-6 border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-8 py-12 text-center shadow-lg"
-              : isSplit
-                ? "relative mx-auto flex max-w-md flex-col items-start gap-6 border-e-4 px-6 text-start"
-                : "relative mx-auto flex max-w-md flex-col items-center gap-6 text-center"
-        }
-        style={isSplit ? { borderColor: "var(--color-accent)" } : undefined}
-      >
-        <p className="text-lg" style={{ fontFamily: "var(--font-en-display)" }}>
-          {event.groomNameEn} &amp; {event.brideNameEn}
-        </p>
-        <h1 className="text-2xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
-          {guest.nameAr}
-        </h1>
-        <p className="whitespace-pre-line leading-loose text-[var(--color-fg-muted)]">
-          {event.invitationTextAr}
-        </p>
+      {isSplit && (
+        <div className="pointer-events-none fixed inset-y-0 end-0 z-10 w-2" style={{ background: "var(--color-accent)" }} />
+      )}
 
-        {theme.sections.showCountdown && countdown && (
-          <div className="mt-4 flex gap-4 rounded-2xl border border-[var(--color-accent)]/30 px-6 py-4">
-            {([
-              [countdown.days, g.days],
-              [countdown.hours, g.hours],
-              [countdown.minutes, g.minutes],
-              [countdown.seconds, g.seconds],
-            ] as const).map(([value, label]) => (
-              <div key={label} className="flex flex-col items-center gap-1">
-                <span className="text-xl font-semibold">{value}</span>
-                <span className="text-xs text-[var(--color-fg-muted)]">{label}</span>
-              </div>
-            ))}
+      {/* Universal post-open flow: a scroll-snapped sequence of scenes, same
+          structure for every theme — only palette/fonts/decoration differ. */}
+      <div className="dawati-scene-container">
+        <Scene showHint>
+          <p className="text-lg" style={{ fontFamily: "var(--font-en-display)" }}>
+            {event.groomNameEn} &amp; {event.brideNameEn}
+          </p>
+          <div className="h-px w-16" style={{ background: "var(--color-accent)" }} />
+          <p className="max-w-md whitespace-pre-line leading-loose text-[var(--color-fg-muted)]">
+            {event.invitationTextAr}
+          </p>
+          {theme.sections.showCountdown && countdown && (
+            <div className="mt-4 flex gap-4 rounded-2xl border border-[var(--color-accent)]/30 px-6 py-4">
+              {([
+                [countdown.days, g.days],
+                [countdown.hours, g.hours],
+                [countdown.minutes, g.minutes],
+                [countdown.seconds, g.seconds],
+              ] as const).map(([value, label]) => (
+                <div key={label} className="flex flex-col items-center gap-1">
+                  <span className="text-xl font-semibold">{value}</span>
+                  <span className="text-xs text-[var(--color-fg-muted)]">{label}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Scene>
+
+        <Scene showHint>
+          <p className="text-sm uppercase tracking-[0.4em] text-[var(--color-accent)]" style={{ fontFamily: "var(--font-ar-body)" }}>
+            {g.guestOf}
+          </p>
+          <div className="relative px-10 py-6">
+            <span className="absolute start-0 top-0 h-4 w-4 border-s border-t" style={{ borderColor: "var(--color-accent)" }} />
+            <span className="absolute end-0 top-0 h-4 w-4 border-e border-t" style={{ borderColor: "var(--color-accent)" }} />
+            <span className="absolute start-0 bottom-0 h-4 w-4 border-s border-b" style={{ borderColor: "var(--color-accent)" }} />
+            <span className="absolute end-0 bottom-0 h-4 w-4 border-e border-b" style={{ borderColor: "var(--color-accent)" }} />
+            <h1 className="text-3xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
+              {guest.nameAr}
+            </h1>
           </div>
+        </Scene>
+
+        <Scene showHint={hasMoreAfterDetails}>
+          <div className="text-sm text-[var(--color-fg-muted)]">
+            <p className="text-lg text-[var(--color-fg)]">
+              {new Date(event.eventDate).toLocaleString("ar-SA", { dateStyle: "full", timeStyle: "short" })}
+            </p>
+            <p className="mt-2">{event.locationName}</p>
+          </div>
+          {theme.sections.showMap && event.mapUrl && (
+            <a
+              href={event.mapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="h-11 items-center rounded-full border border-[var(--color-accent)] px-6 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)] inline-flex"
+            >
+              {g.openMap}
+            </a>
+          )}
+        </Scene>
+
+        {hasMoreAfterDetails && (
+          <Scene>
+            {event.rsvpRequired ? (
+              <div className="flex flex-col items-center gap-3">
+                <div className="flex gap-3">
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => respond("ACCEPTED")}
+                    className="h-11 rounded-full px-6 text-sm font-medium disabled:opacity-50"
+                    style={{ background: "var(--color-accent)", color: "var(--color-accent-fg)" }}
+                  >
+                    {g.accept}
+                  </button>
+                  <button
+                    type="button"
+                    disabled={isPending}
+                    onClick={() => respond("DECLINED")}
+                    className="h-11 rounded-full border border-[var(--color-fg-muted)] px-6 text-sm font-medium disabled:opacity-50"
+                  >
+                    {g.decline}
+                  </button>
+                </div>
+                {rsvpError && <p className="text-sm text-red-400">{rsvpError}</p>}
+              </div>
+            ) : null}
+          </Scene>
         )}
 
-        <div className="mt-2 text-sm text-[var(--color-fg-muted)]">
-          <p>{new Date(event.eventDate).toLocaleString("ar-SA", { dateStyle: "full", timeStyle: "short" })}</p>
-          <p className="mt-1">{event.locationName}</p>
-        </div>
-
-        {theme.sections.showMap && event.mapUrl && (
-          <a
-            href={event.mapUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="h-11 items-center rounded-full border border-[var(--color-accent)] px-6 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)] inline-flex"
-          >
-            {g.openMap}
-          </a>
-        )}
-
-        <div className="mt-8 w-full">
-          {currentStatus === "ACCEPTED" ? (
-            currentQr || mode === "preview" ? (
+        {currentStatus === "ACCEPTED" && (
+          <Scene>
+            {currentQr || mode === "preview" ? (
               <div className="flex flex-col items-center gap-3 rounded-2xl border border-[var(--color-accent)]/40 bg-[var(--color-surface)] p-6">
                 <p className="text-sm font-medium">{g.passTitle}</p>
                 {currentQr ? (
@@ -420,34 +505,15 @@ export function InvitationView({
               </div>
             ) : (
               <p className="text-[var(--color-accent)]">{g.thanksAccept}</p>
-            )
-          ) : currentStatus === "DECLINED" ? (
+            )}
+          </Scene>
+        )}
+
+        {currentStatus === "DECLINED" && (
+          <Scene>
             <p className="text-[var(--color-fg-muted)]">{g.thanksDecline}</p>
-          ) : event.rsvpRequired ? (
-            <div className="flex flex-col items-center gap-3">
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={() => respond("ACCEPTED")}
-                  className="h-11 rounded-full px-6 text-sm font-medium disabled:opacity-50"
-                  style={{ background: "var(--color-accent)", color: "var(--color-accent-fg)" }}
-                >
-                  {g.accept}
-                </button>
-                <button
-                  type="button"
-                  disabled={isPending}
-                  onClick={() => respond("DECLINED")}
-                  className="h-11 rounded-full border border-[var(--color-fg-muted)] px-6 text-sm font-medium disabled:opacity-50"
-                >
-                  {g.decline}
-                </button>
-              </div>
-              {rsvpError && <p className="text-sm text-red-400">{rsvpError}</p>}
-            </div>
-          ) : null}
-        </div>
+          </Scene>
+        )}
       </div>
     </div>
   );

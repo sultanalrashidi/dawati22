@@ -132,6 +132,63 @@ body {
   to { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
 }
 
+/* Guest-page scene flow: a scroll-snap sequence of full-height scenes,
+   each fading/sliding in the first time it crosses into view. Universal
+   across every theme — only palette/fonts/decoration differ per theme. */
+.dawati-scene-container {
+  position: relative;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scroll-snap-type: y mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+}
+.dawati-scene {
+  position: relative;
+  min-height: 100vh;
+  width: 100%;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 4rem 1.5rem;
+  text-align: center;
+  opacity: 0;
+  transform: translateY(10vh);
+  transition: opacity 0.9s ease-out, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.dawati-scene-in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+.dawati-scroll-hint {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0.5;
+  animation: dawati-scroll-hint-bounce 2s infinite;
+}
+@keyframes dawati-scroll-hint-bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+  40% { transform: translateY(-8px) translateX(-50%); }
+  60% { transform: translateY(-4px) translateX(-50%); }
+}
+
+/* Cover "tap to open" indicator — a scanning line under the label, used by
+   themes whose motion.openStyle doesn't have its own dedicated cover UI
+   (envelope/seal-break/doors do). */
+@keyframes dawati-open-scan {
+  0% { transform: translateY(-100%); opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+
 /* Background music toggle (vinyl icon spins while playing). */
 @keyframes dawati-vinyl-spin {
   from { transform: rotate(0deg); }
@@ -154,6 +211,14 @@ body {
 .dawati-decor-float { animation: dawati-decor-float 4s ease-in-out infinite; }
 .dawati-decor-float-slow { animation: dawati-decor-float-slow 6s ease-in-out infinite; }
 .dawati-decor-sway { animation: dawati-decor-sway 5s ease-in-out infinite; transform-origin: top center; }
+
+@keyframes dawati-decor-scan {
+  0% { transform: translateY(-8px); opacity: 0; }
+  15% { opacity: 0.6; }
+  85% { opacity: 0.6; }
+  100% { transform: translateY(calc(100% + 8px)); opacity: 0; }
+}
+.dawati-decor-scan { top: 0; animation: dawati-decor-scan 4s ease-in-out infinite; }
 
 @media (prefers-reduced-motion: reduce) {
   *,

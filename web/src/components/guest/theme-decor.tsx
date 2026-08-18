@@ -9,25 +9,21 @@ import type { ReactNode } from "react";
 type Kit = (props: { accent: string; fgMuted: string }) => ReactNode;
 
 function LuxuryKit({ accent }: { accent: string; fgMuted: string }) {
-  const corner = (transform: string) => (
-    <path
-      d="M4 40 V16 C4 9 9 4 16 4 H40"
-      fill="none"
-      stroke={accent}
-      strokeWidth="1"
-      opacity="0.55"
-      transform={transform}
-    />
-  );
+  const bracket = "M1 13 V5 Q1 1 5 1 H13";
+  const positions = [
+    "absolute start-5 top-5",
+    "absolute end-5 top-5 -scale-x-100",
+    "absolute start-5 bottom-5 -scale-y-100",
+    "absolute end-5 bottom-5 -scale-x-100 -scale-y-100",
+  ];
   return (
-    <svg className="absolute inset-4 h-[calc(100%-2rem)] w-[calc(100%-2rem)]" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <g className="dawati-decor-float-slow">
-        {corner("")}
-        {corner("translate(100,0) scale(-1,1)")}
-        {corner("translate(0,100) scale(1,-1)")}
-        {corner("translate(100,100) scale(-1,-1)")}
-      </g>
-    </svg>
+    <>
+      {positions.map((cls, i) => (
+        <svg key={i} className={`${cls} h-4 w-4`} viewBox="0 0 14 14">
+          <path d={bracket} fill="none" stroke={accent} strokeWidth="1" opacity="0.65" />
+        </svg>
+      ))}
+    </>
   );
 }
 
@@ -101,22 +97,16 @@ function DarkKit({ accent }: { accent: string; fgMuted: string }) {
 }
 
 function ExperimentalKit({ accent }: { accent: string; fgMuted: string }) {
-  const dots = [
-    [12, 14, 3],
-    [86, 22, 2],
-    [90, 78, 4],
-    [8, 84, 2],
-    [50, 8, 1.5],
-  ] as const;
   return (
-    <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-      <g className="dawati-decor-float" fill={accent} opacity="0.5">
-        {dots.map(([cx, cy, r], i) => (
-          <circle key={i} cx={cx} cy={cy} r={r} />
-        ))}
-      </g>
-      <line x1="0" y1="100" x2="30" y2="70" stroke={accent} strokeWidth="1" opacity="0.4" />
-    </svg>
+    <>
+      <svg className="absolute inset-y-6 start-6 h-[calc(100%-3rem)] w-px" viewBox="0 0 1 100" preserveAspectRatio="none">
+        <line x1="0" y1="0" x2="0" y2="100" stroke={accent} strokeWidth="1" opacity="0.2" />
+      </svg>
+      <svg className="absolute inset-y-6 end-6 h-[calc(100%-3rem)] w-px" viewBox="0 0 1 100" preserveAspectRatio="none">
+        <line x1="0" y1="0" x2="0" y2="100" stroke={accent} strokeWidth="1" opacity="0.2" />
+      </svg>
+      <div className="dawati-decor-scan absolute inset-x-6 h-px" style={{ background: accent, opacity: 0.55 }} />
+    </>
   );
 }
 

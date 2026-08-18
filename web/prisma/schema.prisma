@@ -266,6 +266,8 @@ model Event {
   mapUrl              String?
   coverImageUrl       String?
   musicYoutubeId      String?
+  /** true = starts playing right when the guest opens the invitation; false = guest must tap the music button. */
+  musicAutoplay       Boolean                  @default(false)
   /** Ordered list of { labelAr, time } — event-day schedule, e.g. reception/procession/dinner. */
   scheduleItems       Json?
   /** Free text, one note per line — e.g. "no children", dress code. */

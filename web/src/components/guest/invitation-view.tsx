@@ -43,6 +43,7 @@ interface Props {
     locationName: string;
     mapUrl: string | null;
     musicYoutubeId?: string | null;
+    musicAutoplay?: boolean;
     scheduleItems?: ScheduleItem[] | null;
     notesAr?: string | null;
     rsvpRequired: boolean;
@@ -100,12 +101,27 @@ function VinylIcon({ spinning }: { spinning: boolean }) {
 }
 
 /**
- * Silent-by-default YouTube background music. The iframe is visually
- * hidden and never autoplays — playback only starts from the explicit
- * click on the vinyl toggle button, per product requirement.
+ * Background music via a visually hidden YouTube iframe. By default playback
+ * only starts from an explicit click on the toggle button; when `autoplay`
+ * is set (customer's choice) it starts immediately, riding the same user
+ * gesture that opened the invitation so the browser allows unmuted audio.
+ * The toggle itself is a labeled pill (icon + text), not just an icon, so
+ * guests immediately recognize it controls the music rather than missing it.
  */
-function MusicToggle({ videoId, label, pauseLabel }: { videoId: string; label: string; pauseLabel: string }) {
-  const [playing, setPlaying] = useState(false);
+function MusicToggle({
+  videoId,
+  autoplay,
+  label,
+  pauseLabel,
+  musicLabel,
+}: {
+  videoId: string;
+  autoplay: boolean;
+  label: string;
+  pauseLabel: string;
+  musicLabel: string;
+}) {
+  const [playing, setPlaying] = useState(autoplay);
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   function toggle() {
@@ -123,14 +139,17 @@ function MusicToggle({ videoId, label, pauseLabel }: { videoId: string; label: s
         onClick={toggle}
         aria-label={playing ? pauseLabel : label}
         title={playing ? pauseLabel : label}
-        className="fixed start-4 top-4 z-20 flex h-12 w-12 items-center justify-center rounded-full border shadow-lg"
+        className="fixed start-4 top-4 z-20 flex h-11 items-center gap-2 rounded-full border px-3 shadow-lg"
         style={{ borderColor: "var(--color-accent)", background: "var(--color-surface)" }}
       >
         <VinylIcon spinning={playing} />
+        <span className="text-xs font-medium" style={{ color: "var(--color-fg)" }}>
+          {musicLabel}
+        </span>
       </button>
       <iframe
         ref={iframeRef}
-        src={`https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&controls=0&modestbranding=1&rel=0&playsinline=1`}
+        src={`https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&controls=0&modestbranding=1&rel=0&playsinline=1${autoplay ? "&autoplay=1" : ""}`}
         style={{ position: "fixed", width: 1, height: 1, opacity: 0, pointerEvents: "none", bottom: 0 }}
         allow="autoplay"
         title="background-music"
@@ -446,7 +465,13 @@ export function InvitationView({
         <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
       )}
       {event.musicYoutubeId && (
-        <MusicToggle videoId={event.musicYoutubeId} label={g.playMusic} pauseLabel={g.pauseMusic} />
+        <MusicToggle
+          videoId={event.musicYoutubeId}
+          autoplay={Boolean(event.musicAutoplay)}
+          label={g.playMusic}
+          pauseLabel={g.pauseMusic}
+          musicLabel={g.musicLabel}
+        />
       )}
       {isSplit && (
         <div className="pointer-events-none fixed inset-y-0 end-0 z-10 w-2" style={{ background: "var(--color-accent)" }} />

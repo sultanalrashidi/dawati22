@@ -202,17 +202,30 @@ export default async function NewEventPage({
           </label>
         </div>
 
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{f.musicUrlLabel}</span>
-          <input
-            name="musicUrl"
-            type="url"
-            dir="ltr"
-            placeholder={f.musicUrlPlaceholder}
-            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-          />
+        <div className="flex flex-col gap-2 text-sm">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-fg-muted">{f.musicUrlLabel}</span>
+            <input
+              name="musicUrl"
+              type="url"
+              dir="ltr"
+              placeholder={f.musicUrlPlaceholder}
+              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+            />
+          </label>
           <span className="text-xs text-fg-muted">{f.musicUrlHint}</span>
-        </label>
+          <div className="flex flex-col gap-2">
+            <span className="text-fg-muted">{f.musicAutoplayLabel}</span>
+            <label className="flex items-center gap-2">
+              <input type="radio" name="musicAutoplay" value="manual" defaultChecked />
+              {f.musicAutoplayManual}
+            </label>
+            <label className="flex items-center gap-2">
+              <input type="radio" name="musicAutoplay" value="auto" />
+              {f.musicAutoplayAuto}
+            </label>
+          </div>
+        </div>
 
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="text-fg-muted">{f.scheduleLabel}</span>

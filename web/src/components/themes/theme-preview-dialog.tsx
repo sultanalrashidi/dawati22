@@ -19,7 +19,10 @@ const SAMPLE_EVENT = {
   eventDate: new Date(Date.now() + 45 * 86_400_000).toISOString(),
   locationName: "قاعة الأمير الكبرى - الرياض",
   mapUrl: null,
-  musicYoutubeId: null,
+  // Real, verified-embeddable royalty-free track — lets the customer see and
+  // try the music button while browsing themes, not just an empty state.
+  musicYoutubeId: "LDnUX_mwx2Q",
+  musicAutoplay: false,
   scheduleItems: [
     { labelAr: "استقبال الضيوف", time: "٨:٠٠ م" },
     { labelAr: "الزفة", time: "٩:٠٠ م" },

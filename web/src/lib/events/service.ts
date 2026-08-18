@@ -49,6 +49,7 @@ export interface CreateEventInput {
   locationName: string;
   mapUrl?: string;
   musicYoutubeId?: string;
+  musicAutoplay?: boolean;
   scheduleItems?: ScheduleItem[];
   notesAr?: string;
   themeId: string;
@@ -91,6 +92,7 @@ async function createEventWithUniqueReferenceCode(userId: string, orderId: strin
           locationName: input.locationName,
           mapUrl: input.mapUrl || null,
           musicYoutubeId: input.musicYoutubeId || null,
+          musicAutoplay: input.musicYoutubeId ? Boolean(input.musicAutoplay) : false,
           scheduleItems: input.scheduleItems && input.scheduleItems.length > 0
             ? (input.scheduleItems as unknown as Prisma.InputJsonValue)
             : Prisma.JsonNull,

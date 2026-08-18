@@ -58,6 +58,7 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
         locationName: invitation.event.locationName,
         mapUrl: invitation.event.mapUrl,
         musicYoutubeId: invitation.event.musicYoutubeId,
+        musicAutoplay: invitation.event.musicAutoplay,
         scheduleItems: invitation.event.scheduleItems as unknown as ScheduleItem[] | null,
         notesAr: invitation.event.notesAr,
         rsvpRequired: invitation.event.rsvpRequired,

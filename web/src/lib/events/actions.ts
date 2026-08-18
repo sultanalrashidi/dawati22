@@ -28,6 +28,7 @@ export async function createEventAction(locale: string, formData: FormData) {
   const locationName = String(formData.get("locationName") ?? "").trim();
   const mapUrl = String(formData.get("mapUrl") ?? "").trim();
   const musicUrlRaw = String(formData.get("musicUrl") ?? "").trim();
+  const musicAutoplay = String(formData.get("musicAutoplay") ?? "manual") === "auto";
   const scheduleItemsRaw = String(formData.get("scheduleItems") ?? "").trim();
   const notesAr = String(formData.get("notesAr") ?? "").trim();
   const themeId = String(formData.get("themeId") ?? "");
@@ -81,6 +82,7 @@ export async function createEventAction(locale: string, formData: FormData) {
       locationName,
       mapUrl,
       musicYoutubeId: musicYoutubeId ?? undefined,
+      musicAutoplay,
       scheduleItems,
       notesAr: notesAr || undefined,
       themeId,

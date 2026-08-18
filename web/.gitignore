@@ -44,3 +44,11 @@ next-env.d.ts
 
 # user-uploaded theme assets (local disk storage in dev/self-hosted mode)
 /public/uploads/
+
+# OpenNext
+.open-next
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example

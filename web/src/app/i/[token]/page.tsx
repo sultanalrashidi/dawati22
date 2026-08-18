@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getInvitationByLinkToken, markViewed } from "@/lib/invitations/service";
 import { renderQrDataUrl } from "@/lib/qr";
@@ -7,6 +8,25 @@ import { InvitationView } from "@/components/guest/invitation-view";
 import { GuestMessage } from "@/components/guest/guest-message";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ScheduleItem } from "@/lib/events/types";
+
+// Powers the WhatsApp/social link-preview card (title + description; the
+// image itself comes from the sibling opengraph-image.tsx) — this is what
+// lets a shared invitation link show up as a real preview instead of a bare
+// URL, without changing how the link itself works.
+export async function generateMetadata({ params }: PageProps<"/i/[token]">): Promise<Metadata> {
+  const { token } = await params;
+  const invitation = await getInvitationByLinkToken(token);
+  if (!invitation) return {};
+
+  const dual = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", { day: "numeric", month: "long", year: "numeric" }).format(
+    invitation.event.eventDate,
+  );
+
+  return {
+    title: `دعوة خاصة إلى ${invitation.guest.nameAr}`,
+    description: `${invitation.event.groomNameEn} و ${invitation.event.brideNameEn} — ${dual} · ${invitation.event.locationName}`,
+  };
+}
 
 export default async function GuestInvitationPage({ params }: PageProps<"/i/[token]">) {
   const { token } = await params;

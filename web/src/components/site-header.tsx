@@ -54,6 +54,17 @@ export function SiteHeader({
 
         <div className="flex items-center gap-2">
           <Link
+            href={`/${locale}/themes`}
+            aria-label={dict.nav.themes}
+            title={dict.nav.themes}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+          >
+            <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.6">
+              <rect x="3" y="6" width="14" height="14" rx="2" />
+              <path d="M7 6V4.5A1.5 1.5 0 0 1 8.5 3h9A1.5 1.5 0 0 1 19 4.5v11a1.5 1.5 0 0 1-1.5 1.5H16" />
+            </svg>
+          </Link>
+          <Link
             href={swappedPath}
             className="hidden h-9 items-center rounded-full border border-border px-3 text-sm text-fg-muted transition-colors hover:text-fg hover:bg-surface-2 sm:inline-flex"
           >

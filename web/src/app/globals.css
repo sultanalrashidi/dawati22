@@ -167,9 +167,14 @@ body {
   gap: 1.5rem;
   padding: 4rem 1.5rem;
   text-align: center;
+  /* Short + subtle on purpose: on a real phone this reveal was visibly still
+     mid-fade/mid-slide by the time the scroll-snap itself had already
+     settled, reading as "stop, pause, then jump" after every swipe. A big
+     translateY + a near-1s transition is fine on a slow synthetic scroll
+     but not against real touch-momentum timing. */
   opacity: 0;
-  transform: translateY(10vh);
-  transition: opacity 0.9s ease-out, transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transform: translateY(4vh);
+  transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .dawati-scene-in-view {
   opacity: 1;

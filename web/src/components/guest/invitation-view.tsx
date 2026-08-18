@@ -159,8 +159,14 @@ function MusicToggle({
   );
 }
 
-/** Fires once a scene first crosses into the viewport; stays true afterward. */
-function useInView<T extends HTMLElement>(threshold = 0.3) {
+/**
+ * Fires once a scene first crosses into the viewport; stays true afterward.
+ * Low threshold on purpose — it should trigger early, while the scene is
+ * still scrolling into place, so the CSS reveal transition (globals.css
+ * `.dawati-scene`) finishes close to when the scroll-snap itself settles
+ * instead of visibly continuing after the swipe has already stopped.
+ */
+function useInView<T extends HTMLElement>(threshold = 0.05) {
   const ref = useRef<T>(null);
   const [inView, setInView] = useState(false);
   useEffect(() => {

@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { createThemeAction, updateThemeAction, type ThemeFormState } from "@/lib/admin/themes/actions";
+import { ThemePreviewDialog } from "@/components/themes/theme-preview-dialog";
 
 const LAYOUTS: ThemeConfig["layout"][] = ["classic-center", "arch-frame", "envelope-reveal", "split-portrait"];
 const MOTIONS: ThemeConfig["motion"]["openStyle"][] = [
@@ -14,7 +15,16 @@ const MOTIONS: ThemeConfig["motion"]["openStyle"][] = [
   "seal-break",
   "arch-reveal",
 ];
-const FONTS = ["IBM Plex Sans Arabic", "Aref Ruqaa", "Reem Kufi", "Amiri", "Cormorant Garamond", "Inter"];
+const FONTS = [
+  "IBM Plex Sans Arabic",
+  "Aref Ruqaa",
+  "Reem Kufi",
+  "Amiri",
+  "Cormorant Garamond",
+  "Inter",
+  "Playfair Display",
+  "Tajawal",
+];
 
 const DEFAULT_CONFIG: ThemeConfig = {
   layout: "classic-center",
@@ -126,19 +136,34 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
         <div className="grid grid-cols-3 gap-3">
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-fg-muted">Arabic display</span>
-            <select name="fontArDisplay" defaultValue={config.fonts.arabicDisplay} className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent">
+            <select
+              name="fontArDisplay"
+              value={config.fonts.arabicDisplay}
+              onChange={(e) => setConfig((c) => ({ ...c, fonts: { ...c.fonts, arabicDisplay: e.target.value } }))}
+              className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+            >
               {FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
             </select>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-fg-muted">Arabic body</span>
-            <select name="fontArBody" defaultValue={config.fonts.arabicBody} className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent">
+            <select
+              name="fontArBody"
+              value={config.fonts.arabicBody}
+              onChange={(e) => setConfig((c) => ({ ...c, fonts: { ...c.fonts, arabicBody: e.target.value } }))}
+              className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+            >
               {FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
             </select>
           </label>
           <label className="flex flex-col gap-1 text-sm">
             <span className="text-fg-muted">Latin display</span>
-            <select name="fontEnDisplay" defaultValue={config.fonts.latinDisplay} className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent">
+            <select
+              name="fontEnDisplay"
+              value={config.fonts.latinDisplay}
+              onChange={(e) => setConfig((c) => ({ ...c, fonts: { ...c.fonts, latinDisplay: e.target.value } }))}
+              className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+            >
               {FONTS.map((f) => <option key={f} value={f}>{f}</option>)}
             </select>
           </label>
@@ -147,13 +172,31 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
         <fieldset className="flex flex-wrap gap-4">
           <legend className="mb-1 w-full text-sm text-fg-muted">{a.sections}</legend>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="showCountdown" defaultChecked={config.sections.showCountdown} /> Countdown
+            <input
+              type="checkbox"
+              name="showCountdown"
+              checked={config.sections.showCountdown}
+              onChange={(e) => setConfig((c) => ({ ...c, sections: { ...c.sections, showCountdown: e.target.checked } }))}
+            />{" "}
+            Countdown
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="showMap" defaultChecked={config.sections.showMap} /> Map
+            <input
+              type="checkbox"
+              name="showMap"
+              checked={config.sections.showMap}
+              onChange={(e) => setConfig((c) => ({ ...c, sections: { ...c.sections, showMap: e.target.checked } }))}
+            />{" "}
+            Map
           </label>
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" name="showRsvp" defaultChecked={config.sections.showRsvp} /> RSVP
+            <input
+              type="checkbox"
+              name="showRsvp"
+              checked={config.sections.showRsvp}
+              onChange={(e) => setConfig((c) => ({ ...c, sections: { ...c.sections, showRsvp: e.target.checked } }))}
+            />{" "}
+            RSVP
           </label>
         </fieldset>
 
@@ -185,6 +228,18 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
             افتح الدعوة
           </span>
         </div>
+        <ThemePreviewDialog
+          theme={config}
+          dict={dict}
+          trigger={
+            <button
+              type="button"
+              className="h-10 w-full rounded-full border border-accent text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-accent-fg"
+            >
+              {a.openFullPreview}
+            </button>
+          }
+        />
       </div>
     </div>
   );

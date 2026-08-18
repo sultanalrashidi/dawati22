@@ -4,6 +4,7 @@ import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
 import { locales, isLocale, dirOf } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { THEME_COOKIE } from "@/lib/theme/constants";
+import { THEME_FONT_CLASS } from "@/lib/themes/fonts";
 import { AppChrome } from "@/components/app-chrome";
 import { InlineScript } from "@/components/inline-script";
 import "../globals.css";
@@ -49,7 +50,7 @@ export default async function LocaleLayout({
       lang={locale}
       dir={dirOf(locale)}
       data-theme="light"
-      className={`${bodyFont.variable} ${displayFont.variable} h-full antialiased`}
+      className={`${bodyFont.variable} ${displayFont.variable} ${THEME_FONT_CLASS} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

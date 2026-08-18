@@ -59,7 +59,13 @@ export function LoginForm({ locale, dict }: { locale: Locale; dict: Dictionary }
     startTransition(async () => {
       const result = await submitOtpCodeAction(phone, code, locale);
       if (!result.ok) {
-        setError(result.error === "invalid_code" ? dict.auth.invalidCode : dict.auth.invalidPhone);
+        const message =
+          result.error === "invalid_code"
+            ? dict.auth.invalidCode
+            : result.error === "account_blocked"
+              ? dict.auth.accountBlocked
+              : dict.auth.invalidPhone;
+        setError(message);
         return;
       }
       if (result.needsName) {

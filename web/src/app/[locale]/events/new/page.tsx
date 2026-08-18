@@ -165,6 +165,7 @@ export default async function NewEventPage({
         <div className="flex flex-col gap-2 text-sm">
           <span className="text-fg-muted">{f.themeLabel}</span>
           <ThemePicker
+            dict={dict}
             themes={themes.map((t) => ({
               id: t.id,
               name: locale === "ar" ? t.nameAr : t.name,

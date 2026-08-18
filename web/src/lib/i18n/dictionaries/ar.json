@@ -58,6 +58,7 @@
     "invalidCode": "رمز التحقق غير صحيح",
     "codeExpired": "انتهت صلاحية الرمز، اطلب رمزًا جديدًا",
     "tooManyAttempts": "محاولات كثيرة، حاول لاحقًا",
+    "accountBlocked": "هذا الحساب محظور، تواصل مع الدعم",
     "devCodeNotice": "وضع تجريبي — رمز التحقق:"
   },
   "home": {
@@ -204,6 +205,7 @@
     "uploadAsset": "رفع ملف",
     "assetKind": "نوع الملف",
     "preview": "معاينة",
+    "openFullPreview": "معاينة كاملة تفاعلية",
     "themeStatus": {
       "DRAFT": "مسودة",
       "PUBLISHED": "منشور",

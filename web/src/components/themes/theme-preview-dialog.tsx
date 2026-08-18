@@ -1,0 +1,60 @@
+"use client";
+
+import type { ReactElement } from "react";
+import { Dialog } from "@base-ui/react/dialog";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { ThemeConfig } from "@/lib/themes/types";
+import { InvitationView } from "@/components/guest/invitation-view";
+
+const SAMPLE_EVENT = {
+  name: "Sample",
+  groomNameEn: "Sultan",
+  brideNameEn: "Noura",
+  invitationTextAr: "يسعدنا دعوتكم لحضور حفل زفافنا ومشاركتنا فرحتنا",
+  eventDate: new Date(Date.now() + 45 * 86_400_000).toISOString(),
+  locationName: "قاعة الأمير الكبرى - الرياض",
+  mapUrl: null,
+  rsvpRequired: true,
+};
+
+const SAMPLE_GUEST = { nameAr: "أم فيصل", allowedCount: 3 };
+
+export function ThemePreviewDialog({
+  theme,
+  dict,
+  trigger,
+  open,
+  onOpenChange,
+}: {
+  theme: ThemeConfig;
+  dict: Dictionary;
+  /** A single button-like element (e.g. `<button>...</button>`) — rendered as the trigger itself, not wrapped in one. */
+  trigger?: ReactElement;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      {trigger && <Dialog.Trigger render={trigger} />}
+      <Dialog.Portal>
+        <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/70" />
+        <Dialog.Popup className="fixed inset-0 z-50 overflow-y-auto outline-none">
+          <div dir="rtl">
+            <Dialog.Close className="fixed end-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/60">
+              ✕
+            </Dialog.Close>
+            <InvitationView
+              dict={dict}
+              theme={theme}
+              event={SAMPLE_EVENT}
+              guest={SAMPLE_GUEST}
+              status="SENT"
+              qrDataUrl={null}
+              mode="preview"
+            />
+          </div>
+        </Dialog.Popup>
+      </Dialog.Portal>
+    </Dialog.Root>
+  );
+}

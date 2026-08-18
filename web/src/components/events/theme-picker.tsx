@@ -57,6 +57,7 @@ export function ThemePicker({
         <ThemePreviewDialog
           theme={previewTheme.config}
           dict={dict}
+          previewKey={previewTheme.id}
           open={Boolean(previewTheme)}
           onOpenChange={(open) => !open && setPreviewId(null)}
         />

@@ -58,13 +58,13 @@ See `.env.example` for the full list. Everything payment/SMS-related is optional
 
 ## What's built vs. deferred
 
-**Built and working end-to-end** (see [`PROJECT_MAP.md`](../PROJECT_MAP.md) for detail): phone+OTP auth, plan purchase → order → gated event creation, guest management with per-guest seat counts, cryptographically random (non-sequential) invitation links/QR tokens, the guest RSVP page with a live countdown and digital pass, gate check-in with an atomic, concurrency-safe seat deduction (verified under a simulated double-scan), a data-driven theme engine with three genuinely distinct starter themes (different layout, fonts, palette, and opening animation — not just recolors), and an admin panel covering users/events/orders/plans/gate staff plus a full theme manager (color/font/layout/motion/section editor, image upload, publish/hide/archive/restore, per-event theme assignment, and **versioning-safe edits** — editing a theme already used by a live event forks a new version instead of changing what existing guests see).
+**Built and working end-to-end** (see [`PROJECT_MAP.md`](../PROJECT_MAP.md) for detail): phone+OTP auth, plan purchase → order → gated event creation, guest management with per-guest seat counts, cryptographically random (non-sequential) invitation links/QR tokens, the guest RSVP page with a live countdown and digital pass, gate check-in with an atomic, concurrency-safe seat deduction (verified under a simulated double-scan), a data-driven theme engine with 43 genuinely distinct themes (different layout, fonts, palette, and opening animation — not just recolors) across 7 categories, and an admin panel covering users/events/orders/plans/gate staff plus a full theme manager (color/font/layout/motion/section editor, image upload, publish/hide/archive/restore, per-event theme assignment, and **versioning-safe edits** — editing a theme already used by a live event forks a new version instead of changing what existing guests see).
 
 **Deferred** (adapters are real and switch on automatically the moment env keys are set — nothing here is a stub, they're just unexercised without credentials):
 
 - Live Moyasar payments and Authentica SMS — both adapters are fully implemented (including Moyasar webhook signature verification and server-side payment re-verification) but untested against real endpoints in this environment.
 - Mada / Apple Pay — shown as "coming soon" in checkout; wire up via the same Moyasar `methods` array once card payments are verified live.
-- The theme library ships with 3 real themes proving the engine (arch-frame/dark-luxury, classic-center/minimal, envelope-reveal/botanical); expanding to the full 15–40 is now purely an admin-panel content task, not an engineering one.
+- The theme library ships with all 43 themes (the original 10 plus all 33 from the theme-expansion reference doc); adding further themes beyond that is purely an admin-panel content task, not an engineering one.
 - Automated test suite — verification so far has been a manual, tool-driven pass through every surface (see below); no unit/e2e tests are checked in yet.
 
 ## Running checks

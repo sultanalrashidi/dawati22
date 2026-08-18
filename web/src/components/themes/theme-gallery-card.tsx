@@ -2,18 +2,19 @@
 
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
-import { ThemePreviewDialog } from "@/components/themes/theme-preview-dialog";
 
 export function ThemeGalleryCard({
   name,
   category,
   config,
   dict,
+  onPreview,
 }: {
   name: string;
   category: string;
   config: ThemeConfig;
   dict: Dictionary;
+  onPreview: () => void;
 }) {
   return (
     <div
@@ -33,19 +34,14 @@ export function ThemeGalleryCard({
       >
         {category}
       </span>
-      <ThemePreviewDialog
-        theme={config}
-        dict={dict}
-        trigger={
-          <button
-            type="button"
-            className="h-9 rounded-full border px-5 text-xs font-medium transition-colors"
-            style={{ borderColor: config.palette.accent, color: config.palette.accent }}
-          >
-            {dict.admin.preview}
-          </button>
-        }
-      />
+      <button
+        type="button"
+        onClick={onPreview}
+        className="h-9 rounded-full border px-5 text-xs font-medium transition-colors"
+        style={{ borderColor: config.palette.accent, color: config.palette.accent }}
+      >
+        {dict.admin.preview}
+      </button>
     </div>
   );
 }

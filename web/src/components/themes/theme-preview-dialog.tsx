@@ -25,6 +25,7 @@ export function ThemePreviewDialog({
   trigger,
   open,
   onOpenChange,
+  previewKey,
 }: {
   theme: ThemeConfig;
   dict: Dictionary;
@@ -32,6 +33,13 @@ export function ThemePreviewDialog({
   trigger?: ReactElement;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /**
+   * Forces InvitationView to remount (resetting its cover/RSVP state) when
+   * switching between themes in a shared dialog instance — without this,
+   * previewing theme B after accepting the RSVP in theme A's preview would
+   * silently reuse theme A's "already accepted" state.
+   */
+  previewKey?: string;
 }) {
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
@@ -44,6 +52,7 @@ export function ThemePreviewDialog({
               ✕
             </Dialog.Close>
             <InvitationView
+              key={previewKey}
               dict={dict}
               theme={theme}
               event={SAMPLE_EVENT}

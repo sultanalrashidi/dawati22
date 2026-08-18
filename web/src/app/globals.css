@@ -137,7 +137,13 @@ body {
    across every theme — only palette/fonts/decoration differ per theme. */
 .dawati-scene-container {
   position: relative;
+  /* 100vh is the *largest* possible viewport on mobile Safari/Chrome — with
+     the address/tool bars expanded, that overshoots the real visible area
+     and cuts scene content off behind the browser chrome. 100dvh tracks the
+     actual visible viewport; kept as a second declaration so browsers that
+     don't understand dvh silently fall back to the vh value above. */
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   overflow-x: hidden;
   scroll-snap-type: y mandatory;
@@ -147,6 +153,7 @@ body {
 .dawati-scene {
   position: relative;
   min-height: 100vh;
+  min-height: 100dvh;
   width: 100%;
   scroll-snap-align: start;
   scroll-snap-stop: always;

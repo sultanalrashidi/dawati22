@@ -302,7 +302,7 @@ export function InvitationView({
     return (
       <div
         style={vars}
-        className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
+        className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
       >
         {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
         {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
@@ -352,8 +352,8 @@ export function InvitationView({
         style={vars}
         className={
           isSplit
-            ? "relative flex min-h-screen flex-row-reverse text-[var(--color-fg)]"
-            : "relative flex min-h-screen flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
+            ? "relative flex min-h-dvh flex-row-reverse text-[var(--color-fg)]"
+            : "relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
         }
       >
         {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
@@ -462,7 +462,7 @@ export function InvitationView({
   return (
     <div
       style={{ ...vars, animation: openAnimation }}
-      className="relative h-screen overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
+      className="relative h-dvh overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
     >
       {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
       {hasParticles && <FloatingParticles accent={theme.palette.accent} />}

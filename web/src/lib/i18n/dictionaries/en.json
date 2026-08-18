@@ -153,8 +153,6 @@
       "rsvpPending": "Awaiting response",
       "statsRemaining": "Remaining invitations",
       "checkedIn": "{in}/{allowed}",
-      "gateStaffTitle": "Gate staff",
-      "addGateStaff": "Add gate staff",
       "guestNameLabel": "Guest name",
       "guestNamePlaceholder": "e.g. Umm Fulan",
       "guestPhoneLabel": "Phone (optional)",

@@ -8,9 +8,7 @@ import { guestInvitationUrl } from "@/lib/urls";
 import { Role } from "@/generated/prisma/client";
 import { AddGuestForm } from "@/components/events/add-guest-form";
 import { GuestRow } from "@/components/events/guest-row";
-import { AddGateStaffForm } from "@/components/events/add-gate-staff-form";
 import { GatePinForm } from "@/components/events/gate-pin-form";
-import { revokeGateStaffAction } from "@/lib/gatestaff/actions";
 
 export default async function EventDetailPage({
   params,
@@ -111,36 +109,6 @@ export default async function EventDetailPage({
             </p>
           </div>
           <GatePinForm eventId={event.id} dict={dict} hasPinSet={Boolean(event.gatePinHash)} />
-        </div>
-      </section>
-
-      <section className="mt-10">
-        <h2 className="text-lg font-semibold text-fg">{f.gateStaffTitle}</h2>
-        <div className="mt-4 flex flex-col gap-2">
-          {event.gateStaffAssignments.map((assignment) => {
-            const boundRevoke = revokeGateStaffAction.bind(null, assignment.id, event.id, locale);
-            return (
-              <div
-                key={assignment.id}
-                className="flex items-center justify-between rounded-xl border border-border bg-surface p-3"
-              >
-                <p className="text-sm text-fg">{assignment.gateStaff.user.name}</p>
-                <form action={boundRevoke}>
-                  <button type="submit" className="text-xs text-danger hover:underline">
-                    {f.remove}
-                  </button>
-                </form>
-              </div>
-            );
-          })}
-        </div>
-        <div className="mt-4">
-          <AddGateStaffForm
-            eventId={event.id}
-            locale={locale}
-            dict={dict}
-            disabled={event.gateStaffAssignments.length >= 4}
-          />
         </div>
       </section>
     </div>

@@ -115,7 +115,6 @@ export async function getOwnedEvent(eventId: string, userId: string) {
       theme: true,
       order: { include: { plan: true } },
       guests: { include: { invitation: true }, orderBy: { createdAt: "desc" } },
-      gateStaffAssignments: { include: { gateStaff: { include: { user: true } } }, where: { revokedAt: null } },
     },
   });
   if (!event || event.ownerId !== userId) return null;

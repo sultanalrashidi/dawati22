@@ -154,7 +154,7 @@ export default async function NewEventPage({
           <span className="text-fg-muted">{f.familiesGreetingLabel}</span>
           <input
             name="familiesGreetingAr"
-            placeholder={f.familiesGreetingPlaceholder}
+            defaultValue={f.familiesGreetingPlaceholder}
             className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
           />
         </label>
@@ -166,7 +166,7 @@ export default async function NewEventPage({
             required
             minLength={5}
             rows={4}
-            placeholder={f.invitationTextPlaceholder}
+            defaultValue={f.invitationTextPlaceholder}
             className="rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent"
           />
         </label>
@@ -219,7 +219,7 @@ export default async function NewEventPage({
           <textarea
             name="scheduleItems"
             rows={3}
-            placeholder={f.schedulePlaceholder}
+            defaultValue={f.schedulePlaceholder}
             dir="rtl"
             className="rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent"
           />

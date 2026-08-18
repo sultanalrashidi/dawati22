@@ -153,8 +153,6 @@
       "rsvpPending": "بانتظار الرد",
       "statsRemaining": "الدعوات المتبقية",
       "checkedIn": "{in}/{allowed}",
-      "gateStaffTitle": "موظفو البوابة",
-      "addGateStaff": "إضافة موظف بوابة",
       "guestNameLabel": "اسم المدعو",
       "guestNamePlaceholder": "مثال: أم فلان",
       "guestPhoneLabel": "رقم الجوال (اختياري)",

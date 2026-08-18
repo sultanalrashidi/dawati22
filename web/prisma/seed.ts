@@ -75,6 +75,8 @@ async function main() {
         fonts: { arabicDisplay: "Aref Ruqaa", arabicBody: "IBM Plex Sans Arabic", latinDisplay: "Cormorant Garamond" },
         motion: { openStyle: "arch-reveal", reducedMotionFallback: "fade" },
         sections: { showCountdown: true, showMap: true, showRsvp: true },
+        // Trial: floating hearts particles — only on this theme until approved for the rest.
+        particles: { effect: "floating-hearts" },
       },
     },
     {

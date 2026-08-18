@@ -220,6 +220,20 @@ body {
 }
 .dawati-decor-scan { top: 0; animation: dawati-decor-scan 4s ease-in-out infinite; }
 
+/* Floating hearts particles (ThemeConfig.particles) — slow rise, gentle horizontal sway. */
+@keyframes dawati-particle-rise {
+  0% { transform: translateY(0); opacity: 0; }
+  8% { opacity: 0.55; }
+  85% { opacity: 0.55; }
+  100% { transform: translateY(-115vh); opacity: 0; }
+}
+@keyframes dawati-particle-sway {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(var(--dawati-sway, 12px)); }
+}
+.dawati-particle-rise { animation-name: dawati-particle-rise; animation-timing-function: linear; animation-iteration-count: infinite; }
+.dawati-particle-sway { animation-name: dawati-particle-sway; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -228,5 +242,12 @@ body {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* The wildcard rule above collapses this looping animation to its 100%
+     frame (translated off-screen, opacity 0) instead of a visible resting
+     state — hide the layer outright so it doesn't look broken. */
+  .dawati-particles-layer {
+    display: none !important;
   }
 }

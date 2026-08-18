@@ -31,6 +31,10 @@ export interface ThemeConfig {
   background?: {
     effect: "shader-silk";
   };
+  /** Optional slow-rising decorative heart particles, tinted with this theme's own accent. */
+  particles?: {
+    effect: "floating-hearts";
+  };
 }
 
 export const THEME_ASSET_KINDS = ["COVER", "BACKGROUND", "DECORATION", "LOGO", "PATTERN"] as const;

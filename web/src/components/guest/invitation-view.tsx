@@ -17,6 +17,7 @@ import { fontVarFor } from "@/lib/themes/fonts";
 import { submitRsvpAction } from "@/lib/invitations/actions";
 import { ThemeDecor } from "@/components/guest/theme-decor";
 import { ShaderBackground } from "@/components/guest/shader-background";
+import { FloatingParticles } from "@/components/guest/floating-particles";
 import { formatDualDate } from "@/lib/dates";
 import { buildGoogleCalendarUrl } from "@/lib/calendar-link";
 
@@ -295,6 +296,7 @@ export function InvitationView({
   const hasSealOpen = theme.motion.openStyle === "envelope" || theme.motion.openStyle === "seal-break";
   const hasDoors = theme.motion.openStyle === "doors";
   const hasShaderBg = theme.background?.effect === "shader-silk";
+  const hasParticles = theme.particles?.effect === "floating-hearts";
 
   if (!opened && hasDoors) {
     return (
@@ -303,6 +305,7 @@ export function InvitationView({
         className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
       >
         {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
+        {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
         {themeCategory && (
           <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
         )}
@@ -354,6 +357,7 @@ export function InvitationView({
         }
       >
         {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
+        {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
         {themeCategory && (
           <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
         )}
@@ -461,6 +465,7 @@ export function InvitationView({
       className="relative h-screen overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
     >
       {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
+      {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
       {themeCategory && (
         <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
       )}

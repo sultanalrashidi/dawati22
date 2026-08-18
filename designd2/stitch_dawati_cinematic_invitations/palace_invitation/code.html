@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>SARA &amp; MOHAMMED - The Palace Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;600&amp;family=Hanken+Grotesk:wght@300;400;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface-container-low": "#f8f2f0",
+                        "tertiary": "#675f32",
+                        "tertiary-container": "#e5d9a1",
+                        "on-background": "#1d1b1a",
+                        "on-primary-fixed": "#1f1b17",
+                        "tertiary-fixed": "#efe3aa",
+                        "surface-container-highest": "#e7e1df",
+                        "surface-dim": "#ded9d7",
+                        "on-secondary-fixed-variant": "#464745",
+                        "surface-container-high": "#ede7e5",
+                        "on-secondary-container": "#626361",
+                        "surface-variant": "#e7e1df",
+                        "surface-bright": "#fef8f6",
+                        "error-container": "#ffdad6",
+                        "on-secondary": "#ffffff",
+                        "secondary-fixed-dim": "#c7c6c4",
+                        "error": "#ba1a1a",
+                        "primary": "#635d59",
+                        "primary-fixed": "#eae1db",
+                        "tertiary-fixed-dim": "#d2c790",
+                        "on-surface": "#1d1b1a",
+                        "surface-tint": "#635d59",
+                        "surface-container-lowest": "#ffffff",
+                        "inverse-on-surface": "#f5efed",
+                        "on-primary-fixed-variant": "#4b4641",
+                        "on-tertiary": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "background": "#fef8f6",
+                        "outline": "#7e766f",
+                        "secondary": "#5e5f5d",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#1a1c1a",
+                        "on-tertiary-container": "#675e31",
+                        "on-surface-variant": "#4c4640",
+                        "inverse-primary": "#cdc5bf",
+                        "on-tertiary-fixed-variant": "#4e471c",
+                        "on-error": "#ffffff",
+                        "inverse-surface": "#32302f",
+                        "on-tertiary-fixed": "#201c00",
+                        "outline-variant": "#cfc5bd",
+                        "primary-container": "#e0d7d1",
+                        "surface": "#fef8f6",
+                        "secondary-fixed": "#e3e2e0",
+                        "surface-container": "#f2edeb",
+                        "primary-fixed-dim": "#cdc5bf",
+                        "secondary-container": "#e0e0dd",
+                        "on-primary-container": "#635d58"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    spacing: {
+                        "margin-desktop": "80px",
+                        "margin-mobile": "24px",
+                        "unit": "8px",
+                        "section-gap": "120px",
+                        "gutter": "32px"
+                    },
+                    fontFamily: {
+                        "headline-md": ["EB Garamond", "serif"],
+                        "headline-lg": ["EB Garamond", "serif"],
+                        "body-lg": ["Hanken Grotesk", "sans-serif"],
+                        "label-md": ["Hanken Grotesk", "sans-serif"],
+                        "headline-lg-mobile": ["EB Garamond", "serif"],
+                        "display-lg": ["EB Garamond", "serif"],
+                        "body-md": ["Hanken Grotesk", "sans-serif"]
+                    },
+                    fontSize: {
+                        "headline-md": ["28px", { lineHeight: "34px", letterSpacing: "0.01em", fontWeight: "400" }],
+                        "headline-lg": ["40px", { lineHeight: "48px", letterSpacing: "0.01em", fontWeight: "400" }],
+                        "body-lg": ["18px", { lineHeight: "28px", letterSpacing: "0.01em", fontWeight: "300" }],
+                        "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.1em", fontWeight: "600" }],
+                        "headline-lg-mobile": ["32px", { lineHeight: "38px", letterSpacing: "0.01em", fontWeight: "400" }],
+                        "display-lg": ["64px", { lineHeight: "72px", letterSpacing: "0.02em", fontWeight: "400" }],
+                        "body-md": ["16px", { lineHeight: "24px", letterSpacing: "0.01em", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom Keyframes for immersive entry */
+        @keyframes doorOpenLeft {
+            0% { transform: perspective(1000px) rotateY(0deg); opacity: 1; }
+            100% { transform: perspective(1000px) rotateY(-90deg); opacity: 0; pointer-events: none; }
+        }
+        @keyframes doorOpenRight {
+            0% { transform: perspective(1000px) rotateY(0deg); opacity: 1; }
+            100% { transform: perspective(1000px) rotateY(90deg); opacity: 0; pointer-events: none; }
+        }
+        @keyframes fadeOutDoors {
+            0% { opacity: 1; z-index: 100; }
+            100% { opacity: 0; z-index: -1; pointer-events: none; display: none; }
+        }
+        @keyframes revealContent {
+            0% { opacity: 0; transform: scale(0.95) translateY(20px); filter: blur(10px); }
+            100% { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); }
+        }
+        @keyframes slowDrift {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .door-container {
+            transform-style: preserve-3d;
+            perspective: 1200px;
+        }
+        
+        .door-left {
+            transform-origin: left center;
+        }
+        
+        .door-right {
+            transform-origin: right center;
+        }
+
+        .ambient-shadow {
+            box-shadow: 0 20px 40px -10px rgba(224, 215, 209, 0.4), inset 0 2px 10px rgba(255, 255, 255, 0.8);
+        }
+        
+        .arched-top {
+            border-top-left-radius: 9999px;
+            border-top-right-radius: 9999px;
+        }
+
+        /* Initial state classes controlled by JS */
+        .doors-active .door-wrapper {
+            animation: fadeOutDoors 4s ease-in-out forwards;
+            animation-delay: 1.5s;
+        }
+        .doors-active .door-left {
+            animation: doorOpenLeft 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation-delay: 0.5s;
+        }
+        .doors-active .door-right {
+            animation: doorOpenRight 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation-delay: 0.5s;
+        }
+        .doors-active .main-content {
+            animation: revealContent 3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+            animation-delay: 2s;
+            opacity: 0; /* Starts hidden */
+        }
+        
+        /* Stop scrolling while doors are closed */
+        body.doors-closed {
+            overflow: hidden;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg antialiased selection:bg-tertiary-container selection:text-on-tertiary-container doors-closed" id="app-body">
+<!-- Scene 01 & 02: The Grand Doors -->
+<div class="fixed inset-0 z-[100] flex door-wrapper bg-background" id="door-sequence">
+<!-- Left Door -->
+<div class="w-1/2 h-full relative door-left border-r border-primary-container/30 bg-surface-bright flex justify-end items-center overflow-hidden">
+<div class="absolute inset-0 opacity-20" data-alt="A detailed seamless texture of warm, light Mediterranean limestone. The surface is smooth but tactile, with subtle variations in pale ivory and warm stone tones, evoking the quiet luxury of a contemporary art gallery wall in soft, high-key lighting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCNdD_zFBf75iRB-IGRnxcMpZmA1YAZGGoV3l9NNG88e6eAEi5g5BPI9l_zMOy2HIUkYsKfDfolHI0SOnvGQe_TWPJjfFgLVKgzMAQbymG96vFjjqEk_vryVQmvjeD1Pi4-5w1S2yQsWYWw1Rar6vNa5-PxiIEUay8g9Fw6YFnqrThfnyRMDb1GByyghKggEkbY1V-Y5ALnPtWHgvP8tIy8YDEDxviu7sxoFATjRCGhJY1oeWn-OwjO')"></div>
+<div class="w-[2px] h-3/4 bg-primary/20 mr-12 rounded-full relative z-10"></div>
+<!-- Left Door Handle -->
+<div class="absolute right-8 top-1/2 -translate-y-1/2 w-4 h-32 bg-primary/40 rounded-full shadow-lg backdrop-blur-sm z-20"></div>
+</div>
+<!-- Right Door -->
+<div class="w-1/2 h-full relative door-right border-l border-primary-container/30 bg-surface-bright flex justify-start items-center overflow-hidden">
+<div class="absolute inset-0 opacity-20" data-alt="A detailed seamless texture of warm, light Mediterranean limestone. The surface is smooth but tactile, with subtle variations in pale ivory and warm stone tones, evoking the quiet luxury of a contemporary art gallery wall in soft, high-key lighting." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCodxkLm3i0k9UFKxAcYonh6KSaYdDYw1MSCzDRyZNQZJh34BDbPYQSbXxXDn_RY3GhJyMdfmwE1Z59Cq58QSPpDzAcqrv59yKi4WWAIxpnvqfuUQxwHI_Rm60imtqglKe9m0VhjV3slHyz7YkyH0iP-094mJsjuqYulXJsKz7DaaTqz1jEtu4ZHmQAorQi4HPTKX852Go0SbXS5tzFtNulRQJ5hLms3gp04ZvzHPlDQ_P0Fhc4a8EU')"></div>
+<div class="w-[2px] h-3/4 bg-primary/20 ml-12 rounded-full relative z-10"></div>
+<!-- Right Door Handle -->
+<div class="absolute left-8 top-1/2 -translate-y-1/2 w-4 h-32 bg-primary/40 rounded-full shadow-lg backdrop-blur-sm z-20"></div>
+</div>
+<!-- Central Emblem (Fades first) -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-30 transition-opacity duration-1000 cursor-pointer group flex flex-col items-center" id="door-emblem">
+<div class="w-32 h-32 rounded-full bg-surface-container-lowest/80 backdrop-blur-md ambient-shadow flex items-center justify-center border border-primary-container group-hover:scale-105 transition-transform duration-500">
+<span class="font-display-lg text-primary">S&amp;M</span>
+</div>
+<p class="mt-6 font-label-md text-primary tracking-[0.2em] uppercase opacity-60 group-hover:opacity-100 transition-opacity duration-500">Enter The Palace</p>
+</div>
+</div>
+<!-- Main Content (Revealed after doors open) -->
+<main class="main-content min-h-screen opacity-0 relative z-0 pb-section-gap">
+<!-- TopAppBar Shared Component -->
+<header class="fixed top-0 w-full z-50 bg-surface-bright/80 dark:bg-surface-dim/80 backdrop-blur-xl flex justify-between items-center px-margin-desktop py-6 max-w-full">
+<div class="flex items-center cursor-pointer opacity-90 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed mr-4" style="font-variation-settings: 'FILL' 0;">menu</span>
+</div>
+<div class="font-headline-md text-headline-md uppercase text-primary dark:text-primary-fixed tracking-widest text-center flex-1 font-bold">
+                SARA &amp; MOHAMMED
+            </div>
+<div class="flex items-center cursor-pointer opacity-90 hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed ml-4" style="font-variation-settings: 'FILL' 0;">temple_buddhist</span>
+</div>
+</header>
+<!-- Scene 03: Integrated Architectural Hero -->
+<section class="pt-[140px] px-margin-mobile md:px-margin-desktop min-h-[90vh] flex flex-col justify-center items-center relative overflow-hidden">
+<!-- Background Atmospheric Image -->
+<div class="absolute inset-0 -z-10 opacity-30" data-alt="A wide architectural shot of a contemporary palace interior. Grand, sweeping soft arches rendered in warm, pale limestone. Natural sunlight streams through tall, unseen windows, casting long, diffuse shadows across an expansive, minimalist polished floor. The aesthetic is extremely high-key, serene, and luxurious, resembling a modern sanctuary with deep spatial depth." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBRWwv3aKmBcG5FuntsjYi8CNIrdCtZN_WV7frMVfzEAFhetBOfDt444oExNibeec2t7p9i8PCPn9G3WVwVqYKeZkUYzVG_xxymCFkuuuSLfIntd0_ITpxdvd2XWTGLLGDiNBMLDUwr76bykkhF1TULB8siQfZQ74rnGe2ry_NWEMw4ogR1oCNTDevMgx4D7nmg3owL3HGUYOc_CYUGVPhC90HhhFQc65xJzWetSBbt5oGASek1OHcc')"></div>
+<div class="text-center max-w-4xl mx-auto z-10 relative">
+<h1 class="font-display-lg text-primary mb-6 hidden md:block" style="animation: slowDrift 8s infinite ease-in-out;">THE CELEBRATION</h1>
+<h1 class="font-headline-lg-mobile text-primary mb-6 md:hidden">THE CELEBRATION</h1>
+<p class="font-body-lg text-on-surface-variant max-w-2xl mx-auto mb-12">
+                    We invite you to join us within these walls, where history meets our tomorrow. A gathering of quiet elegance, shared joy, and architectural grace.
+                </p>
+<!-- Bento Style Date/Time -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter mt-16">
+<div class="bg-surface-container-lowest/60 backdrop-blur-md rounded-xl p-8 ambient-shadow border border-primary-container/20 flex flex-col items-center">
+<span class="font-label-md text-secondary tracking-[0.2em] uppercase mb-2">The Date</span>
+<span class="font-headline-md text-primary">October 14</span>
+<span class="font-body-md text-on-surface-variant mt-1">2024</span>
+</div>
+<div class="bg-surface-container-lowest/60 backdrop-blur-md rounded-xl p-8 ambient-shadow border border-primary-container/20 flex flex-col items-center scale-105">
+<span class="font-label-md text-secondary tracking-[0.2em] uppercase mb-2">The Location</span>
+<span class="font-headline-md text-primary text-center">Villa Aurelia</span>
+<span class="font-body-md text-on-surface-variant mt-1">Rome, Italy</span>
+</div>
+<div class="bg-surface-container-lowest/60 backdrop-blur-md rounded-xl p-8 ambient-shadow border border-primary-container/20 flex flex-col items-center">
+<span class="font-label-md text-secondary tracking-[0.2em] uppercase mb-2">The Time</span>
+<span class="font-headline-md text-primary">16:00</span>
+<span class="font-body-md text-on-surface-variant mt-1">CET</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Scene 04: The Venue (Arched Cards) -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-container-low relative">
+<div class="max-w-7xl mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
+<div>
+<h2 class="font-headline-lg text-primary hidden md:block">THE SPACES</h2>
+<h2 class="font-headline-lg-mobile text-primary md:hidden">THE SPACES</h2>
+<p class="font-body-lg text-on-surface-variant mt-4 max-w-lg">Discover the architecture of our celebration. Each space curated for a distinct moment in our journey.</p>
+</div>
+<button class="bg-primary text-on-primary px-8 py-4 font-label-md uppercase tracking-widest hover:bg-tertiary transition-colors duration-300">
+                        View Full Itinerary
+                    </button>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+<!-- Arched Card 1 -->
+<div class="group cursor-pointer">
+<div class="w-full aspect-[3/4] arched-top overflow-hidden relative ambient-shadow bg-surface-bright mb-6">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A close-up architectural photograph of a smooth, pale stone archway bathed in warm afternoon sunlight. The minimalist geometry of the arch frames a subtle view of an olive grove in the background. High-end, serene light-mode aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdU_ILKvnDZ4VIjCjmLb1Tp0nPBRD7XKsplvo-4yYuuwSQoADNlMhZcTAusw8Y5mFhSX4O6J_0fnpoFnwMSgyTAQrYPxB3r_ba21p7mR7AhEvK3CdUbyaY-DFLSoukQSJSfh96t_BXh9KrK366-3WttDRcl77N0xjXjFFGg9am_4LN7uktHZXcz3JuPPMGTHLj91GDDwmWlI-9AaKidlSm_j2HvJo8Dj-2p2RAtF8HshCmawLSyEnq"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+</div>
+<div class="flex justify-between items-center border-b border-primary-container pb-4">
+<h3 class="font-headline-md text-primary">The Ceremony Courtyard</h3>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</div>
+</div>
+<!-- Arched Card 2 (Offset for asymmetrical layout) -->
+<div class="group cursor-pointer md:mt-32">
+<div class="w-full aspect-[3/4] arched-top overflow-hidden relative ambient-shadow bg-surface-bright mb-6">
+<img class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="A minimalist architectural detail of a grand staircase inside a contemporary palace. Made entirely of warm ivory limestone, the stairs curve elegantly. Soft, diffused natural light cascades down the steps, creating gentle gradients of shadow. Serene, high-end visual style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmolNdYOWjD3beBaeSKywhHE_QrD2ioefA3fAw1xcOB_chW_nqBqLFVErW5BIffgGNpqtFXFsLJKbaWP3Cm4z2WpIYAAA7uI0Akgu9zEEQgS3Bb8s8KQk5fvESFbmntNeSmp5QzS8ztiS9MDXROxvDpdKh_0eedlT1H-VR_aNh7RWscpP_yAh38W5oMBpjAwp3OH_rVXQtvdt3PP6kuK-CP-ShB_0oLUNSV_ESlU1uiIdKfrD7dWMJ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-dim/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+</div>
+<div class="flex justify-between items-center border-b border-primary-container pb-4">
+<h3 class="font-headline-md text-primary">The Grand Gallery Reception</h3>
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 0;">arrow_forward</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Scene 05: RSVP / Interaction -->
+<section class="py-section-gap px-margin-mobile md:px-margin-desktop bg-surface-bright relative flex justify-center">
+<div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-surface-container-high/30 via-surface-bright to-surface-bright"></div>
+<div class="max-w-3xl w-full bg-surface-container-lowest ambient-shadow rounded-2xl p-12 md:p-24 border border-primary-container/20 text-center">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-5xl mb-8" style="font-variation-settings: 'FILL' 0;">edit_calendar</span>
+<h2 class="font-headline-lg text-primary mb-4 hidden md:block">YOUR PRESENCE</h2>
+<h2 class="font-headline-lg-mobile text-primary mb-4 md:hidden">YOUR PRESENCE</h2>
+<p class="font-body-lg text-on-surface-variant mb-12">Please grace us with your response by the first of September.</p>
+<form class="flex flex-col gap-8 text-left">
+<div class="relative">
+<label class="font-label-md text-secondary tracking-widest uppercase absolute -top-3 left-0 bg-surface-container-lowest px-1">Guest Name(s)</label>
+<input class="w-full bg-transparent border-0 border-b border-primary-container focus:border-primary focus:ring-0 px-0 py-3 font-body-lg text-primary transition-colors" placeholder="Enter full name" type="text"/>
+</div>
+<div class="relative">
+<label class="font-label-md text-secondary tracking-widest uppercase absolute -top-3 left-0 bg-surface-container-lowest px-1">Dietary Requirements</label>
+<input class="w-full bg-transparent border-0 border-b border-primary-container focus:border-primary focus:ring-0 px-0 py-3 font-body-lg text-primary transition-colors" placeholder="Any allergies or preferences" type="text"/>
+</div>
+<button class="mt-8 bg-primary text-on-primary px-8 py-4 font-label-md uppercase tracking-widest hover:bg-tertiary transition-colors duration-300 self-center" type="button">
+                         Confirm Attendance
+                     </button>
+</form>
+</div>
+</section>
+<!-- BottomNavBar Shared Component (Mobile Only) -->
+<!-- Logic: Rendered because this is a primary destination (Invitation Home/Details), hidden on md+ -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-8 pb-8 pt-4 bg-surface-container-lowest/90 dark:bg-surface-dim/90 backdrop-blur-md rounded-t-xl bg-surface-container-low dark:bg-inverse-surface shadow-[0_-4px_20px_-5px_rgba(224,215,209,0.3)] md:hidden">
+<!-- Ceremony (Active fallback based on primary intent of Invitation) -->
+<div class="flex flex-col items-center justify-center text-primary dark:text-tertiary-fixed font-bold scale-105 transition-transform cursor-pointer">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 1;">church</span>
+<span class="font-label-md text-label-md uppercase tracking-widest">Ceremony</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-secondary-fixed-variant hover:text-primary dark:hover:text-tertiary-fixed-dim cursor-pointer transition-all duration-300">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">architecture</span>
+<span class="font-label-md text-label-md uppercase tracking-widest">Gallery</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-secondary-fixed-variant hover:text-primary dark:hover:text-tertiary-fixed-dim cursor-pointer transition-all duration-300">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">edit_calendar</span>
+<span class="font-label-md text-label-md uppercase tracking-widest">RSVP</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant/60 dark:text-on-secondary-fixed-variant hover:text-primary dark:hover:text-tertiary-fixed-dim cursor-pointer transition-all duration-300">
+<span class="material-symbols-outlined mb-1" style="font-variation-settings: 'FILL' 0;">map</span>
+<span class="font-label-md text-label-md uppercase tracking-widest">Travel</span>
+</div>
+</nav>
+</main>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const doorEmblem = document.getElementById('door-emblem');
+            const body = document.getElementById('app-body');
+            
+            doorEmblem.addEventListener('click', () => {
+                // Trigger opening sequence
+                body.classList.remove('doors-closed');
+                body.classList.add('doors-active');
+                
+                // Optional: Scroll to top just in case
+                window.scrollTo(0,0);
+            });
+        });
+    </script>
+</body></html>

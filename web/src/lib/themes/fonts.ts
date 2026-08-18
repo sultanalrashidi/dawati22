@@ -7,6 +7,8 @@ import {
   IBM_Plex_Sans_Arabic,
   Playfair_Display,
   Tajawal,
+  Bodoni_Moda,
+  EB_Garamond,
 } from "next/font/google";
 
 export const arefRuqaa = Aref_Ruqaa({ variable: "--font-aref-ruqaa", subsets: ["arabic"], weight: ["400", "700"] });
@@ -29,6 +31,16 @@ export const playfair = Playfair_Display({
   weight: ["500", "600", "700"],
 });
 export const tajawal = Tajawal({ variable: "--font-tajawal", subsets: ["arabic"], weight: ["400", "500", "700"] });
+export const bodoniModa = Bodoni_Moda({
+  variable: "--font-bodoni-moda",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+export const ebGaramond = EB_Garamond({
+  variable: "--font-eb-garamond",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+});
 
 export const THEME_FONT_CLASS = [
   arefRuqaa.variable,
@@ -39,6 +51,8 @@ export const THEME_FONT_CLASS = [
   plexArabic.variable,
   playfair.variable,
   tajawal.variable,
+  bodoniModa.variable,
+  ebGaramond.variable,
 ].join(" ");
 
 const FONT_VAR_MAP: Record<string, string> = {
@@ -50,6 +64,8 @@ const FONT_VAR_MAP: Record<string, string> = {
   "IBM Plex Sans Arabic": "var(--font-plex-arabic)",
   "Playfair Display": "var(--font-playfair)",
   Tajawal: "var(--font-tajawal)",
+  "Bodoni Moda": "var(--font-bodoni-moda)",
+  "EB Garamond": "var(--font-eb-garamond)",
 };
 
 export function fontVarFor(name: string): string {

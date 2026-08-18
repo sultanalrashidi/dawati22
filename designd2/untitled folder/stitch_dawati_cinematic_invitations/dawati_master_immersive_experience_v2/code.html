@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+
+<html class="dark" dir="rtl" lang="ar"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Sara &amp; Mohammed - Wedding Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;600&amp;family=Playfair+Display:wght@400;500;600&amp;family=Amiri:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#efdfd9",
+                        "on-surface-variant": "#d3c3bd",
+                        "on-secondary-fixed": "#221b0b",
+                        "secondary-fixed": "#f0e0c8",
+                        "primary": "#e3bfb0",
+                        "on-primary-fixed-variant": "#5a4136",
+                        "surface-container-highest": "#3c332f",
+                        "on-tertiary-fixed-variant": "#46483d",
+                        "inverse-surface": "#efdfd9",
+                        "error-container": "#93000a",
+                        "on-primary": "#422b21",
+                        "surface-bright": "#413733",
+                        "inverse-primary": "#74584d",
+                        "on-tertiary": "#2f3128",
+                        "on-primary-container": "#9f8073",
+                        "primary-container": "#2e1a11",
+                        "surface-tint": "#e3bfb0",
+                        "on-background": "#efdfd9",
+                        "on-tertiary-fixed": "#1b1c14",
+                        "on-error-container": "#ffdad6",
+                        "surface-container-low": "#221a16",
+                        "surface-container": "#261e1a",
+                        "background": "#19120e",
+                        "outline": "#9c8e88",
+                        "primary-fixed-dim": "#e3bfb0",
+                        "secondary-container": "#524835",
+                        "primary-fixed": "#ffdbcd",
+                        "tertiary-fixed": "#e3e3d5",
+                        "tertiary": "#c7c7ba",
+                        "on-tertiary-container": "#86887b",
+                        "secondary": "#d3c5ad",
+                        "on-secondary-fixed-variant": "#4f4533",
+                        "error": "#ffb4ab",
+                        "on-secondary": "#382f1e",
+                        "on-primary-fixed": "#2a170e",
+                        "inverse-on-surface": "#382e2b",
+                        "surface": "#19120e",
+                        "on-error": "#690005",
+                        "surface-container-lowest": "#140d09",
+                        "tertiary-fixed-dim": "#c7c7ba",
+                        "surface-dim": "#19120e",
+                        "secondary-fixed-dim": "#d3c5ad",
+                        "surface-variant": "#3c332f",
+                        "surface-container-high": "#312824",
+                        "outline-variant": "#4f4440",
+                        "tertiary-container": "#1e2017",
+                        "on-secondary-container": "#c5b79f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "10rem",
+                        "safe-margin": "4rem",
+                        "safe-margin-mobile": "1.5rem",
+                        "gutter": "24px",
+                        "element-gap": "2rem"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Be Vietnam Pro"],
+                        "body-md": ["Amiri", "sans-serif"],
+                        "display-hero-mobile": ["Playfair Display"],
+                        "body-xl": ["Amiri", "sans-serif"],
+                        "title-lg": ["Amiri", "serif"],
+                        "display-hero": ["Playfair Display"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.15em", "fontWeight": "600" }],
+                        "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "display-hero-mobile": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.01em", "fontWeight": "400" }],
+                        "body-xl": ["20px", { "lineHeight": "32px", "fontWeight": "300" }],
+                        "title-lg": ["32px", { "lineHeight": "40px", "fontWeight": "400" }],
+                        "display-hero": ["80px", { "lineHeight": "90px", "letterSpacing": "-0.02em", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body, html {
+            background-color: theme('colors.background');
+            color: theme('colors.on-surface');
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden;
+            overscroll-behavior: none;
+            touch-action: none; /* Prevent pull-to-refresh on mobile */
+        }
+
+        .film-grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.02;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        #app-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            display: none; /* Hidden until cover is tapped */
+        }
+
+        #app-container.active {
+            display: block;
+        }
+
+        .scene {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 1s ease-out, transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+            transform: translateY(10vh);
+        }
+
+        .scene.in-view {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Cover Scene Specifics */
+        #cover-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.5s ease-in-out, transform 2s cubic-bezier(0.7, 0, 0.3, 1);
+        }
+        
+        #cover-scene.opening {
+            opacity: 0;
+            transform: scale(1.1);
+            pointer-events: none;
+        }
+
+        /* Spotlight effect */
+        .spotlight {
+            background: radial-gradient(circle at center, rgba(227, 191, 176, 0.15) 0%, rgba(25, 18, 14, 0) 60%);
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        ::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Typography & Animation */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 1s ease, transform 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        .in-view .fade-in-up {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .delay-1 { transition-delay: 0.3s; }
+        .delay-2 { transition-delay: 0.6s; }
+        .delay-3 { transition-delay: 0.9s; }
+
+        /* Premium Buttons */
+        .premium-btn {
+            position: relative;
+            background: transparent;
+            border: 1px solid theme('colors.primary');
+            color: theme('colors.primary');
+            font-family: 'Amiri', serif;
+            font-size: 1.25rem;
+            padding: 1rem 3rem;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.4s ease;
+            backdrop-filter: blur(4px);
+        }
+
+        .premium-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(227, 191, 176, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .premium-btn:hover::before {
+            left: 100%;
+        }
+
+        .premium-btn:hover {
+            background: rgba(227, 191, 176, 0.1);
+            color: theme('colors.on-surface');
+            box-shadow: 0 0 20px rgba(227, 191, 176, 0.2);
+        }
+
+        /* QR Scanner */
+        .scanner-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: theme('colors.primary');
+            box-shadow: 0 0 15px theme('colors.primary');
+            top: 0;
+            animation: scan 3s infinite linear;
+            opacity: 0.7;
+        }
+
+        @keyframes scan {
+            0% { top: -10%; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 110%; opacity: 0; }
+        }
+
+        /* Scroll indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0.5;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0) translateX(-50%); }
+            40% { transform: translateY(-10px) translateX(-50%); }
+            60% { transform: translateY(-5px) translateX(-50%); }
+        }
+
+        /* Parallax utility */
+        .parallax {
+            transition: transform 0.1s ease-out;
+        }
+    </style>
+</head>
+<body class="antialiased">
+<div class="film-grain"></div>
+<!-- Background Shader (Hidden initially, fades in) -->
+<div class="fixed inset-0 w-full h-full opacity-0 transition-opacity duration-[2000ms] pointer-events-none z-0" id="shader-bg">
+<!-- STITCH_SHADER_START:ANIMATION_15 class="w-full h-full" -->
+<div class="w-full h-full" style="display:block;">
+<canvas id="shader-canvas-ANIMATION_15" style="display:block;width:100%;height:100%"></canvas>
+<script>
+(function() {
+  const canvas = document.getElementById('shader-canvas-ANIMATION_15');
+
+  // Sync the WebGL drawing-buffer size with the CSS-driven layout size.
+  // This fires on initial layout and whenever the element is resized.
+  function syncSize() {
+    const w = canvas.clientWidth  || 1280;
+    const h = canvas.clientHeight || 720;
+    if (canvas.width !== w || canvas.height !== h) {
+      canvas.width  = w;
+      canvas.height = h;
+    }
+  }
+  if (typeof ResizeObserver !== 'undefined') {
+    new ResizeObserver(syncSize).observe(canvas);
+  }
+  syncSize();
+
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  if (!gl) return;
+  const vs = `attribute vec2 a_position;
+varying vec2 v_texCoord;
+void main() {
+  v_texCoord = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}`;
+  const fs = `precision highp float;
+varying vec2 v_texCoord;
+uniform float u_time;
+uniform vec2 u_resolution;
+uniform vec2 u_mouse;
+
+// Colors derived from Dawati Immersive Experience (Espresso & Champagne)
+// Espresso Deep: #19120E -> vec3(0.1, 0.07, 0.05)
+// Espresso Mid: #2E1A11 -> vec3(0.18, 0.10, 0.07)
+// Champagne Highlight: #E3BFB0 -> vec3(0.89, 0.75, 0.69)
+
+vec3 hash(vec3 p) {
+    p = vec3(dot(p, vec3(127.1, 311.7, 74.7)),
+             dot(p, vec3(269.5, 183.3, 246.1)),
+             dot(p, vec3(113.5, 271.9, 124.6)));
+    return -1.0 + 2.0 * fract(sin(p) * 43758.5453123);
+}
+
+float noise(vec3 p) {
+    vec3 i = floor(p);
+    vec3 f = fract(p);
+    vec3 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(mix(dot(hash(i + vec3(0,0,0)), f - vec3(0,0,0)),
+                       dot(hash(i + vec3(1,0,0)), f - vec3(1,0,0)), u.x),
+                   mix(dot(hash(i + vec3(0,1,0)), f - vec3(0,1,0)),
+                       dot(hash(i + vec3(1,1,0)), f - vec3(1,1,0)), u.x), u.y),
+               mix(mix(dot(hash(i + vec3(0,0,1)), f - vec3(0,0,1)),
+                       dot(hash(i + vec3(1,0,1)), f - vec3(1,0,1)), u.x),
+                   mix(dot(hash(i + vec3(0,1,1)), f - vec3(0,1,1)),
+                       dot(hash(i + vec3(1,1,1)), f - vec3(1,1,1)), u.x), u.y), u.z);
+}
+
+void main() {
+    vec2 uv = v_texCoord;
+    vec2 p = (uv * 2.0 - 1.0);
+    p.x *= u_resolution.x / u_resolution.y;
+
+    // Interactive distortion based on mouse
+    vec2 m = (u_mouse / u_resolution) * 2.0 - 1.0;
+    m.x *= u_resolution.x / u_resolution.y;
+    float dist = length(p - m);
+    p += (p - m) * exp(-dist * 4.0) * 0.1;
+
+    float t = u_time * 0.15;
+    
+    // Multi-layered silk flow
+    float n1 = noise(vec3(p * 1.5, t));
+    float n2 = noise(vec3(p * 3.0 + n1, t * 1.2));
+    float n3 = noise(vec3(p * 6.0, t * 0.8));
+    
+    float silk = n1 * 0.5 + n2 * 0.25 + n3 * 0.125;
+    silk = smoothstep(-0.2, 0.8, silk);
+
+    vec3 deepBackground = vec3(0.08, 0.05, 0.04); // Darker Espresso
+    vec3 silkColor = vec3(0.18, 0.12, 0.09); // Rich Espresso
+    vec3 highlightColor = vec3(0.35, 0.28, 0.24); // Champagne Glow
+    
+    vec3 finalColor = mix(deepBackground, silkColor, silk);
+    
+    // Specular highlight streaks
+    float streaks = pow(max(0.0, noise(vec3(p.x * 2.0, p.y * 0.5, t * 2.0))), 8.0);
+    finalColor = mix(finalColor, highlightColor, streaks * 0.4);
+
+    // Vignette
+    float vignette = 1.0 - length(uv - 0.5) * 1.2;
+    finalColor *= smoothstep(0.0, 0.6, vignette);
+
+    gl_FragColor = vec4(finalColor, 1.0);
+}`;
+  function cs(type, src) {
+    const s = gl.createShader(type);
+    gl.shaderSource(s, src);
+    gl.compileShader(s);
+    return s;
+  }
+  const prog = gl.createProgram();
+  gl.attachShader(prog, cs(gl.VERTEX_SHADER, vs));
+  gl.attachShader(prog, cs(gl.FRAGMENT_SHADER, fs));
+  gl.linkProgram(prog);
+  gl.useProgram(prog);
+  const buf = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+  const pos = gl.getAttribLocation(prog, 'a_position');
+  gl.enableVertexAttribArray(pos);
+  gl.vertexAttribPointer(pos, 2, gl.FLOAT, false, 0, 0);
+  const uTime = gl.getUniformLocation(prog, 'u_time');
+  const uRes = gl.getUniformLocation(prog, 'u_resolution');
+  const uMouse = gl.getUniformLocation(prog, 'u_mouse');
+
+  // u_mouse is in pixel coordinates matching u_resolution (ShaderToy convention).
+  // Shaders that need normalized coords should use: u_mouse / u_resolution.
+  let mouse = { x: canvas.width / 2, y: canvas.height / 2 };
+  window.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width && rect.height) {
+      const nx = (event.clientX - rect.left) / rect.width;
+      const ny = 1.0 - (event.clientY - rect.top) / rect.height;
+      mouse.x = nx * canvas.width;
+      mouse.y = ny * canvas.height;
+    }
+  });
+
+  function render(t) {
+    if (typeof ResizeObserver === 'undefined') syncSize();
+    gl.viewport(0, 0, canvas.width, canvas.height);
+    if (uTime) gl.uniform1f(uTime, t * 0.001);
+    if (uRes) gl.uniform2f(uRes, canvas.width, canvas.height);
+    if (uMouse) gl.uniform2f(uMouse, mouse.x, mouse.y);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    requestAnimationFrame(render);
+  }
+  render(0);
+})();
+</script>
+</div>
+<!-- STITCH_SHADER_END:ANIMATION_15 -->
+</div>
+<!-- SCENE 01: THE COVER -->
+<section class="bg-background" id="cover-scene">
+<div class="absolute inset-0 w-full h-full" style="background-image: url('https://lh3.googleusercontent.com/aida/AP1WRLsgnuo0sGDaRHnfAPQ1jrrD-MWjlNbWCMJtXjD45XcLPup8yp5mLHVOICIkyPmWeqh_1gg-jURBlfrDkoQFli_ia6dU3-efI5z6_J__HkZC6Jebmb3jczTuuyGa_PhnyUJngrLBkvxuqfXhqP1iMyfFwtLRnn_6-P4AbMNLjQvTxs6JVEND9WauLkGfDDDywUgobtonSY78gZiZMZDL2PuNm-tKir7D88rPCH_lCUlHSg6kDER0KnvSoeY'); background-size: cover; background-position: center;">
+<div class="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-background/20"></div>
+</div>
+<div class="relative z-20 flex flex-col items-center justify-center h-full w-full px-safe-margin-mobile">
+<h1 class="font-display-hero-mobile md:font-display-hero text-primary tracking-widest uppercase text-center mb-8" dir="ltr" style="font-family: 'Playfair Display', serif; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+                SARA <br/><span class="text-on-surface-variant/80 text-4xl font-light">&amp;</span><br/> MOHAMMED
+            </h1>
+<div class="absolute bottom-16 flex flex-col items-center cursor-pointer group" onclick="openInvitation()">
+<p class="font-body-md text-primary tracking-[0.2em] uppercase mb-4 opacity-80 group-hover:opacity-100 transition-opacity">اضغط لفتح الدعوة</p>
+<div class="w-[1px] h-12 bg-primary/50 group-hover:bg-primary transition-colors relative overflow-hidden">
+<div class="absolute top-0 left-0 w-full h-full bg-primary animate-[scan_2s_infinite]"></div>
+</div>
+</div>
+</div>
+</section>
+<!-- MAIN APP CONTAINER (Scrollable) -->
+<div id="app-container">
+<!-- SCENE 02: THE REVEAL -->
+<section class="scene" id="scene-02">
+<div class="spotlight"></div>
+<div class="z-20 text-center px-safe-margin-mobile flex flex-col items-center parallax" data-speed="0.2">
+<h2 class="font-display-hero-mobile md:font-display-hero text-primary tracking-widest uppercase mb-10 fade-in-up" dir="ltr" style="font-family: 'Playfair Display', serif;">
+                    SARA <br/><span class="text-on-surface-variant/50 text-4xl italic">&amp;</span><br/> MOHAMMED
+                </h2>
+<div class="w-px h-16 bg-gradient-to-b from-primary/50 to-transparent mx-auto mb-8 fade-in-up delay-1"></div>
+<p class="font-body-xl text-on-surface-variant max-w-xl mx-auto leading-loose fade-in-up delay-2 text-lg md:text-xl">
+                    بكل حب وسعادة يسرنا دعوتكم لمشاركتنا فرحتنا<br/>في ليلة من ليالي العمر
+                </p>
+</div>
+<div class="scroll-indicator fade-in-up delay-3">
+<span class="material-symbols-outlined text-primary/50 text-sm">south</span>
+</div>
+</section>
+<!-- SCENE 03: PERSONALIZATION -->
+<section class="scene" id="scene-03">
+<div class="spotlight"></div>
+<div class="z-20 text-center px-safe-margin-mobile w-full parallax" data-speed="0.3">
+<p class="font-body-md text-on-surface-variant/70 tracking-[0.2em] mb-8 fade-in-up">إلى ضيفتنا الغالية</p>
+<div class="relative inline-block fade-in-up delay-1">
+<!-- Elegant Frame -->
+<div class="absolute -top-4 -left-8 w-4 h-4 border-t border-l border-primary/40"></div>
+<div class="absolute -top-4 -right-8 w-4 h-4 border-t border-r border-primary/40"></div>
+<div class="absolute -bottom-4 -left-8 w-4 h-4 border-b border-l border-primary/40"></div>
+<div class="absolute -bottom-4 -right-8 w-4 h-4 border-b border-r border-primary/40"></div>
+<h2 class="font-title-lg text-primary text-5xl md:text-6xl px-12 py-4">أم فلان</h2>
+</div>
+</div>
+<div class="scroll-indicator fade-in-up delay-2">
+<span class="material-symbols-outlined text-primary/50 text-sm">south</span>
+</div>
+</section>
+<!-- SCENE 04: DETAILS -->
+<section class="scene" id="scene-04">
+<div class="spotlight"></div>
+<div class="z-20 text-center px-safe-margin-mobile w-full max-w-lg mx-auto flex flex-col gap-12 parallax" data-speed="0.15">
+<div class="fade-in-up">
+<p class="font-label-caps text-on-surface-variant/50 mb-3">التاريخ</p>
+<p class="font-title-lg text-primary text-3xl md:text-4xl">السبت، 15 نوفمبر <span class="font-display-hero text-4xl md:text-5xl ml-2">2026</span></p>
+</div>
+<div class="w-px h-12 bg-gradient-to-b from-transparent via-primary/30 to-transparent mx-auto fade-in-up delay-1"></div>
+<div class="fade-in-up delay-1">
+<p class="font-label-caps text-on-surface-variant/50 mb-3">الوقت</p>
+<p class="font-title-lg text-primary text-3xl md:text-4xl">09:00 مساءً</p>
+</div>
+<div class="w-px h-12 bg-gradient-to-b from-transparent via-primary/30 to-transparent mx-auto fade-in-up delay-2"></div>
+<div class="fade-in-up delay-2">
+<p class="font-label-caps text-on-surface-variant/50 mb-3">المكان</p>
+<p class="font-title-lg text-primary text-2xl md:text-3xl">قاعة النخبة، الرياض</p>
+<button class="mt-8 text-on-surface-variant/70 border-b border-on-surface-variant/30 pb-1 text-sm hover:text-primary transition-colors flex items-center justify-center gap-2 mx-auto group uppercase tracking-wider">
+<span class="material-symbols-outlined text-[18px] group-hover:scale-110 transition-transform">location_on</span>
+                        عرض الخريطة
+                    </button>
+</div>
+</div>
+<div class="scroll-indicator fade-in-up delay-3">
+<span class="material-symbols-outlined text-primary/50 text-sm">south</span>
+</div>
+</section>
+<!-- SCENE 05: RSVP INTERACTION -->
+<section class="scene" id="scene-05">
+<div class="spotlight"></div>
+<div class="z-20 text-center px-safe-margin-mobile w-full parallax" data-speed="0.2">
+<h3 class="font-title-lg text-on-surface text-4xl md:text-5xl mb-16 fade-in-up">هل تشرفنا بحضورك؟</h3>
+<div class="flex flex-col gap-8 items-center justify-center fade-in-up delay-1 w-full max-w-sm mx-auto">
+<button class="premium-btn w-full" onclick="handleRSVP(true)">أوافق على الحضور</button>
+<div class="flex items-center gap-4 w-full">
+<div class="h-px bg-on-surface-variant/10 flex-1"></div>
+<span class="text-on-surface-variant/30 text-sm">أو</span>
+<div class="h-px bg-on-surface-variant/10 flex-1"></div>
+</div>
+<button class="premium-btn w-full !border-on-surface-variant/20 !text-on-surface-variant/70 hover:!text-primary hover:!border-primary/50" onclick="handleRSVP(false)">أعتذر</button>
+</div>
+</div>
+</section>
+<!-- SCENE 06: DIGITAL ENTRY (SUCCESS - Hidden initially) -->
+<section class="scene hidden" id="scene-06">
+<div class="spotlight" style="background: radial-gradient(circle at center, rgba(227, 191, 176, 0.2) 0%, rgba(25, 18, 14, 0) 70%);"></div>
+<div class="z-20 text-center px-safe-margin-mobile flex flex-col items-center w-full parallax" data-speed="0.1">
+<p class="font-label-caps text-primary tracking-[0.3em] mb-8 fade-in-up">بطاقة الدخول</p>
+<h2 class="font-title-lg text-on-surface text-4xl md:text-5xl mb-4 fade-in-up delay-1">أم فلان</h2>
+<p class="font-body-md text-on-surface-variant/80 mb-12 fade-in-up delay-1 bg-surface-container/50 px-6 py-2 rounded-full border border-primary/10">عدد الأشخاص المسموح: <span class="text-primary font-bold">3</span></p>
+<!-- Luxury QR Code Representation -->
+<div class="relative p-2 border border-primary/20 backdrop-blur-md fade-in-up delay-2 bg-background/40">
+<div class="w-56 h-56 md:w-64 md:h-64 bg-surface-container-highest/50 flex items-center justify-center relative overflow-hidden">
+<span class="material-symbols-outlined text-8xl text-primary/30">qr_code_2</span>
+<div class="scanner-line"></div>
+</div>
+<!-- Ornate Corner accents -->
+<div class="absolute -top-1 -right-1 w-6 h-6 border-t-2 border-r-2 border-primary"></div>
+<div class="absolute -top-1 -left-1 w-6 h-6 border-t-2 border-l-2 border-primary"></div>
+<div class="absolute -bottom-1 -right-1 w-6 h-6 border-b-2 border-r-2 border-primary"></div>
+<div class="absolute -bottom-1 -left-1 w-6 h-6 border-b-2 border-l-2 border-primary"></div>
+</div>
+<p class="mt-12 font-body-md text-on-surface-variant/40 text-sm fade-in-up delay-3 max-w-xs mx-auto">نرجو إبراز هذه البطاقة عند بوابة الدخول</p>
+</div>
+</section>
+<!-- SCENE 07: APOLOGY STATE (Hidden initially) -->
+<section class="scene hidden" id="scene-07">
+<div class="spotlight"></div>
+<div class="z-20 text-center px-safe-margin-mobile flex flex-col items-center parallax" data-speed="0.2">
+<span class="material-symbols-outlined text-primary text-6xl mb-8 fade-in-up font-light">favorite_border</span>
+<h3 class="font-title-lg text-on-surface text-3xl md:text-4xl mb-6 fade-in-up delay-1">تم تسجيل اعتذارك</h3>
+<p class="font-body-md text-on-surface-variant max-w-md mx-auto leading-loose fade-in-up delay-2 text-lg">
+                    سنفتقد حضورك، شكراً لمشاعرك الطيبة ونتمنى أن نلتقي في أفراح قادمة.
+                </p>
+</div>
+</section>
+</div>
+<script>
+        // Opening Sequence
+        function openInvitation() {
+            const cover = document.getElementById('cover-scene');
+            const app = document.getElementById('app-container');
+            const shader = document.getElementById('shader-bg');
+            
+            // Start opening animation
+            cover.classList.add('opening');
+            
+            // Fade in shader
+            shader.style.opacity = '1';
+            
+            // Show main app and hide cover after animation
+            setTimeout(() => {
+                app.classList.add('active');
+                cover.style.display = 'none';
+                
+                // Trigger intersection observer for the first real scene
+                initObserver();
+            }, 1000);
+        }
+
+        // Intersection Observer for scroll animations
+        function initObserver() {
+            const scenes = document.querySelectorAll('.scene:not(#cover-scene)');
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('in-view');
+                    } else {
+                        // Optional: remove if you want them to fade out when scrolling away
+                        // entry.target.classList.remove('in-view');
+                    }
+                });
+            }, {
+                threshold: 0.3 // Trigger when 30% of scene is visible
+            });
+
+            scenes.forEach(scene => {
+                observer.observe(scene);
+            });
+        }
+
+        // RSVP Handling
+        function handleRSVP(attending) {
+            const scene05 = document.getElementById('scene-05');
+            const scene06 = document.getElementById('scene-06'); // Success
+            const scene07 = document.getElementById('scene-07'); // Apology
+            
+            // Fade out current scene
+            scene05.style.opacity = '0';
+            
+            setTimeout(() => {
+                scene05.classList.add('hidden');
+                scene05.classList.remove('flex'); // remove tailwind classes if any
+                
+                if(attending) {
+                    scene06.classList.remove('hidden');
+                    scene06.classList.add('flex');
+                    // Scroll to it
+                    scene06.scrollIntoView({behavior: "smooth"});
+                } else {
+                    scene07.classList.remove('hidden');
+                    scene07.classList.add('flex');
+                    // Scroll to it
+                    scene07.scrollIntoView({behavior: "smooth"});
+                }
+            }, 1000);
+        }
+
+        // Simple Parallax Effect on Scroll
+        const appContainer = document.getElementById('app-container');
+        appContainer.addEventListener('scroll', () => {
+            const scrollY = appContainer.scrollTop;
+            const parallaxElements = document.querySelectorAll('.parallax');
+            
+            parallaxElements.forEach(el => {
+                const speed = el.getAttribute('data-speed') || 0.2;
+                // Calculate position relative to viewport center roughly
+                const rect = el.parentElement.getBoundingClientRect();
+                const centerOffset = rect.top + (rect.height/2) - (window.innerHeight/2);
+                
+                // Only animate if in view roughly
+                if(Math.abs(centerOffset) < window.innerHeight) {
+                    el.style.transform = `translateY(${centerOffset * speed}px)`;
+                }
+            });
+        });
+
+    </script>
+</body></html>

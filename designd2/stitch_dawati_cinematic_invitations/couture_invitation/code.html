@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Couture Immersive Invitation</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&amp;family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-secondary-fixed-variant": "#474646",
+                      "on-primary-fixed": "#211b00",
+                      "on-tertiary-container": "#636562",
+                      "error": "#ffb4ab",
+                      "secondary": "#c9c6c5",
+                      "error-container": "#93000a",
+                      "surface-variant": "#353535",
+                      "primary": "#ffffff",
+                      "on-surface": "#e5e2e1",
+                      "on-primary-fixed-variant": "#4f471b",
+                      "on-primary-container": "#6e6436",
+                      "surface-container-lowest": "#0e0e0e",
+                      "on-tertiary-fixed": "#191c1a",
+                      "tertiary": "#ffffff",
+                      "secondary-container": "#474646",
+                      "on-surface-variant": "#ccc6b7",
+                      "primary-container": "#f1e3a9",
+                      "surface-container-highest": "#353535",
+                      "on-secondary-fixed": "#1c1b1b",
+                      "on-error-container": "#ffdad6",
+                      "primary-fixed-dim": "#d4c78f",
+                      "surface-container": "#20201f",
+                      "surface-container-low": "#1b1b1b",
+                      "tertiary-fixed": "#e2e3df",
+                      "on-background": "#e5e2e1",
+                      "surface": "#131313",
+                      "inverse-on-surface": "#313030",
+                      "on-error": "#690005",
+                      "surface-dim": "#131313",
+                      "surface-bright": "#393939",
+                      "inverse-primary": "#685e31",
+                      "tertiary-fixed-dim": "#c5c7c3",
+                      "on-tertiary-fixed-variant": "#454745",
+                      "outline-variant": "#4a473b",
+                      "on-secondary-container": "#b7b4b4",
+                      "on-secondary": "#313030",
+                      "inverse-surface": "#e5e2e1",
+                      "primary-fixed": "#f1e3a9",
+                      "surface-container-high": "#2a2a2a",
+                      "on-primary": "#383006",
+                      "secondary-fixed-dim": "#c9c6c5",
+                      "secondary-fixed": "#e5e2e1",
+                      "background": "#131313",
+                      "surface-tint": "#d4c78f",
+                      "tertiary-container": "#e2e3df",
+                      "on-tertiary": "#2e312f",
+                      "outline": "#959083"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-mobile": "20px",
+                      "gutter": "24px",
+                      "container-max": "1440px",
+                      "margin-desktop": "64px",
+                      "stack-xl": "120px",
+                      "stack-md": "48px"
+              },
+              "fontFamily": {
+                      "display-lg-mobile": [
+                              "Bodoni Moda"
+                      ],
+                      "body-md": [
+                              "Hanken Grotesk"
+                      ],
+                      "display-lg": [
+                              "Bodoni Moda"
+                      ],
+                      "arabic-display": [
+                              "Hanken Grotesk"
+                      ],
+                      "body-lg": [
+                              "Hanken Grotesk"
+                      ],
+                      "headline-md": [
+                              "Bodoni Moda"
+                      ],
+                      "headline-lg": [
+                              "Bodoni Moda"
+                      ],
+                      "label-caps": [
+                              "Hanken Grotesk"
+                      ]
+              },
+              "fontSize": {
+                      "display-lg-mobile": [
+                              "48px",
+                              {
+                                      "lineHeight": "52px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "body-md": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "84px",
+                              {
+                                      "lineHeight": "92px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "arabic-display": [
+                              "42px",
+                              {
+                                      "lineHeight": "1.4",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "18px",
+                              {
+                                      "lineHeight": "28px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-md": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "headline-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.15em",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: theme('colors.surface-container-lowest');
+            color: theme('colors.primary');
+        }
+        
+        .silk-texture {
+            position: absolute;
+            inset: 0;
+            background-image: url('data:image/svg+xml,%3Csvg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"%3E%3Cfilter id="noiseFilter"%3E%3CfeTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/%3E%3C/filter%3E%3Crect width="100%25" height="100%25" filter="url(%23noiseFilter)" opacity="0.03"/%3E%3C/svg%3E');
+            mix-blend-mode: overlay;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .champagne-gradient {
+            background: linear-gradient(135deg, theme('colors.surface-container-lowest') 0%, #1a1917 50%, theme('colors.surface-container-lowest') 100%);
+        }
+
+        /* Intro Animation */
+        #intro-sequence {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: theme('colors.surface-container-lowest');
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: opacity 1.5s cubic-bezier(0.76, 0, 0.24, 1);
+        }
+        
+        .fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .reveal-text {
+            clip-path: polygon(0 100%, 100% 100%, 100% 100%, 0% 100%);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 1.2s cubic-bezier(0.76, 0, 0.24, 1);
+        }
+
+        .reveal-text.active {
+            clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+            transform: translateY(0);
+            opacity: 1;
+        }
+        
+        .btn-luxury {
+            background-color: theme('colors.primary-container');
+            color: theme('colors.surface-container-lowest');
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-luxury::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px solid theme('colors.primary');
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        
+        .btn-luxury:hover {
+            background-color: transparent;
+            color: theme('colors.primary-container');
+        }
+        
+        .btn-luxury:hover::after {
+            opacity: 1;
+        }
+
+        /* Glassmorphism Navigation */
+        .glass-nav {
+            background: rgba(19, 19, 19, 0.1);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        
+        /* Thin Progress Line */
+        .progress-line {
+            height: 1px;
+            background: theme('colors.primary-container');
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex flex-col overflow-x-hidden selection:bg-primary-container selection:text-surface-container-lowest">
+<div class="silk-texture"></div>
+<!-- Scene 01 & 02: Intro Sequence -->
+<div class="flex-col" id="intro-sequence">
+<div class="absolute inset-0 champagne-gradient opacity-50"></div>
+<h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-primary-container text-center tracking-tighter mix-blend-difference z-20" id="intro-names">
+            SARA <br/><span class="italic font-light">&amp;</span> MOHAMMED
+        </h1>
+<div class="mt-8 z-20">
+<button class="font-label-caps text-label-caps text-on-surface-variant tracking-[0.2em] uppercase hover:text-primary-container transition-colors duration-500 opacity-0 transform translate-y-4" id="enter-btn">Enter The Ceremony</button>
+</div>
+</div>
+<!-- Main Content wrapper (Scene 03 onwards) -->
+<main class="flex-1 w-full opacity-0 transition-opacity duration-[2s] ease-in-out relative z-10 hidden" id="main-content">
+<!-- TopAppBar (From JSON) -->
+<header class="glass-nav fixed top-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 transition-all duration-700 ease-in-out">
+<button aria-label="Menu" class="text-on-surface-variant hover:text-primary transition-colors duration-500">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">menu</span>
+</button>
+<div class="font-display-lg text-headline-md md:text-display-lg-mobile text-primary tracking-[0.2em] uppercase">
+                ELITE COUTURE
+            </div>
+<button aria-label="Shopping Bag" class="text-on-surface-variant hover:text-primary transition-colors duration-500">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">shopping_bag</span>
+</button>
+</header>
+<!-- Scene 03: Hero Editorial -->
+<section class="min-h-screen relative flex items-center justify-center px-margin-mobile pt-32 pb-stack-xl overflow-hidden champagne-gradient">
+<div class="absolute inset-0 z-0">
+<img class="w-full h-full object-cover opacity-40 mix-blend-luminosity scale-105 transform origin-center transition-transform duration-[10s] hover:scale-100" data-alt="A highly stylized, avant-garde editorial fashion photograph of a couple in haute couture wedding attire. The setting is a minimalist, dimly lit studio with a stark white backdrop creating dramatic shadows. The woman wears a sweeping, architectural champagne silk gown, while the man is in a sharp, unstructured black tuxedo. The lighting is cinematic and high-contrast, evoking a premium, intimidatingly beautiful aesthetic typical of luxury fashion campaigns." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYQ_xre4x0PopXA0xfoq4lN6gDMxyPSKHy4Rl8tgBXou3euik9YaD1nO5FaEl-ZtVitRQiBhUxlzsU--rqF0NQHvdWeGNV_m6HBQ6KlfiGhjodtXKVby7WczKdNgUkbjhapT7GLSrOQsDuuk9k67KUivQZt0RoeKZTVDyixdACATxKt26tmic2syHZK9Kv3OLt2u743UYtVmFMuhRAvKAtG28n7F2fXM3uzvTNC3DduzzyTEmKMym3"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-surface-container-lowest/80"></div>
+</div>
+<div class="relative z-10 w-full max-w-container-max mx-auto grid grid-cols-1 md:grid-cols-12 gap-gutter">
+<div class="md:col-span-10 md:col-start-2 text-center reveal-on-scroll">
+<h2 class="font-display-lg text-[64px] leading-[1] md:text-[120px] md:leading-[0.9] tracking-tighter text-primary mb-6">
+                        THE COUTURE <br/><span class="italic text-primary-container font-light">Collection</span>
+</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mx-auto mb-12 opacity-80">
+                        An immersive experience celebrating the union of Sara &amp; Mohammed. A masterclass in elegance, curated for the discerning eye.
+                    </p>
+<a class="inline-block btn-luxury px-12 py-4 font-label-caps text-label-caps uppercase tracking-widest" href="#details">
+                        Discover the Details
+                    </a>
+</div>
+</div>
+</section>
+<!-- Bento Grid Layout for Details -->
+<section class="py-stack-xl px-margin-mobile md:px-margin-desktop bg-surface-container-lowest" id="details">
+<div class="max-w-container-max mx-auto">
+<div class="flex flex-col md:flex-row justify-between items-end mb-16 reveal-on-scroll">
+<h3 class="font-display-lg text-headline-lg-mobile md:text-headline-lg text-primary tracking-tight">
+                        CURATED <br/>MOMENTS
+                    </h3>
+<div class="h-px bg-outline-variant w-full md:w-1/3 mt-8 md:mt-0"></div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-gutter auto-rows-[400px]">
+<!-- Bento Item 1: Large Image -->
+<div class="md:col-span-8 relative group overflow-hidden bg-surface-container-low reveal-on-scroll border border-outline-variant/30">
+<img class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 group-hover:scale-105 transition-all duration-[2s] ease-out" data-alt="A close-up, abstract detail shot of luxurious champagne silk fabric draping gracefully over a dark surface. The lighting is focused and dramatic, highlighting the smooth texture and subtle sheen of the material against deep, impenetrable midnight black shadows. The composition is minimalist and deeply evocative of high-end haute couture design." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB89RHG4_rQ5wBqL2QmeAr7OMxZiszaSznAFugp7Ue1mq1bklT45bQJ_2KCqX4vR9-WILoBntOTjOgS-cd9SkTvqYS9-HDyH0kPexI4-DZgplkDEwxKA0tBw_h0vxxQWUkVNyfzF0wu4-kFGfp0rSu_8yEg14akdR5SjEltybrT_dAafIYnbw4RGeh8RDT2GCMtRVYkol2OdUs8pSRya0Shhq9kGLZQ2E1izAXu0FampnP-TdvEbwMz"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest/90 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8 w-full">
+<span class="inline-block px-3 py-1 border border-primary-container text-primary-container font-label-caps text-label-caps uppercase mb-4 backdrop-blur-md">Chapter I</span>
+<h4 class="font-display-lg text-headline-md text-primary mb-2">The Ceremony</h4>
+<p class="font-body-md text-body-md text-on-surface-variant">Friday, October 24th, 2025</p>
+</div>
+</div>
+<!-- Bento Item 2: Text/Info -->
+<div class="md:col-span-4 bg-surface-container flex flex-col justify-center p-12 reveal-on-scroll border border-outline-variant/30 group hover:bg-surface-container-high transition-colors duration-500">
+<span class="material-symbols-outlined text-primary-container mb-6 text-4xl" style="font-variation-settings: 'FILL' 0;">location_on</span>
+<h4 class="font-display-lg text-headline-md text-primary mb-4">The Venue</h4>
+<div class="space-y-4 font-body-md text-body-md text-on-surface-variant">
+<p>The Grand Atelier</p>
+<p class="text-sm opacity-60">124 Haute Avenue<br/>Paris, France</p>
+<a class="inline-block mt-4 border-b border-primary-container text-primary-container pb-1 font-label-caps text-label-caps hover:text-primary transition-colors" href="#">View Map</a>
+</div>
+</div>
+<!-- Bento Item 3: Secondary Image -->
+<div class="md:col-span-4 relative group overflow-hidden bg-surface-container-low reveal-on-scroll border border-outline-variant/30">
+<img class="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-70 group-hover:scale-105 transition-all duration-[2s] ease-out mix-blend-luminosity" data-alt="A minimalist still life featuring a pair of avant-garde wedding rings resting on a piece of rough, dark slate. The rings are brushed platinum with subtle, non-traditional geometric cuts. The lighting mimics a spotlight in a dark gallery space, emphasizing the contrast between the polished metal and the coarse stone. The aesthetic is modern, stark, and ultra-premium." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBD1cLNuiLIMz6vOAl-cOV8ylujOtX0-liO1BQfDZX_6C01UNqAs_1hgtQPbHQOHapsjBpa0LaCpcJb45WoGvShP99elEAxrstzKAWIV399-ujZziPszHaL_EGekrIuq2wezgtkFD7O28QSeCcL2a3W1VJgBxdIYhnCcAoaUSJLG_f1YCwKQOlc0b-6KBInD8ZgkM_RiZsLbgfwoEn0ftvtOqdX0CN_PWl8wsaXz2j5_O3earHDb0GQ"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-8">
+<span class="inline-block px-3 py-1 border border-primary-container text-primary-container font-label-caps text-label-caps uppercase mb-4">Chapter II</span>
+<h4 class="font-display-lg text-headline-md text-primary">The Reception</h4>
+</div>
+</div>
+<!-- Bento Item 4: RSVP Call to Action -->
+<div class="md:col-span-8 bg-surface-variant/50 relative overflow-hidden p-12 flex flex-col justify-between reveal-on-scroll border border-outline-variant/30 group">
+<div class="absolute top-0 right-0 p-12 opacity-10 group-hover:opacity-20 transition-opacity duration-1000">
+<span class="material-symbols-outlined text-[120px]" style="font-variation-settings: 'FILL' 0;">auto_awesome</span>
+</div>
+<div>
+<h4 class="font-display-lg text-[48px] leading-tight text-primary mb-4 max-w-lg">
+                                YOUR PRESENCE IS <br/><span class="italic text-primary-container">Requested</span>
+</h4>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-md">Kindly respond by the first of September to secure your placement at the event.</p>
+</div>
+<div class="mt-8">
+<button class="btn-luxury px-10 py-4 font-label-caps text-label-caps uppercase tracking-[0.2em]">
+                                RSVP Now
+                            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer (From JSON) -->
+<footer class="w-full py-stack-md bg-surface-container border-t border-outline-variant/30 flex flex-col items-center gap-6 px-margin-mobile text-center z-20 relative">
+<div class="font-display-lg text-headline-md text-primary mb-4">
+                ELITE COUTURE
+            </div>
+<div class="flex gap-8 mb-4">
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-opacity duration-300" href="#">Privacy Policy</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-opacity duration-300" href="#">Contact Concierge</a>
+<a class="font-label-caps text-label-caps text-on-surface-variant hover:text-primary transition-opacity duration-300" href="#">Sustainability</a>
+</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant/60">
+                © 2024 ELITE COUTURE WEDDING. ALL RIGHTS RESERVED.
+            </p>
+</footer>
+</main>
+<!-- SideNav (NavigationDrawer from JSON - Hidden by default, toggled via JS if needed, structural setup here) -->
+<aside class="fixed inset-y-0 left-0 h-full w-full max-w-sm bg-surface border-r border-outline-variant shadow-md transform -translate-x-full transition-transform duration-500 ease-out-expo z-[100] flex flex-col p-margin-mobile gap-stack-md hidden md:flex" id="nav-drawer">
+<div class="flex justify-between items-center mb-8">
+<h2 class="font-display-lg text-display-lg-mobile text-primary">COUTURE 2024</h2>
+<button class="text-on-surface-variant hover:text-primary" id="close-drawer"><span class="material-symbols-outlined">close</span></button>
+</div>
+<nav class="flex flex-col gap-6">
+<a class="flex items-center gap-4 group" href="#">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 0;">auto_awesome</span>
+<span class="font-display-lg text-primary text-headline-md border-b border-primary-container pb-1">The Collection</span>
+</a>
+<a class="flex items-center gap-4 group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 0;">location_on</span>
+<span class="font-label-caps text-on-surface-variant text-label-caps opacity-60 group-hover:opacity-100 group-hover:pl-4 transition-all duration-300">The Ceremony</span>
+</a>
+<a class="flex items-center gap-4 group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 0;">edit_calendar</span>
+<span class="font-label-caps text-on-surface-variant text-label-caps opacity-60 group-hover:opacity-100 group-hover:pl-4 transition-all duration-300">The RSVP</span>
+</a>
+<a class="flex items-center gap-4 group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 0;">photo_library</span>
+<span class="font-label-caps text-on-surface-variant text-label-caps opacity-60 group-hover:opacity-100 group-hover:pl-4 transition-all duration-300">The Gallery</span>
+</a>
+<a class="flex items-center gap-4 group" href="#">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary transition-colors" style="font-variation-settings: 'FILL' 0;">card_giftcard</span>
+<span class="font-label-caps text-on-surface-variant text-label-caps opacity-60 group-hover:opacity-100 group-hover:pl-4 transition-all duration-300">The Registry</span>
+</a>
+</nav>
+</aside>
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const introSequence = document.getElementById('intro-sequence');
+            const introNames = document.getElementById('intro-names');
+            const enterBtn = document.getElementById('enter-btn');
+            const mainContent = document.getElementById('main-content');
+            
+            // Initial sequence
+            setTimeout(() => {
+                introNames.classList.add('reveal-text');
+                setTimeout(() => {
+                    introNames.classList.add('active');
+                }, 100);
+                
+                setTimeout(() => {
+                    enterBtn.style.opacity = '1';
+                    enterBtn.style.transform = 'translateY(0)';
+                    enterBtn.style.transition = 'all 1s ease';
+                }, 1500);
+            }, 500);
+
+            // Handle entry
+            enterBtn.addEventListener('click', () => {
+                introSequence.classList.add('fade-out');
+                setTimeout(() => {
+                    introSequence.style.display = 'none';
+                    mainContent.classList.remove('hidden');
+                    // Force reflow
+                    void mainContent.offsetWidth;
+                    mainContent.style.opacity = '1';
+                    
+                    // Trigger scroll reveals after main content shows
+                    initScrollReveal();
+                }, 1500);
+            });
+
+            // Scroll Reveal Logic
+            function initScrollReveal() {
+                const observerOptions = {
+                    root: null,
+                    rootMargin: '0px',
+                    threshold: 0.15
+                };
+
+                const observer = new IntersectionObserver((entries, observer) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, observerOptions);
+
+                document.querySelectorAll('.reveal-on-scroll').forEach((el) => {
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateY(40px)';
+                    el.style.transition = 'all 1.2s cubic-bezier(0.76, 0, 0.24, 1)';
+                    observer.observe(el);
+                });
+            }
+            
+            // Setup Drawer Toggle (Placeholder logic)
+            const menuBtn = document.querySelector('header button[aria-label="Menu"]');
+            const navDrawer = document.getElementById('nav-drawer');
+            const closeDrawerBtn = document.getElementById('close-drawer');
+            
+            if(menuBtn && navDrawer && closeDrawerBtn) {
+                 menuBtn.addEventListener('click', () => {
+                    navDrawer.classList.remove('-translate-x-full');
+                });
+                closeDrawerBtn.addEventListener('click', () => {
+                     navDrawer.classList.add('-translate-x-full');
+                });
+            }
+        });
+    </script>
+</body></html>

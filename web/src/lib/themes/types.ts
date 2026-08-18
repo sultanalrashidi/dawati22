@@ -19,13 +19,17 @@ export interface ThemeConfig {
     latinDisplay: string;
   };
   motion: {
-    openStyle: "fade" | "envelope" | "curtain" | "gate-swing" | "seal-break" | "arch-reveal";
+    openStyle: "fade" | "envelope" | "curtain" | "gate-swing" | "seal-break" | "arch-reveal" | "doors";
     reducedMotionFallback: "fade";
   };
   sections: {
     showCountdown: boolean;
     showMap: boolean;
     showRsvp: boolean;
+  };
+  /** Optional animated canvas layer behind the card. Omitted for the flat-color background used by every other theme. */
+  background?: {
+    effect: "shader-silk";
   };
 }
 

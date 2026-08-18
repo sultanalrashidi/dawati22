@@ -14,6 +14,7 @@ const MOTIONS: ThemeConfig["motion"]["openStyle"][] = [
   "gate-swing",
   "seal-break",
   "arch-reveal",
+  "doors",
 ];
 const FONTS = [
   "IBM Plex Sans Arabic",
@@ -24,6 +25,8 @@ const FONTS = [
   "Inter",
   "Playfair Display",
   "Tajawal",
+  "Bodoni Moda",
+  "EB Garamond",
 ];
 
 const DEFAULT_CONFIG: ThemeConfig = {

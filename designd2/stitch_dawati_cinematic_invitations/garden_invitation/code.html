@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Secret Garden Invitation</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&amp;family=Manrope:wght@400;500;600;700&amp;family=Noto+Serif:ital,wght@0,400;0,700;1,400&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-secondary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#544600",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#161e00",
+                        "surface-dim": "#dfd9d1",
+                        "on-surface-variant": "#44483f",
+                        "surface-tint": "#526442",
+                        "on-background": "#1d1b16",
+                        "surface-container-low": "#f9f3ea",
+                        "surface": "#fff9f0",
+                        "on-primary-fixed-variant": "#3b4c2c",
+                        "on-tertiary": "#ffffff",
+                        "outline": "#75786e",
+                        "background": "#fff9f0",
+                        "on-primary-container": "#324224",
+                        "on-primary": "#ffffff",
+                        "secondary": "#54651e",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#ede7df",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#d5e9bf",
+                        "tertiary": "#705d00",
+                        "secondary-fixed-dim": "#bbcf7c",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#5a6b24",
+                        "surface-variant": "#e7e2d9",
+                        "inverse-surface": "#32302a",
+                        "on-surface": "#1d1b16",
+                        "tertiary-container": "#c6a700",
+                        "surface-container": "#f3ede4",
+                        "primary-fixed-dim": "#b9cda4",
+                        "outline-variant": "#c5c8bc",
+                        "primary": "#526442",
+                        "on-error": "#ffffff",
+                        "primary-container": "#9caf88",
+                        "on-tertiary-container": "#4a3d00",
+                        "on-secondary-fixed-variant": "#3d4c05",
+                        "on-tertiary-fixed": "#221b00",
+                        "secondary-fixed": "#d7ec95",
+                        "surface-bright": "#fff9f0",
+                        "secondary-container": "#d7ec95",
+                        "tertiary-fixed-dim": "#e9c400",
+                        "surface-container-highest": "#e7e2d9",
+                        "on-primary-fixed": "#111f05",
+                        "inverse-on-surface": "#f6f0e7",
+                        "tertiary-fixed": "#ffe16d",
+                        "inverse-primary": "#b9cda4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-padding-mobile": "40px",
+                        "gutter": "24px",
+                        "unit": "8px",
+                        "section-padding-desktop": "80px",
+                        "container-max": "1200px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["EB Garamond", "serif"],
+                        "headline-md": ["EB Garamond", "serif"],
+                        "display-lg-mobile": ["EB Garamond", "serif"],
+                        "body-sm": ["Noto Serif", "serif"],
+                        "label-caps": ["Manrope", "sans-serif"],
+                        "body-lg": ["Noto Serif", "serif"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["64px", { "lineHeight": "1.1", "letterSpacing": "-0.02em", "fontWeight": "400" }],
+                        "headline-md": ["32px", { "lineHeight": "1.3", "fontWeight": "400" }],
+                        "display-lg-mobile": ["40px", { "lineHeight": "1.1", "fontWeight": "400" }],
+                        "body-sm": ["14px", { "lineHeight": "1.5", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "1.2", "letterSpacing": "0.1em", "fontWeight": "600" }],
+                        "body-lg": ["18px", { "lineHeight": "1.6", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .glass-panel {
+            background: rgba(255, 249, 240, 0.4);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+        }
+
+        .editorial-offset {
+            transform: translateY(20px);
+        }
+        
+        .soft-shadow {
+            box-shadow: 0 10px 40px rgba(112, 130, 56, 0.08);
+        }
+
+        /* Ambient light blobs */
+        .ambient-blob {
+            position: absolute;
+            filter: blur(80px);
+            opacity: 0.4;
+            border-radius: 50%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-lg antialiased overflow-x-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- Ambient Background Lighting -->
+<div class="fixed inset-0 pointer-events-none overflow-hidden z-[-1]">
+<div class="ambient-blob bg-sunset-gold/20 w-[600px] h-[600px] -top-[100px] -right-[100px] rounded-full"></div>
+<div class="ambient-blob bg-sage/20 w-[800px] h-[800px] bottom-[20%] -left-[200px] rounded-full"></div>
+</div>
+<!-- Top Navigation (Shared Component) -->
+<header class="fixed top-0 w-full z-50 bg-surface/40 dark:bg-surface-dim/40 backdrop-blur-xl">
+<div class="flex items-center justify-between px-gutter py-4 w-full max-w-container-max mx-auto">
+<button aria-label="Menu" class="scale-95 active:scale-90 transition-transform text-on-surface-variant hover:bg-sunset-gold/10 transition-colors duration-300 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="local_florist">local_florist</span>
+</button>
+<h1 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary dark:text-primary-fixed-dim italic">
+                Our Garden Wedding
+            </h1>
+<button aria-label="Menu" class="scale-95 active:scale-90 transition-transform text-on-surface-variant hover:bg-sunset-gold/10 transition-colors duration-300 p-2 rounded-full">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="w-full max-w-container-max mx-auto px-gutter pt-[100px] pb-[120px] md:pt-[140px] md:pb-[80px]">
+<!-- Scene 01: Hero / Entrance -->
+<section class="min-h-[80vh] flex flex-col justify-center relative mb-section-padding-desktop">
+<div class="absolute inset-0 z-[-1] rounded-3xl overflow-hidden soft-shadow" data-alt="A highly detailed, ultra-realistic photograph of a luxury garden scene at dawn. The environment is filled with soft, muted greenery, sage leaves, and delicate pale ivory flowers. The lighting is ethereal, with sun-dappled sunset gold light filtering through the canopy, creating a dreamlike, romantic, and expensive editorial aesthetic. High resolution, 8k, photorealistic textures of nature." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuC7oSqCRYqi2FXzzHsWj2bLcNsZif06Ac4fMQ16QvwoG1pEQsGbeLjus4wC3xEHSPdHmS8qHfqZxq-AyQl7BidwgIvv8cPYt1AXFXCc3KGo4ZKtF4JXPkkeDBuXtb-aRNgshnzUfRyHOkMA2lPl8NO5Rk20gVKW6LG8IeUpMFk5IBdkctc0hspBKsu5Du4SqOwtgfXQhsag4UmrN3NRNX87yyJT2QIw4LzRwThKcrCFGCP_GAoD9wBD')">
+<div class="absolute inset-0 bg-background/20 backdrop-blur-sm mix-blend-overlay"></div>
+</div>
+<div class="w-full md:w-2/3 lg:w-1/2 glass-panel p-8 md:p-12 rounded-2xl mx-auto text-center soft-shadow relative overflow-hidden mt-[20vh]">
+<div class="absolute -top-10 -right-10 w-32 h-32 bg-secondary-container rounded-full blur-3xl opacity-50"></div>
+<h2 class="font-display-lg-mobile text-display-lg-mobile md:font-display-lg md:text-display-lg text-primary mb-6">
+                    Sara &amp; Mohammed
+                </h2>
+<p class="font-body-lg text-on-surface-variant mb-8 max-w-md mx-auto">
+                    Invite you to celebrate their union in a secret garden of whispered vows and enduring love.
+                </p>
+<p class="font-label-caps text-label-caps text-secondary tracking-[0.2em] uppercase">
+                    October Twenty-Fourth, Twenty Twenty-Five
+                </p>
+</div>
+</section>
+<!-- Scene 02: Details Bento Grid -->
+<section class="py-section-padding-mobile md:py-section-padding-desktop">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+<!-- Date & Time -->
+<div class="md:col-span-5 bg-surface-container-low rounded-3xl p-8 md:p-12 soft-shadow flex flex-col justify-center relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-6 opacity-20 group-hover:opacity-100 transition-opacity duration-500">
+<span class="material-symbols-outlined text-4xl text-primary" data-icon="schedule">schedule</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-background mb-4">The Ceremony</h3>
+<p class="font-body-lg text-on-surface-variant mb-2">Saturday, October 24, 2025</p>
+<p class="font-body-lg text-on-surface-variant">Four o'clock in the afternoon</p>
+<div class="mt-8 pt-8 border-t border-outline-variant/30">
+<h4 class="font-label-caps text-label-caps text-secondary mb-2">Followed by</h4>
+<p class="font-body-lg text-on-surface-variant">An evening of dining and dancing under the stars.</p>
+</div>
+</div>
+<!-- Location Image -->
+<div class="md:col-span-7 h-[400px] md:h-auto rounded-3xl overflow-hidden soft-shadow relative">
+<img alt="Venue setting" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105" data-alt="A breathtaking, cinematic shot of a luxury botanical greenhouse venue set up for an intimate wedding dinner. Long wooden tables are adorned with flowing linen, muted green foliage, sage runners, and dripping candles. Ethereal, sun-dappled sunset gold lighting creates a romantic, expensive, and organic atmosphere. High-end editorial photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBCWq2SXWtgu9cta72u9YD2EP6z6oDWBfE0y5k5cWwQFI9K_ce_JVD_1L7d1oT0MyHQ5dMSpURNbM4FvOS6PDDj7Y4MKA_EXNKNdrSzVNICHcDdVuLpoMFoFDIvzkFzqP0fUskOkWwzbzXU377egQvbHEkkSb0lO1kvObIByM-lxksxSUKls-yJmuzpucZv_g_09AoWvRbdn_beThgp7QztBOrdEBALenKIwC_m1wfeVpP5M6mVtRUD"/>
+<div class="absolute bottom-6 left-6 right-6 glass-panel rounded-xl p-4 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary" data-icon="location_on">location_on</span>
+<span class="font-body-lg text-on-background">The Conservatory Gardens</span>
+</div>
+<button class="px-4 py-2 bg-secondary text-on-secondary rounded-full font-label-caps text-label-caps hover:bg-secondary/90 transition-colors">
+                             View Map
+                         </button>
+</div>
+</div>
+<!-- Dress Code -->
+<div class="md:col-span-4 bg-primary-fixed/30 rounded-3xl p-8 soft-shadow flex flex-col justify-between editorial-offset">
+<div>
+<span class="material-symbols-outlined text-3xl text-primary mb-4 block" data-icon="styler">styler</span>
+<h3 class="font-headline-md text-headline-md text-on-background mb-4">Attire</h3>
+<p class="font-body-lg text-on-surface-variant">
+                            Black Tie Optional. We suggest earthy tones, sage, muted greens, and soft golds to complement the garden setting.
+                        </p>
+</div>
+</div>
+<!-- Registry Preview -->
+<div class="md:col-span-8 bg-surface-container rounded-3xl p-8 soft-shadow flex items-center gap-8">
+<div class="w-1/3 h-full rounded-2xl overflow-hidden hidden md:block">
+<img alt="Registry items" class="w-full h-full object-cover" data-alt="A minimalist, curated flat lay of luxury home goods resting on soft linen fabric. Items include handmade ceramic plates, a delicate crystal glass, and a sprig of sage. The lighting is soft and natural, emphasizing textures and a premium, organic aesthetic. High key, light mode, elegant styling." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAAAf_Ehr-SXlvqHrZqXQUQ-gCrMVFxO5JFJnhM04UyRhBLPMRhQTrbSvdNpXAQhI5nXH8RpcObzjy-r1URyLFsMvrTgweb8g9VR6txa4A4Cxwwa0ZqO9kXTeoAOxFWz8CMX6ty-2uP3KUHuTtKhoWCLwPVRfXHwPpGadRRmNWpdjpTRQnFCsdI2IGQxvYkXpIr_I6WI-5bXbL7ThX6OF4NzI8X27yLVLIMXbfxG19o24CntbxDuJqr"/>
+</div>
+<div class="flex-1">
+<h3 class="font-headline-md text-headline-md text-on-background mb-4">Our Registry</h3>
+<p class="font-body-lg text-on-surface-variant mb-6">
+                             Your presence is the greatest gift. Should you wish to honor us with a token, we have curated a selection of items to build our home.
+                         </p>
+<button class="px-6 py-3 border border-outline text-on-surface hover:bg-surface-variant transition-colors rounded-full font-label-caps text-label-caps inline-flex items-center gap-2">
+<span>View Registry</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation (Shared Component) - Mobile Only -->
+<nav class="md:hidden fixed bottom-0 w-full z-50 rounded-t-xl bg-surface/60 dark:bg-surface-container-lowest/60 backdrop-blur-2xl shadow-[0_-4px_20px_rgba(112,130,56,0.05)] pb-safe">
+<div class="flex justify-around items-center px-4 py-3 w-full">
+<!-- Active Tab: Invite -->
+<button class="flex flex-col items-center justify-center bg-secondary-container dark:bg-secondary text-on-secondary-container dark:text-on-secondary rounded-full px-4 py-1 scale-95 transition-all">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-label-caps text-label-caps mt-1">Invite</span>
+</button>
+<!-- Inactive Tab: Venue -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="location_on">location_on</span>
+<span class="font-label-caps text-label-caps mt-1">Venue</span>
+</button>
+<!-- Inactive Tab: Registry -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="card_giftcard">card_giftcard</span>
+<span class="font-label-caps text-label-caps mt-1">Registry</span>
+</button>
+<!-- Inactive Tab: RSVP -->
+<button class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-primary transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="send">send</span>
+<span class="font-label-caps text-label-caps mt-1">RSVP</span>
+</button>
+</div>
+</nav>
+<!-- Initialize Icons -->
+<script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const icons = document.querySelectorAll('.material-symbols-outlined');
+            icons.forEach(icon => {
+                const iconName = icon.getAttribute('data-icon');
+                if (iconName) {
+                    icon.textContent = iconName;
+                }
+            });
+        });
+    </script>
+</body></html>

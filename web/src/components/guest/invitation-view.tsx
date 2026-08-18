@@ -6,6 +6,7 @@ import type { ThemeConfig } from "@/lib/themes/types";
 import { fontVarFor } from "@/lib/themes/fonts";
 import { submitRsvpAction } from "@/lib/invitations/actions";
 import { ThemeDecor } from "@/components/guest/theme-decor";
+import { ShaderBackground } from "@/components/guest/shader-background";
 
 type GuestFacingStatus = "DRAFT" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED";
 
@@ -48,6 +49,7 @@ const OPEN_ANIMATIONS: Record<ThemeConfig["motion"]["openStyle"], string> = {
   curtain: "dawati-curtain 0.9s ease-out",
   "gate-swing": "dawati-gate-swing 0.9s ease-out",
   "seal-break": "dawati-seal-break 0.9s ease-out",
+  doors: "dawati-doors-reveal 0.9s ease-out",
 };
 
 /** Deterministic decorative grid standing in for a real QR in preview mode. */
@@ -198,6 +200,55 @@ export function InvitationView({
   const isSplit = theme.layout === "split-portrait";
   const openAnimation = OPEN_ANIMATIONS[theme.motion.openStyle] ?? OPEN_ANIMATIONS.fade;
   const hasSealOpen = theme.motion.openStyle === "envelope" || theme.motion.openStyle === "seal-break";
+  const hasDoors = theme.motion.openStyle === "doors";
+  const hasShaderBg = theme.background?.effect === "shader-silk";
+
+  if (!opened && hasDoors) {
+    return (
+      <div
+        style={vars}
+        className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
+      >
+        {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
+        {themeCategory && (
+          <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
+        )}
+        <div className="absolute inset-0 flex">
+          <div
+            className="h-full w-1/2 border-e border-[var(--color-accent)]/30 bg-[var(--color-surface)]"
+            style={{
+              transformOrigin: "left center",
+              animation: isOpening ? `dawati-door-left-open ${OPENING_TRANSITION_MS}ms cubic-bezier(0.4,0,0.2,1) forwards` : undefined,
+            }}
+          />
+          <div
+            className="h-full w-1/2 border-s border-[var(--color-accent)]/30 bg-[var(--color-surface)]"
+            style={{
+              transformOrigin: "right center",
+              animation: isOpening ? `dawati-door-right-open ${OPENING_TRANSITION_MS}ms cubic-bezier(0.4,0,0.2,1) forwards` : undefined,
+            }}
+          />
+        </div>
+        <button
+          type="button"
+          onClick={handleOpenClick}
+          disabled={isOpening}
+          className="relative z-10 flex flex-col items-center gap-4"
+          style={{ opacity: isOpening ? 0 : 1, transition: "opacity 0.4s ease" }}
+        >
+          <span
+            className="flex h-24 w-24 items-center justify-center rounded-full border-2 bg-[var(--color-surface)]"
+            style={{ borderColor: "var(--color-accent)" }}
+          >
+            <span className="text-sm font-medium tracking-widest text-[var(--color-accent)]" style={{ fontFamily: "var(--font-en-display)" }}>
+              {event.groomNameEn.charAt(0)}&amp;{event.brideNameEn.charAt(0)}
+            </span>
+          </span>
+          <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-accent)]">{g.openInvitation}</span>
+        </button>
+      </div>
+    );
+  }
 
   if (!opened) {
     return (
@@ -209,6 +260,7 @@ export function InvitationView({
             : "relative flex min-h-screen flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
         }
       >
+        {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
         {themeCategory && (
           <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
         )}
@@ -289,8 +341,9 @@ export function InvitationView({
   return (
     <div
       style={{ ...vars, animation: openAnimation }}
-      className="relative min-h-screen bg-[var(--color-bg)] px-6 py-16 text-[var(--color-fg)]"
+      className="relative min-h-screen overflow-hidden bg-[var(--color-bg)] px-6 py-16 text-[var(--color-fg)]"
     >
+      {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
       {themeCategory && (
         <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
       )}

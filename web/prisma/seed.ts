@@ -692,6 +692,60 @@ async function main() {
         sections: { showCountdown: true, showMap: true, showRsvp: true },
       },
     },
+    // --- Added from designd2/ reference mockups (2026-08-18), by explicit request ---
+    {
+      slug: "elite-couture",
+      name: "Elite Couture",
+      nameAr: "نخبة الأناقة",
+      category: "luxury",
+      config: {
+        layout: "classic-center",
+        palette: { bg: "#131313", surface: "#1b1b1b", fg: "#e5e2e1", fgMuted: "#959083", accent: "#d4c78f", accentFg: "#131313" },
+        fonts: { arabicDisplay: "Amiri", arabicBody: "IBM Plex Sans Arabic", latinDisplay: "Bodoni Moda" },
+        motion: { openStyle: "curtain", reducedMotionFallback: "fade" },
+        sections: { showCountdown: true, showMap: true, showRsvp: true },
+      },
+    },
+    {
+      slug: "secret-garden",
+      name: "Secret Garden",
+      nameAr: "الحديقة السرية",
+      category: "botanical",
+      config: {
+        layout: "envelope-reveal",
+        palette: { bg: "#fff9f0", surface: "#f9f3ea", fg: "#1d1b16", fgMuted: "#75786e", accent: "#526442", accentFg: "#ffffff" },
+        fonts: { arabicDisplay: "Amiri", arabicBody: "IBM Plex Sans Arabic", latinDisplay: "EB Garamond" },
+        motion: { openStyle: "envelope", reducedMotionFallback: "fade" },
+        sections: { showCountdown: true, showMap: true, showRsvp: true },
+      },
+    },
+    {
+      slug: "palace-doors",
+      name: "The Palace Doors",
+      nameAr: "أبواب القصر",
+      category: "luxury",
+      config: {
+        layout: "arch-frame",
+        palette: { bg: "#fef8f6", surface: "#f8f2f0", fg: "#1d1b1a", fgMuted: "#7e766f", accent: "#675f32", accentFg: "#ffffff" },
+        fonts: { arabicDisplay: "Amiri", arabicBody: "IBM Plex Sans Arabic", latinDisplay: "EB Garamond" },
+        motion: { openStyle: "doors", reducedMotionFallback: "fade" },
+        sections: { showCountdown: true, showMap: true, showRsvp: true },
+      },
+    },
+    {
+      slug: "immersive-espresso",
+      name: "Immersive Espresso",
+      nameAr: "التجربة الغامرة",
+      category: "experimental",
+      config: {
+        layout: "classic-center",
+        palette: { bg: "#19120e", surface: "#2e1a11", fg: "#f3ede3", fgMuted: "#b8ac9a", accent: "#e3bfb0", accentFg: "#19120e" },
+        fonts: { arabicDisplay: "Amiri", arabicBody: "IBM Plex Sans Arabic", latinDisplay: "Playfair Display" },
+        motion: { openStyle: "curtain", reducedMotionFallback: "fade" },
+        sections: { showCountdown: true, showMap: true, showRsvp: true },
+        background: { effect: "shader-silk" },
+      },
+    },
   ];
 
   for (const theme of themes) {

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
-import { scanQrAction } from "@/lib/checkin/actions";
 import type { CheckInOutcome } from "@/lib/checkin/service";
 
 const RESULT_STYLE: Record<string, { bg: string; fg: string }> = {
@@ -31,7 +30,15 @@ declare global {
   }
 }
 
-export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictionary }) {
+export function GateScanner({
+  eventId,
+  dict,
+  scanAction,
+}: {
+  eventId: string;
+  dict: Dictionary;
+  scanAction: (eventId: string, token: string) => Promise<CheckInOutcome>;
+}) {
   const [manualToken, setManualToken] = useState("");
   const [outcome, setOutcome] = useState<CheckInOutcome | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -91,7 +98,7 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
   function handleScan(token: string) {
     if (isPending) return;
     startTransition(async () => {
-      const result = await scanQrAction(eventId, token);
+      const result = await scanAction(eventId, token);
       setOutcome(result);
       streamRef.current?.getTracks().forEach((t) => t.stop());
       setCameraAvailable(false);

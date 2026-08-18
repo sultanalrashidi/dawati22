@@ -9,6 +9,7 @@ import { Role } from "@/generated/prisma/client";
 import { AddGuestForm } from "@/components/events/add-guest-form";
 import { GuestRow } from "@/components/events/guest-row";
 import { AddGateStaffForm } from "@/components/events/add-gate-staff-form";
+import { GatePinForm } from "@/components/events/gate-pin-form";
 import { revokeGateStaffAction } from "@/lib/gatestaff/actions";
 
 export default async function EventDetailPage({
@@ -96,6 +97,20 @@ export default async function EventDetailPage({
         </div>
         <div className="mt-4">
           <AddGuestForm eventId={event.id} locale={locale} dict={dict} />
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-lg font-semibold text-fg">{f.gateAccessTitle}</h2>
+        <p className="mt-1 text-sm text-fg-muted">{f.gateAccessHint}</p>
+        <div className="mt-4 flex flex-col gap-3">
+          <div className="rounded-xl border border-border bg-surface p-4">
+            <p className="text-xs text-fg-muted">{f.referenceCodeLabel}</p>
+            <p dir="ltr" className="mt-1 text-center text-2xl font-semibold tracking-[0.3em] text-fg">
+              {event.referenceCode}
+            </p>
+          </div>
+          <GatePinForm eventId={event.id} dict={dict} hasPinSet={Boolean(event.gatePinHash)} />
         </div>
       </section>
 

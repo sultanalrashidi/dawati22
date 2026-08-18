@@ -33,6 +33,11 @@ const GATE_ICON = (
     <rect x="9" y="9" width="6" height="6" rx="1" />
   </svg>
 );
+const SCAN_ICON = (
+  <svg viewBox="0 0 24 24" className="h-4.5 w-4.5" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <path d="M4 8V5.5A1.5 1.5 0 0 1 5.5 4H8M20 8V5.5A1.5 1.5 0 0 0 18.5 4H16M4 16v2.5A1.5 1.5 0 0 0 5.5 20H8M20 16v2.5a1.5 1.5 0 0 1-1.5 1.5H16M4 12h16" />
+  </svg>
+);
 
 export function SiteHeader({
   locale,
@@ -91,6 +96,14 @@ export function SiteHeader({
         </nav>
 
         <div className="flex items-center gap-2">
+          <Link
+            href={`/${locale}/gate-access`}
+            aria-label={dict.nav.scan}
+            title={dict.nav.scan}
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-border text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+          >
+            {SCAN_ICON}
+          </Link>
           <Link
             href={quickNav.href}
             aria-label={quickNav.label}

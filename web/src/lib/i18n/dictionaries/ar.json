@@ -30,6 +30,7 @@
     "myEvents": "مناسباتي",
     "admin": "لوحة التحكم",
     "gate": "بوابة الدخول",
+    "scan": "مسح دعوة (بدون تسجيل دخول)",
     "login": "تسجيل الدخول",
     "logout": "تسجيل الخروج",
     "language": "English",
@@ -164,7 +165,20 @@
       "confirmRemove": "هل تريد حذف هذا المدعو؟",
       "invitationLink": "رابط الدعوة",
       "capacityReached": "تم الوصول للحد الأقصى لعدد الدعوات في هذه الباقة",
-      "blocked": "محظور"
+      "blocked": "محظور",
+      "gateAccessTitle": "الدخول بدون تسجيل للحارس",
+      "gateAccessHint": "أعط الحارس الرقم المرجعي ورمزًا سريًا يخصه، ويقدر يمسح الدعوات من صفحة البداية بدون تسجيل دخول.",
+      "referenceCodeLabel": "الرقم المرجعي للمناسبة",
+      "gatePinSetStatus": "رمز الدخول مفعّل للحارس",
+      "gatePinNotSetStatus": "لم يتم تفعيل رمز دخول للحارس بعد",
+      "gatePinSetLabel": "رمز سري (٤-٨ أرقام)",
+      "gatePinChangeLabel": "رمز سري جديد (٤-٨ أرقام)",
+      "gatePinPlaceholder": "••••",
+      "gatePinSetButton": "تفعيل",
+      "gatePinChangeButton": "تغيير",
+      "gatePinClear": "إيقاف",
+      "gatePinInvalidFormat": "الرمز السري يجب أن يكون من ٤ إلى ٨ أرقام",
+      "gatePinError": "حدث خطأ، حاول مرة أخرى"
     }
   },
   "admin": {
@@ -249,6 +263,18 @@
     "resultDeniedInvalid": "رمز غير صالح",
     "seatsRemaining": "المتبقي: {count}",
     "seatsUsed": "تم دخول {used} من {allowed}"
+  },
+  "gateAccess": {
+    "title": "الدخول للمسح",
+    "subtitle": "أدخل الرقم المرجعي للمناسبة والرمز السري الذي أعطاك إياه صاحب المناسبة",
+    "referenceCodeLabel": "الرقم المرجعي",
+    "referenceCodePlaceholder": "مثال: 7X4KQ2",
+    "pinLabel": "الرمز السري",
+    "pinPlaceholder": "••••",
+    "submit": "دخول",
+    "invalidError": "الرقم المرجعي أو الرمز السري غير صحيح",
+    "lockedError": "محاولات كثيرة خاطئة، حاول بعد {minutes} دقيقة",
+    "exit": "خروج"
   },
   "guest": {
     "openInvitation": "افتح الدعوة",

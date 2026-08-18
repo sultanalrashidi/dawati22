@@ -270,6 +270,12 @@ model Event {
   scheduleItems       Json?
   /** Free text, one note per line — e.g. "no children", dress code. */
   notesAr             String?
+  /** Short human-typeable code the owner can read out to a door guard — generated once at creation. */
+  referenceCode       String?                  @unique
+  /** sha256 of a customer-set PIN, gates the no-login /gate-access scanner. Null = that access method is off. */
+  gatePinHash         String?
+  gatePinFailedAttempts Int                    @default(0)
+  gatePinLockedUntil  DateTime?
   themeId             String
   theme               Theme                    @relation(fields: [themeId], references: [id])
   guestManagementMode EventGuestManagementMode @default(SELF)
@@ -285,9 +291,22 @@ model Event {
   clientAssignedTheme    ClientAssignedTheme?
   checkInLogs            CheckInLog[]
   guestManagementRequest GuestManagementRequest?
+  gateAccessSessions     GateAccessSession[]
 
   @@index([ownerId])
   @@index([status])
+}
+
+/** Login-free gate-guard grant: reference code + PIN in, this session out, scoped to one event. */
+model GateAccessSession {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
 }
 
 // ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@ import "server-only";
 import { prisma } from "@/lib/db/client";
 import { EventGuestManagementMode, EventType, OrderStatus, Prisma } from "@/generated/prisma/client";
 import type { ScheduleItem } from "@/lib/events/types";
+import { generateReferenceCode } from "@/lib/events/reference-code";
 
 export class EventError extends Error {}
 
@@ -64,33 +65,47 @@ export async function createEvent(userId: string, input: CreateEventInput) {
   const theme = await prisma.theme.findUnique({ where: { id: input.themeId } });
   if (!theme || theme.status !== "PUBLISHED") throw new EventError("Theme not available");
 
-  return prisma.event.create({
-    data: {
-      ownerId: userId,
-      orderId: order.id,
-      type: input.type,
-      name: input.name,
-      groomNameEn: input.groomNameEn,
-      brideNameEn: input.brideNameEn,
-      groomNameAr: input.groomNameAr || null,
-      groomFamilyAr: input.groomFamilyAr || null,
-      brideNameAr: input.brideNameAr || null,
-      brideFamilyAr: input.brideFamilyAr || null,
-      familiesGreetingAr: input.familiesGreetingAr || null,
-      invitationTextAr: input.invitationTextAr,
-      eventDate: input.eventDate,
-      locationName: input.locationName,
-      mapUrl: input.mapUrl || null,
-      musicYoutubeId: input.musicYoutubeId || null,
-      scheduleItems: input.scheduleItems && input.scheduleItems.length > 0
-        ? (input.scheduleItems as unknown as Prisma.InputJsonValue)
-        : Prisma.JsonNull,
-      notesAr: input.notesAr || null,
-      themeId: input.themeId,
-      guestManagementMode: input.guestManagementMode,
-      rsvpRequired: input.rsvpRequired,
-    },
-  });
+  return createEventWithUniqueReferenceCode(userId, order.id, input);
+}
+
+/** referenceCode is unique app-wide; retries a few times on the (extremely rare) collision. */
+async function createEventWithUniqueReferenceCode(userId: string, orderId: string, input: CreateEventInput) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      return await prisma.event.create({
+        data: {
+          ownerId: userId,
+          orderId,
+          referenceCode: generateReferenceCode(),
+          type: input.type,
+          name: input.name,
+          groomNameEn: input.groomNameEn,
+          brideNameEn: input.brideNameEn,
+          groomNameAr: input.groomNameAr || null,
+          groomFamilyAr: input.groomFamilyAr || null,
+          brideNameAr: input.brideNameAr || null,
+          brideFamilyAr: input.brideFamilyAr || null,
+          familiesGreetingAr: input.familiesGreetingAr || null,
+          invitationTextAr: input.invitationTextAr,
+          eventDate: input.eventDate,
+          locationName: input.locationName,
+          mapUrl: input.mapUrl || null,
+          musicYoutubeId: input.musicYoutubeId || null,
+          scheduleItems: input.scheduleItems && input.scheduleItems.length > 0
+            ? (input.scheduleItems as unknown as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+          notesAr: input.notesAr || null,
+          themeId: input.themeId,
+          guestManagementMode: input.guestManagementMode,
+          rsvpRequired: input.rsvpRequired,
+        },
+      });
+    } catch (err) {
+      const isUniqueCollision = err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002";
+      if (!isUniqueCollision || attempt === 4) throw err;
+    }
+  }
+  throw new EventError("Could not allocate a unique reference code");
 }
 
 export async function getOwnedEvent(eventId: string, userId: string) {

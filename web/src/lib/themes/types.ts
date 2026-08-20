@@ -35,6 +35,16 @@ export interface ThemeConfig {
   particles?: {
     effect: "floating-hearts";
   };
+  /**
+   * Bespoke closed-card design for the guest page's opening screen, rolled
+   * out theme by theme. Omitted = the theme keeps its original cover UI
+   * (arch/envelope/split/plain, per `layout`/`motion`) untouched.
+   */
+  card?: {
+    style: "rose-emboss";
+    /** Public asset subfolder under /themes/ holding this variant's recolored art. Defaults to "rose-candlelight". */
+    assetFolder?: string;
+  };
 }
 
 export const THEME_ASSET_KINDS = ["COVER", "BACKGROUND", "DECORATION", "LOGO", "PATTERN"] as const;

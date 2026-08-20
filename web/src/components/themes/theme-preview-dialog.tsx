@@ -8,9 +8,9 @@ import { InvitationView } from "@/components/guest/invitation-view";
 
 const SAMPLE_EVENT = {
   name: "Sample",
-  groomNameEn: "Sultan",
+  groomNameEn: "Faisal",
   brideNameEn: "Noura",
-  groomNameAr: "سلطان",
+  groomNameAr: "فيصل",
   groomFamilyAr: "آل سعيد",
   brideNameAr: "نورة",
   brideFamilyAr: "آل مطلق",
@@ -18,7 +18,7 @@ const SAMPLE_EVENT = {
   invitationTextAr: "يسعدنا دعوتكم لحضور حفل زفافنا ومشاركتنا فرحتنا",
   eventDate: new Date(Date.now() + 45 * 86_400_000).toISOString(),
   locationName: "قاعة الأمير الكبرى - الرياض",
-  mapUrl: null,
+  mapUrl: "https://maps.google.com/?q=" + encodeURIComponent("قاعة الأمير الكبرى الرياض"),
   // Real, verified-embeddable royalty-free track — lets the customer see and
   // try the music button while browsing themes, not just an empty state.
   musicYoutubeId: "LDnUX_mwx2Q",
@@ -30,9 +30,10 @@ const SAMPLE_EVENT = {
   ],
   notesAr: "عدم اصطحاب الأطفال\nالحضور بالزي الرسمي",
   rsvpRequired: true,
+  allowGuestPartySize: true,
 };
 
-const SAMPLE_GUEST = { nameAr: "أم فيصل", allowedCount: 3 };
+const SAMPLE_GUEST = { nameAr: "أم عبدالله", allowedCount: 3 };
 
 export function ThemePreviewDialog({
   theme,

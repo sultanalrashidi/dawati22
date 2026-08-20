@@ -192,15 +192,24 @@ export default async function NewEventPage({
             />
           </label>
           <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-fg-muted">{f.mapUrlLabel}</span>
+            <span className="text-fg-muted">{f.regionNameLabel}</span>
             <input
-              name="mapUrl"
-              type="url"
-              dir="ltr"
+              name="regionName"
+              placeholder={f.regionNamePlaceholder}
               className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
             />
           </label>
         </div>
+
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-fg-muted">{f.mapUrlLabel}</span>
+          <input
+            name="mapUrl"
+            type="url"
+            dir="ltr"
+            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+          />
+        </label>
 
         <div className="flex flex-col gap-2 text-sm">
           <label className="flex flex-col gap-1.5">
@@ -277,6 +286,11 @@ export default async function NewEventPage({
         <label className="flex items-center gap-2 text-sm">
           <input type="checkbox" name="rsvpRequired" defaultChecked />
           {f.rsvpRequiredLabel}
+        </label>
+
+        <label className="flex items-center gap-2 text-sm">
+          <input type="checkbox" name="allowGuestPartySize" defaultChecked />
+          {f.allowGuestPartySizeLabel}
         </label>
 
         <button

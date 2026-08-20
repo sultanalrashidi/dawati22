@@ -26,6 +26,7 @@ export async function createEventAction(locale: string, formData: FormData) {
   const invitationTextAr = String(formData.get("invitationTextAr") ?? "").trim();
   const eventDateRaw = String(formData.get("eventDate") ?? "");
   const locationName = String(formData.get("locationName") ?? "").trim();
+  const regionName = String(formData.get("regionName") ?? "").trim();
   const mapUrl = String(formData.get("mapUrl") ?? "").trim();
   const musicUrlRaw = String(formData.get("musicUrl") ?? "").trim();
   const musicAutoplay = String(formData.get("musicAutoplay") ?? "manual") === "auto";
@@ -34,6 +35,7 @@ export async function createEventAction(locale: string, formData: FormData) {
   const themeId = String(formData.get("themeId") ?? "");
   const guestManagementMode = String(formData.get("guestManagementMode") ?? "SELF");
   const rsvpRequired = formData.get("rsvpRequired") === "on";
+  const allowGuestPartySize = formData.get("allowGuestPartySize") === "on";
 
   const musicYoutubeId = musicUrlRaw ? extractYoutubeVideoId(musicUrlRaw) : null;
   const scheduleItems = scheduleItemsRaw
@@ -80,6 +82,7 @@ export async function createEventAction(locale: string, formData: FormData) {
       invitationTextAr,
       eventDate,
       locationName,
+      regionName: regionName || undefined,
       mapUrl,
       musicYoutubeId: musicYoutubeId ?? undefined,
       musicAutoplay,
@@ -89,6 +92,7 @@ export async function createEventAction(locale: string, formData: FormData) {
       guestManagementMode:
         guestManagementMode === "ADMIN" ? EventGuestManagementMode.ADMIN : EventGuestManagementMode.SELF,
       rsvpRequired,
+      allowGuestPartySize,
     });
     redirect(`/${safeLocale}/events/${event.id}`);
   } catch (err) {

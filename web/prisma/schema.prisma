@@ -263,6 +263,8 @@ model Event {
   invitationTextAr    String
   eventDate           DateTime
   locationName        String
+  /** City/area the venue is in, e.g. "جدة" — shown alongside locationName on the guest page. */
+  regionName          String?
   mapUrl              String?
   coverImageUrl       String?
   musicYoutubeId      String?
@@ -282,6 +284,8 @@ model Event {
   theme               Theme                    @relation(fields: [themeId], references: [id])
   guestManagementMode EventGuestManagementMode @default(SELF)
   rsvpRequired        Boolean                  @default(true)
+  /** false = each guest's seat count is fixed to what the owner set; guests can't raise it on the RSVP form. */
+  allowGuestPartySize Boolean                  @default(true)
   status              EventStatus              @default(DRAFT)
   expiresAt           DateTime?
   createdAt           DateTime                 @default(now())

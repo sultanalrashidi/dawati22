@@ -26,7 +26,7 @@ export function ThemeGalleryCard({
       </p>
       <p className="text-lg">{name}</p>
       <p className="text-sm" style={{ color: config.palette.fgMuted }}>
-        Sultan &amp; Noura
+        Faisal &amp; Noura
       </p>
       <span
         className="rounded-full border px-4 py-1.5 text-xs"

@@ -47,6 +47,7 @@ export interface CreateEventInput {
   invitationTextAr: string;
   eventDate: Date;
   locationName: string;
+  regionName?: string;
   mapUrl?: string;
   musicYoutubeId?: string;
   musicAutoplay?: boolean;
@@ -55,6 +56,7 @@ export interface CreateEventInput {
   themeId: string;
   guestManagementMode: EventGuestManagementMode;
   rsvpRequired: boolean;
+  allowGuestPartySize: boolean;
 }
 
 export async function createEvent(userId: string, input: CreateEventInput) {
@@ -90,6 +92,7 @@ async function createEventWithUniqueReferenceCode(userId: string, orderId: strin
           invitationTextAr: input.invitationTextAr,
           eventDate: input.eventDate,
           locationName: input.locationName,
+          regionName: input.regionName || null,
           mapUrl: input.mapUrl || null,
           musicYoutubeId: input.musicYoutubeId || null,
           musicAutoplay: input.musicYoutubeId ? Boolean(input.musicAutoplay) : false,
@@ -100,6 +103,7 @@ async function createEventWithUniqueReferenceCode(userId: string, orderId: strin
           themeId: input.themeId,
           guestManagementMode: input.guestManagementMode,
           rsvpRequired: input.rsvpRequired,
+          allowGuestPartySize: input.allowGuestPartySize,
         },
       });
     } catch (err) {

@@ -18,8 +18,10 @@ import { submitRsvpAction } from "@/lib/invitations/actions";
 import { ThemeDecor } from "@/components/guest/theme-decor";
 import { ShaderBackground } from "@/components/guest/shader-background";
 import { FloatingParticles } from "@/components/guest/floating-particles";
+import { SealedCard } from "@/components/guest/sealed-card";
+import { RoseCandlelightBackground } from "@/components/guest/rose-candlelight-decor";
+import { RoseCandlelightPass } from "@/components/guest/rose-candlelight-pass";
 import { formatDualDate } from "@/lib/dates";
-import { buildGoogleCalendarUrl } from "@/lib/calendar-link";
 
 type GuestFacingStatus = "DRAFT" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED";
 
@@ -42,12 +44,14 @@ interface Props {
     invitationTextAr: string;
     eventDate: string;
     locationName: string;
+    regionName?: string | null;
     mapUrl: string | null;
     musicYoutubeId?: string | null;
     musicAutoplay?: boolean;
     scheduleItems?: ScheduleItem[] | null;
     notesAr?: string | null;
     rsvpRequired: boolean;
+    allowGuestPartySize: boolean;
   };
   guest: { nameAr: string; allowedCount: number };
   status: GuestFacingStatus;
@@ -74,10 +78,10 @@ const OPEN_ANIMATIONS: Record<ThemeConfig["motion"]["openStyle"], string> = {
 };
 
 /** Deterministic decorative grid standing in for a real QR in preview mode. */
-function FakeQr() {
+function FakeQr({ className = "h-40 w-40" }: { className?: string }) {
   const cells = Array.from({ length: 100 }, (_, i) => (i * 37 + (i % 7) * 13) % 5 === 0);
   return (
-    <div className="grid h-40 w-40 grid-cols-10 gap-[2px] bg-white p-2">
+    <div className={`grid grid-cols-10 gap-[2px] bg-white p-2 ${className}`}>
       {cells.map((filled, i) => (
         <div key={i} className={filled ? "bg-black" : "bg-white"} />
       ))}
@@ -114,13 +118,11 @@ function MusicToggle({
   autoplay,
   label,
   pauseLabel,
-  musicLabel,
 }: {
   videoId: string;
   autoplay: boolean;
   label: string;
   pauseLabel: string;
-  musicLabel: string;
 }) {
   const [playing, setPlaying] = useState(autoplay);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -140,12 +142,12 @@ function MusicToggle({
         onClick={toggle}
         aria-label={playing ? pauseLabel : label}
         title={playing ? pauseLabel : label}
-        className="fixed start-4 top-4 z-20 flex h-11 items-center gap-2 rounded-full border px-3 shadow-lg"
+        className="fixed left-4 top-4 z-20 flex h-11 items-center gap-2 rounded-full border px-3 shadow-lg"
         style={{ borderColor: "var(--color-accent)", background: "var(--color-surface)" }}
       >
         <VinylIcon spinning={playing} />
-        <span className="text-xs font-medium" style={{ color: "var(--color-fg)" }}>
-          {musicLabel}
+        <span className="text-xs font-medium uppercase tracking-[0.15em]" style={{ color: "var(--color-fg)" }}>
+          Music
         </span>
       </button>
       <iframe
@@ -303,6 +305,47 @@ export function InvitationView({
   const hasDoors = theme.motion.openStyle === "doors";
   const hasShaderBg = theme.background?.effect === "shader-silk";
   const hasParticles = theme.particles?.effect === "floating-hearts";
+  // The photographed background (lamp glow, candle flames) varies in
+  // brightness behind the text in a way a flat theme color can't predict —
+  // a soft dark shadow keeps every scene's text readable regardless of what's
+  // behind it, without having to touch each text color individually.
+  const hasPhotoBg = theme.card?.style === "rose-emboss";
+  // Color variants of the rose-emboss card share this file's layout/logic —
+  // only their asset subfolder (and the theme's own palette) differs.
+  const roseAssetFolder = theme.card?.assetFolder ?? "rose-candlelight";
+
+  // Themes with a bespoke ThemeConfig.card design get the newer SealedCard
+  // opening screen; every other theme keeps its original cover UI below
+  // untouched.
+  if (!opened && theme.card?.style) {
+    return (
+      <div
+        style={vars}
+        className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
+      >
+        {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
+        {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
+        {theme.card.style === "rose-emboss" && <RoseCandlelightBackground assetFolder={roseAssetFolder} />}
+        {event.musicYoutubeId && (
+          <MusicToggle videoId={event.musicYoutubeId} autoplay={Boolean(event.musicAutoplay)} label={g.playMusic} pauseLabel={g.pauseMusic} />
+        )}
+        <SealedCard
+          style={theme.card.style}
+          accent={theme.palette.accent}
+          accentFg={theme.palette.accentFg}
+          surface={theme.palette.surface}
+          fg={theme.palette.fg}
+          groomInitial={event.groomNameEn.charAt(0)}
+          brideInitial={event.brideNameEn.charAt(0)}
+          fontEn="var(--font-en-display)"
+          label={g.openInvitation}
+          isOpening={isOpening}
+          onOpen={handleOpenClick}
+          assetFolder={roseAssetFolder}
+        />
+      </div>
+    );
+  }
 
   if (!opened && hasDoors) {
     return (
@@ -456,12 +499,7 @@ export function InvitationView({
   const somethingFollowsDetails = hasSchedule || hasNotes || hasRsvpForm || hasResponded;
   const somethingFollowsSchedule = hasNotes || hasRsvpForm || hasResponded;
   const somethingFollowsNotes = hasRsvpForm || hasResponded;
-  const calendarUrl = buildGoogleCalendarUrl({
-    title: event.name,
-    start: new Date(event.eventDate),
-    location: event.locationName,
-    details: event.invitationTextAr,
-  });
+  const calendarUrl = linkToken ? `/i/${linkToken}/calendar` : undefined;
   const groomLabel = event.groomNameAr || event.groomNameEn;
   const brideLabel = event.brideNameAr || event.brideNameEn;
 
@@ -472,8 +510,10 @@ export function InvitationView({
     >
       {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
       {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
-      {themeCategory && (
-        <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
+      {theme.card?.style === "rose-emboss" ? (
+        <RoseCandlelightBackground assetFolder={roseAssetFolder} />
+      ) : (
+        themeCategory && <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
       )}
       {event.musicYoutubeId && (
         <MusicToggle
@@ -481,7 +521,6 @@ export function InvitationView({
           autoplay={Boolean(event.musicAutoplay)}
           label={g.playMusic}
           pauseLabel={g.pauseMusic}
-          musicLabel={g.musicLabel}
         />
       )}
       {isSplit && (
@@ -490,45 +529,58 @@ export function InvitationView({
 
       {/* Universal post-open flow: a scroll-snapped sequence of scenes, same
           structure for every theme — only palette/fonts/decoration differ. */}
-      <div className="dawati-scene-container">
-        {/* Scene 1: reveal */}
+      <div className="dawati-scene-container" style={hasPhotoBg ? { textShadow: "0 1px 4px rgba(0,0,0,0.6)" } : undefined}>
+        {/* Scene 1: the guest's own named card — same shared background as
+            every other scene; the rose-emboss theme shows its opened-envelope
+            card photo with the same text written across its blank paper. */}
         <Scene showHint>
-          <p className="text-lg" style={{ fontFamily: "var(--font-en-display)" }}>
-            {event.groomNameEn} &amp; {event.brideNameEn}
-          </p>
-          <div className="h-px w-16" style={{ background: "var(--color-accent)" }} />
-          <p className="text-sm text-[var(--color-fg-muted)]" style={{ fontFamily: "var(--font-ar-body)" }}>
-            {g.guestOf} <span className="text-[var(--color-fg)]">{guest.nameAr}</span>
-          </p>
+          {theme.card?.style === "rose-emboss" ? (
+            <div className="relative w-[370px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/themes/${roseAssetFolder}/envelope-open.png`} alt="" className="block w-full" />
+              {/* dark ink on light paper needs no drop shadow — cancel the scene-wide one */}
+              <div className="absolute inset-x-[18%] top-[37%] flex flex-col items-center gap-1.5 text-center" style={{ textShadow: "none" }}>
+                <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#8a5a3a", fontFamily: "var(--font-ar-body)" }}>
+                  {g.guestOf}
+                </p>
+                <h1 className="text-lg leading-snug sm:text-xl" style={{ color: "#3d2417", fontFamily: "var(--font-ar-display)" }}>
+                  {guest.nameAr}
+                </h1>
+                <p className="text-[11px] leading-relaxed sm:text-xs" style={{ color: "#6b4530", fontFamily: "var(--font-ar-body)" }}>
+                  {g.guestWelcome}
+                </p>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm uppercase tracking-[0.4em] text-[var(--color-accent)]" style={{ fontFamily: "var(--font-ar-body)" }}>
+                {g.guestOf}
+              </p>
+              <h1 className="text-3xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
+                {guest.nameAr}
+              </h1>
+            </>
+          )}
+        </Scene>
+
+        {/* Scene 2: blessing, invitation text, couple names, date */}
+        <Scene showHint>
+          {event.familiesGreetingAr && (
+            <p className="max-w-md text-2xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
+              {event.familiesGreetingAr}
+            </p>
+          )}
           <p className="max-w-md whitespace-pre-line leading-loose text-[var(--color-fg-muted)]">
             {event.invitationTextAr}
           </p>
+          <div className="flex items-center justify-center gap-4">
+            <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{brideLabel}</p>
+            <div className="h-8 w-px" style={{ background: "var(--color-accent)", opacity: 0.5 }} />
+            <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{groomLabel}</p>
+          </div>
           <div className="mt-2 text-center">
             <p className="text-lg text-[var(--color-fg)]">{dual.gregorian}</p>
             <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{dual.hijri}</p>
-          </div>
-        </Scene>
-
-        {/* Scene 2: the two families */}
-        <Scene showHint>
-          <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.familiesHeading}</h2>
-          {event.familiesGreetingAr && (
-            <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-fg-muted)]">{event.familiesGreetingAr}</p>
-          )}
-          <div className="flex items-start justify-center gap-10">
-            <div className="text-center">
-              <p className="text-xl" style={{ fontFamily: "var(--font-ar-display)" }}>{groomLabel}</p>
-              {event.groomFamilyAr && (
-                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{g.familyPrefix} {event.groomFamilyAr}</p>
-              )}
-            </div>
-            <div className="mt-2 h-12 w-px" style={{ background: "var(--color-accent)", opacity: 0.4 }} />
-            <div className="text-center">
-              <p className="text-xl" style={{ fontFamily: "var(--font-ar-display)" }}>{brideLabel}</p>
-              {event.brideFamilyAr && (
-                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{g.familyPrefix} {event.brideFamilyAr}</p>
-              )}
-            </div>
           </div>
         </Scene>
 
@@ -557,7 +609,10 @@ export function InvitationView({
           <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.detailsHeading}</h2>
           <div className="text-sm text-[var(--color-fg-muted)]">
             <p className="text-lg text-[var(--color-fg)]">{dual.gregorian} — {dual.time}</p>
-            <p className="mt-2">{event.locationName}</p>
+            <p className="mt-2">
+              {event.locationName}
+              {event.regionName ? ` — ${event.regionName}` : ""}
+            </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-3">
             {theme.sections.showMap && event.mapUrl && (
@@ -570,14 +625,15 @@ export function InvitationView({
                 {g.openMap}
               </a>
             )}
-            <a
-              href={calendarUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="h-11 items-center rounded-full border border-[var(--color-fg-muted)]/40 px-6 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] inline-flex"
-            >
-              {g.addToCalendar}
-            </a>
+            {(calendarUrl || mode === "preview") && (
+              <a
+                href={calendarUrl ?? "#"}
+                onClick={calendarUrl ? undefined : (e) => e.preventDefault()}
+                className="h-11 items-center rounded-full border border-[var(--color-fg-muted)]/40 px-6 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] inline-flex"
+              >
+                {g.addToCalendar}
+              </a>
+            )}
           </div>
         </Scene>
 
@@ -660,7 +716,7 @@ export function InvitationView({
                   {g.decline}
                 </button>
               </div>
-              {attending === true && guest.allowedCount > 1 && (
+              {attending === true && guest.allowedCount > 1 && event.allowGuestPartySize && (
                 <label className="flex flex-col gap-1.5 text-sm">
                   <span className="text-[var(--color-fg-muted)]">{g.rsvpPartySizeLabel}</span>
                   <select
@@ -700,19 +756,46 @@ export function InvitationView({
         {currentStatus === "ACCEPTED" && (
           <Scene>
             {currentQr || mode === "preview" ? (
-              <div className="flex flex-col items-center gap-3 rounded-2xl border border-[var(--color-accent)]/40 bg-[var(--color-surface)] p-6">
-                <p className="text-sm font-medium">{g.passTitle}</p>
-                {currentQr ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={currentQr} alt="QR" className="h-40 w-40" />
-                ) : (
-                  <FakeQr />
-                )}
-                <p className="text-sm text-[var(--color-fg-muted)]">{g.passName}: {guest.nameAr}</p>
-                <p className="text-sm text-[var(--color-fg-muted)]">{g.passSeats}: {guest.allowedCount}</p>
-              </div>
+              theme.card?.style === "rose-emboss" ? (
+                <RoseCandlelightPass
+                  groomLabel={groomLabel}
+                  brideLabel={brideLabel}
+                  invitationTextAr={event.invitationTextAr}
+                  placeText={event.locationName + (event.regionName ? ` — ${event.regionName}` : "")}
+                  dateText={dual.gregorian.split("، ").pop() ?? dual.gregorian}
+                  timeText={dual.time}
+                  qrNode={currentQr ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={currentQr} alt="QR" className="h-full w-full object-contain" />
+                  ) : (
+                    <FakeQr className="h-full w-full" />
+                  )}
+                  fontAr="var(--font-ar-body)"
+                  nameFont="var(--font-ar-display)"
+                  godWillingLabel={g.passGodWilling}
+                  placeLabel={g.passPlaceLabel}
+                  dateLabel={g.passDateLabel}
+                  timeLabel={g.passTimeLabel}
+                  assetFolder={roseAssetFolder}
+                />
+              ) : (
+                <div className="flex flex-col items-center gap-3 rounded-2xl border border-[var(--color-accent)]/40 bg-[var(--color-surface)] p-6">
+                  <p className="text-sm font-medium">{g.passTitle}</p>
+                  {currentQr ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={currentQr} alt="QR" className="h-40 w-40" />
+                  ) : (
+                    <FakeQr />
+                  )}
+                  <p className="text-sm text-[var(--color-fg-muted)]">{g.passName}: {guest.nameAr}</p>
+                  <p className="text-sm text-[var(--color-fg-muted)]">{g.passSeats}: {guest.allowedCount}</p>
+                </div>
+              )
             ) : (
               <p className="text-[var(--color-accent)]">{g.thanksAccept}</p>
+            )}
+            {theme.card?.style === "rose-emboss" && (currentQr || mode === "preview") && (
+              <p className="mt-3 text-xs text-[var(--color-fg-muted)]">{g.passShowAtEntry}</p>
             )}
           </Scene>
         )}

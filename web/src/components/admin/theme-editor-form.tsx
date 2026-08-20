@@ -224,7 +224,7 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
             دعوة خاصة إلى
           </p>
           <p className="text-xl">أم فلان</p>
-          <p style={{ color: config.palette.fgMuted }}>Sultan &amp; Noura</p>
+          <p style={{ color: config.palette.fgMuted }}>Faisal &amp; Noura</p>
           <span
             className="rounded-full border px-5 py-2 text-xs"
             style={{ borderColor: config.palette.accent, color: config.palette.accent }}

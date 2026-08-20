@@ -76,12 +76,14 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
         invitationTextAr: invitation.event.invitationTextAr,
         eventDate: invitation.event.eventDate.toISOString(),
         locationName: invitation.event.locationName,
+        regionName: invitation.event.regionName,
         mapUrl: invitation.event.mapUrl,
         musicYoutubeId: invitation.event.musicYoutubeId,
         musicAutoplay: invitation.event.musicAutoplay,
         scheduleItems: invitation.event.scheduleItems as unknown as ScheduleItem[] | null,
         notesAr: invitation.event.notesAr,
         rsvpRequired: invitation.event.rsvpRequired,
+        allowGuestPartySize: invitation.event.allowGuestPartySize,
       }}
       guest={{ nameAr: invitation.guest.nameAr, allowedCount: invitation.guest.allowedCount }}
       status={displayStatus}

@@ -21,6 +21,7 @@ import { FloatingParticles } from "@/components/guest/floating-particles";
 import { SealedCard } from "@/components/guest/sealed-card";
 import { RoseCandlelightBackground } from "@/components/guest/rose-candlelight-decor";
 import { RoseCandlelightPass } from "@/components/guest/rose-candlelight-pass";
+import { BridalFramePass } from "@/components/guest/bridal-frame-pass";
 import { formatDualDate } from "@/lib/dates";
 
 type GuestFacingStatus = "DRAFT" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED";
@@ -309,10 +310,12 @@ export function InvitationView({
   // brightness behind the text in a way a flat theme color can't predict —
   // a soft dark shadow keeps every scene's text readable regardless of what's
   // behind it, without having to touch each text color individually.
-  const hasPhotoBg = theme.card?.style === "rose-emboss";
-  // Color variants of the rose-emboss card share this file's layout/logic —
+  const hasPhotoBg = Boolean(theme.card?.style);
+  // Color variants of a bespoke-card theme share this file's layout/logic —
   // only their asset subfolder (and the theme's own palette) differs.
   const roseAssetFolder = theme.card?.assetFolder ?? "rose-candlelight";
+  const isBridalFrame = theme.card?.style === "bridal-frame";
+  const openTextZone = theme.card?.layout?.openTextZone ?? { insetX: "24%", top: "15%", bottom: "30%" };
 
   // Themes with a bespoke ThemeConfig.card design get the newer SealedCard
   // opening screen; every other theme keeps its original cover UI below
@@ -325,7 +328,7 @@ export function InvitationView({
       >
         {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
         {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
-        {theme.card.style === "rose-emboss" && <RoseCandlelightBackground assetFolder={roseAssetFolder} />}
+        <RoseCandlelightBackground assetFolder={roseAssetFolder} />
         {event.musicYoutubeId && (
           <MusicToggle videoId={event.musicYoutubeId} autoplay={Boolean(event.musicAutoplay)} label={g.playMusic} pauseLabel={g.pauseMusic} />
         )}
@@ -337,11 +340,12 @@ export function InvitationView({
           fg={theme.palette.fg}
           groomInitial={event.groomNameEn.charAt(0)}
           brideInitial={event.brideNameEn.charAt(0)}
-          fontEn="var(--font-en-display)"
           label={g.openInvitation}
           isOpening={isOpening}
           onOpen={handleOpenClick}
           assetFolder={roseAssetFolder}
+          closedAspect={theme.card.layout?.closedAspect}
+          sealPosition={theme.card.layout?.sealPosition}
         />
       </div>
     );
@@ -510,7 +514,7 @@ export function InvitationView({
     >
       {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
       {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
-      {theme.card?.style === "rose-emboss" ? (
+      {theme.card?.style ? (
         <RoseCandlelightBackground assetFolder={roseAssetFolder} />
       ) : (
         themeCategory && <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
@@ -534,7 +538,35 @@ export function InvitationView({
             every other scene; the rose-emboss theme shows its opened-envelope
             card photo with the same text written across its blank paper. */}
         <Scene showHint>
-          {theme.card?.style === "rose-emboss" ? (
+          {isBridalFrame ? (
+            <div className="relative w-[320px]">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/themes/${roseAssetFolder}/envelope-open.png`} alt="" className="block w-full" />
+              {/* ink color follows the theme's own fg/fgMuted so it reads on both the
+                  light ivory-bloom card and the dark (navy/burgundy/mocha/noir) variants;
+                  no drop shadow needed here — cancel the scene-wide one */}
+              <div
+                className="absolute flex flex-col items-center justify-center gap-1.5 text-center"
+                style={{
+                  insetInlineStart: openTextZone.insetX,
+                  insetInlineEnd: openTextZone.insetX,
+                  top: openTextZone.top,
+                  bottom: openTextZone.bottom,
+                  textShadow: "none",
+                }}
+              >
+                <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "var(--color-fg-muted)", fontFamily: "var(--font-ar-body)" }}>
+                  {g.guestOf}
+                </p>
+                <h1 className="text-lg leading-snug sm:text-xl" style={{ color: "var(--color-fg)", fontFamily: "var(--font-ar-display)" }}>
+                  {guest.nameAr}
+                </h1>
+                <p className="text-[11px] leading-relaxed sm:text-xs" style={{ color: "var(--color-fg-muted)", fontFamily: "var(--font-ar-body)" }}>
+                  {g.guestWelcome}
+                </p>
+              </div>
+            </div>
+          ) : theme.card?.style === "rose-emboss" ? (
             <div className="relative w-[370px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={`/themes/${roseAssetFolder}/envelope-open.png`} alt="" className="block w-full" />
@@ -778,6 +810,29 @@ export function InvitationView({
                   timeLabel={g.passTimeLabel}
                   assetFolder={roseAssetFolder}
                 />
+              ) : isBridalFrame ? (
+                <BridalFramePass
+                  groomLabel={groomLabel}
+                  brideLabel={brideLabel}
+                  invitationTextAr={event.invitationTextAr}
+                  placeText={event.locationName + (event.regionName ? ` — ${event.regionName}` : "")}
+                  dateText={dual.gregorian.split("، ").pop() ?? dual.gregorian}
+                  timeText={dual.time}
+                  qrNode={currentQr ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={currentQr} alt="QR" className="h-full w-full object-contain" />
+                  ) : (
+                    <FakeQr className="h-full w-full" />
+                  )}
+                  fontAr="var(--font-ar-body)"
+                  nameFont="var(--font-ar-display)"
+                  godWillingLabel={g.passGodWilling}
+                  placeLabel={g.passPlaceLabel}
+                  dateLabel={g.passDateLabel}
+                  timeLabel={g.passTimeLabel}
+                  assetFolder={roseAssetFolder}
+                  layout={theme.card?.layout?.pass}
+                />
               ) : (
                 <div className="flex flex-col items-center gap-3 rounded-2xl border border-[var(--color-accent)]/40 bg-[var(--color-surface)] p-6">
                   <p className="text-sm font-medium">{g.passTitle}</p>
@@ -794,7 +849,7 @@ export function InvitationView({
             ) : (
               <p className="text-[var(--color-accent)]">{g.thanksAccept}</p>
             )}
-            {theme.card?.style === "rose-emboss" && (currentQr || mode === "preview") && (
+            {(theme.card?.style === "rose-emboss" || isBridalFrame) && (currentQr || mode === "preview") && (
               <p className="mt-3 text-xs text-[var(--color-fg-muted)]">{g.passShowAtEntry}</p>
             )}
           </Scene>

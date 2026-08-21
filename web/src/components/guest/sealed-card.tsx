@@ -7,35 +7,112 @@
  */
 
 /**
- * A pressed wax-seal medallion carrying the couple's initials. Colors are
- * derived from the theme's own --color-accent/--color-accent-fg custom
- * properties (set per-theme in invitation-view.tsx) so every color variant
- * gets a seal that matches its own palette automatically.
+ * A pressed wax-seal medallion carrying the couple's initials. The wax photo
+ * itself is recolored per color variant (see /public/themes/{assetFolder}/seal.png).
+ * The initials are colored close to the wax itself and shaded with a dark
+ * inner-edge + light outer-edge text-shadow so they read as pressed/engraved
+ * into the wax rather than printed flat on top of it.
  */
-function WaxSeal({ groomInitial, brideInitial, fontEn }: { groomInitial: string; brideInitial: string; fontEn: string }) {
+function WaxSeal({
+  groomInitial,
+  brideInitial,
+  assetFolder,
+}: {
+  groomInitial: string;
+  brideInitial: string;
+  assetFolder: string;
+}) {
   return (
-    <svg viewBox="0 0 80 80" className="block h-16 w-16 sm:h-20 sm:w-20" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.45))" }}>
-      <defs>
-        <radialGradient id="sealGrad" cx="38%" cy="34%" r="70%">
-          <stop offset="0%" stopColor="color-mix(in srgb, var(--color-accent) 35%, white)" />
-          <stop offset="55%" stopColor="var(--color-accent)" />
-          <stop offset="100%" stopColor="color-mix(in srgb, var(--color-accent) 75%, black)" />
-        </radialGradient>
-      </defs>
-      <circle cx="40" cy="40" r="36" fill="url(#sealGrad)" />
-      <circle cx="40" cy="40" r="36" fill="none" stroke="color-mix(in srgb, var(--color-accent) 65%, black)" strokeWidth="0.75" opacity="0.55" />
-      <circle cx="40" cy="40" r="30.5" fill="none" stroke="color-mix(in srgb, var(--color-accent) 65%, black)" strokeWidth="0.6" strokeDasharray="1.3 2.6" opacity="0.5" />
-      <text
-        x="40"
-        y="45"
-        textAnchor="middle"
-        fontSize="19"
-        fontFamily={fontEn}
-        fill="var(--color-accent-fg)"
+    <div className="relative h-16 w-16 sm:h-20 sm:w-20" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.45))" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`/themes/${assetFolder}/seal.png`} alt="" className="block h-full w-full object-contain" />
+      <span
+        className="absolute left-1/2 top-[47%] -translate-x-1/2 -translate-y-1/2 text-lg font-medium sm:text-xl"
+        style={{
+          fontFamily: "var(--font-cormorant)",
+          color: "var(--color-accent)",
+          textShadow: "-1px -1px 1px rgba(0,0,0,0.55), 1px 1px 1px rgba(255,255,255,0.35)",
+        }}
       >
-        {brideInitial}&amp;{groomInitial}
-      </text>
-    </svg>
+        {brideInitial}
+        <span style={{ margin: "0 0.05em" }}>&amp;</span>
+        {groomInitial}
+      </span>
+    </div>
+  );
+}
+
+const BRIDAL_FRAME_DEFAULT_CLOSED_ASPECT = "1200/727";
+const BRIDAL_FRAME_DEFAULT_SEAL_POSITION = { left: "50%", top: "62.8%" };
+
+/** The envelope's own printed medallion carries the couple's initials directly — no separate wax photo. */
+function BridalFrameMonogram({
+  groomInitial,
+  brideInitial,
+  position = BRIDAL_FRAME_DEFAULT_SEAL_POSITION,
+}: {
+  groomInitial: string;
+  brideInitial: string;
+  position?: { left: string; top: string };
+}) {
+  return (
+    <span
+      className="absolute text-base font-medium sm:text-lg"
+      style={{
+        left: position.left,
+        top: position.top,
+        transform: "translate(-50%, -50%)",
+        fontFamily: "var(--font-amiri)",
+        color: "var(--color-accent)",
+        textShadow: "0 1px 1px rgba(255,255,255,0.6), 0 -1px 1px rgba(0,0,0,0.12)",
+      }}
+    >
+      {brideInitial}
+      <span style={{ margin: "0 0.15em" }}>&amp;</span>
+      {groomInitial}
+    </span>
+  );
+}
+
+/** The client's own envelope photo — a floral scalloped medallion with the couple's initials printed directly on it. */
+function BridalFrameCard({
+  groomInitial,
+  brideInitial,
+  isOpening,
+  assetFolder,
+  closedAspect = BRIDAL_FRAME_DEFAULT_CLOSED_ASPECT,
+  sealPosition = BRIDAL_FRAME_DEFAULT_SEAL_POSITION,
+}: {
+  groomInitial: string;
+  brideInitial: string;
+  isOpening: boolean;
+  assetFolder: string;
+  closedAspect?: string;
+  sealPosition?: { left: string; top: string };
+}) {
+  return (
+    <div
+      className="relative w-72 overflow-hidden rounded-md shadow-2xl sm:w-96"
+      style={{
+        aspectRatio: closedAspect,
+        transition: "transform 550ms cubic-bezier(0.4,0,0.2,1), filter 550ms ease",
+        transform: isOpening ? "scale(1.05) translateY(-8px)" : "scale(1)",
+        filter: isOpening ? "brightness(1.15)" : "brightness(1)",
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={`/themes/${assetFolder}/envelope-closed.png`} alt="" className="block h-full w-full object-cover" />
+      <BridalFrameMonogram groomInitial={groomInitial} brideInitial={brideInitial} position={sealPosition} />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: "linear-gradient(115deg, transparent 40%, rgba(255,255,255,0.35) 50%, transparent 60%)",
+          transform: isOpening ? "translateX(60%)" : "translateX(-120%)",
+          transition: "transform 650ms ease-out",
+        }}
+      />
+    </div>
   );
 }
 
@@ -43,13 +120,11 @@ function WaxSeal({ groomInitial, brideInitial, fontEn }: { groomInitial: string;
 function RoseEmbossCard({
   groomInitial,
   brideInitial,
-  fontEn,
   isOpening,
   assetFolder,
 }: {
   groomInitial: string;
   brideInitial: string;
-  fontEn: string;
   isOpening: boolean;
   assetFolder: string;
 }) {
@@ -65,7 +140,7 @@ function RoseEmbossCard({
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={`/themes/${assetFolder}/envelope-closed.jpg`} alt="" className="block h-full w-full object-cover" />
       <div className="absolute left-1/2 top-[68%] -translate-x-1/2 -translate-y-1/2">
-        <WaxSeal groomInitial={groomInitial} brideInitial={brideInitial} fontEn={fontEn} />
+        <WaxSeal groomInitial={groomInitial} brideInitial={brideInitial} assetFolder={assetFolder} />
       </div>
       {/* a soft diagonal light sweep on tap, since a flat photo can't hinge open like the SVG cards */}
       <div
@@ -82,27 +157,31 @@ function RoseEmbossCard({
 }
 
 export function SealedCard({
+  style,
   fg,
   groomInitial,
   brideInitial,
-  fontEn,
   label,
   onOpen,
   isOpening,
   assetFolder = "rose-candlelight",
+  closedAspect,
+  sealPosition,
 }: {
-  style: "rose-emboss";
+  style: "rose-emboss" | "bridal-frame";
   accent: string;
   accentFg: string;
   surface: string;
   fg: string;
   groomInitial: string;
   brideInitial: string;
-  fontEn: string;
   label: string;
   onOpen: () => void;
   isOpening: boolean;
   assetFolder?: string;
+  /** bridal-frame only — overrides for a variant whose art has different proportions/hotspots than the base. */
+  closedAspect?: string;
+  sealPosition?: { left: string; top: string };
 }) {
   return (
     <button
@@ -112,13 +191,23 @@ export function SealedCard({
       className="relative flex flex-col items-center gap-6"
       style={{ opacity: isOpening ? 0 : 1, transition: "opacity 0.35s ease 0.35s" }}
     >
-      <RoseEmbossCard
-        groomInitial={groomInitial}
-        brideInitial={brideInitial}
-        fontEn={fontEn}
-        isOpening={isOpening}
-        assetFolder={assetFolder}
-      />
+      {style === "bridal-frame" ? (
+        <BridalFrameCard
+          groomInitial={groomInitial}
+          brideInitial={brideInitial}
+          isOpening={isOpening}
+          assetFolder={assetFolder}
+          closedAspect={closedAspect}
+          sealPosition={sealPosition}
+        />
+      ) : (
+        <RoseEmbossCard
+          groomInitial={groomInitial}
+          brideInitial={brideInitial}
+          isOpening={isOpening}
+          assetFolder={assetFolder}
+        />
+      )}
       <span className="text-xs font-medium uppercase tracking-[0.3em]" style={{ color: fg }}>
         {label}
       </span>

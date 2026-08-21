@@ -27,10 +27,12 @@ export async function listEligibleOrders(userId: string) {
 }
 
 export async function listPublishedThemes() {
-  return prisma.theme.findMany({
+  const themes = await prisma.theme.findMany({
     where: { status: "PUBLISHED" },
     orderBy: { createdAt: "asc" },
+    include: { _count: { select: { events: true } } },
   });
+  return themes.map(({ _count, ...theme }) => ({ ...theme, eventCount: _count.events }));
 }
 
 export interface CreateEventInput {

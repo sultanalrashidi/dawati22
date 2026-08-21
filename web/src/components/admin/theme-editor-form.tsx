@@ -233,7 +233,8 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
           </span>
         </div>
         <ThemePreviewDialog
-          theme={config}
+          variants={[{ id: "editor-preview", config }]}
+          initialVariantId="editor-preview"
           themeCategory={category}
           dict={dict}
           trigger={

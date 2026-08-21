@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactElement } from "react";
+import { useState, type ReactElement } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
@@ -36,29 +36,27 @@ const SAMPLE_EVENT = {
 const SAMPLE_GUEST = { nameAr: "أم عبدالله", allowedCount: 3 };
 
 export function ThemePreviewDialog({
-  theme,
+  variants,
+  initialVariantId,
   themeCategory,
   dict,
   trigger,
   open,
   onOpenChange,
-  previewKey,
 }: {
-  theme: ThemeConfig;
+  /** All color variants of this design — a single-item array for a standalone (non-family) theme. */
+  variants: Array<{ id: string; config: ThemeConfig }>;
+  initialVariantId: string;
   themeCategory?: string;
   dict: Dictionary;
   /** A single button-like element (e.g. `<button>...</button>`) — rendered as the trigger itself, not wrapped in one. */
   trigger?: ReactElement;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
-  /**
-   * Forces InvitationView to remount (resetting its cover/RSVP state) when
-   * switching between themes in a shared dialog instance — without this,
-   * previewing theme B after accepting the RSVP in theme A's preview would
-   * silently reuse theme A's "already accepted" state.
-   */
-  previewKey?: string;
 }) {
+  const [activeId, setActiveId] = useState(initialVariantId);
+  const active = variants.find((v) => v.id === activeId) ?? variants[0];
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       {trigger && <Dialog.Trigger render={trigger} />}
@@ -66,13 +64,34 @@ export function ThemePreviewDialog({
         <Dialog.Backdrop className="fixed inset-0 z-40 bg-black/70" />
         <Dialog.Popup className="fixed inset-0 z-50 overflow-y-auto outline-none">
           <div dir="rtl">
-            <Dialog.Close className="fixed end-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-black/40 text-white backdrop-blur transition-colors hover:bg-black/60">
-              ✕
+            {variants.length > 1 && (
+              <div className="fixed inset-x-0 bottom-4 z-20 flex justify-center px-4">
+                <div className="flex max-w-full items-center gap-2 overflow-x-auto rounded-full bg-black/40 px-3 py-2 shadow-lg backdrop-blur">
+                  {variants.map((v) => (
+                    <button
+                      key={v.id}
+                      type="button"
+                      aria-label={v.config.colorTag ?? v.id}
+                      onClick={() => setActiveId(v.id)}
+                      className="h-6 w-6 shrink-0 rounded-full transition-transform"
+                      style={{
+                        background: v.config.palette.swatch ?? v.config.palette.accent,
+                        boxShadow: v.id === activeId ? "0 0 0 2px rgba(0,0,0,0.4), 0 0 0 4px #fff" : "none",
+                        transform: v.id === activeId ? "scale(1.12)" : "scale(1)",
+                      }}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+            <Dialog.Close className="fixed start-4 top-4 z-20 flex h-10 items-center gap-1.5 rounded-full bg-black/40 px-4 text-sm font-medium text-white backdrop-blur transition-colors hover:bg-black/60">
+              <span aria-hidden="true">✕</span>
+              {dict.themesGallery.exitPreview}
             </Dialog.Close>
             <InvitationView
-              key={previewKey}
+              key={active.id}
               dict={dict}
-              theme={theme}
+              theme={active.config}
               themeCategory={themeCategory}
               event={SAMPLE_EVENT}
               guest={SAMPLE_GUEST}

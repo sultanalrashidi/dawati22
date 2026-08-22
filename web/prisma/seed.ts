@@ -1171,29 +1171,6 @@ async function main() {
         colorTag: "بني",
       },
     },
-    {
-      slug: "ivory-bloom-noir",
-      name: "Ivory Bloom Noir",
-      nameAr: "عروس الياسمين الأسود",
-      category: "classic",
-      config: {
-        layout: "classic-center",
-        palette: {
-          bg: "#242019",
-          surface: "#100E0C",
-          fg: "#EDE6D8",
-          fgMuted: "#C9C0AE",
-          accent: "#D9B96A",
-          accentFg: "#100E0C",
-        },
-        fonts: { arabicDisplay: "Amiri", arabicBody: "IBM Plex Sans Arabic", latinDisplay: "Cormorant Garamond" },
-        motion: { openStyle: "fade", reducedMotionFallback: "fade" },
-        sections: { showCountdown: true, showMap: true, showRsvp: true },
-        card: { style: "bridal-frame", assetFolder: "ivory-bloom-noir" },
-        family: "ivory-bloom",
-        colorTag: "أسود",
-      },
-    },
   ];
 
   for (const theme of themes) {

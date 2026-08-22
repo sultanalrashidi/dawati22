@@ -541,7 +541,7 @@ export function InvitationView({
           {isBridalFrame ? (
             <div className="relative w-[320px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/themes/${roseAssetFolder}/envelope-open.png`} alt="" className="block w-full" />
+              <img src={`/themes/${roseAssetFolder}/envelope-open.webp`} alt="" className="block w-full" />
               {/* ink color follows the theme's own fg/fgMuted so it reads on both the
                   light ivory-bloom card and the dark (navy/burgundy/mocha/noir) variants;
                   no drop shadow needed here — cancel the scene-wide one */}
@@ -569,7 +569,7 @@ export function InvitationView({
           ) : theme.card?.style === "rose-emboss" ? (
             <div className="relative w-[370px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/themes/${roseAssetFolder}/envelope-open.png`} alt="" className="block w-full" />
+              <img src={`/themes/${roseAssetFolder}/envelope-open.webp`} alt="" className="block w-full" />
               {/* dark ink on light paper needs no drop shadow — cancel the scene-wide one */}
               <div className="absolute inset-x-[18%] top-[37%] flex flex-col items-center gap-1.5 text-center" style={{ textShadow: "none" }}>
                 <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#8a5a3a", fontFamily: "var(--font-ar-body)" }}>

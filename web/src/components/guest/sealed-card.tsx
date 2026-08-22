@@ -101,7 +101,7 @@ function BridalFrameCard({
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/themes/${assetFolder}/envelope-closed.png`} alt="" className="block h-full w-full object-cover" />
+      <img src={`/themes/${assetFolder}/envelope-closed.webp`} alt="" className="block h-full w-full object-cover" />
       <BridalFrameMonogram groomInitial={groomInitial} brideInitial={brideInitial} position={sealPosition} />
       <div
         aria-hidden="true"

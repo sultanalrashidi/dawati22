@@ -64,6 +64,8 @@ export interface ThemeConfig {
       closedAspect?: string;
       /** Couple-initials monogram position on the closed card, as percentages. */
       sealPosition?: { left: string; top: string };
+      /** Monogram font size (any CSS length/clamp()), for medallions too small for the default. */
+      sealFontSize?: string;
       /** Guest-name text box on the opened "page 1" card art. */
       openTextZone?: { insetX: string; top: string; bottom: string };
       /** Overlay positions on the RSVP-accepted pass-card art. */

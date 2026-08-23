@@ -26,6 +26,9 @@ const CATEGORY_CHIPS = [
   { key: "romantic", dictKey: "categoryRomantic", dbValue: "romantic" },
   { key: "simple", dictKey: "categorySimple", dbValue: "minimal" },
   { key: "dark", dictKey: "categoryDark", dbValue: "dark" },
+  { key: "botanical", dictKey: "categoryBotanical", dbValue: "botanical" },
+  { key: "experimental", dictKey: "categoryExperimental", dbValue: "experimental" },
+  { key: "saudi", dictKey: "categorySaudi", dbValue: "saudi" },
 ] as const;
 
 const COLOR_OPTIONS = [

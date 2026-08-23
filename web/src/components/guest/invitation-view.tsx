@@ -78,11 +78,28 @@ const OPEN_ANIMATIONS: Record<ThemeConfig["motion"]["openStyle"], string> = {
   doors: "dawati-doors-reveal 0.9s ease-out",
 };
 
-/** Deterministic decorative grid standing in for a real QR in preview mode. */
+/** Deterministic grid standing in for a real QR in preview mode — styled like an
+ * actual QR code (corner finder patterns + pseudo-random data modules) so it
+ * reads unmistakably as "a QR code goes here" rather than an abstract pattern. */
 function FakeQr({ className = "h-40 w-40" }: { className?: string }) {
-  const cells = Array.from({ length: 100 }, (_, i) => (i * 37 + (i % 7) * 13) % 5 === 0);
+  const SIZE = 21;
+  const isFinder = (r: number, c: number) =>
+    (r < 7 && c < 7) || (r < 7 && c >= SIZE - 7) || (r >= SIZE - 7 && c < 7);
+  const finderValue = (r: number, c: number) => {
+    const localR = r < 7 ? r : r - (SIZE - 7);
+    const localC = c < 7 ? c : c - (SIZE - 7);
+    const onOuterRing = localR === 0 || localR === 6 || localC === 0 || localC === 6;
+    const onInnerBlock = localR >= 2 && localR <= 4 && localC >= 2 && localC <= 4;
+    return onOuterRing || onInnerBlock;
+  };
+  const cells = Array.from({ length: SIZE * SIZE }, (_, i) => {
+    const r = Math.floor(i / SIZE);
+    const c = i % SIZE;
+    if (isFinder(r, c)) return finderValue(r, c);
+    return (r * 31 + c * 17 + r * c * 7) % 5 === 0;
+  });
   return (
-    <div className={`grid grid-cols-10 gap-[2px] bg-white p-2 ${className}`}>
+    <div className={`grid gap-[1px] bg-white p-2 ${className}`} style={{ gridTemplateColumns: `repeat(${SIZE}, 1fr)` }}>
       {cells.map((filled, i) => (
         <div key={i} className={filled ? "bg-black" : "bg-white"} />
       ))}
@@ -309,8 +326,10 @@ export function InvitationView({
   // The photographed background (lamp glow, candle flames) varies in
   // brightness behind the text in a way a flat theme color can't predict —
   // a soft dark shadow keeps every scene's text readable regardless of what's
-  // behind it, without having to touch each text color individually.
-  const hasPhotoBg = Boolean(theme.card?.style);
+  // behind it, without having to touch each text color individually. Only
+  // rose-emboss sits on a photo background this way; bridal-frame's flat
+  // illustrated scenes already have theme-tuned text colors and don't need it.
+  const hasPhotoBg = theme.card?.style === "rose-emboss";
   // Color variants of a bespoke-card theme share this file's layout/logic —
   // only their asset subfolder (and the theme's own palette) differs.
   const roseAssetFolder = theme.card?.assetFolder ?? "rose-candlelight";
@@ -346,6 +365,7 @@ export function InvitationView({
           assetFolder={roseAssetFolder}
           closedAspect={theme.card.layout?.closedAspect}
           sealPosition={theme.card.layout?.sealPosition}
+          sealFontSize={theme.card.layout?.sealFontSize}
         />
       </div>
     );

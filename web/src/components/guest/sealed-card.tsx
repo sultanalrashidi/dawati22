@@ -45,24 +45,29 @@ function WaxSeal({
 const BRIDAL_FRAME_DEFAULT_CLOSED_ASPECT = "1200/727";
 const BRIDAL_FRAME_DEFAULT_SEAL_POSITION = { left: "50%", top: "62.8%" };
 
+const BRIDAL_FRAME_DEFAULT_SEAL_FONT_SIZE = "clamp(1rem, 4.5vw, 1.125rem)";
+
 /** The envelope's own printed medallion carries the couple's initials directly — no separate wax photo. */
 function BridalFrameMonogram({
   groomInitial,
   brideInitial,
   position = BRIDAL_FRAME_DEFAULT_SEAL_POSITION,
+  fontSize = BRIDAL_FRAME_DEFAULT_SEAL_FONT_SIZE,
 }: {
   groomInitial: string;
   brideInitial: string;
   position?: { left: string; top: string };
+  fontSize?: string;
 }) {
   return (
     <span
-      className="absolute text-base font-medium sm:text-lg"
+      className="absolute font-medium"
       style={{
         left: position.left,
         top: position.top,
+        fontSize,
         transform: "translate(-50%, -50%)",
-        fontFamily: "var(--font-amiri)",
+        fontFamily: "var(--font-en-display)",
         color: "var(--color-accent)",
         textShadow: "0 1px 1px rgba(255,255,255,0.6), 0 -1px 1px rgba(0,0,0,0.12)",
       }}
@@ -82,6 +87,7 @@ function BridalFrameCard({
   assetFolder,
   closedAspect = BRIDAL_FRAME_DEFAULT_CLOSED_ASPECT,
   sealPosition = BRIDAL_FRAME_DEFAULT_SEAL_POSITION,
+  sealFontSize,
 }: {
   groomInitial: string;
   brideInitial: string;
@@ -89,6 +95,7 @@ function BridalFrameCard({
   assetFolder: string;
   closedAspect?: string;
   sealPosition?: { left: string; top: string };
+  sealFontSize?: string;
 }) {
   return (
     <div
@@ -102,7 +109,7 @@ function BridalFrameCard({
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src={`/themes/${assetFolder}/envelope-closed.webp`} alt="" className="block h-full w-full object-cover" />
-      <BridalFrameMonogram groomInitial={groomInitial} brideInitial={brideInitial} position={sealPosition} />
+      <BridalFrameMonogram groomInitial={groomInitial} brideInitial={brideInitial} position={sealPosition} fontSize={sealFontSize} />
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0"
@@ -167,6 +174,7 @@ export function SealedCard({
   assetFolder = "rose-candlelight",
   closedAspect,
   sealPosition,
+  sealFontSize,
 }: {
   style: "rose-emboss" | "bridal-frame";
   accent: string;
@@ -182,6 +190,7 @@ export function SealedCard({
   /** bridal-frame only — overrides for a variant whose art has different proportions/hotspots than the base. */
   closedAspect?: string;
   sealPosition?: { left: string; top: string };
+  sealFontSize?: string;
 }) {
   return (
     <button
@@ -199,6 +208,7 @@ export function SealedCard({
           assetFolder={assetFolder}
           closedAspect={closedAspect}
           sealPosition={sealPosition}
+          sealFontSize={sealFontSize}
         />
       ) : (
         <RoseEmbossCard

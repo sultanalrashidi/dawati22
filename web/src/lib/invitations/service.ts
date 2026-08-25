@@ -22,7 +22,13 @@ export function classifyRsvp(status: InvitationStatus | null | undefined): "acce
 export async function getInvitationByLinkToken(linkToken: string) {
   return prisma.invitation.findUnique({
     where: { linkToken },
-    include: { guest: true, event: { include: { theme: true } } },
+    include: {
+      guest: true,
+      // `couples` carries the joint-wedding list; the event's own groom/bride
+      // columns still hold the primary couple, so callers that only read those
+      // are unaffected. Pass the event to `couplesFor()` for the full list.
+      event: { include: { theme: true, couples: { orderBy: { sortOrder: "asc" } } } },
+    },
   });
 }
 

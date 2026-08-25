@@ -14,17 +14,45 @@ import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ScheduleItem } from "@/lib/events/types";
 import { fontVarFor } from "@/lib/themes/fonts";
+import { fontStackFor } from "@/lib/themes/font-registry";
+import { ThemeStage } from "@/components/themes/builder/theme-stage";
+import { resolveContent, type CoupleInput, type ResolvedContent } from "@/lib/themes/builder/content";
+import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
+import {
+  breakpointForWidth,
+  type Breakpoint,
+  type LayoutDoc,
+  type SceneCanvas,
+  type SceneId,
+  type TypographyDoc,
+  type VariantPalette,
+} from "@/lib/themes/builder/types";
 import { submitRsvpAction } from "@/lib/invitations/actions";
 import { ThemeDecor } from "@/components/guest/theme-decor";
 import { ShaderBackground } from "@/components/guest/shader-background";
 import { FloatingParticles } from "@/components/guest/floating-particles";
 import { SealedCard } from "@/components/guest/sealed-card";
 import { RoseCandlelightBackground } from "@/components/guest/rose-candlelight-decor";
+import { BuilderPageBackground, pageBackgroundUrl } from "@/components/guest/builder-page-background";
 import { RoseCandlelightPass } from "@/components/guest/rose-candlelight-pass";
 import { BridalFramePass } from "@/components/guest/bridal-frame-pass";
 import { formatDualDate } from "@/lib/dates";
 
 type GuestFacingStatus = "DRAFT" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED";
+
+/**
+ * A BUILDER-engine theme's stored design, already resolved for one color
+ * variant (see lib/themes/builder/guest.ts). Present only for builder themes;
+ * LEGACY themes never pass it and every branch below stays as it was.
+ */
+export interface BuilderTheme {
+  layout: LayoutDoc;
+  typography: TypographyDoc;
+  palette: VariantPalette;
+  /** slot → image url. */
+  assets: Record<string, string>;
+  overrides?: LayoutOverrides;
+}
 
 interface Props {
   dict: Dictionary;
@@ -35,6 +63,18 @@ interface Props {
   themeCategory?: string;
   event: {
     name: string;
+    /**
+     * Every couple this invitation announces — a joint wedding names more than
+     * one. Ordered, never empty, `couples[0]` primary; build it with
+     * `couplesFor(event)` (lib/events/service.ts), which synthesises the single
+     * entry for an event that predates the EventCouple table.
+     */
+    couples: CoupleInput[];
+    /**
+     * The primary couple's own Event columns. Still here because the legacy
+     * cover screens (sealed card, doors, plain) read the initials straight off
+     * them; they always mirror `couples[0]`.
+     */
     groomNameEn: string;
     brideNameEn: string;
     groomNameAr?: string | null;
@@ -57,6 +97,13 @@ interface Props {
   guest: { nameAr: string; allowedCount: number };
   status: GuestFacingStatus;
   qrDataUrl: string | null;
+  /**
+   * Set for BUILDER themes only. It replaces the three art screens — the
+   * pre-open cover, scene 1's opened card and the RSVP-accepted pass — with
+   * the admin-authored stage; countdown, schedule, map, RSVP, music and the
+   * scene animations are untouched.
+   */
+  builder?: BuilderTheme;
   /**
    * "preview" is used by the admin theme editor and the customer theme
    * pickers to show the real interactive experience with sample content —
@@ -242,6 +289,71 @@ function useCountdown(target: string) {
   }, [now, target]);
 }
 
+/**
+ * Which breakpoint's layer overrides a builder stage should use. Always "base"
+ * for the first render — the server has no viewport — so the client's initial
+ * markup matches the HTML it hydrates; the real value lands right after.
+ */
+function useStageBreakpoint(enabled: boolean): Breakpoint {
+  const [breakpoint, setBreakpoint] = useState<Breakpoint>("base");
+  useEffect(() => {
+    // Legacy themes have no stage to re-measure — don't make them listen.
+    if (!enabled) return;
+    const update = () => setBreakpoint(breakpointForWidth(window.innerWidth));
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, [enabled]);
+  return breakpoint;
+}
+
+/**
+ * A builder stage is a fixed-aspect box that fills the width it's given, so on
+ * a short screen a tall scene would run off the bottom. Capping the *width* by
+ * the space left after the surrounding chrome keeps the whole design visible
+ * without touching the layout document's own proportions.
+ */
+function stageMaxWidth(canvas: SceneCanvas, reserve: string) {
+  return `min(26rem, calc((100dvh - ${reserve}) * ${canvas.aspectW} / ${canvas.aspectH}))`;
+}
+
+/** One builder scene, with the per-variant resolution already applied. */
+function BuilderStage({
+  builder,
+  scene,
+  content,
+  breakpoint,
+  qrDataUrl,
+}: {
+  builder: BuilderTheme;
+  scene: SceneId;
+  content: ResolvedContent;
+  breakpoint: Breakpoint;
+  qrDataUrl?: string | null;
+}) {
+  // `<ThemeStage>` paints `palette.bg` on the stage box. That is right for a
+  // theme whose scenes stand on a flat colour, but with a page background in
+  // play it would drop an opaque rectangle on top of the full-bleed art — the
+  // exact "flat colour, no theme art" the customer reported. Its own `style`
+  // prop is spread last, so handing it a transparent background wins.
+  const overPageBackground = pageBackgroundUrl(builder.layout.page, builder.assets) !== null;
+
+  return (
+    <ThemeStage
+      scene={scene}
+      layout={builder.layout}
+      typography={builder.typography}
+      palette={builder.palette}
+      assets={builder.assets}
+      overrides={builder.overrides}
+      content={content}
+      breakpoint={breakpoint}
+      qrDataUrl={qrDataUrl}
+      style={overPageBackground ? { backgroundColor: "transparent" } : undefined}
+    />
+  );
+}
+
 export function InvitationView({
   dict,
   linkToken,
@@ -252,6 +364,7 @@ export function InvitationView({
   status,
   qrDataUrl,
   mode = "live",
+  builder,
 }: Props) {
   const [opened, setOpened] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
@@ -265,23 +378,71 @@ export function InvitationView({
   const [rsvpPartySize, setRsvpPartySize] = useState(guest.allowedCount);
   const [rsvpMessage, setRsvpMessage] = useState("");
   const countdown = useCountdown(event.eventDate);
+  const breakpoint = useStageBreakpoint(Boolean(builder));
   const g = dict.guest;
+
+  // Server callers hand us a non-empty list; rebuilding one from the event's
+  // own columns keeps a malformed caller from blanking the names out entirely.
+  const couples = useMemo<CoupleInput[]>(
+    () =>
+      event.couples.length > 0
+        ? event.couples
+        : [
+            {
+              groomNameEn: event.groomNameEn,
+              brideNameEn: event.brideNameEn,
+              groomNameAr: event.groomNameAr ?? null,
+              groomFamilyAr: event.groomFamilyAr ?? null,
+              brideNameAr: event.brideNameAr ?? null,
+              brideFamilyAr: event.brideFamilyAr ?? null,
+            },
+          ],
+    [event],
+  );
+
+  // The stage prints real invitation data rather than baked-in text, so the
+  // same design serves every couple.
+  const builderContent = useMemo<ResolvedContent | null>(
+    () =>
+      builder
+        ? resolveContent({
+            guestName: guest.nameAr,
+            couples,
+            familiesGreetingAr: event.familiesGreetingAr ?? null,
+            invitationTextAr: event.invitationTextAr,
+            eventDate: event.eventDate,
+            locationName: event.locationName,
+            regionName: event.regionName ?? null,
+          })
+        : null,
+    [builder, couples, event, guest],
+  );
 
   function handleOpenClick() {
     setIsOpening(true);
     setTimeout(() => setOpened(true), OPENING_TRANSITION_MS);
   }
 
+  // A builder theme's colors live on its variant, not in `config` — the chrome
+  // around the three art screens follows the variant so the whole page matches.
+  const palette = builder?.palette ?? theme.palette;
+  const builderRoles = builder?.typography.roles;
   const vars: CSSProperties & Record<string, string> = {
-    "--color-bg": theme.palette.bg,
-    "--color-surface": theme.palette.surface,
-    "--color-fg": theme.palette.fg,
-    "--color-fg-muted": theme.palette.fgMuted,
-    "--color-accent": theme.palette.accent,
-    "--color-accent-fg": theme.palette.accentFg,
-    "--font-ar-display": fontVarFor(theme.fonts.arabicDisplay),
-    "--font-ar-body": fontVarFor(theme.fonts.arabicBody),
-    "--font-en-display": fontVarFor(theme.fonts.latinDisplay),
+    "--color-bg": palette.bg,
+    "--color-surface": palette.surface,
+    "--color-fg": palette.fg,
+    "--color-fg-muted": palette.fgMuted,
+    "--color-accent": palette.accent,
+    "--color-accent-fg": palette.accentFg,
+    "--font-ar-display": builderRoles
+      ? fontStackFor(builderRoles.display.family)
+      : fontVarFor(theme.fonts.arabicDisplay),
+    "--font-ar-body": builderRoles
+      ? fontStackFor(builderRoles.body.family)
+      : fontVarFor(theme.fonts.arabicBody),
+    "--font-en-display": builderRoles
+      ? fontStackFor(builderRoles.latin.family)
+      : fontVarFor(theme.fonts.latinDisplay),
   };
 
   function respond(
@@ -335,6 +496,52 @@ export function InvitationView({
   const roseAssetFolder = theme.card?.assetFolder ?? "rose-candlelight";
   const isBridalFrame = theme.card?.style === "bridal-frame";
   const openTextZone = theme.card?.layout?.openTextZone ?? { insetX: "24%", top: "15%", bottom: "30%" };
+
+  // A builder theme's cover is its own authored artwork; the tap-to-open
+  // interaction, the lift/shine reaction and the label are the same ones the
+  // bespoke SealedCard themes use.
+  if (!opened && builder && builderContent) {
+    // With the theme's own art behind the whole page, the cover stage is no
+    // longer a card floating on a colour — the rounded corners and drop shadow
+    // would outline a transparent rectangle over the artwork.
+    const hasPageBackground = pageBackgroundUrl(builder.layout.page, builder.assets) !== null;
+    return (
+      <div
+        style={vars}
+        className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
+      >
+        <BuilderPageBackground page={builder.layout.page} assets={builder.assets} />
+        {event.musicYoutubeId && (
+          <MusicToggle videoId={event.musicYoutubeId} autoplay={Boolean(event.musicAutoplay)} label={g.playMusic} pauseLabel={g.pauseMusic} />
+        )}
+        <button
+          type="button"
+          onClick={handleOpenClick}
+          disabled={isOpening}
+          className="relative flex w-full flex-col items-center gap-6"
+          style={{
+            maxWidth: stageMaxWidth(builder.layout.scenes.cover, "9rem"),
+            opacity: isOpening ? 0 : 1,
+            transition: "opacity 0.35s ease 0.35s",
+          }}
+        >
+          <div
+            className={`relative w-full overflow-hidden${hasPageBackground ? "" : " rounded-md shadow-2xl"}`}
+            style={{
+              transition: "transform 550ms cubic-bezier(0.4,0,0.2,1), filter 550ms ease",
+              transform: isOpening ? "scale(1.05) translateY(-8px)" : "scale(1)",
+              filter: isOpening ? "brightness(1.15)" : "brightness(1)",
+            }}
+          >
+            <BuilderStage builder={builder} scene="cover" content={builderContent} breakpoint={breakpoint} />
+          </div>
+          <span className="text-xs font-medium uppercase tracking-[0.3em]" style={{ color: "var(--color-fg)" }}>
+            {g.openInvitation}
+          </span>
+        </button>
+      </div>
+    );
+  }
 
   // Themes with a bespoke ThemeConfig.card design get the newer SealedCard
   // opening screen; every other theme keeps its original cover UI below
@@ -524,17 +731,35 @@ export function InvitationView({
   const somethingFollowsSchedule = hasNotes || hasRsvpForm || hasResponded;
   const somethingFollowsNotes = hasRsvpForm || hasResponded;
   const calendarUrl = linkToken ? `/i/${linkToken}/calendar` : undefined;
-  const groomLabel = event.groomNameAr || event.groomNameEn;
-  const brideLabel = event.brideNameAr || event.brideNameEn;
+  // The entry-pass cards name one couple; for a joint wedding that is the
+  // primary one, matching the link preview and the seal monogram.
+  const primaryCouple = couples[0];
+  const groomLabel = primaryCouple.groomNameAr || primaryCouple.groomNameEn;
+  const brideLabel = primaryCouple.brideNameAr || primaryCouple.brideNameEn;
 
   return (
     <div
-      style={{ ...vars, animation: openAnimation }}
+      style={{
+        ...vars,
+        // For a builder theme the entrance animation moves down onto the scene
+        // container instead. Six of the seven open animations animate
+        // `transform`, and a transformed ancestor becomes the containing block
+        // for `position: fixed` descendants — which would stop the full-page
+        // background being viewport-sized and let this wrapper's
+        // `overflow-hidden` clip it. LEGACY themes keep the animation exactly
+        // where it has always been.
+        ...(builder ? null : { animation: openAnimation }),
+      }}
       className="relative h-dvh overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
     >
       {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
       {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
-      {theme.card?.style ? (
+      {/* A builder theme carries its own full-page art; painting a category
+          decor kit over it would scatter someone else's motifs across the
+          admin's design. LEGACY themes keep the exact branch they had. */}
+      {builder ? (
+        <BuilderPageBackground page={builder.layout.page} assets={builder.assets} />
+      ) : theme.card?.style ? (
         <RoseCandlelightBackground assetFolder={roseAssetFolder} />
       ) : (
         themeCategory && <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
@@ -553,12 +778,24 @@ export function InvitationView({
 
       {/* Universal post-open flow: a scroll-snapped sequence of scenes, same
           structure for every theme — only palette/fonts/decoration differ. */}
-      <div className="dawati-scene-container" style={hasPhotoBg ? { textShadow: "0 1px 4px rgba(0,0,0,0.6)" } : undefined}>
+      <div
+        className="dawati-scene-container"
+        style={{
+          ...(hasPhotoBg ? { textShadow: "0 1px 4px rgba(0,0,0,0.6)" } : null),
+          // See the wrapper above: for builder themes the entrance runs here so
+          // no transformed ancestor sits over the fixed page background.
+          ...(builder ? { animation: openAnimation } : null),
+        }}
+      >
         {/* Scene 1: the guest's own named card — same shared background as
             every other scene; the rose-emboss theme shows its opened-envelope
             card photo with the same text written across its blank paper. */}
         <Scene showHint>
-          {isBridalFrame ? (
+          {builder && builderContent ? (
+            <div className="w-full" style={{ maxWidth: stageMaxWidth(builder.layout.scenes.open, "10rem") }}>
+              <BuilderStage builder={builder} scene="open" content={builderContent} breakpoint={breakpoint} />
+            </div>
+          ) : isBridalFrame ? (
             <div className="relative w-[320px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={`/themes/${roseAssetFolder}/envelope-open.webp`} alt="" className="block w-full" />
@@ -625,10 +862,21 @@ export function InvitationView({
           <p className="max-w-md whitespace-pre-line leading-loose text-[var(--color-fg-muted)]">
             {event.invitationTextAr}
           </p>
-          <div className="flex items-center justify-center gap-4">
-            <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{brideLabel}</p>
-            <div className="h-8 w-px" style={{ background: "var(--color-accent)", opacity: 0.5 }} />
-            <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{groomLabel}</p>
+          {/* One row per couple — a joint wedding announces several. With a
+              single couple the wrapper collapses to exactly the row that was
+              here before, so the common case is pixel-identical. */}
+          <div className="flex flex-col items-center gap-3">
+            {couples.map((couple, i) => (
+              <div key={i} className="flex items-center justify-center gap-4">
+                <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>
+                  {couple.brideNameAr || couple.brideNameEn}
+                </p>
+                <div className="h-8 w-px" style={{ background: "var(--color-accent)", opacity: 0.5 }} />
+                <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>
+                  {couple.groomNameAr || couple.groomNameEn}
+                </p>
+              </div>
+            ))}
           </div>
           <div className="mt-2 text-center">
             <p className="text-lg text-[var(--color-fg)]">{dual.gregorian}</p>
@@ -808,7 +1056,17 @@ export function InvitationView({
         {currentStatus === "ACCEPTED" && (
           <Scene>
             {currentQr || mode === "preview" ? (
-              theme.card?.style === "rose-emboss" ? (
+              builder && builderContent ? (
+                <div className="w-full" style={{ maxWidth: stageMaxWidth(builder.layout.scenes.pass, "12rem") }}>
+                  <BuilderStage
+                    builder={builder}
+                    scene="pass"
+                    content={builderContent}
+                    breakpoint={breakpoint}
+                    qrDataUrl={currentQr}
+                  />
+                </div>
+              ) : theme.card?.style === "rose-emboss" ? (
                 <RoseCandlelightPass
                   groomLabel={groomLabel}
                   brideLabel={brideLabel}
@@ -869,7 +1127,7 @@ export function InvitationView({
             ) : (
               <p className="text-[var(--color-accent)]">{g.thanksAccept}</p>
             )}
-            {(theme.card?.style === "rose-emboss" || isBridalFrame) && (currentQr || mode === "preview") && (
+            {(builder || theme.card?.style === "rose-emboss" || isBridalFrame) && (currentQr || mode === "preview") && (
               <p className="mt-3 text-xs text-[var(--color-fg-muted)]">{g.passShowAtEntry}</p>
             )}
           </Scene>

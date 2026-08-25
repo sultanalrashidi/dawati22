@@ -3,9 +3,12 @@ import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getInvitationByLinkToken, markViewed } from "@/lib/invitations/service";
 import { renderQrDataUrl } from "@/lib/qr";
-import { InvitationStatus } from "@/generated/prisma/client";
+import { InvitationStatus, ThemeEngine } from "@/generated/prisma/client";
 import { InvitationView } from "@/components/guest/invitation-view";
 import { GuestMessage } from "@/components/guest/guest-message";
+import { builderThemeConfig, loadBuilderTheme } from "@/lib/themes/builder/guest";
+import { couplesFor } from "@/lib/events/service";
+import { builderFontStylesheetHref } from "@/lib/themes/builder/fonts-server";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ScheduleItem } from "@/lib/events/types";
 
@@ -21,10 +24,13 @@ export async function generateMetadata({ params }: PageProps<"/i/[token]">): Pro
   const dual = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", { day: "numeric", month: "long", year: "numeric" }).format(
     invitation.event.eventDate,
   );
+  // A joint wedding still gets one preview line: the primary couple, same as
+  // the seal monogram and the link-preview image.
+  const [primaryCouple] = couplesFor(invitation.event);
 
   return {
     title: `دعوة خاصة إلى ${invitation.guest.nameAr}`,
-    description: `${invitation.event.groomNameEn} و ${invitation.event.brideNameEn} — ${dual} · ${invitation.event.locationName}`,
+    description: `${primaryCouple.groomNameEn} و ${primaryCouple.brideNameEn} — ${dual} · ${invitation.event.locationName}`,
   };
 }
 
@@ -58,36 +64,56 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
 
   const qrDataUrl = displayStatus === InvitationStatus.ACCEPTED ? await renderQrDataUrl(invitation.qrToken) : null;
 
+  // BUILDER themes keep their whole design in the database; LEGACY ones keep
+  // reading the hand-coded `config` exactly as before.
+  const builder =
+    invitation.event.theme.engine === ThemeEngine.BUILDER
+      ? await loadBuilderTheme(invitation.event.theme.id, invitation.event.themeVariantId)
+      : null;
+
+  // Families an admin added from the panel aren't bundled by next/font, so the
+  // theme's own stylesheet has to come with it or its type renders as fallback.
+  const fontsHref = builder ? await builderFontStylesheetHref(builder.layout, builder.typography) : null;
+
   return (
-    <InvitationView
-      dict={dict}
-      linkToken={token}
-      theme={invitation.event.theme.config as unknown as ThemeConfig}
-      themeCategory={invitation.event.theme.category}
-      event={{
-        name: invitation.event.name,
-        groomNameEn: invitation.event.groomNameEn,
-        brideNameEn: invitation.event.brideNameEn,
-        groomNameAr: invitation.event.groomNameAr,
-        groomFamilyAr: invitation.event.groomFamilyAr,
-        brideNameAr: invitation.event.brideNameAr,
-        brideFamilyAr: invitation.event.brideFamilyAr,
-        familiesGreetingAr: invitation.event.familiesGreetingAr,
-        invitationTextAr: invitation.event.invitationTextAr,
-        eventDate: invitation.event.eventDate.toISOString(),
-        locationName: invitation.event.locationName,
-        regionName: invitation.event.regionName,
-        mapUrl: invitation.event.mapUrl,
-        musicYoutubeId: invitation.event.musicYoutubeId,
-        musicAutoplay: invitation.event.musicAutoplay,
-        scheduleItems: invitation.event.scheduleItems as unknown as ScheduleItem[] | null,
-        notesAr: invitation.event.notesAr,
-        rsvpRequired: invitation.event.rsvpRequired,
-        allowGuestPartySize: invitation.event.allowGuestPartySize,
-      }}
-      guest={{ nameAr: invitation.guest.nameAr, allowedCount: invitation.guest.allowedCount }}
-      status={displayStatus}
-      qrDataUrl={qrDataUrl}
-    />
+    <>
+      {fontsHref && <link rel="stylesheet" href={fontsHref} />}
+      <InvitationView
+        dict={dict}
+        linkToken={token}
+        theme={
+          builder
+            ? builderThemeConfig({ palette: builder.palette, typography: builder.typography })
+            : (invitation.event.theme.config as unknown as ThemeConfig)
+        }
+        builder={builder ?? undefined}
+        themeCategory={invitation.event.theme.category}
+        event={{
+          name: invitation.event.name,
+          couples: couplesFor(invitation.event),
+          groomNameEn: invitation.event.groomNameEn,
+          brideNameEn: invitation.event.brideNameEn,
+          groomNameAr: invitation.event.groomNameAr,
+          groomFamilyAr: invitation.event.groomFamilyAr,
+          brideNameAr: invitation.event.brideNameAr,
+          brideFamilyAr: invitation.event.brideFamilyAr,
+          familiesGreetingAr: invitation.event.familiesGreetingAr,
+          invitationTextAr: invitation.event.invitationTextAr,
+          eventDate: invitation.event.eventDate.toISOString(),
+          locationName: invitation.event.locationName,
+          regionName: invitation.event.regionName,
+          mapUrl: invitation.event.mapUrl,
+          musicYoutubeId: invitation.event.musicYoutubeId,
+          musicAutoplay: invitation.event.musicAutoplay,
+          scheduleItems: invitation.event.scheduleItems as unknown as ScheduleItem[] | null,
+          notesAr: invitation.event.notesAr,
+          rsvpRequired: invitation.event.rsvpRequired,
+          allowGuestPartySize: invitation.event.allowGuestPartySize,
+        }}
+        guest={{ nameAr: invitation.guest.nameAr, allowedCount: invitation.guest.allowedCount }}
+        status={displayStatus}
+        qrDataUrl={qrDataUrl}
+      />
+    </>
   );
 }

@@ -4,16 +4,23 @@ import { useState, type ReactElement } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
-import { InvitationView } from "@/components/guest/invitation-view";
+import { InvitationView, type BuilderTheme } from "@/components/guest/invitation-view";
 
-const SAMPLE_EVENT = {
-  name: "Sample",
+const SAMPLE_COUPLE = {
   groomNameEn: "Faisal",
   brideNameEn: "Noura",
   groomNameAr: "فيصل",
   groomFamilyAr: "آل سعيد",
   brideNameAr: "نورة",
   brideFamilyAr: "آل مطلق",
+};
+
+const SAMPLE_EVENT = {
+  name: "Sample",
+  // Gallery previews show a single couple — the joint-wedding stack is real
+  // event data, not something a theme card should invent.
+  couples: [SAMPLE_COUPLE],
+  ...SAMPLE_COUPLE,
   familiesGreetingAr: "يسعدنا انضمامكم لنا في هذا اليوم",
   invitationTextAr: "يسعدنا دعوتكم لحضور حفل زفافنا ومشاركتنا فرحتنا",
   eventDate: new Date(Date.now() + 45 * 86_400_000).toISOString(),
@@ -45,7 +52,7 @@ export function ThemePreviewDialog({
   onOpenChange,
 }: {
   /** All color variants of this design — a single-item array for a standalone (non-family) theme. */
-  variants: Array<{ id: string; config: ThemeConfig }>;
+  variants: Array<{ id: string; config: ThemeConfig; builder?: BuilderTheme }>;
   initialVariantId: string;
   themeCategory?: string;
   dict: Dictionary;
@@ -92,6 +99,9 @@ export function ThemePreviewDialog({
               key={active.id}
               dict={dict}
               theme={active.config}
+              // Without this a BUILDER theme previews as the generic legacy
+              // invitation: no page background, none of its own artwork.
+              builder={active.builder}
               themeCategory={themeCategory}
               event={SAMPLE_EVENT}
               guest={SAMPLE_GUEST}

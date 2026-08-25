@@ -38,19 +38,21 @@ model User {
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
-  ownedEvents          Event[]                  @relation("EventOwner")
-  orders               Order[]
-  createdThemes        Theme[]                  @relation("ThemeCreator")
-  updatedThemes        Theme[]                  @relation("ThemeUpdater")
-  assignedClientThemes ClientAssignedTheme[]    @relation("ThemeAssignee")
-  themeAssignmentsMade ClientAssignedTheme[]    @relation("ThemeAssigner")
-  gateStaffProfile     GateStaff?
-  gateAssignmentsMade  GateStaffAssignment[]    @relation("GateAssigner")
-  notifications        Notification[]
-  auditLogs            AuditLog[]               @relation("AuditActor")
-  sessions             Session[]
-  guestManagementAsks  GuestManagementRequest[] @relation("GuestMgmtRequester")
-  guestManagementDone  GuestManagementRequest[] @relation("GuestMgmtResolver")
+  ownedEvents            Event[]                  @relation("EventOwner")
+  orders                 Order[]
+  createdThemes          Theme[]                  @relation("ThemeCreator")
+  updatedThemes          Theme[]                  @relation("ThemeUpdater")
+  assignedClientThemes   ClientAssignedTheme[]    @relation("ThemeAssignee")
+  themeAssignmentsMade   ClientAssignedTheme[]    @relation("ThemeAssigner")
+  privateThemeGrants     ThemeAssignment[]        @relation("ThemeGrantee")
+  privateThemeGrantsMade ThemeAssignment[]        @relation("ThemeGranter")
+  gateStaffProfile       GateStaff?
+  gateAssignmentsMade    GateStaffAssignment[]    @relation("GateAssigner")
+  notifications          Notification[]
+  auditLogs              AuditLog[]               @relation("AuditActor")
+  sessions               Session[]
+  guestManagementAsks    GuestManagementRequest[] @relation("GuestMgmtRequester")
+  guestManagementDone    GuestManagementRequest[] @relation("GuestMgmtResolver")
 
   @@index([role])
 }
@@ -161,10 +163,35 @@ enum ThemeStatus {
   ARCHIVED
 }
 
+/// Which renderer draws the theme. LEGACY themes are the hand-coded designs
+/// (`config.card.style`); BUILDER themes are authored entirely in the admin
+/// Theme Builder and replayed from ThemeLayout/ThemeTypography/ThemeVariant.
+/// The two coexist so shipping the builder never touches a working design.
+enum ThemeEngine {
+  LEGACY
+  BUILDER
+}
+
+/// What the design is for. Distinct from `Theme.category`, which is the visual
+/// style (classic/luxury/botanical/...) the gallery filters on.
+enum ThemeOccasion {
+  WEDDING
+  ENGAGEMENT
+  BIRTHDAY
+  BACHELORETTE
+}
+
+/// PUBLIC themes appear in every customer's gallery; PRIVATE ones only for the
+/// customers named in ThemeAssignment.
+enum ThemeVisibility {
+  PUBLIC
+  PRIVATE
+}
+
 model Theme {
-  id            String      @id @default(cuid())
-  slug          String      @unique
-  version       Int         @default(1)
+  id            String          @id @default(cuid())
+  slug          String          @unique
+  version       Int             @default(1)
   name          String
   nameAr        String
   category      String
@@ -172,37 +199,150 @@ model Theme {
   descriptionAr String?
   config        Json
   coverImageUrl String?
-  status        ThemeStatus @default(DRAFT)
-  isCustom      Boolean     @default(false)
+  status        ThemeStatus     @default(DRAFT)
+  engine        ThemeEngine     @default(LEGACY)
+  occasion      ThemeOccasion   @default(WEDDING)
+  visibility    ThemeVisibility @default(PUBLIC)
+  thumbnailUrl  String?
+  isCustom      Boolean         @default(false)
   archivedAt    DateTime?
   createdById   String
-  createdBy     User        @relation("ThemeCreator", fields: [createdById], references: [id])
+  createdBy     User            @relation("ThemeCreator", fields: [createdById], references: [id])
   updatedById   String?
-  updatedBy     User?       @relation("ThemeUpdater", fields: [updatedById], references: [id])
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  updatedBy     User?           @relation("ThemeUpdater", fields: [updatedById], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
 
   assets            ThemeAsset[]
+  variants          ThemeVariant[]
+  layout            ThemeLayout?
+  typography        ThemeTypography?
+  assignments       ThemeAssignment[]
   events            Event[]
   clientAssignments ClientAssignedTheme[]
 
   @@index([status])
   @@index([slug])
+  @@index([engine, status])
 }
 
+/// One color option of a design. Variants share the parent's layout and
+/// typography — an admin duplicates a variant and swaps only its images, which
+/// is why `layoutOverrides` is sparse and usually empty.
+model ThemeVariant {
+  id              String   @id @default(cuid())
+  themeId         String
+  theme           Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  slug            String
+  name            String
+  nameAr          String
+  /// Arabic color label the gallery's color filter groups on, e.g. "كحلي".
+  colorTag        String?
+  /// VariantPalette — validated by paletteSchema on read and write.
+  palette         Json
+  /// Sparse per-layer transform overrides, keyed by layer id. Empty by default.
+  layoutOverrides Json?
+  sortOrder       Int      @default(0)
+  isDefault       Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  assets ThemeAsset[]
+  events Event[]
+
+  @@unique([themeId, slug])
+  @@index([themeId])
+}
+
+/// An uploaded image. `slot` is free-form on purpose (see lib/themes/builder/
+/// slots.ts): new kinds of art never need a schema change. A row with a null
+/// variantId is shared by every variant of the theme.
 model ThemeAsset {
-  id        String   @id @default(cuid())
+  id        String        @id @default(cuid())
   themeId   String
-  theme     Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
-  kind      String
+  theme     Theme         @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  variantId String?
+  variant   ThemeVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  slot      String
   url       String
+  /// Blob store pathname, kept so deleting the row can delete the object too.
+  blobPath  String?
   width     Int?
   height    Int?
   fileSize  Int?
   mimeType  String
-  createdAt DateTime @default(now())
+  createdAt DateTime      @default(now())
 
   @@index([themeId])
+  @@index([variantId])
+  @@index([themeId, slot])
+}
+
+/// The visual arrangement: scenes, layers, transforms, animation. One document
+/// per theme, shared by every variant. See lib/themes/builder/types.ts.
+model ThemeLayout {
+  id        String   @id @default(cuid())
+  themeId   String   @unique
+  theme     Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  /// LayoutDoc
+  doc       Json
+  updatedAt DateTime @updatedAt
+}
+
+/// Named font roles a theme's text layers point at, so one change re-styles
+/// every layer using that role.
+model ThemeTypography {
+  id        String   @id @default(cuid())
+  themeId   String   @unique
+  theme     Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  /// TypographyDoc
+  doc       Json
+  updatedAt DateTime @updatedAt
+}
+
+/// Grants one customer access to a PRIVATE theme. Distinct from
+/// ClientAssignedTheme, which pins a theme onto one specific event.
+model ThemeAssignment {
+  id           String   @id @default(cuid())
+  themeId      String
+  theme        Theme    @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation("ThemeGrantee", fields: [userId], references: [id], onDelete: Cascade)
+  assignedById String
+  assignedBy   User     @relation("ThemeGranter", fields: [assignedById], references: [id])
+  createdAt    DateTime @default(now())
+
+  @@unique([themeId, userId])
+  @@index([userId])
+  @@index([themeId])
+}
+
+/// Font library. BUILTIN families are the ones bundled through next/font and
+/// optimised at build time; GOOGLE families are added by an admin at runtime
+/// and loaded from the Google Fonts CSS API — no code change, no deploy.
+enum ThemeFontSource {
+  BUILTIN
+  GOOGLE
+}
+
+model ThemeFont {
+  id        String          @id @default(cuid())
+  family    String          @unique
+  label     String
+  labelAr   String?
+  source    ThemeFontSource @default(GOOGLE)
+  /// Comma-separated weights to request, e.g. "400,500,700".
+  weights   String          @default("400,700")
+  /// Comma-separated Google Fonts subsets, e.g. "arabic,latin".
+  subsets   String          @default("arabic,latin")
+  /// Set for BUILTIN families: the CSS variable next/font already declares.
+  cssVar    String?
+  isArabic  Boolean         @default(false)
+  isActive  Boolean         @default(true)
+  sortOrder Int             @default(0)
+  createdAt DateTime        @default(now())
+
+  @@index([isActive, sortOrder])
 }
 
 model ClientAssignedTheme {
@@ -246,51 +386,72 @@ enum EventStatus {
 }
 
 model Event {
-  id                  String                   @id @default(cuid())
-  ownerId             String
-  owner               User                     @relation("EventOwner", fields: [ownerId], references: [id])
-  orderId             String                   @unique
-  order               Order                    @relation(fields: [orderId], references: [id])
-  type                EventType
-  name                String
-  groomNameEn         String
-  brideNameEn         String
-  groomNameAr         String?
-  groomFamilyAr       String?
-  brideNameAr         String?
-  brideFamilyAr       String?
-  familiesGreetingAr  String?
-  invitationTextAr    String
-  eventDate           DateTime
-  locationName        String
-  /** City/area the venue is in, e.g. "جدة" — shown alongside locationName on the guest page. */
-  regionName          String?
-  mapUrl              String?
-  coverImageUrl       String?
-  musicYoutubeId      String?
-  /** true = starts playing right when the guest opens the invitation; false = guest must tap the music button. */
-  musicAutoplay       Boolean                  @default(false)
-  /** Ordered list of { labelAr, time } — event-day schedule, e.g. reception/procession/dinner. */
-  scheduleItems       Json?
-  /** Free text, one note per line — e.g. "no children", dress code. */
-  notesAr             String?
-  /** Short human-typeable code the owner can read out to a door guard — generated once at creation. */
-  referenceCode       String?                  @unique
-  /** sha256 of a customer-set PIN, gates the no-login /gate-access scanner. Null = that access method is off. */
-  gatePinHash         String?
-  gatePinFailedAttempts Int                    @default(0)
-  gatePinLockedUntil  DateTime?
-  themeId             String
-  theme               Theme                    @relation(fields: [themeId], references: [id])
-  guestManagementMode EventGuestManagementMode @default(SELF)
-  rsvpRequired        Boolean                  @default(true)
-  /** false = each guest's seat count is fixed to what the owner set; guests can't raise it on the RSVP form. */
-  allowGuestPartySize Boolean                  @default(true)
-  status              EventStatus              @default(DRAFT)
-  expiresAt           DateTime?
-  createdAt           DateTime                 @default(now())
-  updatedAt           DateTime                 @updatedAt
+  id                    String                   @id @default(cuid())
+  ownerId               String
+  owner                 User                     @relation("EventOwner", fields: [ownerId], references: [id])
+  orderId               String                   @unique
+  order                 Order                    @relation(fields: [orderId], references: [id])
+  type                  EventType
+  name                  String
+  groomNameEn           String
+  brideNameEn           String
+  groomNameAr           String?
+  groomFamilyAr         String?
+  brideNameAr           String?
+  brideFamilyAr         String?
+  familiesGreetingAr    String?
+  invitationTextAr      String
+  eventDate             DateTime
+  locationName          String
+  /**
+   * City/area the venue is in, e.g. "جدة" — shown alongside locationName on the guest page.
+   */
+  regionName            String?
+  mapUrl                String?
+  coverImageUrl         String?
+  musicYoutubeId        String?
+  /**
+   * true = starts playing right when the guest opens the invitation; false = guest must tap the music button.
+   */
+  musicAutoplay         Boolean                  @default(false)
+  /**
+   * Ordered list of { labelAr, time } — event-day schedule, e.g. reception/procession/dinner.
+   */
+  scheduleItems         Json?
+  /**
+   * Free text, one note per line — e.g. "no children", dress code.
+   */
+  notesAr               String?
+  /**
+   * Short human-typeable code the owner can read out to a door guard — generated once at creation.
+   */
+  referenceCode         String?                  @unique
+  /**
+   * sha256 of a customer-set PIN, gates the no-login /gate-access scanner. Null = that access method is off.
+   */
+  gatePinHash           String?
+  gatePinFailedAttempts Int                      @default(0)
+  gatePinLockedUntil    DateTime?
+  themeId               String
+  theme                 Theme                    @relation(fields: [themeId], references: [id])
+  /// Which colour of a BUILDER theme the customer chose. Null for LEGACY
+  /// themes (each of their colours is its own Theme row) and as a fallback to
+  /// the design's default colour. SetNull rather than Cascade: deleting a
+  /// colour must not delete somebody's event — it falls back to the default.
+  themeVariantId        String?
+  themeVariant          ThemeVariant?            @relation(fields: [themeVariantId], references: [id], onDelete: SetNull)
+  guestManagementMode   EventGuestManagementMode @default(SELF)
+  rsvpRequired          Boolean                  @default(true)
+  /**
+   * false = each guest's seat count is fixed to what the owner set; guests can't raise it on the RSVP form.
+   */
+  allowGuestPartySize   Boolean                  @default(true)
+  status                EventStatus              @default(DRAFT)
+  expiresAt             DateTime?
+  createdAt             DateTime                 @default(now())
+  updatedAt             DateTime                 @updatedAt
 
+  couples                EventCouple[]
   guests                 Guest[]
   invitations            Invitation[]
   gateStaffAssignments   GateStaffAssignment[]
@@ -303,7 +464,29 @@ model Event {
   @@index([status])
 }
 
-/** Login-free gate-guard grant: reference code + PIN in, this session out, scoped to one event. */
+/// One groom+bride pair announced by an event. A joint wedding carries several,
+/// ordered by `sortOrder`. The first row mirrors Event's own groom/bride
+/// columns, which stay the primary couple for every existing read (link
+/// preview, seal monogram, opengraph card) — this table only *adds* the rest.
+model EventCouple {
+  id            String   @id @default(cuid())
+  eventId       String
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  sortOrder     Int      @default(0)
+  groomNameEn   String
+  brideNameEn   String
+  groomNameAr   String?
+  groomFamilyAr String?
+  brideNameAr   String?
+  brideFamilyAr String?
+  createdAt     DateTime @default(now())
+
+  @@index([eventId])
+}
+
+/**
+ * Login-free gate-guard grant: reference code + PIN in, this session out, scoped to one event.
+ */
 model GateAccessSession {
   id        String   @id @default(cuid())
   eventId   String
@@ -388,7 +571,9 @@ model Rsvp {
   userAgent    String?
   guestNameAr  String?
   guestPhone   String?
-  /** How many of the guest's allowed seats are actually attending — capped at Guest.allowedCount. */
+  /**
+   * How many of the guest's allowed seats are actually attending — capped at Guest.allowedCount.
+   */
   partySize    Int?
   messageAr    String?
 

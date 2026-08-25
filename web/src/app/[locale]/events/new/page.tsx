@@ -4,8 +4,12 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { listEligibleOrders, listPublishedThemes } from "@/lib/events/service";
 import { createEventAction } from "@/lib/events/actions";
-import { Role } from "@/generated/prisma/client";
-import { ThemePicker } from "@/components/events/theme-picker";
+import { Role, ThemeEngine } from "@/generated/prisma/client";
+import { parsePalette } from "@/lib/themes/builder/schema";
+import { builderThemeConfig, loadBuilderThemesForGallery } from "@/lib/themes/builder/guest";
+import type { ThemeConfig } from "@/lib/themes/types";
+import { ThemePicker, type ThemeOption } from "@/components/events/theme-picker";
+import { CouplesFields } from "@/components/events/couples-fields";
 
 const EVENT_TYPE_OPTIONS = [
   ["WEDDING", "typeWedding"],
@@ -29,8 +33,44 @@ export default async function NewEventPage({
 
   const [eligibleOrders, themes] = await Promise.all([
     listEligibleOrders(user.id),
-    listPublishedThemes(),
+    listPublishedThemes(user.id),
   ]);
+
+  // One option per COLOUR, not per design. A builder theme's colours are
+  // ThemeVariant rows, and the gallery already advertises them individually —
+  // collapsing them here is what used to hand every customer the default
+  // colour whatever they picked.
+  const builderArt = await loadBuilderThemesForGallery(
+    themes.filter((t) => t.engine === ThemeEngine.BUILDER).map((t) => t.id),
+  );
+
+  const themeOptions: ThemeOption[] = themes.flatMap((t): ThemeOption[] => {
+    const name = locale === "ar" ? t.nameAr : t.name;
+    if (t.engine !== ThemeEngine.BUILDER) {
+      return [
+        {
+          key: t.id,
+          themeId: t.id,
+          variantId: null,
+          name,
+          category: t.category,
+          config: t.config as unknown as ThemeConfig,
+        },
+      ];
+    }
+    return t.variants.map((variant) => ({
+      key: `${t.id}:${variant.id}`,
+      themeId: t.id,
+      variantId: variant.id,
+      name,
+      // Only worth showing when the design actually offers a choice.
+      variantName: t.variants.length > 1 ? (locale === "ar" ? variant.nameAr : variant.name) : undefined,
+      category: t.category,
+      config: builderThemeConfig({ palette: parsePalette(variant.palette) }),
+      builder: builderArt.get(t.id)?.get(variant.id),
+    }));
+  });
+
 
   if (eligibleOrders.length === 0) redirect(`/${locale}/plans`);
 
@@ -96,59 +136,9 @@ export default async function NewEventPage({
           />
         </label>
 
-        <div className="grid grid-cols-2 gap-4">
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-fg-muted">{f.groomNameLabel}</span>
-            <input
-              name="groomNameEn"
-              dir="ltr"
-              required
-              minLength={2}
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-fg-muted">{f.brideNameLabel}</span>
-            <input
-              name="brideNameEn"
-              dir="ltr"
-              required
-              minLength={2}
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-            />
-          </label>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-fg-muted">{f.groomNameArLabel}</span>
-            <input
-              name="groomNameAr"
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-fg-muted">{f.groomFamilyArLabel}</span>
-            <input
-              name="groomFamilyAr"
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-fg-muted">{f.brideNameArLabel}</span>
-            <input
-              name="brideNameAr"
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-fg-muted">{f.brideFamilyArLabel}</span>
-            <input
-              name="brideFamilyAr"
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-            />
-          </label>
-        </div>
+        {/* One pair by default; a joint wedding adds more, all posted under the
+            same `couple*` names. */}
+        <CouplesFields f={f} />
 
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="text-fg-muted">{f.familiesGreetingLabel}</span>
@@ -260,15 +250,7 @@ export default async function NewEventPage({
 
         <div className="flex flex-col gap-2 text-sm">
           <span className="text-fg-muted">{f.themeLabel}</span>
-          <ThemePicker
-            dict={dict}
-            themes={themes.map((t) => ({
-              id: t.id,
-              name: locale === "ar" ? t.nameAr : t.name,
-              category: t.category,
-              config: t.config as unknown as import("@/lib/themes/types").ThemeConfig,
-            }))}
-          />
+          <ThemePicker dict={dict} options={themeOptions} />
         </div>
 
         <div className="flex flex-col gap-2 text-sm">

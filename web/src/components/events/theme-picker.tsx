@@ -3,65 +3,97 @@
 import { useState } from "react";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { BuilderTheme } from "@/components/guest/invitation-view";
 import { ThemePreviewDialog } from "@/components/themes/theme-preview-dialog";
 
-export function ThemePicker({
-  themes,
-  dict,
-}: {
-  themes: Array<{ id: string; name: string; category: string; config: ThemeConfig }>;
-  dict: Dictionary;
-}) {
-  const [selected, setSelected] = useState(themes[0]?.id ?? "");
-  const [previewId, setPreviewId] = useState<string | null>(null);
-  const previewTheme = themes.find((t) => t.id === previewId);
+/**
+ * One selectable option. A LEGACY theme contributes exactly one (each of its
+ * colours is its own Theme row); a BUILDER theme contributes one per colour,
+ * all sharing a `themeId` and differing by `variantId`.
+ */
+export interface ThemeOption {
+  /** Unique per option — `themeId` for legacy, `themeId:variantId` otherwise. */
+  key: string;
+  themeId: string;
+  variantId: string | null;
+  name: string;
+  /** The colour's own name, shown under the design name when there is one. */
+  variantName?: string;
+  category: string;
+  config: ThemeConfig;
+  builder?: BuilderTheme;
+}
+
+export function ThemePicker({ options, dict }: { options: ThemeOption[]; dict: Dictionary }) {
+  const [selectedKey, setSelectedKey] = useState(options[0]?.key ?? "");
+  const [previewKey, setPreviewKey] = useState<string | null>(null);
+
+  const selected = options.find((o) => o.key === selectedKey) ?? options[0];
+  const preview = options.find((o) => o.key === previewKey);
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {themes.map((theme) => (
-        <div
-          key={theme.id}
-          role="radio"
-          aria-checked={selected === theme.id}
-          tabIndex={0}
-          onClick={() => setSelected(theme.id)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") setSelected(theme.id);
-          }}
-          className={`cursor-pointer rounded-xl border p-3 transition-colors ${
-            selected === theme.id ? "border-accent" : "border-border hover:border-fg-muted"
-          }`}
-        >
-          <input type="radio" name="themeId" value={theme.id} checked={selected === theme.id} readOnly className="sr-only" />
-          <div
-            className="h-16 w-full rounded-lg"
-            style={{
-              background: `linear-gradient(135deg, ${theme.config.palette.bg}, ${theme.config.palette.accent})`,
-            }}
-          />
-          <p className="mt-2 text-center text-xs font-medium text-fg">{theme.name}</p>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              setPreviewId(theme.id);
-            }}
-            className="mt-2 h-7 w-full rounded-full border border-border text-xs text-fg-muted transition-colors hover:bg-surface-2"
-          >
-            {dict.admin.preview}
-          </button>
-        </div>
-      ))}
+    <div>
+      {/*
+        The submitted pair. Two hidden inputs rather than a radio per card
+        because a colour needs BOTH ids — sending only `themeId`, as this picker
+        used to, silently gave every customer the design's default colour no
+        matter which swatch they picked.
+      */}
+      <input type="hidden" name="themeId" value={selected?.themeId ?? ""} />
+      <input type="hidden" name="themeVariantId" value={selected?.variantId ?? ""} />
 
-      {previewTheme && (
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {options.map((option) => (
+          <div
+            key={option.key}
+            role="radio"
+            aria-checked={selectedKey === option.key}
+            aria-label={option.variantName ? `${option.name} — ${option.variantName}` : option.name}
+            tabIndex={0}
+            onClick={() => setSelectedKey(option.key)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                setSelectedKey(option.key);
+              }
+            }}
+            className={`cursor-pointer rounded-xl border p-3 transition-colors ${
+              selectedKey === option.key ? "border-accent" : "border-border hover:border-fg-muted"
+            }`}
+          >
+            <div
+              className="h-16 w-full rounded-lg"
+              style={{
+                background: `linear-gradient(135deg, ${option.config.palette.bg}, ${option.config.palette.accent})`,
+              }}
+            />
+            <p className="mt-2 text-center text-xs font-medium text-fg">{option.name}</p>
+            {option.variantName && (
+              <p className="text-center text-[11px] text-fg-muted">{option.variantName}</p>
+            )}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPreviewKey(option.key);
+              }}
+              className="mt-2 h-7 w-full rounded-full border border-border text-xs text-fg-muted transition-colors hover:bg-surface-2"
+            >
+              {dict.admin.preview}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {preview && (
         <ThemePreviewDialog
-          key={previewTheme.id}
-          variants={[{ id: previewTheme.id, config: previewTheme.config }]}
-          initialVariantId={previewTheme.id}
-          themeCategory={previewTheme.category}
+          key={preview.key}
+          variants={[{ id: preview.key, config: preview.config, builder: preview.builder }]}
+          initialVariantId={preview.key}
+          themeCategory={preview.category}
           dict={dict}
-          open={Boolean(previewTheme)}
-          onOpenChange={(open) => !open && setPreviewId(null)}
+          open={Boolean(preview)}
+          onOpenChange={(open) => !open && setPreviewKey(null)}
         />
       )}
     </div>

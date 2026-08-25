@@ -29,6 +29,13 @@ const FONTS = [
   "EB Garamond",
 ];
 
+/**
+ * The six colors every theme has. Listed explicitly rather than read off the
+ * stored palette so the optional `swatch` gets its own labelled control in the
+ * gallery section below instead of an unexplained seventh color box.
+ */
+const CORE_PALETTE_KEYS = ["bg", "surface", "fg", "fgMuted", "accent", "accentFg"] as const;
+
 const DEFAULT_CONFIG: ThemeConfig = {
   layout: "classic-center",
   palette: { bg: "#ffffff", surface: "#ffffff", fg: "#111111", fgMuted: "#666666", accent: "#b08d57", accentFg: "#ffffff" },
@@ -57,10 +64,37 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
   const [state, formAction, isPending] = useActionState<ThemeFormState, FormData>(action, null);
   const [config, setConfig] = useState<ThemeConfig>(theme?.config ?? DEFAULT_CONFIG);
   const [category, setCategory] = useState(theme?.category ?? "");
+  const [swatchOverride, setSwatchOverride] = useState(Boolean(theme?.config.palette.swatch));
   const a = dict.admin;
 
   function updatePalette(key: keyof ThemeConfig["palette"], value: string) {
     setConfig((c) => ({ ...c, palette: { ...c.palette, [key]: value } }));
+  }
+
+  function toggleSwatch(on: boolean) {
+    setSwatchOverride(on);
+    setConfig((c) => {
+      const palette = { ...c.palette };
+      if (on) palette.swatch = palette.swatch ?? palette.accent;
+      else delete palette.swatch;
+      return { ...c, palette };
+    });
+  }
+
+  /** Optional effect keys are removed outright on "none" — the renderer tests `?.effect === "…"`. */
+  function setEffect(key: "background" | "particles", value: string) {
+    setConfig((c) => {
+      const next = { ...c };
+      if (key === "background") {
+        if (value === "shader-silk") next.background = { effect: "shader-silk" };
+        else delete next.background;
+      } else if (value === "floating-hearts") {
+        next.particles = { effect: "floating-hearts" };
+      } else {
+        delete next.particles;
+      }
+      return next;
+    });
   }
 
   return (
@@ -86,8 +120,13 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
         </div>
 
         <label className="flex flex-col gap-1 text-sm">
-          <span className="text-fg-muted">{a.planNameAr} — Description (AR)</span>
+          <span className="text-fg-muted">{a.descriptionArLabel}</span>
           <textarea name="descriptionAr" defaultValue={theme?.descriptionAr ?? ""} rows={2} className="rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent" />
+        </label>
+
+        <label className="flex flex-col gap-1 text-sm">
+          <span className="text-fg-muted">{a.descriptionEnLabel}</span>
+          <textarea name="description" dir="ltr" defaultValue={theme?.description ?? ""} rows={2} className="rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent" />
         </label>
 
         <div className="grid grid-cols-2 gap-3">
@@ -122,7 +161,7 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
         <fieldset className="flex flex-col gap-2">
           <legend className="text-sm text-fg-muted">{a.colors}</legend>
           <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
-            {(Object.keys(config.palette) as Array<keyof ThemeConfig["palette"]>).map((key) => (
+            {CORE_PALETTE_KEYS.map((key) => (
               <label key={key} className="flex flex-col items-center gap-1 text-xs text-fg-muted">
                 {key}
                 <input
@@ -203,6 +242,105 @@ export function ThemeEditorForm({ locale, dict, theme }: Props) {
             RSVP
           </label>
         </fieldset>
+
+        <fieldset className="flex flex-col gap-4 rounded-2xl border border-border bg-surface-2 p-4">
+          <legend className="px-1 text-sm font-medium text-fg">{a.themeAdvanced}</legend>
+          <p className="text-xs leading-relaxed text-fg-muted">{a.themeAdvancedNote}</p>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-fg-muted">{a.themeFamily}</span>
+              <input
+                name="family"
+                dir="ltr"
+                defaultValue={theme?.config.family ?? ""}
+                pattern="[a-z0-9\-]*"
+                placeholder="ivory-bloom"
+                className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+              />
+              <span className="text-xs leading-relaxed text-fg-muted">{a.themeFamilyHint}</span>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-fg-muted">{a.themeColorTag}</span>
+              <input
+                name="colorTag"
+                defaultValue={theme?.config.colorTag ?? ""}
+                placeholder="كحلي"
+                className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+              />
+              <span className="text-xs leading-relaxed text-fg-muted">{a.themeColorTagHint}</span>
+            </label>
+          </div>
+
+          <div className="flex flex-col gap-1 text-sm">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="paletteSwatchOverride"
+                checked={swatchOverride}
+                onChange={(e) => toggleSwatch(e.target.checked)}
+              />{" "}
+              <span className="text-fg-muted">{a.themeSwatchOverride}</span>
+              <input
+                type="color"
+                name="paletteSwatch"
+                value={config.palette.swatch ?? config.palette.accent}
+                disabled={!swatchOverride}
+                onChange={(e) => updatePalette("swatch", e.target.value)}
+                className="h-9 w-12 rounded border border-border bg-transparent disabled:opacity-40"
+              />
+            </label>
+            <span className="text-xs leading-relaxed text-fg-muted">{a.themeSwatchHint}</span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-fg-muted">{a.themeBackgroundEffect}</span>
+              <select
+                name="backgroundEffect"
+                value={config.background?.effect ?? ""}
+                onChange={(e) => setEffect("background", e.target.value)}
+                className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+              >
+                <option value="">{a.effectNone}</option>
+                <option value="shader-silk">{a.effectShaderSilk}</option>
+              </select>
+            </label>
+            <label className="flex flex-col gap-1 text-sm">
+              <span className="text-fg-muted">{a.themeParticlesEffect}</span>
+              <select
+                name="particlesEffect"
+                value={config.particles?.effect ?? ""}
+                onChange={(e) => setEffect("particles", e.target.value)}
+                className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+              >
+                <option value="">{a.effectNone}</option>
+                <option value="floating-hearts">{a.effectFloatingHearts}</option>
+              </select>
+            </label>
+          </div>
+        </fieldset>
+
+        {config.card && (
+          <fieldset className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-2 p-4">
+            <legend className="px-1 text-sm font-medium text-fg">{a.themeArtwork}</legend>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-1 text-sm">
+                <span className="text-fg-muted">{a.themeArtworkStyle}</span>
+                <p dir="ltr" className="h-10 rounded-lg border border-border bg-bg px-3 leading-10 text-fg">
+                  {config.card.style}
+                </p>
+              </div>
+              <div className="flex flex-col gap-1 text-sm">
+                <span className="text-fg-muted">{a.themeArtworkFolder}</span>
+                <p dir="ltr" className="h-10 truncate rounded-lg border border-border bg-bg px-3 leading-10 text-fg">
+                  {config.card.assetFolder ?? "—"}
+                </p>
+              </div>
+            </div>
+            <p className="text-xs leading-relaxed text-fg-muted">{a.themeArtworkNote}</p>
+          </fieldset>
+        )}
 
         <button
           type="submit"

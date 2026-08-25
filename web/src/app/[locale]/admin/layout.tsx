@@ -21,6 +21,7 @@ export default async function AdminLayout({
     [`/${locale}/admin/orders`, dict.admin.orders],
     [`/${locale}/admin/plans`, dict.admin.plans],
     [`/${locale}/admin/themes`, dict.admin.themes],
+    [`/${locale}/admin/themes/fonts`, dict.admin.fonts],
     [`/${locale}/admin/gate-staff`, dict.admin.gateStaff],
   ] as const;
 

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
+import type { BuilderTheme } from "@/components/guest/invitation-view";
 import { ThemeGalleryCard } from "@/components/themes/theme-gallery-card";
 import { ThemeGalleryFamilyCard } from "@/components/themes/theme-gallery-family-card";
 import { ThemePreviewDialog } from "@/components/themes/theme-preview-dialog";
@@ -15,6 +16,8 @@ type ThemeItem = {
   config: ThemeConfig;
   createdAt: string;
   eventCount: number;
+  /** BUILDER themes only — their own layout/art, forwarded to the preview. */
+  builder?: BuilderTheme;
 };
 
 const CATEGORY_CHIPS = [

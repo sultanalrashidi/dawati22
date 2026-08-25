@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { getInvitationByLinkToken } from "@/lib/invitations/service";
+import { couplesFor } from "@/lib/events/service";
 import type { ThemeConfig } from "@/lib/themes/types";
 
 export const alt = "دعوة رقمية خاصة";
@@ -28,7 +29,10 @@ export default async function Image({ params }: { params: Promise<{ token: strin
 
   const theme = (invitation?.event.theme.config as unknown as ThemeConfig | undefined)?.palette ?? FALLBACK_PALETTE;
   const latinFont = (invitation?.event.theme.config as unknown as ThemeConfig | undefined)?.fonts.latinDisplay ?? "Cormorant Garamond";
-  const namesText = invitation ? `${invitation.event.groomNameEn} & ${invitation.event.brideNameEn}` : "دعوتي";
+  // One card, one pair of names: a joint wedding shows its primary couple
+  // rather than stacking every pair into a link preview.
+  const primaryCouple = invitation ? couplesFor(invitation.event)[0] : null;
+  const namesText = primaryCouple ? `${primaryCouple.groomNameEn} & ${primaryCouple.brideNameEn}` : "دعوتي";
   const dateLabel = invitation
     ? new Intl.DateTimeFormat("en-US", { day: "numeric", month: "long", year: "numeric" }).format(invitation.event.eventDate)
     : "";

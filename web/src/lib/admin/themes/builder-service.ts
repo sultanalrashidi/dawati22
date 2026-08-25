@@ -1,0 +1,624 @@
+import "server-only";
+import { prisma } from "@/lib/db/client";
+import {
+  Prisma,
+  ThemeEngine,
+  ThemeStatus,
+  ThemeVisibility,
+  type ThemeOccasion,
+} from "@/generated/prisma/client";
+import { ThemeAdminError } from "@/lib/admin/themes/service";
+import { removeStoredAsset } from "@/lib/admin/themes/storage";
+import { REQUIRED_SLOT_KEYS } from "@/lib/themes/builder/slots";
+import {
+  assertLayoutDoc,
+  assertPalette,
+  assertTypographyDoc,
+  parseLayoutDoc,
+  parsePalette,
+  parseTypographyDoc,
+} from "@/lib/themes/builder/schema";
+import { starterLayoutDoc } from "@/lib/themes/builder/starter-layout";
+import {
+  DEFAULT_LAYOUT_DOC,
+  DEFAULT_PALETTE,
+  DEFAULT_TYPOGRAPHY_DOC,
+  type LayoutDoc,
+  type TypographyDoc,
+  type VariantPalette,
+} from "@/lib/themes/builder/types";
+import { parseLayoutOverrides, type LayoutOverrides } from "@/lib/themes/builder/resolve";
+
+const json = (value: unknown) => value as Prisma.InputJsonValue;
+
+// ---------------------------------------------------------------------------
+// Reads
+// ---------------------------------------------------------------------------
+
+const builderInclude = {
+  variants: { orderBy: { sortOrder: "asc" } },
+  assets: true,
+  layout: true,
+  typography: true,
+  assignments: { include: { user: { select: { id: true, name: true, phone: true } } } },
+  _count: { select: { events: true } },
+} satisfies Prisma.ThemeInclude;
+
+export type BuilderThemeRow = Prisma.ThemeGetPayload<{ include: typeof builderInclude }>;
+
+/** A builder theme with every stored document already validated. */
+export interface BuilderTheme {
+  theme: BuilderThemeRow;
+  layout: LayoutDoc;
+  typography: TypographyDoc;
+  variants: {
+    id: string;
+    slug: string;
+    name: string;
+    nameAr: string;
+    colorTag: string | null;
+    palette: VariantPalette;
+    overrides: LayoutOverrides;
+    isDefault: boolean;
+    sortOrder: number;
+  }[];
+  assets: { id: string; slot: string; url: string; variantId: string | null; blobPath: string | null; width: number | null; height: number | null; fileSize: number | null }[];
+}
+
+function hydrate(row: BuilderThemeRow): BuilderTheme {
+  return {
+    theme: row,
+    layout: parseLayoutDoc(row.layout?.doc),
+    typography: parseTypographyDoc(row.typography?.doc),
+    variants: row.variants.map((v) => ({
+      id: v.id,
+      slug: v.slug,
+      name: v.name,
+      nameAr: v.nameAr,
+      colorTag: v.colorTag,
+      palette: parsePalette(v.palette),
+      overrides: parseLayoutOverrides(v.layoutOverrides),
+      isDefault: v.isDefault,
+      sortOrder: v.sortOrder,
+    })),
+    assets: row.assets.map((a) => ({
+      id: a.id,
+      slot: a.slot,
+      url: a.url,
+      variantId: a.variantId,
+      blobPath: a.blobPath,
+      width: a.width,
+      height: a.height,
+      fileSize: a.fileSize,
+    })),
+  };
+}
+
+export async function getBuilderTheme(themeId: string): Promise<BuilderTheme | null> {
+  const row = await prisma.theme.findUnique({ where: { id: themeId }, include: builderInclude });
+  return row ? hydrate(row) : null;
+}
+
+export async function getBuilderThemeBySlug(slug: string): Promise<BuilderTheme | null> {
+  const row = await prisma.theme.findUnique({ where: { slug }, include: builderInclude });
+  return row ? hydrate(row) : null;
+}
+
+export async function listBuilderThemes() {
+  return prisma.theme.findMany({
+    where: { engine: ThemeEngine.BUILDER },
+    include: { variants: { orderBy: { sortOrder: "asc" } }, _count: { select: { events: true } } },
+    orderBy: { updatedAt: "desc" },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Theme lifecycle
+// ---------------------------------------------------------------------------
+
+export interface CreateBuilderThemeInput {
+  slug: string;
+  name: string;
+  nameAr: string;
+  category: string;
+  occasion: ThemeOccasion;
+  descriptionAr?: string;
+  description?: string;
+}
+
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+export function assertSlug(slug: string) {
+  if (!SLUG_PATTERN.test(slug)) {
+    throw new ThemeAdminError("المعرّف يجب أن يكون أحرفًا إنجليزية صغيرة وأرقامًا وشرطات فقط");
+  }
+}
+
+/**
+ * A new builder theme is born complete: one default variant, a typography
+ * document, and a *starter layout* with the standard invitation elements
+ * already placed and bound to the real fields (guest name, couple names, date,
+ * location, QR). An empty canvas would make every new design start with the
+ * same twenty minutes of rebuilding the same list.
+ */
+export async function createBuilderTheme(actorId: string, input: CreateBuilderThemeInput) {
+  assertSlug(input.slug);
+  const clash = await prisma.theme.findUnique({ where: { slug: input.slug }, select: { id: true } });
+  if (clash) throw new ThemeAdminError("يوجد تصميم بنفس المعرّف");
+
+  return prisma.theme.create({
+    data: {
+      slug: input.slug,
+      name: input.name,
+      nameAr: input.nameAr,
+      category: input.category,
+      occasion: input.occasion,
+      description: input.description,
+      descriptionAr: input.descriptionAr,
+      engine: ThemeEngine.BUILDER,
+      status: ThemeStatus.DRAFT,
+      visibility: ThemeVisibility.PUBLIC,
+      config: json({ engine: "builder" }),
+      createdById: actorId,
+      layout: { create: { doc: json(starterLayoutDoc()) } },
+      typography: { create: { doc: json(DEFAULT_TYPOGRAPHY_DOC) } },
+      variants: {
+        create: {
+          slug: "default",
+          name: "Default",
+          nameAr: "الأساسي",
+          palette: json(DEFAULT_PALETTE),
+          isDefault: true,
+          sortOrder: 0,
+        },
+      },
+    },
+    include: builderInclude,
+  });
+}
+
+export interface UpdateBuilderThemeMetaInput {
+  name: string;
+  nameAr: string;
+  category: string;
+  occasion: ThemeOccasion;
+  descriptionAr?: string;
+  description?: string;
+  visibility: ThemeVisibility;
+  thumbnailUrl?: string | null;
+}
+
+export async function updateBuilderThemeMeta(actorId: string, themeId: string, input: UpdateBuilderThemeMetaInput) {
+  return prisma.theme.update({
+    where: { id: themeId },
+    data: { ...input, updatedById: actorId },
+  });
+}
+
+export async function saveLayoutDoc(actorId: string, themeId: string, raw: unknown) {
+  const doc = assertLayoutDoc(raw);
+  await prisma.$transaction([
+    prisma.themeLayout.upsert({
+      where: { themeId },
+      create: { themeId, doc: json(doc) },
+      update: { doc: json(doc) },
+    }),
+    prisma.theme.update({ where: { id: themeId }, data: { updatedById: actorId } }),
+  ]);
+  return doc;
+}
+
+/**
+ * Drop the starter elements into an existing theme. Offered for themes created
+ * before the starter existed, and as a way back after clearing the canvas.
+ *
+ * Adds ONLY the layers. The stored page background, scene aspect ratios and
+ * animation settings are document-level settings an admin may already have
+ * tuned on an otherwise empty canvas — replacing the whole document (which is
+ * what a naive "write the starter" would do) would silently reset all three
+ * while the guard only ever looked at the layer count.
+ */
+export async function applyStarterLayout(actorId: string, themeId: string) {
+  const existing = await prisma.themeLayout.findUnique({ where: { themeId } });
+  const current = parseLayoutDoc(existing?.doc);
+  if (current.layers.length > 0) {
+    throw new ThemeAdminError("التصميم فيه عناصر بالفعل — احذفها أولاً إذا تبي تبدأ من جديد");
+  }
+  return saveLayoutDoc(actorId, themeId, { ...current, layers: starterLayoutDoc().layers });
+}
+
+export async function saveTypographyDoc(actorId: string, themeId: string, raw: unknown) {
+  const doc = assertTypographyDoc(raw);
+  await prisma.$transaction([
+    prisma.themeTypography.upsert({
+      where: { themeId },
+      create: { themeId, doc: json(doc) },
+      update: { doc: json(doc) },
+    }),
+    prisma.theme.update({ where: { id: themeId }, data: { updatedById: actorId } }),
+  ]);
+  return doc;
+}
+
+/**
+ * Deep-copy a whole design. Assets are re-pointed at the same stored objects
+ * rather than re-uploaded — the copy is a new arrangement of the same art until
+ * the admin swaps images, and duplicating must not double the storage bill.
+ * The trade-off is recorded on the row: `blobPath` is cleared on copies so
+ * deleting one never deletes an object the original still shows.
+ */
+export async function duplicateBuilderTheme(actorId: string, themeId: string) {
+  const source = await prisma.theme.findUnique({ where: { id: themeId }, include: builderInclude });
+  if (!source) throw new ThemeAdminError("التصميم غير موجود");
+
+  let slug = `${source.slug}-copy`;
+  let n = 2;
+  while (await prisma.theme.findUnique({ where: { slug }, select: { id: true } })) {
+    slug = `${source.slug}-copy-${n}`;
+    n += 1;
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const copy = await tx.theme.create({
+      data: {
+        slug,
+        name: `${source.name} (copy)`,
+        nameAr: `${source.nameAr} (نسخة)`,
+        category: source.category,
+        occasion: source.occasion,
+        description: source.description,
+        descriptionAr: source.descriptionAr,
+        engine: source.engine,
+        visibility: source.visibility,
+        thumbnailUrl: source.thumbnailUrl,
+        status: ThemeStatus.DRAFT,
+        config: source.config as Prisma.InputJsonValue,
+        createdById: actorId,
+        layout: { create: { doc: (source.layout?.doc ?? json(DEFAULT_LAYOUT_DOC)) as Prisma.InputJsonValue } },
+        typography: { create: { doc: (source.typography?.doc ?? json(DEFAULT_TYPOGRAPHY_DOC)) as Prisma.InputJsonValue } },
+      },
+    });
+
+    const variantIdMap = new Map<string, string>();
+    for (const variant of source.variants) {
+      const created = await tx.themeVariant.create({
+        data: {
+          themeId: copy.id,
+          slug: variant.slug,
+          name: variant.name,
+          nameAr: variant.nameAr,
+          colorTag: variant.colorTag,
+          palette: variant.palette as Prisma.InputJsonValue,
+          layoutOverrides: (variant.layoutOverrides ?? undefined) as Prisma.InputJsonValue | undefined,
+          sortOrder: variant.sortOrder,
+          isDefault: variant.isDefault,
+        },
+      });
+      variantIdMap.set(variant.id, created.id);
+    }
+
+    for (const asset of source.assets) {
+      await tx.themeAsset.create({
+        data: {
+          themeId: copy.id,
+          variantId: asset.variantId ? (variantIdMap.get(asset.variantId) ?? null) : null,
+          slot: asset.slot,
+          url: asset.url,
+          blobPath: null,
+          width: asset.width,
+          height: asset.height,
+          fileSize: asset.fileSize,
+          mimeType: asset.mimeType,
+        },
+      });
+    }
+
+    return copy;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Variants
+// ---------------------------------------------------------------------------
+
+export async function createVariant(
+  themeId: string,
+  input: { slug: string; name: string; nameAr: string; colorTag?: string | null; palette?: unknown },
+) {
+  assertSlug(input.slug);
+  const clash = await prisma.themeVariant.findUnique({
+    where: { themeId_slug: { themeId, slug: input.slug } },
+    select: { id: true },
+  });
+  if (clash) throw new ThemeAdminError("يوجد لون بنفس المعرّف في هذا التصميم");
+
+  const count = await prisma.themeVariant.count({ where: { themeId } });
+  return prisma.themeVariant.create({
+    data: {
+      themeId,
+      slug: input.slug,
+      name: input.name,
+      nameAr: input.nameAr,
+      colorTag: input.colorTag ?? null,
+      palette: json(input.palette ? assertPalette(input.palette) : DEFAULT_PALETTE),
+      sortOrder: count,
+      isDefault: count === 0,
+    },
+  });
+}
+
+export async function updateVariant(
+  variantId: string,
+  input: { name: string; nameAr: string; colorTag?: string | null; palette: unknown },
+) {
+  return prisma.themeVariant.update({
+    where: { id: variantId },
+    data: {
+      name: input.name,
+      nameAr: input.nameAr,
+      colorTag: input.colorTag ?? null,
+      palette: json(assertPalette(input.palette)),
+    },
+  });
+}
+
+/**
+ * "Duplicate variant, then swap the images" is the flow the admin actually
+ * uses, so the copy carries the source's assets across — otherwise every new
+ * color would start from four empty slots.
+ */
+export async function duplicateVariant(variantId: string) {
+  const source = await prisma.themeVariant.findUnique({
+    where: { id: variantId },
+    include: { assets: true },
+  });
+  if (!source) throw new ThemeAdminError("اللون غير موجود");
+
+  let slug = `${source.slug}-copy`;
+  let n = 2;
+  while (
+    await prisma.themeVariant.findUnique({
+      where: { themeId_slug: { themeId: source.themeId, slug } },
+      select: { id: true },
+    })
+  ) {
+    slug = `${source.slug}-copy-${n}`;
+    n += 1;
+  }
+
+  const count = await prisma.themeVariant.count({ where: { themeId: source.themeId } });
+
+  return prisma.$transaction(async (tx) => {
+    const copy = await tx.themeVariant.create({
+      data: {
+        themeId: source.themeId,
+        slug,
+        name: `${source.name} (copy)`,
+        nameAr: `${source.nameAr} (نسخة)`,
+        colorTag: source.colorTag,
+        palette: source.palette as Prisma.InputJsonValue,
+        layoutOverrides: (source.layoutOverrides ?? undefined) as Prisma.InputJsonValue | undefined,
+        sortOrder: count,
+        isDefault: false,
+      },
+    });
+
+    for (const asset of source.assets) {
+      await tx.themeAsset.create({
+        data: {
+          themeId: source.themeId,
+          variantId: copy.id,
+          slot: asset.slot,
+          url: asset.url,
+          // Shared object with the source variant — see duplicateBuilderTheme.
+          blobPath: null,
+          width: asset.width,
+          height: asset.height,
+          fileSize: asset.fileSize,
+          mimeType: asset.mimeType,
+        },
+      });
+    }
+
+    return copy;
+  });
+}
+
+export async function deleteVariant(variantId: string) {
+  const variant = await prisma.themeVariant.findUnique({ where: { id: variantId } });
+  if (!variant) throw new ThemeAdminError("اللون غير موجود");
+
+  const remaining = await prisma.themeVariant.count({ where: { themeId: variant.themeId } });
+  if (remaining <= 1) throw new ThemeAdminError("لا يمكن حذف آخر لون في التصميم");
+
+  const assets = await prisma.themeAsset.findMany({ where: { variantId } });
+  await prisma.themeVariant.delete({ where: { id: variantId } });
+  for (const asset of assets) await removeStoredAsset(asset.blobPath);
+
+  if (variant.isDefault) {
+    const next = await prisma.themeVariant.findFirst({
+      where: { themeId: variant.themeId },
+      orderBy: { sortOrder: "asc" },
+    });
+    if (next) await prisma.themeVariant.update({ where: { id: next.id }, data: { isDefault: true } });
+  }
+}
+
+export async function setDefaultVariant(themeId: string, variantId: string) {
+  await prisma.$transaction([
+    prisma.themeVariant.updateMany({ where: { themeId }, data: { isDefault: false } }),
+    prisma.themeVariant.update({ where: { id: variantId }, data: { isDefault: true } }),
+  ]);
+}
+
+export async function reorderVariants(themeId: string, orderedIds: string[]) {
+  await prisma.$transaction(
+    orderedIds.map((id, index) =>
+      prisma.themeVariant.updateMany({ where: { id, themeId }, data: { sortOrder: index } }),
+    ),
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Assets
+// ---------------------------------------------------------------------------
+
+export async function recordAsset(input: {
+  themeId: string;
+  variantId: string | null;
+  slot: string;
+  url: string;
+  blobPath: string;
+  mimeType: string;
+  fileSize: number;
+  width?: number | null;
+  height?: number | null;
+}) {
+  // One image per slot per variant: uploading again replaces, so the admin
+  // never has to hunt for a stale asset that is still winning the lookup.
+  const previous = await prisma.themeAsset.findMany({
+    where: { themeId: input.themeId, variantId: input.variantId, slot: input.slot },
+  });
+
+  const created = await prisma.themeAsset.create({
+    data: {
+      themeId: input.themeId,
+      variantId: input.variantId,
+      slot: input.slot,
+      url: input.url,
+      blobPath: input.blobPath,
+      mimeType: input.mimeType,
+      fileSize: input.fileSize,
+      width: input.width ?? null,
+      height: input.height ?? null,
+    },
+  });
+
+  for (const asset of previous) {
+    await prisma.themeAsset.delete({ where: { id: asset.id } });
+    await removeStoredAsset(asset.blobPath);
+  }
+
+  return created;
+}
+
+export async function deleteAsset(assetId: string) {
+  const asset = await prisma.themeAsset.findUnique({ where: { id: assetId } });
+  if (!asset) return;
+  await prisma.themeAsset.delete({ where: { id: assetId } });
+  await removeStoredAsset(asset.blobPath);
+}
+
+// ---------------------------------------------------------------------------
+// Visibility & assignments
+// ---------------------------------------------------------------------------
+
+export async function assignThemeToUser(themeId: string, userId: string, assignedById: string) {
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { id: true } });
+  if (!user) throw new ThemeAdminError("العميل غير موجود");
+  await prisma.themeAssignment.upsert({
+    where: { themeId_userId: { themeId, userId } },
+    create: { themeId, userId, assignedById },
+    update: {},
+  });
+}
+
+export async function unassignThemeFromUser(themeId: string, userId: string) {
+  await prisma.themeAssignment.deleteMany({ where: { themeId, userId } });
+}
+
+// ---------------------------------------------------------------------------
+// Publish validation
+// ---------------------------------------------------------------------------
+
+export interface ValidationIssue {
+  level: "error" | "warning";
+  messageAr: string;
+}
+
+/**
+ * Runs before publishing. Errors block; warnings are shown and can be accepted
+ * — a design with no blessing text is unusual but not broken, whereas one with
+ * no closed envelope has nothing to show the guest at all.
+ */
+export function validateForPublish(builder: BuilderTheme): ValidationIssue[] {
+  const issues: ValidationIssue[] = [];
+  const { layout, variants, assets } = builder;
+
+  const defaultVariant = variants.find((v) => v.isDefault) ?? variants[0];
+  if (!defaultVariant) {
+    issues.push({ level: "error", messageAr: "التصميم بدون أي لون — أضف لونًا واحدًا على الأقل" });
+    return issues;
+  }
+
+  for (const variant of variants) {
+    const slots = new Set(
+      assets.filter((a) => a.variantId === null || a.variantId === variant.id).map((a) => a.slot),
+    );
+    for (const required of REQUIRED_SLOT_KEYS) {
+      if (!slots.has(required)) {
+        issues.push({
+          level: "error",
+          messageAr: `اللون «${variant.nameAr}» ينقصه: ${slotLabel(required)}`,
+        });
+      }
+    }
+  }
+
+  const layerSlots = new Set(layout.layers.filter((l) => l.type === "asset").map((l) => l.slot));
+  for (const required of REQUIRED_SLOT_KEYS) {
+    if (!layerSlots.has(required)) {
+      issues.push({
+        level: "warning",
+        messageAr: `الصورة «${slotLabel(required)}» مرفوعة لكن ما فيه طبقة تعرضها في المحرر`,
+      });
+    }
+  }
+
+  if (!layout.layers.some((l) => l.type === "qr")) {
+    issues.push({ level: "error", messageAr: "ما فيه منطقة باركود QR — المدعو ما راح يقدر يدخل" });
+  }
+  if (!layout.layers.some((l) => l.type === "text" && l.source === "content")) {
+    issues.push({ level: "warning", messageAr: "ما فيه منطقة نص تعرض بيانات الدعوة (اسم المدعو، التاريخ...)" });
+  }
+
+  // A layout authored only at desktop widths silently breaks on the phone most
+  // guests actually open the invitation on, so check the mobile pass explicitly.
+  const offStage = layout.layers.filter(
+    (l) => l.base.x < -20 || l.base.x > 120 || l.base.y < -20 || l.base.y > 120,
+  );
+  if (offStage.length > 0) {
+    issues.push({
+      level: "warning",
+      messageAr: `${offStage.length} عنصر خارج حدود الشاشة على الجوال — راجع مقاس «جوال» في المحرر`,
+    });
+  }
+
+  return issues;
+}
+
+function slotLabel(key: string): string {
+  const labels: Record<string, string> = {
+    background: "خلفية التصميم",
+    envelopeClosed: "الظرف المغلق",
+    envelopeOpen: "الظرف المفتوح",
+    card: "بطاقة الدعوة",
+  };
+  return labels[key] ?? key;
+}
+
+export async function publishBuilderTheme(themeId: string) {
+  const builder = await getBuilderTheme(themeId);
+  if (!builder) throw new ThemeAdminError("التصميم غير موجود");
+
+  const issues = validateForPublish(builder);
+  const errors = issues.filter((i) => i.level === "error");
+  if (errors.length > 0) {
+    throw new ThemeAdminError(`لا يمكن النشر:\n${errors.map((e) => `• ${e.messageAr}`).join("\n")}`);
+  }
+
+  await prisma.theme.update({
+    where: { id: themeId },
+    data: { status: ThemeStatus.PUBLISHED, archivedAt: null },
+  });
+}

@@ -7,7 +7,7 @@ import { THEME_ASSET_KINDS } from "@/lib/themes/types";
 
 interface Asset {
   id: string;
-  kind: string;
+  slot: string;
   url: string;
 }
 
@@ -36,8 +36,8 @@ export function ThemeAssetManager({
           return (
             <div key={asset.id} className="flex flex-col items-center gap-1">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={asset.url} alt={asset.kind} className="h-20 w-20 rounded-lg object-cover" />
-              <span className="text-xs text-fg-muted">{asset.kind}</span>
+              <img src={asset.url} alt={asset.slot} className="h-20 w-20 rounded-lg object-cover" />
+              <span className="text-xs text-fg-muted">{asset.slot}</span>
               <form action={boundRemove}>
                 <button type="submit" className="text-xs text-danger hover:underline">
                   {dict.admin.delete}

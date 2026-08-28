@@ -15,8 +15,12 @@ import type { Locale } from "@/lib/i18n/locales";
 /** Which published design the landing page shows off. */
 const THEME = "ribbon-bloom";
 
-/** Straight from this theme's own `card.layout` config — see lib/themes/types.ts. */
-const SEAL = { top: "55%", left: "50%", color: "#9c5f63" };
+/**
+ * Placement from this theme's own `card.layout` config (see lib/themes/types.ts).
+ * `size` is in cqw — a share of the envelope's width, not the root font size —
+ * so the monogram holds its proportion however wide the phone mock renders.
+ */
+const SEAL = { top: "55%", left: "50%", color: "#9c5f63", size: "4cqw" };
 
 export function EnvelopeHero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const h = dict.home;
@@ -40,7 +44,7 @@ export function EnvelopeHero({ locale, dict }: { locale: Locale; dict: Dictionar
             className="flex aspect-[4/5] items-center justify-center bg-cover bg-center p-4"
             style={{ backgroundImage: `url('/themes/${THEME}/background.jpg')` }}
           >
-            <div className="relative w-full">
+            <div className="relative w-full" style={{ containerType: "inline-size" }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`/themes/${THEME}/envelope-closed.webp`}
@@ -51,12 +55,13 @@ export function EnvelopeHero({ locale, dict }: { locale: Locale; dict: Dictionar
                   rather than baked into it — same here, at the coordinates the
                   theme's own config gives for this envelope. */}
               <span
-                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 text-[0.95rem] tracking-[0.08em]"
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 tracking-[0.08em]"
                 style={{
                   top: SEAL.top,
                   left: SEAL.left,
                   color: SEAL.color,
                   fontFamily: "var(--font-cormorant)",
+                  fontSize: SEAL.size,
                 }}
               >
                 N &amp; F

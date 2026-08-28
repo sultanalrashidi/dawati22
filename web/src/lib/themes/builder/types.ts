@@ -15,11 +15,38 @@
  */
 
 /** Bumped when a migration of stored documents is required. */
-export const BUILDER_SCHEMA_VERSION = 1;
+export const BUILDER_SCHEMA_VERSION = 2;
 
-/** The three screens a builder theme controls. */
-export const SCENE_IDS = ["cover", "open", "pass"] as const;
-export type SceneId = (typeof SCENE_IDS)[number];
+/**
+ * A scene is one screen of the invitation. They are an ORDERED LIST, not a
+ * fixed set: an admin adds, removes, renames and reorders them per design, so
+ * one theme can drop the countdown while another adds two extra screens.
+ *
+ * `id` is a free string. The three built-in ids below are the ones the guest
+ * flow gives special treatment, and older documents already use them as keys.
+ */
+export type SceneId = string;
+
+export const SCENE_COVER = "cover";
+export const SCENE_OPEN = "open";
+export const SCENE_PASS = "pass";
+
+/**
+ * What the guest flow does with a scene.
+ * - `cover`: the tap-to-open screen, shown before the invitation opens. Exactly one.
+ * - `flow`:  an ordinary scroll-snapped screen in the post-open sequence.
+ * - `pass`:  the entry pass, shown only after the guest accepts.
+ */
+export const SCENE_ROLES = ["cover", "flow", "pass"] as const;
+export type SceneRole = (typeof SCENE_ROLES)[number];
+
+/**
+ * Event data a scene needs before it is worth showing. A scene requiring
+ * `schedule` is skipped for an event with no schedule, exactly as the
+ * hand-coded flow skips it today.
+ */
+export const SCENE_REQUIREMENTS = ["schedule", "notes", "map", "music"] as const;
+export type SceneRequirement = (typeof SCENE_REQUIREMENTS)[number];
 
 /** Editor breakpoints. `base` is mobile-first and is always complete. */
 export const BREAKPOINTS = ["base", "tablet", "desktop"] as const;
@@ -188,7 +215,17 @@ export const CONTENT_FIELD_LABELS_AR: Record<ContentField, string> = {
 // Layers
 // ---------------------------------------------------------------------------
 
-export const LAYER_TYPES = ["asset", "text", "seal", "qr"] as const;
+export const LAYER_TYPES = [
+  "asset",
+  "text",
+  "seal",
+  "qr",
+  "countdown",
+  "button",
+  "rsvp",
+  "schedule",
+  "notes",
+] as const;
 export type LayerType = (typeof LAYER_TYPES)[number];
 
 interface LayerCommon {
@@ -267,7 +304,94 @@ export interface QrLayer extends LayerCommon {
   fgColor: string;
 }
 
-export type Layer = AssetLayer | TextLayer | SealLayer | QrLayer;
+/** The live counter to the event. Numbers and their labels style separately. */
+export interface CountdownLayer extends LayerCommon {
+  type: "countdown";
+  /** Optional heading above the digits, e.g. "يفصلنا عن المناسبة". */
+  title: string;
+  titleStyle: TextStyle;
+  numberStyle: TextStyle;
+  labelStyle: TextStyle;
+  /** Frame around the digits. */
+  boxColor: string;
+  boxOpacity: number;
+  borderColor: string;
+  borderWidth: number;
+  borderRadius: number;
+  /** Drop the seconds column for a calmer design. */
+  showSeconds: boolean;
+}
+
+export const BUTTON_ACTIONS = ["calendar", "map", "music", "link"] as const;
+export type ButtonAction = (typeof BUTTON_ACTIONS)[number];
+
+/** An action the guest can take — add to calendar, open the map, a custom link. */
+export interface ButtonLayer extends LayerCommon {
+  type: "button";
+  action: ButtonAction;
+  label: string;
+  /** Destination for `action: "link"`. */
+  href: string;
+  style: TextStyle;
+  background: string;
+  backgroundOpacity: number;
+  borderColor: string;
+  borderWidth: number;
+  borderRadius: number;
+}
+
+/**
+ * The real RSVP form.
+ *
+ * Positioned and sized as ONE block rather than field-by-field: its inputs,
+ * the accept/decline buttons and the submit action are a working form, and
+ * letting them be dragged apart individually is how a design ends up unable to
+ * take a booking. Colours and the field font still follow the theme.
+ */
+export interface RsvpLayer extends LayerCommon {
+  type: "rsvp";
+  title: string;
+  titleStyle: TextStyle;
+  fieldStyle: TextStyle;
+  fieldBackground: string;
+  borderColor: string;
+  borderRadius: number;
+  /** Accent for the primary submit/accept control. */
+  accent: string;
+  accentFg: string;
+}
+
+/** The event-day timeline. One block; rows come from the event's own schedule. */
+export interface ScheduleLayer extends LayerCommon {
+  type: "schedule";
+  title: string;
+  titleStyle: TextStyle;
+  timeStyle: TextStyle;
+  labelStyle: TextStyle;
+  /** Space between rows, as % of the layer's height. */
+  rowGap: number;
+}
+
+/** Free-text notes the organiser set, one per line. */
+export interface NotesLayer extends LayerCommon {
+  type: "notes";
+  title: string;
+  titleStyle: TextStyle;
+  itemStyle: TextStyle;
+  /** Character shown before each line; empty for none. */
+  bullet: string;
+}
+
+export type Layer =
+  | AssetLayer
+  | TextLayer
+  | SealLayer
+  | QrLayer
+  | CountdownLayer
+  | ButtonLayer
+  | RsvpLayer
+  | ScheduleLayer
+  | NotesLayer;
 
 // ---------------------------------------------------------------------------
 // Animation
@@ -312,6 +436,18 @@ export interface SceneCanvas {
   safeInset: number;
 }
 
+export interface SceneDef {
+  id: SceneId;
+  /** Shown on the editor's scene tab. */
+  name: string;
+  role: SceneRole;
+  canvas: SceneCanvas;
+  /** Unchecking hides the scene from guests without deleting its layers. */
+  visible: boolean;
+  /** Skip the scene when the event carries none of this data. */
+  requires: SceneRequirement | null;
+}
+
 /**
  * The full-page backdrop.
  *
@@ -340,16 +476,28 @@ export const DEFAULT_PAGE_BACKGROUND: PageBackground = {
 export interface LayoutDoc {
   version: number;
   page: PageBackground;
-  scenes: Record<SceneId, SceneCanvas>;
+  /** Ordered — this is the order the guest scrolls through. */
+  scenes: SceneDef[];
   layers: Layer[];
   animation: AnimationSettings;
 }
 
-export const DEFAULT_SCENES: Record<SceneId, SceneCanvas> = {
-  cover: { aspectW: 390, aspectH: 620, safeInset: 6 },
-  open: { aspectW: 390, aspectH: 620, safeInset: 6 },
-  pass: { aspectW: 390, aspectH: 620, safeInset: 6 },
-};
+export const DEFAULT_CANVAS: SceneCanvas = { aspectW: 390, aspectH: 620, safeInset: 6 };
+
+export const DEFAULT_SCENES: SceneDef[] = [
+  { id: SCENE_COVER, name: "الظرف المغلق", role: "cover", canvas: DEFAULT_CANVAS, visible: true, requires: null },
+  { id: SCENE_OPEN, name: "الظرف المفتوح", role: "flow", canvas: DEFAULT_CANVAS, visible: true, requires: null },
+  { id: SCENE_PASS, name: "بطاقة الدخول", role: "pass", canvas: DEFAULT_CANVAS, visible: true, requires: null },
+];
+
+/** Lookup by id, for the many callers that only have a scene id in hand. */
+export function findScene(doc: LayoutDoc, sceneId: SceneId): SceneDef | undefined {
+  return doc.scenes.find((scene) => scene.id === sceneId);
+}
+
+export function sceneCanvas(doc: LayoutDoc, sceneId: SceneId): SceneCanvas {
+  return findScene(doc, sceneId)?.canvas ?? DEFAULT_CANVAS;
+}
 
 export const DEFAULT_LAYOUT_DOC: LayoutDoc = {
   version: BUILDER_SCHEMA_VERSION,

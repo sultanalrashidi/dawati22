@@ -10,12 +10,14 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import { MusicFrame, useBackgroundMusic, type BackgroundMusic } from "@/components/guest/background-music";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ScheduleItem } from "@/lib/events/types";
 import { fontVarFor } from "@/lib/themes/fonts";
 import { fontStackFor } from "@/lib/themes/font-registry";
 import { ThemeStage } from "@/components/themes/builder/theme-stage";
+import type { RsvpResponse, StageRsvp } from "@/components/themes/builder/layers/rsvp-layer";
 import { resolveContent, type CoupleInput, type ResolvedContent } from "@/lib/themes/builder/content";
 import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
 import {
@@ -23,7 +25,9 @@ import {
   type Breakpoint,
   type LayoutDoc,
   type SceneCanvas,
+  type SceneDef,
   type SceneId,
+  type SceneRequirement,
   type TypographyDoc,
   type VariantPalette,
 } from "@/lib/themes/builder/types";
@@ -37,6 +41,24 @@ import { BuilderPageBackground, pageBackgroundUrl } from "@/components/guest/bui
 import { RoseCandlelightPass } from "@/components/guest/rose-candlelight-pass";
 import { BridalFramePass } from "@/components/guest/bridal-frame-pass";
 import { formatDualDate } from "@/lib/dates";
+
+/**
+ * Is a layer actually reachable by a guest?
+ *
+ * Used to decide whether a designed RSVP block can be trusted to take the
+ * booking. A block at 0.4% width, at 250% off the stage, or at zero opacity
+ * technically exists but no guest can fill it in, and treating it as present
+ * would suppress the fallback form and silently break bookings for that theme.
+ */
+function isUsableLayer(layer: { visible: boolean; base: { width: number; height: number | null; x: number; y: number; opacity: number; scale: number } }): boolean {
+  if (!layer.visible) return false;
+  const { width, height, x, y, opacity, scale } = layer.base;
+  if (opacity < 0.15 || scale < 0.2) return false;
+  if (width < 15) return false;
+  if (height !== null && height < 8) return false;
+  // Centre must be on the stage, with a little slack for a deliberate bleed.
+  return x > -10 && x < 110 && y > -10 && y < 110;
+}
 
 type GuestFacingStatus = "DRAFT" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED";
 
@@ -98,10 +120,10 @@ interface Props {
   status: GuestFacingStatus;
   qrDataUrl: string | null;
   /**
-   * Set for BUILDER themes only. It replaces the three art screens — the
-   * pre-open cover, scene 1's opened card and the RSVP-accepted pass — with
-   * the admin-authored stage; countdown, schedule, map, RSVP, music and the
-   * scene animations are untouched.
+   * Set for BUILDER themes only. The whole invitation then comes from the
+   * admin's own document: the cover, every post-open screen in the order the
+   * scene list gives them, and the entry pass. LEGACY themes never pass it and
+   * keep the hand-coded Scenes 1–7 below, unchanged.
    */
   builder?: BuilderTheme;
   /**
@@ -171,58 +193,38 @@ function VinylIcon({ spinning }: { spinning: boolean }) {
 }
 
 /**
- * Background music via a visually hidden YouTube iframe. By default playback
- * only starts from an explicit click on the toggle button; when `autoplay`
- * is set (customer's choice) it starts immediately, riding the same user
- * gesture that opened the invitation so the browser allows unmuted audio.
- * The toggle itself is a labeled pill (icon + text), not just an icon, so
- * guests immediately recognize it controls the music rather than missing it.
+ * The Music pill. The player itself lives in <MusicFrame>, mounted once above
+ * every screen — see background-music.tsx for why the two are separate.
+ *
+ * The toggle is a labeled pill (icon + text), not just an icon, so guests
+ * immediately recognize it controls the music rather than missing it.
  */
 function MusicToggle({
-  videoId,
-  autoplay,
   label,
   pauseLabel,
+  playing,
+  onToggle,
 }: {
-  videoId: string;
-  autoplay: boolean;
   label: string;
   pauseLabel: string;
+  /** The player's real state, so the pill can never announce silence as sound. */
+  playing: boolean;
+  onToggle: () => void;
 }) {
-  const [playing, setPlaying] = useState(autoplay);
-  const iframeRef = useRef<HTMLIFrameElement>(null);
-
-  function toggle() {
-    const win = iframeRef.current?.contentWindow;
-    if (!win) return;
-    const next = !playing;
-    win.postMessage(JSON.stringify({ event: "command", func: next ? "playVideo" : "pauseVideo", args: [] }), "*");
-    setPlaying(next);
-  }
-
   return (
-    <>
-      <button
-        type="button"
-        onClick={toggle}
-        aria-label={playing ? pauseLabel : label}
-        title={playing ? pauseLabel : label}
-        className="fixed left-4 top-4 z-20 flex h-11 items-center gap-2 rounded-full border px-3 shadow-lg"
-        style={{ borderColor: "var(--color-accent)", background: "var(--color-surface)" }}
-      >
-        <VinylIcon spinning={playing} />
-        <span className="text-xs font-medium uppercase tracking-[0.15em]" style={{ color: "var(--color-fg)" }}>
-          Music
-        </span>
-      </button>
-      <iframe
-        ref={iframeRef}
-        src={`https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&controls=0&modestbranding=1&rel=0&playsinline=1${autoplay ? "&autoplay=1" : ""}`}
-        style={{ position: "fixed", width: 1, height: 1, opacity: 0, pointerEvents: "none", bottom: 0 }}
-        allow="autoplay"
-        title="background-music"
-      />
-    </>
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-label={playing ? pauseLabel : label}
+      title={playing ? pauseLabel : label}
+      className="fixed left-4 top-4 z-20 flex h-11 items-center gap-2 rounded-full border px-3 shadow-lg"
+      style={{ borderColor: "var(--color-accent)", background: "var(--color-surface)" }}
+    >
+      <VinylIcon spinning={playing} />
+      <span className="text-xs font-medium uppercase tracking-[0.15em]" style={{ color: "var(--color-fg)" }}>
+        Music
+      </span>
+    </button>
   );
 }
 
@@ -317,6 +319,49 @@ function stageMaxWidth(canvas: SceneCanvas, reserve: string) {
   return `min(26rem, calc((100dvh - ${reserve}) * ${canvas.aspectW} / ${canvas.aspectH}))`;
 }
 
+/**
+ * What a stage needs from the invitation beyond its text content.
+ *
+ * A builder scene can now carry a live countdown, action buttons, the event
+ * schedule, the organiser's notes and the real RSVP form, so the renderer
+ * needs the same event and guest data the hand-coded scenes read. It is
+ * assembled once per render and handed to every stage, so a layer behaves
+ * identically on whichever scene the admin dropped it.
+ *
+ * The nullable fields are deliberately never `undefined` here: `<ThemeStage>`
+ * reads absent as "no event attached" and shows samples, which is right for the
+ * editor and wrong for a guest — a guest must never read an invented schedule.
+ */
+interface StageData {
+  eventDateIso: string;
+  linkToken: string | null;
+  mapUrl: string | null;
+  scheduleItems: ScheduleItem[] | null;
+  notesAr: string | null;
+  rsvp: StageRsvp;
+  /** Non-null once the guest answers; the RSVP block then thanks them in place. */
+  rsvpResponded: "ACCEPTED" | "DECLINED" | null;
+  onToggleMusic: (() => void) | null;
+  musicPlaying: boolean;
+}
+
+/**
+ * The post-open screens a builder theme shows THIS guest: its `flow` scenes in
+ * the admin's own order, minus the ones hidden in the editor and the ones whose
+ * required event data this event doesn't carry — the same "no schedule, no
+ * schedule screen" rule the hand-coded flow has always applied, now declared in
+ * the document instead of hard-coded here.
+ *
+ * Filtering into a list up front, rather than returning null per scene inside
+ * the map, is what stops a skipped scene from leaving an empty scroll-snap slot
+ * for the guest to swipe past.
+ */
+function visibleFlowScenes(layout: LayoutDoc, has: Record<SceneRequirement, boolean>): SceneDef[] {
+  return layout.scenes.filter(
+    (scene) => scene.role === "flow" && scene.visible && (scene.requires === null || has[scene.requires]),
+  );
+}
+
 /** One builder scene, with the per-variant resolution already applied. */
 function BuilderStage({
   builder,
@@ -324,12 +369,14 @@ function BuilderStage({
   content,
   breakpoint,
   qrDataUrl,
+  data,
 }: {
   builder: BuilderTheme;
   scene: SceneId;
   content: ResolvedContent;
   breakpoint: Breakpoint;
   qrDataUrl?: string | null;
+  data: StageData;
 }) {
   // `<ThemeStage>` paints `palette.bg` on the stage box. That is right for a
   // theme whose scenes stand on a flat colour, but with a page background in
@@ -349,12 +396,59 @@ function BuilderStage({
       content={content}
       breakpoint={breakpoint}
       qrDataUrl={qrDataUrl}
+      eventDateIso={data.eventDateIso}
+      linkToken={data.linkToken}
+      mapUrl={data.mapUrl}
+      scheduleItems={data.scheduleItems}
+      notesAr={data.notesAr}
+      rsvp={data.rsvp}
+      rsvpResponded={data.rsvpResponded}
+      onToggleMusic={data.onToggleMusic}
+      musicPlaying={data.musicPlaying}
       style={overPageBackground ? { backgroundColor: "transparent" } : undefined}
     />
   );
 }
 
-export function InvitationView({
+/**
+ * The player and the Music pill are mounted HERE, as siblings of the whole
+ * screen tree, and nowhere else.
+ *
+ * `InvitationScreens` below returns five mutually exclusive screens through
+ * early `return`s — four covers and the opened invitation. Rendering the
+ * player inside those branches, as this used to, meant React tore the iframe
+ * down and built a new one the instant the guest opened the invitation:
+ * whatever was playing stopped dead at the reveal, and the replacement player
+ * came up cold. Two of the four covers did not render it at all, so for those
+ * themes the player did not exist until 650ms after the tap — long after the
+ * gesture that could have started it was gone.
+ *
+ * Above the branches, the player is mounted once, on the first paint, and
+ * survives every screen change for the life of the page.
+ */
+export function InvitationView(props: Props) {
+  const music = useBackgroundMusic(props.event.musicYoutubeId ?? null);
+  const g = props.dict.guest;
+
+  return (
+    <>
+      {music.enabled && props.event.musicYoutubeId && (
+        <MusicFrame videoId={props.event.musicYoutubeId} frameRef={music.frameRef} />
+      )}
+      {music.enabled && (
+        <MusicToggle
+          label={g.playMusic}
+          pauseLabel={g.pauseMusic}
+          playing={music.playing}
+          onToggle={music.toggle}
+        />
+      )}
+      <InvitationScreens {...props} music={music} />
+    </>
+  );
+}
+
+function InvitationScreens({
   dict,
   linkToken,
   theme,
@@ -365,7 +459,8 @@ export function InvitationView({
   qrDataUrl,
   mode = "live",
   builder,
-}: Props) {
+  music,
+}: Props & { music: BackgroundMusic }) {
   const [opened, setOpened] = useState(false);
   const [isOpening, setIsOpening] = useState(false);
   const [currentStatus, setCurrentStatus] = useState(status);
@@ -418,9 +513,31 @@ export function InvitationView({
     [builder, couples, event, guest],
   );
 
-  function handleOpenClick() {
+  /**
+   * The one way the invitation opens. Every cover routes through here — the
+   * plainest one used to call `setOpened` directly, which meant its guests got
+   * no music at all no matter what the customer had chosen.
+   *
+   * `animate: false` is that plain cover, which reveals instantly instead of
+   * playing the 650ms seal animation.
+   */
+  function openInvitation({ animate = true }: { animate?: boolean } = {}) {
+    // FIRST, and synchronously: this call sits inside the guest's tap, which
+    // is the only moment a mobile browser will let unmuted audio start.
+    // Deferring it — even into the timeout just below — loses the gesture and
+    // the song stays silent on every phone.
+    if (event.musicAutoplay) music.start();
+
+    if (!animate) {
+      setOpened(true);
+      return;
+    }
     setIsOpening(true);
     setTimeout(() => setOpened(true), OPENING_TRANSITION_MS);
+  }
+
+  function handleOpenClick() {
+    openInvitation();
   }
 
   // A builder theme's colors live on its variant, not in `config` — the chrome
@@ -476,6 +593,66 @@ export function InvitationView({
     });
   }
 
+  // An RSVP block on a builder scene posts through `submitRsvpAction` itself —
+  // the same server action `respond` uses — and hands back the entry QR. All
+  // this has to do is move the page on to the pass, exactly as `respond` does.
+
+  function handleStageRsvp(response: RsvpResponse, qr: string | null) {
+    setCurrentStatus(response);
+    if (qr) setCurrentQr(qr);
+  }
+
+  // The music is driven by <useBackgroundMusic>: one player, mounted once
+  // below, whose state comes from the player's own events. Kept as local names
+  // because a designed `music` button layer drives the very same audio — two
+  // independent play states would fight each other over one player.
+  const musicPlaying = music.playing;
+  const toggleMusic = music.toggle;
+
+
+
+  // Assembled once and handed to every builder stage — see StageData.
+  const stageData: StageData = {
+    eventDateIso: event.eventDate,
+    linkToken: linkToken ?? null,
+    mapUrl: event.mapUrl,
+    scheduleItems: event.scheduleItems ?? null,
+    notesAr: event.notesAr ?? null,
+    rsvpResponded:
+      currentStatus === "ACCEPTED" || currentStatus === "DECLINED" ? currentStatus : null,
+    onToggleMusic: event.musicYoutubeId ? toggleMusic : null,
+    musicPlaying,
+    rsvp: {
+      guestName: guest.nameAr,
+      allowedCount: guest.allowedCount,
+      allowGuestPartySize: event.allowGuestPartySize,
+      // The theme editor and the customer's gallery walk the real form; they
+      // must not write a booking against a sample invitation.
+      simulate: mode === "preview",
+      onResponded: handleStageRsvp,
+      // The block draws its own copy, so hand it this page's dictionary rather
+      // than letting a second set of Arabic strings drift from `dict.guest`.
+      labels: {
+        name: g.rsvpNameLabel,
+        phone: g.rsvpPhoneLabel,
+        attending: g.attendingChoice,
+        decline: g.decline,
+        partySize: g.rsvpPartySizeLabel,
+        message: g.rsvpMessageLabel,
+        messagePlaceholder: g.rsvpMessagePlaceholder,
+        submit: g.rsvpSubmit,
+        error: g.rsvpError,
+        thanksAccept: g.thanksAccept,
+        thanksDecline: g.thanksDecline,
+      },
+    },
+  };
+
+  // The cover's overlay tap target covers the whole stage, so nothing on it can
+  // be interacted with. Handing it a live RSVP would therefore render a real,
+  // unreachable form; the inert one makes that explicit.
+  const coverStageData: StageData = { ...stageData, rsvp: { ...stageData.rsvp, simulate: true } };
+
   const isArch = theme.layout === "arch-frame";
   const isEnvelope = theme.layout === "envelope-reveal";
   const isSplit = theme.layout === "split-portrait";
@@ -497,10 +674,17 @@ export function InvitationView({
   const isBridalFrame = theme.card?.style === "bridal-frame";
   const openTextZone = theme.card?.layout?.openTextZone ?? { insetX: "24%", top: "15%", bottom: "30%" };
 
+  // The tap-to-open screen is the scene the admin marked `cover`. It is picked
+  // by role and not by `visible`, because unlike the scroll-snapped screens
+  // after it this one is structural: a guest with no cover would have nothing
+  // to tap. A document that carries no cover role at all falls through to the
+  // hand-coded covers below rather than opening onto a blank page.
+  const coverScene = builder?.layout.scenes.find((scene) => scene.role === "cover");
+
   // A builder theme's cover is its own authored artwork; the tap-to-open
   // interaction, the lift/shine reaction and the label are the same ones the
   // bespoke SealedCard themes use.
-  if (!opened && builder && builderContent) {
+  if (!opened && builder && builderContent && coverScene) {
     // With the theme's own art behind the whole page, the cover stage is no
     // longer a card floating on a colour — the rounded corners and drop shadow
     // would outline a transparent rectangle over the artwork.
@@ -511,16 +695,17 @@ export function InvitationView({
         className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
       >
         <BuilderPageBackground page={builder.layout.page} assets={builder.assets} />
-        {event.musicYoutubeId && (
-          <MusicToggle videoId={event.musicYoutubeId} autoplay={Boolean(event.musicAutoplay)} label={g.playMusic} pauseLabel={g.pauseMusic} />
-        )}
-        <button
-          type="button"
-          onClick={handleOpenClick}
-          disabled={isOpening}
+        {/*
+          The tap target is an overlay, NOT a wrapper. A designer can drop any
+          layer on the cover, and an RSVP block or a link button nested inside a
+          <button> is invalid HTML: React refuses to hydrate it and every tap on
+          the form would open the invitation instead. Overlaying keeps the cover
+          one big tap target without ever nesting interactive elements.
+        */}
+        <div
           className="relative flex w-full flex-col items-center gap-6"
           style={{
-            maxWidth: stageMaxWidth(builder.layout.scenes.cover, "9rem"),
+            maxWidth: stageMaxWidth(coverScene.canvas, "9rem"),
             opacity: isOpening ? 0 : 1,
             transition: "opacity 0.35s ease 0.35s",
           }}
@@ -533,12 +718,39 @@ export function InvitationView({
               filter: isOpening ? "brightness(1.15)" : "brightness(1)",
             }}
           >
-            <BuilderStage builder={builder} scene="cover" content={builderContent} breakpoint={breakpoint} />
+            <BuilderStage
+              builder={builder}
+              scene={coverScene.id}
+              content={builderContent}
+              breakpoint={breakpoint}
+              data={coverStageData}
+            />
+            {/* Makes the whole card tappable. Hidden from assistive tech and
+                taken out of the tab order on purpose: it carries no name of its
+                own, so keyboard and screen-reader users reach the identical
+                labelled button below instead of being offered the same action
+                twice. */}
+            <button
+              type="button"
+              onClick={handleOpenClick}
+              disabled={isOpening}
+              aria-hidden="true"
+              tabIndex={-1}
+              className="absolute inset-0 z-10 h-full w-full"
+            />
           </div>
-          <span className="text-xs font-medium uppercase tracking-[0.3em]" style={{ color: "var(--color-fg)" }}>
+          {/* Padded to a 44px-tall target — the text itself is only 16px, and
+              this is the affordance a guest aims at. */}
+          <button
+            type="button"
+            onClick={handleOpenClick}
+            disabled={isOpening}
+            className="px-6 py-3.5 text-xs font-medium uppercase tracking-[0.3em]"
+            style={{ color: "var(--color-fg)" }}
+          >
             {g.openInvitation}
-          </span>
-        </button>
+          </button>
+        </div>
       </div>
     );
   }
@@ -555,9 +767,6 @@ export function InvitationView({
         {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
         {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
         <RoseCandlelightBackground assetFolder={roseAssetFolder} />
-        {event.musicYoutubeId && (
-          <MusicToggle videoId={event.musicYoutubeId} autoplay={Boolean(event.musicAutoplay)} label={g.playMusic} pauseLabel={g.pauseMusic} />
-        )}
         <SealedCard
           style={theme.card.style}
           accent={theme.palette.accent}
@@ -703,7 +912,7 @@ export function InvitationView({
           ) : (
             <button
               type="button"
-              onClick={() => setOpened(true)}
+              onClick={() => openInvitation({ animate: false })}
               className="mt-6 flex flex-col items-center gap-3"
               style={{ animation: "dawati-fade-in 1.2s ease-out" }}
             >
@@ -727,15 +936,59 @@ export function InvitationView({
   const hasNotes = notesList.length > 0;
   const hasResponded = currentStatus === "ACCEPTED" || currentStatus === "DECLINED";
   const hasRsvpForm = !hasResponded && event.rsvpRequired;
+
+  // ---- Builder themes: the post-open flow is the theme's own scene list ----
+  //
+  // `flowScenes` is the exact sequence this guest scrolls through. Everything
+  // below is empty for a LEGACY theme, which keeps Scenes 1–7 verbatim.
+  const eligibleScenes = builder
+    ? visibleFlowScenes(builder.layout, {
+        schedule: hasSchedule,
+        notes: hasNotes,
+        map: Boolean(event.mapUrl),
+        music: Boolean(event.musicYoutubeId),
+      })
+    : [];
+  // Scenes holding a USABLE RSVP block. `visible` alone is not enough: a block
+  // shrunk to nothing, dragged off the stage or faded out is invisible to the
+  // guest but would still suppress the fallback below, leaving them with no way
+  // to book at all. Anything short of usable falls back to the hand-coded form.
+  const rsvpSceneIds = new Set(
+    builder
+      ? builder.layout.layers
+          .filter((l) => l.type === "rsvp" && isUsableLayer(l))
+          .map((l) => l.scene)
+      : [],
+  );
+  // A theme that never designed an RSVP block — every builder theme authored
+  // before the block existed — still has to be able to take a booking, so the
+  // hand-coded form below stands in. Guests who already answered see neither.
+  const designedRsvp = eligibleScenes.some((scene) => rsvpSceneIds.has(scene.id));
+  // The scene STAYS once the guest answers — only the block inside it swaps to
+  // its thank-you state. Dropping the whole screen would take every unrelated
+  // layer on it (names, date, venue) with it and leave a hole mid-scroll.
+  // Falling back to the hand-coded screens when this is empty is deliberate: a
+  // theme whose only flow scene was deleted, hidden, or gated behind data this
+  // event lacks would otherwise render an entirely blank invitation between the
+  // cover and the pass.
+  const flowScenes = eligibleScenes;
+  const somethingFollowsFlow = (hasRsvpForm && !designedRsvp) || hasResponded;
+  // Shown only to a guest who accepted, and only if the theme still has a pass
+  // scene: hidden or deleted, the generic card below keeps the entry QR
+  // reachable rather than handing them an empty stage.
+  const passScene = builder?.layout.scenes.find((scene) => scene.role === "pass" && scene.visible);
+
   const somethingFollowsDetails = hasSchedule || hasNotes || hasRsvpForm || hasResponded;
   const somethingFollowsSchedule = hasNotes || hasRsvpForm || hasResponded;
   const somethingFollowsNotes = hasRsvpForm || hasResponded;
   const calendarUrl = linkToken ? `/i/${linkToken}/calendar` : undefined;
-  // The entry-pass cards name one couple; for a joint wedding that is the
-  // primary one, matching the link preview and the seal monogram.
-  const primaryCouple = couples[0];
-  const groomLabel = primaryCouple.groomNameAr || primaryCouple.groomNameEn;
-  const brideLabel = primaryCouple.brideNameAr || primaryCouple.brideNameEn;
+  // The entry-pass cards list EVERY couple. They used to print the primary
+  // pair only, which meant a joint wedding's other couples never appeared on
+  // the card the guest shows at the door.
+  const passCouples = couples.map((couple) => ({
+    groomLabel: couple.groomNameAr || couple.groomNameEn,
+    brideLabel: couple.brideNameAr || couple.brideNameEn,
+  }));
 
   return (
     <div
@@ -764,14 +1017,6 @@ export function InvitationView({
       ) : (
         themeCategory && <ThemeDecor category={themeCategory} accent={theme.palette.accent} fgMuted={theme.palette.fgMuted} />
       )}
-      {event.musicYoutubeId && (
-        <MusicToggle
-          videoId={event.musicYoutubeId}
-          autoplay={Boolean(event.musicAutoplay)}
-          label={g.playMusic}
-          pauseLabel={g.pauseMusic}
-        />
-      )}
       {isSplit && (
         <div className="pointer-events-none fixed inset-y-0 end-0 z-10 w-2" style={{ background: "var(--color-accent)" }} />
       )}
@@ -787,185 +1032,206 @@ export function InvitationView({
           ...(builder ? { animation: openAnimation } : null),
         }}
       >
-        {/* Scene 1: the guest's own named card — same shared background as
-            every other scene; the rose-emboss theme shows its opened-envelope
-            card photo with the same text written across its blank paper. */}
-        <Scene showHint>
-          {builder && builderContent ? (
-            <div className="w-full" style={{ maxWidth: stageMaxWidth(builder.layout.scenes.open, "10rem") }}>
-              <BuilderStage builder={builder} scene="open" content={builderContent} breakpoint={breakpoint} />
-            </div>
-          ) : isBridalFrame ? (
-            <div className="relative w-[320px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/themes/${roseAssetFolder}/envelope-open.webp`} alt="" className="block w-full" />
-              {/* ink color follows the theme's own fg/fgMuted so it reads on both the
-                  light ivory-bloom card and the dark (navy/burgundy/mocha/noir) variants;
-                  no drop shadow needed here — cancel the scene-wide one */}
-              <div
-                className="absolute flex flex-col items-center justify-center gap-1.5 text-center"
-                style={{
-                  insetInlineStart: openTextZone.insetX,
-                  insetInlineEnd: openTextZone.insetX,
-                  top: openTextZone.top,
-                  bottom: openTextZone.bottom,
-                  textShadow: "none",
-                }}
-              >
-                <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "var(--color-fg-muted)", fontFamily: "var(--font-ar-body)" }}>
-                  {g.guestOf}
-                </p>
-                <h1 className="text-lg leading-snug sm:text-xl" style={{ color: "var(--color-fg)", fontFamily: "var(--font-ar-display)" }}>
-                  {guest.nameAr}
-                </h1>
-                <p className="text-[11px] leading-relaxed sm:text-xs" style={{ color: "var(--color-fg-muted)", fontFamily: "var(--font-ar-body)" }}>
-                  {g.guestWelcome}
-                </p>
+        {builder && builderContent && flowScenes.length > 0 ? (
+          /* A builder theme brings its own post-open sequence: one screen per
+             `flow` scene, in the admin's own order. It reuses the same <Scene>
+             wrapper as the hand-coded screens below, so scroll-snap, the
+             in-view reveal and the scroll hint behave identically. */
+          flowScenes.map((scene, index) => (
+            <Scene key={scene.id} showHint={index < flowScenes.length - 1 || somethingFollowsFlow}>
+              <div className="w-full" style={{ maxWidth: stageMaxWidth(scene.canvas, "10rem") }}>
+                <BuilderStage
+                  builder={builder}
+                  scene={scene.id}
+                  content={builderContent}
+                  breakpoint={breakpoint}
+                  qrDataUrl={currentQr}
+                  data={stageData}
+                />
               </div>
-            </div>
-          ) : theme.card?.style === "rose-emboss" ? (
-            <div className="relative w-[370px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/themes/${roseAssetFolder}/envelope-open.webp`} alt="" className="block w-full" />
-              {/* dark ink on light paper needs no drop shadow — cancel the scene-wide one */}
-              <div className="absolute inset-x-[18%] top-[37%] flex flex-col items-center gap-1.5 text-center" style={{ textShadow: "none" }}>
-                <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#8a5a3a", fontFamily: "var(--font-ar-body)" }}>
-                  {g.guestOf}
+            </Scene>
+          ))
+        ) : (
+          <>
+            {/* Scene 1: the guest's own named card — same shared background as
+                every other scene; the rose-emboss theme shows its opened-envelope
+                card photo with the same text written across its blank paper. */}
+            <Scene showHint>
+              {isBridalFrame ? (
+                <div className="relative w-[320px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/themes/${roseAssetFolder}/envelope-open.webp`} alt="" className="block w-full" />
+                  {/* ink color follows the theme's own fg/fgMuted so it reads on both the
+                      light ivory-bloom card and the dark (navy/burgundy/mocha/noir) variants;
+                      no drop shadow needed here — cancel the scene-wide one */}
+                  <div
+                    className="absolute flex flex-col items-center justify-center gap-1.5 text-center"
+                    style={{
+                      insetInlineStart: openTextZone.insetX,
+                      insetInlineEnd: openTextZone.insetX,
+                      top: openTextZone.top,
+                      bottom: openTextZone.bottom,
+                      textShadow: "none",
+                    }}
+                  >
+                    <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "var(--color-fg-muted)", fontFamily: "var(--font-ar-body)" }}>
+                      {g.guestOf}
+                    </p>
+                    <h1 className="text-lg leading-snug sm:text-xl" style={{ color: "var(--color-fg)", fontFamily: "var(--font-ar-display)" }}>
+                      {guest.nameAr}
+                    </h1>
+                    <p className="text-[11px] leading-relaxed sm:text-xs" style={{ color: "var(--color-fg-muted)", fontFamily: "var(--font-ar-body)" }}>
+                      {g.guestWelcome}
+                    </p>
+                  </div>
+                </div>
+              ) : theme.card?.style === "rose-emboss" ? (
+                <div className="relative w-[370px]">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`/themes/${roseAssetFolder}/envelope-open.webp`} alt="" className="block w-full" />
+                  {/* dark ink on light paper needs no drop shadow — cancel the scene-wide one */}
+                  <div className="absolute inset-x-[18%] top-[37%] flex flex-col items-center gap-1.5 text-center" style={{ textShadow: "none" }}>
+                    <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#8a5a3a", fontFamily: "var(--font-ar-body)" }}>
+                      {g.guestOf}
+                    </p>
+                    <h1 className="text-lg leading-snug sm:text-xl" style={{ color: "#3d2417", fontFamily: "var(--font-ar-display)" }}>
+                      {guest.nameAr}
+                    </h1>
+                    <p className="text-[11px] leading-relaxed sm:text-xs" style={{ color: "#6b4530", fontFamily: "var(--font-ar-body)" }}>
+                      {g.guestWelcome}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <p className="text-sm uppercase tracking-[0.4em] text-[var(--color-accent)]" style={{ fontFamily: "var(--font-ar-body)" }}>
+                    {g.guestOf}
+                  </p>
+                  <h1 className="text-3xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
+                    {guest.nameAr}
+                  </h1>
+                </>
+              )}
+            </Scene>
+
+            {/* Scene 2: blessing, invitation text, couple names, date */}
+            <Scene showHint>
+              {event.familiesGreetingAr && (
+                <p className="max-w-md text-2xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
+                  {event.familiesGreetingAr}
                 </p>
-                <h1 className="text-lg leading-snug sm:text-xl" style={{ color: "#3d2417", fontFamily: "var(--font-ar-display)" }}>
-                  {guest.nameAr}
-                </h1>
-                <p className="text-[11px] leading-relaxed sm:text-xs" style={{ color: "#6b4530", fontFamily: "var(--font-ar-body)" }}>
-                  {g.guestWelcome}
-                </p>
-              </div>
-            </div>
-          ) : (
-            <>
-              <p className="text-sm uppercase tracking-[0.4em] text-[var(--color-accent)]" style={{ fontFamily: "var(--font-ar-body)" }}>
-                {g.guestOf}
+              )}
+              <p className="max-w-md whitespace-pre-line leading-loose text-[var(--color-fg-muted)]">
+                {event.invitationTextAr}
               </p>
-              <h1 className="text-3xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
-                {guest.nameAr}
-              </h1>
-            </>
-          )}
-        </Scene>
+              {/* One row per couple — a joint wedding announces several. With a
+                  single couple the wrapper collapses to exactly the row that was
+                  here before, so the common case is pixel-identical. */}
+              <div className="flex flex-col items-center gap-3">
+                {couples.map((couple, i) => (
+                  <div key={i} className="flex items-center justify-center gap-4">
+                    <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>
+                      {couple.brideNameAr || couple.brideNameEn}
+                    </p>
+                    <div className="h-8 w-px" style={{ background: "var(--color-accent)", opacity: 0.5 }} />
+                    <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>
+                      {couple.groomNameAr || couple.groomNameEn}
+                    </p>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 text-center">
+                <p className="text-lg text-[var(--color-fg)]">{dual.gregorian}</p>
+                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{dual.hijri}</p>
+              </div>
+            </Scene>
 
-        {/* Scene 2: blessing, invitation text, couple names, date */}
-        <Scene showHint>
-          {event.familiesGreetingAr && (
-            <p className="max-w-md text-2xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
-              {event.familiesGreetingAr}
-            </p>
-          )}
-          <p className="max-w-md whitespace-pre-line leading-loose text-[var(--color-fg-muted)]">
-            {event.invitationTextAr}
-          </p>
-          {/* One row per couple — a joint wedding announces several. With a
-              single couple the wrapper collapses to exactly the row that was
-              here before, so the common case is pixel-identical. */}
-          <div className="flex flex-col items-center gap-3">
-            {couples.map((couple, i) => (
-              <div key={i} className="flex items-center justify-center gap-4">
-                <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>
-                  {couple.brideNameAr || couple.brideNameEn}
-                </p>
-                <div className="h-8 w-px" style={{ background: "var(--color-accent)", opacity: 0.5 }} />
-                <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>
-                  {couple.groomNameAr || couple.groomNameEn}
+            {/* Scene 3: countdown */}
+            <Scene showHint>
+              <h2 className="text-xl text-[var(--color-fg-muted)]">{g.countdownTitle}</h2>
+              {countdown && (
+                <div className="flex gap-4 rounded-2xl border border-[var(--color-accent)]/30 px-6 py-4">
+                  {([
+                    [countdown.days, g.days],
+                    [countdown.hours, g.hours],
+                    [countdown.minutes, g.minutes],
+                    [countdown.seconds, g.seconds],
+                  ] as const).map(([value, label]) => (
+                    <div key={label} className="flex flex-col items-center gap-1">
+                      <span className="text-xl font-semibold">{value}</span>
+                      <span className="text-xs text-[var(--color-fg-muted)]">{label}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Scene>
+
+            {/* Scene 4: everything you need to know */}
+            <Scene showHint={somethingFollowsDetails}>
+              <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.detailsHeading}</h2>
+              <div className="text-sm text-[var(--color-fg-muted)]">
+                <p className="text-lg text-[var(--color-fg)]">{dual.gregorian} — {dual.time}</p>
+                <p className="mt-2">
+                  {event.locationName}
+                  {event.regionName ? ` — ${event.regionName}` : ""}
                 </p>
               </div>
-            ))}
-          </div>
-          <div className="mt-2 text-center">
-            <p className="text-lg text-[var(--color-fg)]">{dual.gregorian}</p>
-            <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{dual.hijri}</p>
-          </div>
-        </Scene>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                {theme.sections.showMap && event.mapUrl && (
+                  <a
+                    href={event.mapUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="h-11 items-center rounded-full border border-[var(--color-accent)] px-6 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)] inline-flex"
+                  >
+                    {g.openMap}
+                  </a>
+                )}
+                {(calendarUrl || mode === "preview") && (
+                  <a
+                    href={calendarUrl ?? "#"}
+                    onClick={calendarUrl ? undefined : (e) => e.preventDefault()}
+                    className="h-11 items-center rounded-full border border-[var(--color-fg-muted)]/40 px-6 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] inline-flex"
+                  >
+                    {g.addToCalendar}
+                  </a>
+                )}
+              </div>
+            </Scene>
 
-        {/* Scene 3: countdown */}
-        <Scene showHint>
-          <h2 className="text-xl text-[var(--color-fg-muted)]">{g.countdownTitle}</h2>
-          {countdown && (
-            <div className="flex gap-4 rounded-2xl border border-[var(--color-accent)]/30 px-6 py-4">
-              {([
-                [countdown.days, g.days],
-                [countdown.hours, g.hours],
-                [countdown.minutes, g.minutes],
-                [countdown.seconds, g.seconds],
-              ] as const).map(([value, label]) => (
-                <div key={label} className="flex flex-col items-center gap-1">
-                  <span className="text-xl font-semibold">{value}</span>
-                  <span className="text-xs text-[var(--color-fg-muted)]">{label}</span>
+            {/* Scene 5: event schedule (only if the organizer set one) */}
+            {hasSchedule && (
+              <Scene showHint={somethingFollowsSchedule}>
+                <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.scheduleHeading}</h2>
+                <div className="flex w-full max-w-xs flex-col gap-3">
+                  {event.scheduleItems!.map((item, i) => (
+                    <div key={i} className="flex items-center justify-between gap-6 border-b border-[var(--color-accent)]/20 pb-2">
+                      <span>{item.labelAr}</span>
+                      <span className="text-[var(--color-fg-muted)]">{item.time}</span>
+                    </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          )}
-        </Scene>
-
-        {/* Scene 4: everything you need to know */}
-        <Scene showHint={somethingFollowsDetails}>
-          <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.detailsHeading}</h2>
-          <div className="text-sm text-[var(--color-fg-muted)]">
-            <p className="text-lg text-[var(--color-fg)]">{dual.gregorian} — {dual.time}</p>
-            <p className="mt-2">
-              {event.locationName}
-              {event.regionName ? ` — ${event.regionName}` : ""}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {theme.sections.showMap && event.mapUrl && (
-              <a
-                href={event.mapUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-11 items-center rounded-full border border-[var(--color-accent)] px-6 text-sm font-medium text-[var(--color-accent)] transition-colors hover:bg-[var(--color-accent)] hover:text-[var(--color-accent-fg)] inline-flex"
-              >
-                {g.openMap}
-              </a>
+              </Scene>
             )}
-            {(calendarUrl || mode === "preview") && (
-              <a
-                href={calendarUrl ?? "#"}
-                onClick={calendarUrl ? undefined : (e) => e.preventDefault()}
-                className="h-11 items-center rounded-full border border-[var(--color-fg-muted)]/40 px-6 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)] inline-flex"
-              >
-                {g.addToCalendar}
-              </a>
-            )}
-          </div>
-        </Scene>
 
-        {/* Scene 5: event schedule (only if the organizer set one) */}
-        {hasSchedule && (
-          <Scene showHint={somethingFollowsSchedule}>
-            <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.scheduleHeading}</h2>
-            <div className="flex w-full max-w-xs flex-col gap-3">
-              {event.scheduleItems!.map((item, i) => (
-                <div key={i} className="flex items-center justify-between gap-6 border-b border-[var(--color-accent)]/20 pb-2">
-                  <span>{item.labelAr}</span>
-                  <span className="text-[var(--color-fg-muted)]">{item.time}</span>
-                </div>
-              ))}
-            </div>
-          </Scene>
+            {/* Scene 6: notes for guests (only if the organizer set any) */}
+            {hasNotes && (
+              <Scene showHint={somethingFollowsNotes}>
+                <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.notesHeading}</h2>
+                <ul className="flex flex-col gap-2 text-[var(--color-fg-muted)]">
+                  {notesList.map((note, i) => (
+                    <li key={i}>{note}</li>
+                  ))}
+                </ul>
+              </Scene>
+            )}
+          </>
         )}
 
-        {/* Scene 6: notes for guests (only if the organizer set any) */}
-        {hasNotes && (
-          <Scene showHint={somethingFollowsNotes}>
-            <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.notesHeading}</h2>
-            <ul className="flex flex-col gap-2 text-[var(--color-fg-muted)]">
-              {notesList.map((note, i) => (
-                <li key={i}>{note}</li>
-              ))}
-            </ul>
-          </Scene>
-        )}
-
-        {/* Scene 7: RSVP form */}
-        {hasRsvpForm && (
+        {/* Scene 7: RSVP form. Every LEGACY theme lands here; a builder theme
+            only does when its own scenes carry no RSVP block, so no design can
+            end up unable to take a booking. */}
+        {hasRsvpForm && !designedRsvp && (
           <Scene>
             <h2 className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>{g.rsvpHeading}</h2>
             <form onSubmit={handleRsvpSubmit} className="flex w-full max-w-sm flex-col gap-4 text-start">
@@ -1056,20 +1322,20 @@ export function InvitationView({
         {currentStatus === "ACCEPTED" && (
           <Scene>
             {currentQr || mode === "preview" ? (
-              builder && builderContent ? (
-                <div className="w-full" style={{ maxWidth: stageMaxWidth(builder.layout.scenes.pass, "12rem") }}>
+              builder && builderContent && passScene ? (
+                <div className="w-full" style={{ maxWidth: stageMaxWidth(passScene.canvas, "12rem") }}>
                   <BuilderStage
                     builder={builder}
-                    scene="pass"
+                    scene={passScene.id}
                     content={builderContent}
                     breakpoint={breakpoint}
                     qrDataUrl={currentQr}
+                    data={stageData}
                   />
                 </div>
               ) : theme.card?.style === "rose-emboss" ? (
                 <RoseCandlelightPass
-                  groomLabel={groomLabel}
-                  brideLabel={brideLabel}
+                  couples={passCouples}
                   invitationTextAr={event.invitationTextAr}
                   placeText={event.locationName + (event.regionName ? ` — ${event.regionName}` : "")}
                   dateText={dual.gregorian.split("، ").pop() ?? dual.gregorian}
@@ -1090,8 +1356,7 @@ export function InvitationView({
                 />
               ) : isBridalFrame ? (
                 <BridalFramePass
-                  groomLabel={groomLabel}
-                  brideLabel={brideLabel}
+                  couples={passCouples}
                   invitationTextAr={event.invitationTextAr}
                   placeText={event.locationName + (event.regionName ? ` — ${event.regionName}` : "")}
                   dateText={dual.gregorian.split("، ").pop() ?? dual.gregorian}

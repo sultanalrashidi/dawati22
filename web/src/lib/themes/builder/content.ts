@@ -33,7 +33,37 @@ export interface InvitationContentInput {
   regionName: string | null;
 }
 
-export type ResolvedContent = Record<ContentField, string>;
+/**
+ * The fields that describe ONE couple. Everything else on an invitation is
+ * shared, but these six change per pair — so anything printing them has to
+ * decide what a joint wedding means, rather than silently showing the first
+ * couple and dropping the rest.
+ */
+export const COUPLE_FIELDS = [
+  "groomName",
+  "brideName",
+  "groomFirstName",
+  "brideFirstName",
+  "groomNameEn",
+  "brideNameEn",
+] as const;
+export type CoupleField = (typeof COUPLE_FIELDS)[number];
+
+const COUPLE_FIELD_SET: ReadonlySet<string> = new Set(COUPLE_FIELDS);
+
+export function isCoupleField(field: string): field is CoupleField {
+  return COUPLE_FIELD_SET.has(field);
+}
+
+export type ResolvedContent = Record<ContentField, string> & {
+  /**
+   * One entry per couple, in order. The flat couple fields above stay pinned
+   * to the primary pair — the seal monogram and the link preview genuinely
+   * want one name — while anything that should list the whole wedding reads
+   * this instead.
+   */
+  perCouple: Record<CoupleField, string>[];
+};
 
 const DATE_FORMATTER = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
   weekday: "long",
@@ -74,13 +104,27 @@ export function coupleLabel(couple: CoupleInput): string {
   return `${groom} و ${bride}`;
 }
 
+/** The six couple-scoped fields for a single pair. */
+function coupleFields(couple: CoupleInput): Record<CoupleField, string> {
+  return {
+    groomName: joinName(couple.groomNameAr, couple.groomFamilyAr, couple.groomNameEn),
+    brideName: joinName(couple.brideNameAr, couple.brideFamilyAr, couple.brideNameEn),
+    groomFirstName: couple.groomNameAr?.trim() || couple.groomNameEn,
+    brideFirstName: couple.brideNameAr?.trim() || couple.brideNameEn,
+    groomNameEn: couple.groomNameEn,
+    brideNameEn: couple.brideNameEn,
+  };
+}
+
 export function resolveContent(input: InvitationContentInput): ResolvedContent {
   const date = new Date(input.eventDate);
   const primary = input.couples[0] ?? EMPTY_COUPLE;
   const groom = joinName(primary.groomNameAr, primary.groomFamilyAr, primary.groomNameEn);
   const bride = joinName(primary.brideNameAr, primary.brideFamilyAr, primary.brideNameEn);
+  const perCouple = (input.couples.length > 0 ? input.couples : [EMPTY_COUPLE]).map(coupleFields);
 
   return {
+    perCouple,
     guestName: input.guestName,
     groomName: groom,
     brideName: bride,
@@ -108,11 +152,27 @@ export function resolveContent(input: InvitationContentInput): ResolvedContent {
   };
 }
 
-/** Substitute `{field}` placeholders in a static text layer's copy. */
+/**
+ * Substitute `{field}` placeholders in a static text layer's copy.
+ *
+ * A template that names couple fields — the entry-pass card's
+ * "{brideFirstName} & {groomFirstName}", for instance — is rendered ONCE PER
+ * COUPLE and joined with newlines. A joint wedding otherwise printed only the
+ * first pair on the pass and quietly dropped the others. With a single couple
+ * the output is identical to a plain substitution, so nothing else moves.
+ */
 export function interpolate(text: string, content: ResolvedContent): string {
-  return text.replace(/\{(\w+)\}/g, (match, key: string) =>
-    key in content ? content[key as ContentField] : match,
-  );
+  const fill = (source: Record<string, unknown>) =>
+    text.replace(/\{(\w+)\}/g, (match, key: string) => {
+      const value = source[key];
+      return typeof value === "string" ? value : match;
+    });
+
+  const keys = [...text.matchAll(/\{(\w+)\}/g)].map(([, key]) => key);
+  if (content.perCouple.length > 1 && keys.some(isCoupleField)) {
+    return content.perCouple.map((couple) => fill({ ...content, ...couple })).join("\n");
+  }
+  return fill(content);
 }
 
 /**

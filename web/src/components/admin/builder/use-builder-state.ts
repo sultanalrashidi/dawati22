@@ -2,12 +2,15 @@
 
 import { useCallback, useMemo, useState } from "react";
 import {
+  DEFAULT_CANVAS,
   DEFAULT_TRANSFORM,
+  SCENE_COVER,
   type Breakpoint,
   type Layer,
   type LayoutDoc,
   type PageBackground,
   type SceneCanvas,
+  type SceneDef,
   type SceneId,
   type TextStyleOverride,
   type Transform,
@@ -15,7 +18,54 @@ import {
   type AnimationSettings,
 } from "@/lib/themes/builder/types";
 
+/** Per-layer colour patches for one variant: `{ [layerId]: { style: { color } } }`. */
+export type VariantPaint = Record<string, Record<string, unknown>>;
+
+/** Same deep merge the renderer uses, so the editor previews it exactly. */
+function applyPaint<T>(layer: T, patch: Record<string, unknown>): T {
+  const out = { ...(layer as Record<string, unknown>) };
+  for (const [key, value] of Object.entries(patch)) {
+    if (value === undefined) continue;
+    const current = out[key];
+    out[key] =
+      value && typeof value === "object" && !Array.isArray(value) && current && typeof current === "object" && !Array.isArray(current)
+        ? applyPaint(current as Record<string, unknown>, value as Record<string, unknown>)
+        : value;
+  }
+  return out as T;
+}
+
 const HISTORY_LIMIT = 60;
+
+/** `layoutDocSchema` refuses to store more than this. */
+const MAX_SCENES = 30;
+
+/** The editable half of a scene — its canvas has its own patcher. */
+export type SceneDefPatch = Partial<Pick<SceneDef, "name" | "role" | "visible" | "requires">>;
+
+const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
+
+/**
+ * Arabic-Indic digits, for counts printed inside Arabic copy. Lives here
+ * because the scene tabs, the scene manager and the generated scene names all
+ * number the same list and must agree on how a number looks.
+ */
+export function arabicNumber(value: number): string {
+  return String(value).replace(/\d/g, (digit) => AR_DIGITS[Number(digit)]);
+}
+
+/** The scene the editor should open on: the cover, or whatever comes first. */
+function firstScene(doc: LayoutDoc): SceneId {
+  return (doc.scenes.find((s) => s.role === "cover") ?? doc.scenes[0])?.id ?? SCENE_COVER;
+}
+
+/** A fresh scene id that collides with nothing already in the document. */
+function uniqueSceneId(doc: LayoutDoc): SceneId {
+  for (;;) {
+    const candidate = `s_${crypto.randomUUID().slice(0, 8)}`;
+    if (!doc.scenes.some((scene) => scene.id === candidate)) return candidate;
+  }
+}
 
 /**
  * Editor state for one layout document.
@@ -26,10 +76,83 @@ const HISTORY_LIMIT = 60;
  * writes live afterwards. Everything else — a numeric field, a toggle, adding a
  * layer — snapshots per change, which is what makes undo feel right.
  */
-export function useBuilderState(initial: LayoutDoc) {
+/**
+ * The layer properties that are a COLOUR, and therefore belong to the variant
+ * the admin is looking at rather than to the design they all share.
+ *
+ * Everything else in a layer — where it sits, what it says, how big it is — is
+ * the design itself and stays in the one shared document.
+ */
+const COLOR_KEYS: ReadonlySet<string> = new Set([
+  "color",
+  "background",
+  "backgroundColor",
+  "borderColor",
+  "boxColor",
+  "fgColor",
+  "overlayColor",
+  "fieldBackground",
+  "accent",
+  "accentFg",
+]);
+
+/**
+ * Splits a patch into the colours (variant-owned) and the rest (shared).
+ *
+ * Recurses into nested style objects, because the inspector patches a whole
+ * `titleStyle` at once — the colour inside it has to be peeled off, or a
+ * countdown's heading colour would still be written to the shared design.
+ */
+function splitColors<T extends Record<string, unknown>>(patch: T): { colors: Record<string, unknown>; rest: T } {
+  const colors: Record<string, unknown> = {};
+  const rest: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(patch)) {
+    if (COLOR_KEYS.has(key)) {
+      colors[key] = value;
+    } else if (value && typeof value === "object" && !Array.isArray(value)) {
+      const nested = splitColors(value as Record<string, unknown>);
+      if (Object.keys(nested.colors).length > 0) colors[key] = nested.colors;
+      if (Object.keys(nested.rest).length > 0) rest[key] = nested.rest;
+    } else {
+      rest[key] = value;
+    }
+  }
+  return { colors, rest: rest as T };
+}
+
+/**
+ * Merges a patch into a layer, recursing into nested objects.
+ *
+ * A plain spread would replace a whole `titleStyle` with the colour-less
+ * remainder left by `splitColors`, dropping the design's own base colour and
+ * failing validation on save.
+ */
+function mergePatch<T>(layer: T, patch: Record<string, unknown>): T {
+  const out = { ...(layer as Record<string, unknown>) };
+  for (const [key, value] of Object.entries(patch)) {
+    const current = out[key];
+    out[key] =
+      value && typeof value === "object" && !Array.isArray(value) && current && typeof current === "object" && !Array.isArray(current)
+        ? mergePatch(current as Record<string, unknown>, value as Record<string, unknown>)
+        : value;
+  }
+  return out as T;
+}
+
+export function useBuilderState(initial: LayoutDoc, initialPaint: VariantPaint = {}) {
   const [doc, setDoc] = useState<LayoutDoc>(initial);
+  /**
+   * The active variant's own colours, keyed by layer id. Kept beside the
+   * document rather than inside it: the document is shared by every colour of
+   * the design, so a colour written into it would repaint all of them — which
+   * is exactly the bug this exists to fix.
+   */
+  const [paint, setPaint] = useState<VariantPaint>(initialPaint);
+  const [paintDirty, setPaintDirty] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [scene, setScene] = useState<SceneId>("cover");
+  // Scenes are user-defined now, so "cover" is a likely id rather than a
+  // guaranteed one — a theme whose cover was renamed must still open.
+  const [scene, setScene] = useState<SceneId>(() => firstScene(initial));
   const [breakpoint, setBreakpoint] = useState<Breakpoint>("base");
   const [dirty, setDirty] = useState(false);
 
@@ -102,17 +225,38 @@ export function useBuilderState(initial: LayoutDoc) {
     [mutate],
   );
 
+  /** Merge a colour patch into the active variant's own paint. */
+  const paintLayer = useCallback((id: string, patch: Record<string, unknown>) => {
+    setPaint((current) => {
+      const existing = current[id] ?? {};
+      const merged: Record<string, unknown> = { ...existing };
+      for (const [key, value] of Object.entries(patch)) {
+        const prev = merged[key];
+        merged[key] =
+          value && typeof value === "object" && !Array.isArray(value) && prev && typeof prev === "object"
+            ? { ...(prev as Record<string, unknown>), ...(value as Record<string, unknown>) }
+            : value;
+      }
+      return { ...current, [id]: merged };
+    });
+    setPaintDirty(true);
+  }, []);
+
   const patchLayer = useCallback(
     (id: string, patch: Partial<Layer>, options?: { history?: boolean }) => {
+      // Colours belong to the variant on screen; everything else to the design.
+      const { colors, rest } = splitColors(patch as Record<string, unknown>);
+      if (Object.keys(colors).length > 0) paintLayer(id, colors);
+      if (Object.keys(rest).length === 0) return;
       mutate(
         (draft) => ({
           ...draft,
-          layers: draft.layers.map((l) => (l.id === id ? ({ ...l, ...patch } as Layer) : l)),
+          layers: draft.layers.map((l) => (l.id === id ? mergePatch(l, rest as Record<string, unknown>) : l)),
         }),
         options,
       );
     },
-    [mutate],
+    [mutate, paintLayer],
   );
 
   /**
@@ -142,6 +286,14 @@ export function useBuilderState(initial: LayoutDoc) {
 
   const patchTextStyle = useCallback(
     (id: string, patch: TextStyleOverride) => {
+      const { colors, rest } = splitColors(patch as Record<string, unknown>);
+      if (Object.keys(colors).length > 0) {
+        // Nested under the same key the renderer reads, so the deep merge in
+        // `resolveScene` lands it on `layer.style.color`.
+        paintLayer(id, { style: colors });
+      }
+      if (Object.keys(rest).length === 0) return;
+      patch = rest as TextStyleOverride;
       mutate((draft) => ({
         ...draft,
         layers: draft.layers.map((layer) => {
@@ -152,7 +304,7 @@ export function useBuilderState(initial: LayoutDoc) {
         }),
       }));
     },
-    [mutate, breakpoint],
+    [mutate, breakpoint, paintLayer],
   );
 
   /** Drop a breakpoint's overrides so the layer inherits mobile again. */
@@ -201,11 +353,157 @@ export function useBuilderState(initial: LayoutDoc) {
     [mutate],
   );
 
+  // ---- scene operations -------------------------------------------------
+
+  /** The scene's stage geometry — aspect ratio and safe inset. */
   const patchScene = useCallback(
     (id: SceneId, patch: Partial<SceneCanvas>) => {
-      mutate((draft) => ({ ...draft, scenes: { ...draft.scenes, [id]: { ...draft.scenes[id], ...patch } } }));
+      mutate((draft) => ({
+        ...draft,
+        scenes: draft.scenes.map((entry) =>
+          entry.id === id ? { ...entry, canvas: { ...entry.canvas, ...patch } } : entry,
+        ),
+      }));
     },
     [mutate],
+  );
+
+  /**
+   * Name / role / visibility / requirement.
+   *
+   * Two invariants the guest flow depends on are enforced here rather than
+   * only in the panel, because a document that reaches the database without
+   * them renders an invitation nobody can open:
+   *
+   * - **Exactly one `cover`.** Promoting a scene demotes the previous cover to
+   *   `flow`; demoting the last remaining cover is dropped from the patch.
+   * - **At most one `pass`.** Same demotion, without the "at least one" half —
+   *   a theme with no entry pass is a legitimate design.
+   *
+   * The cover is also pinned visible: hiding it would leave the guest with no
+   * screen to tap, which reads as a broken invitation rather than a hidden one.
+   */
+  const patchSceneDef = useCallback(
+    (id: SceneId, patch: SceneDefPatch) => {
+      mutate((draft) => {
+        const target = draft.scenes.find((entry) => entry.id === id);
+        if (!target) return draft;
+
+        const next: SceneDefPatch = { ...patch };
+        if (next.role !== undefined && next.role !== target.role) {
+          const isLastCover =
+            target.role === "cover" && draft.scenes.filter((s) => s.role === "cover").length <= 1;
+          if (isLastCover) delete next.role;
+        }
+        const promotedTo = next.role;
+        if ((promotedTo ?? target.role) === "cover" && next.visible === false) delete next.visible;
+
+        return {
+          ...draft,
+          scenes: draft.scenes.map((entry) => {
+            if (entry.id === id) return { ...entry, ...next };
+            // Demote whichever scene held the singleton role being claimed.
+            if (
+              (promotedTo === "cover" || promotedTo === "pass") &&
+              entry.role === promotedTo
+            ) {
+              return { ...entry, role: "flow" as const };
+            }
+            return entry;
+          }),
+        };
+      });
+    },
+    [mutate],
+  );
+
+  /**
+   * Append a scene. It lands before the entry pass when one exists — the pass
+   * is the end of the guest's journey, so a new screen almost always belongs
+   * ahead of it rather than after.
+   */
+  const addScene = useCallback(
+    () => {
+      const id = uniqueSceneId(doc);
+      mutate((draft) => {
+        if (draft.scenes.length >= MAX_SCENES) return draft;
+        const scenes = [...draft.scenes];
+        const entry: SceneDef = {
+          id,
+          name: `شاشة ${arabicNumber(scenes.length + 1)}`,
+          role: "flow",
+          canvas: { ...DEFAULT_CANVAS },
+          visible: true,
+          requires: null,
+        };
+        const passIndex = scenes.findIndex((s) => s.role === "pass");
+        if (passIndex === -1) scenes.push(entry);
+        else scenes.splice(passIndex, 0, entry);
+        return { ...draft, scenes };
+      });
+      if (doc.scenes.length < MAX_SCENES) {
+        setScene(id);
+        setSelectedId(null);
+      }
+      return id;
+    },
+    [doc, mutate],
+  );
+
+  /**
+   * Delete a scene **and its layers** — a layer pointing at a scene that no
+   * longer exists is invisible everywhere and impossible to select, so leaving
+   * them behind would only grow an unreachable pile.
+   *
+   * Refused for the last remaining scene and for the cover, which has to exist.
+   */
+  const removeScene = useCallback(
+    (id: SceneId) => {
+      const target = doc.scenes.find((entry) => entry.id === id);
+      if (!target || target.role === "cover" || doc.scenes.length <= 1) return;
+
+      mutate((draft) => ({
+        ...draft,
+        scenes: draft.scenes.filter((entry) => entry.id !== id),
+        layers: draft.layers.filter((layer) => layer.scene !== id),
+      }));
+      setSelectedId((current) =>
+        current && doc.layers.some((l) => l.id === current && l.scene === id) ? null : current,
+      );
+      // The active scene is derived below, so it falls back on its own once
+      // this one is gone — including when an undo brings it back.
+    },
+    [doc, mutate],
+  );
+
+  /**
+   * Reorder a scene — this is the order the guest scrolls through.
+   *
+   * Only two flow scenes ever swap. The cover opens the invitation and the
+   * pass closes it, so neither moves and nothing moves past them; the panel
+   * disables the arrows that would try, and this refuses them anyway so no
+   * other caller can push the cover into the middle of the list.
+   */
+  const moveScene = useCallback(
+    (id: SceneId, direction: -1 | 1) => {
+      mutate((draft) => {
+        const index = draft.scenes.findIndex((entry) => entry.id === id);
+        if (index === -1 || draft.scenes[index].role !== "flow") return draft;
+        const swapWith = index + direction;
+        if (swapWith < 0 || swapWith >= draft.scenes.length) return draft;
+        if (draft.scenes[swapWith].role !== "flow") return draft;
+        const scenes = [...draft.scenes];
+        [scenes[index], scenes[swapWith]] = [scenes[swapWith], scenes[index]];
+        return { ...draft, scenes };
+      });
+    },
+    [mutate],
+  );
+
+  /** How many layers a scene would take with it. Shown before a delete. */
+  const sceneLayerCount = useCallback(
+    (id: SceneId) => doc.layers.filter((layer) => layer.scene === id).length,
+    [doc.layers],
   );
 
   const patchAnimation = useCallback(
@@ -235,9 +533,32 @@ export function useBuilderState(initial: LayoutDoc) {
     [doc.layers],
   );
 
+  /**
+   * The layers as the ACTIVE VARIANT renders them: the shared design with this
+   * variant's own colours merged in. The canvas and the inspector both read
+   * this, so the swatch in the panel always matches the pixels on the stage.
+   */
+  const paintedLayers = useMemo(
+    () => doc.layers.map((layer) => (paint[layer.id] ? applyPaint(layer, paint[layer.id]) : layer)),
+    [doc.layers, paint],
+  );
+
   const selected = useMemo(
-    () => doc.layers.find((l) => l.id === selectedId) ?? null,
-    [doc.layers, selectedId],
+    () => paintedLayers.find((l) => l.id === selectedId) ?? null,
+    [paintedLayers, selectedId],
+  );
+
+  /**
+   * The scene actually being edited.
+   *
+   * Derived rather than stored, because the stored id can outlive the scene:
+   * undoing a scene creation, deleting the open scene, or adopting the
+   * document a server action just wrote all leave the raw id dangling. Falling
+   * back here fixes every one of those in the same place.
+   */
+  const activeScene = useMemo(
+    () => (doc.scenes.some((entry) => entry.id === scene) ? scene : firstScene(doc)),
+    [doc, scene],
   );
 
   const markSaved = useCallback((saved: LayoutDoc) => {
@@ -245,12 +566,23 @@ export function useBuilderState(initial: LayoutDoc) {
     setDirty(false);
   }, []);
 
+  /** Load another variant's colours — called when the admin switches colour. */
+  const replacePaint = useCallback((next: VariantPaint) => {
+    setPaint(next);
+    setPaintDirty(false);
+  }, []);
+
   return {
     doc,
     setDoc,
     dirty,
     markSaved,
-    scene,
+    paint,
+    paintedLayers,
+    paintDirty,
+    replacePaint,
+    markPaintSaved: useCallback(() => setPaintDirty(false), []),
+    scene: activeScene,
     setScene,
     breakpoint,
     setBreakpoint,
@@ -265,6 +597,11 @@ export function useBuilderState(initial: LayoutDoc) {
     clearOverrides,
     moveLayer,
     patchScene,
+    patchSceneDef,
+    addScene,
+    removeScene,
+    moveScene,
+    sceneLayerCount,
     patchAnimation,
     patchPage,
     beginInteraction,

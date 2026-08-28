@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ThemeStage, boxStyle } from "@/components/themes/builder/theme-stage";
-import { resolveTransform, type Breakpoint, type Layer, type LayoutDoc, type SceneId, type Transform, type TransformOverride, type TypographyDoc, type VariantPalette } from "@/lib/themes/builder/types";
+import { findScene, resolveTransform, sceneCanvas, type Breakpoint, type Layer, type LayoutDoc, type SceneCanvas, type SceneId, type SceneRole, type Transform, type TransformOverride, type TypographyDoc, type VariantPalette } from "@/lib/themes/builder/types";
 import type { ResolvedContent } from "@/lib/themes/builder/content";
 
 /**
@@ -22,16 +22,22 @@ import type { ResolvedContent } from "@/lib/themes/builder/content";
  * gets — a stage stretched to the full frame width would sit against a
  * different part of a `cover` background entirely.
  */
-const SCENE_RESERVE_PX: Record<SceneId, number> = { cover: 144, open: 160, pass: 192 };
+/**
+ * Keyed by ROLE, not by scene id: scenes are user-defined now, so a theme can
+ * carry a screen called `s_9f3a1c02` that the old id-keyed map knew nothing
+ * about and reserved `undefined` pixels for. The three built-in scenes keep
+ * exactly the numbers they had — cover/open/pass are the cover/flow/pass roles.
+ */
+const ROLE_RESERVE_PX: Record<SceneRole, number> = { cover: 144, flow: 160, pass: 192 };
 const STAGE_MAX_PX = 416; // 26rem
 
 function guestStageWidth(
   canvas: { aspectW: number; aspectH: number },
-  scene: SceneId,
+  role: SceneRole,
   frameW: number,
   frameH: number,
 ) {
-  const byHeight = ((frameH - SCENE_RESERVE_PX[scene]) * canvas.aspectW) / canvas.aspectH;
+  const byHeight = ((frameH - ROLE_RESERVE_PX[role]) * canvas.aspectW) / canvas.aspectH;
   return Math.max(80, Math.min(frameW, STAGE_MAX_PX, byHeight));
 }
 
@@ -109,8 +115,9 @@ export function BuilderCanvas({
 
   const selected = layout.layers.find((l) => l.id === selectedId) ?? null;
   const selectedTransform = selected ? resolveTransform(selected, breakpoint) : null;
-  const canvas = layout.scenes[scene];
-  const stageWidth = guestStageWidth(canvas, scene, deviceWidth, deviceHeight);
+  const canvas: SceneCanvas = sceneCanvas(layout, scene);
+  const role = findScene(layout, scene)?.role ?? "flow";
+  const stageWidth = guestStageWidth(canvas, role, deviceWidth, deviceHeight);
 
   /**
    * A `height: null` layer sizes itself from its image, so the selection frame
@@ -375,6 +382,9 @@ export function BuilderCanvas({
             content={content}
             breakpoint={breakpoint}
             className="touch-none select-none"
+            // Every layer stays clickable so it can be selected and dragged,
+            // interactive layers render inert, and the QR draws its sample.
+            editing
             // The stage paints `palette.bg` by default, which would hide the
             // page art behind it. With a backdrop present the frame carries
             // that colour instead and the stage lets it through.

@@ -6,6 +6,8 @@ import {
   CARD_ENTRANCES,
   ENVELOPE_ENTRANCES,
   ENVELOPE_OPENINGS,
+  findScene,
+  sceneCanvas,
   type AnimationSettings,
   type LayoutDoc,
   type PageBackground,
@@ -40,7 +42,8 @@ export function SettingsPanel({
   onAnimation: (patch: Partial<AnimationSettings>) => void;
   onPage: (patch: Partial<PageBackground>) => void;
 }) {
-  const canvas = doc.scenes[scene];
+  const canvas = sceneCanvas(doc, scene);
+  const sceneName = findScene(doc, scene)?.name ?? scene;
   const page = doc.page;
 
   // A theme may point at a slot an admin typed by hand, which is not in the
@@ -57,7 +60,7 @@ export function SettingsPanel({
     <div className="flex flex-col gap-3">
       <Panel title="خلفية الصفحة">
         <p className="mb-2 text-[11px] text-fg-muted">
-          هذي الخلفية تملأ الشاشة خلف كل صفحات الدعوة — الظرف المغلق والمفتوح وبطاقة الدخول — وما تتكرر داخل كل مشهد.
+          هذي الخلفية تملأ الشاشة خلف كل شاشات الدعوة بدون استثناء، وما تتكرر داخل كل مشهد.
         </p>
         <div className="flex flex-col gap-2">
           <SelectField
@@ -95,9 +98,9 @@ export function SettingsPanel({
         </p>
       </Panel>
 
-      <Panel title="مقاس المشهد">
+      <Panel title={`مقاس المشهد · ${sceneName}`}>
         <p className="mb-2 text-[11px] text-fg-muted">
-          نسبة الأبعاد هي مساحة التصميم — كل المواقع محسوبة كنسبة منها، فتتكيّف مع أي شاشة.
+          نسبة الأبعاد هي مساحة التصميم — كل المواقع محسوبة كنسبة منها، فتتكيّف مع أي شاشة. المقاس يخص هذا المشهد وحده.
         </p>
         <div className="grid grid-cols-2 gap-2">
           <NumberField

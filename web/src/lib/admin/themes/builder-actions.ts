@@ -26,6 +26,7 @@ import {
   recordAsset,
   reorderVariants,
   saveLayoutDoc,
+  saveVariantOverrides,
   saveTypographyDoc,
   setDefaultVariant,
   unassignThemeFromUser,
@@ -135,6 +136,20 @@ export async function saveLayoutAction(themeId: string, doc: unknown): Promise<B
   const user = await requireAdmin();
   try {
     await saveLayoutDoc(user.id, themeId, doc);
+  } catch (error) {
+    return toState(error);
+  }
+  return { ok: true };
+}
+
+/** Persist the colours the admin set on one colour variant. */
+export async function saveVariantOverridesAction(
+  variantId: string,
+  overrides: unknown,
+): Promise<BuilderFormState> {
+  await requireAdmin();
+  try {
+    await saveVariantOverrides(variantId, overrides);
   } catch (error) {
     return toState(error);
   }

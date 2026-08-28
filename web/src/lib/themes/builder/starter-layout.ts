@@ -1,8 +1,8 @@
+import { defaultFlowLayers, defaultSceneList } from "@/lib/themes/builder/default-flow";
 import {
   BUILDER_SCHEMA_VERSION,
   DEFAULT_ANIMATION,
   DEFAULT_PAGE_BACKGROUND,
-  DEFAULT_SCENES,
   DEFAULT_TEXT_STYLE,
   DEFAULT_TRANSFORM,
   type Layer,
@@ -194,8 +194,10 @@ export function starterLayoutDoc(): LayoutDoc {
   return {
     version: BUILDER_SCHEMA_VERSION,
     page: { ...DEFAULT_PAGE_BACKGROUND },
-    scenes: DEFAULT_SCENES,
-    layers,
+    // The full invitation, not just the three art screens: a new theme opens
+    // with every screen a guest will see, each already wired to real data.
+    scenes: defaultSceneList(),
+    layers: [...layers, ...defaultFlowLayers()],
     animation: DEFAULT_ANIMATION,
   };
 }

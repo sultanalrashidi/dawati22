@@ -12,6 +12,7 @@ import { removeStoredAsset } from "@/lib/admin/themes/storage";
 import { REQUIRED_SLOT_KEYS } from "@/lib/themes/builder/slots";
 import {
   assertLayoutDoc,
+  assertLayoutOverrides,
   assertPalette,
   assertTypographyDoc,
   parseLayoutDoc,
@@ -359,6 +360,22 @@ export async function updateVariant(
       colorTag: input.colorTag ?? null,
       palette: json(assertPalette(input.palette)),
     },
+  });
+}
+
+/**
+ * Save one variant's own colours (and any geometry overrides already stored
+ * alongside them).
+ *
+ * Colours are per-variant rather than per-design because the layout document
+ * is shared by every colour of a theme: recolouring the seal on the navy
+ * variant used to recolour it on all of them.
+ */
+export async function saveVariantOverrides(variantId: string, raw: unknown) {
+  const overrides = assertLayoutOverrides(raw);
+  return prisma.themeVariant.update({
+    where: { id: variantId },
+    data: { layoutOverrides: json(overrides) },
   });
 }
 

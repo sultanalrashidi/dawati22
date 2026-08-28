@@ -56,8 +56,7 @@ function InfoColumn({ icon, label, value }: { icon: ReactNode; label: string; va
 }
 
 export function BridalFramePass({
-  groomLabel,
-  brideLabel,
+  couples,
   invitationTextAr,
   placeText,
   dateText,
@@ -72,8 +71,8 @@ export function BridalFramePass({
   assetFolder = "ivory-bloom",
   layout,
 }: {
-  groomLabel: string;
-  brideLabel: string;
+  /** Every couple on the invitation, in order. Never empty. */
+  couples: { groomLabel: string; brideLabel: string }[];
   invitationTextAr: string;
   placeText: string;
   dateText: string;
@@ -97,6 +96,15 @@ export function BridalFramePass({
   const iconsTop = layout?.iconsTop ?? "43%";
   const qr = layout?.qr ?? { left: "38.75%", width: "24.25%", top: "79.7%", height: "10.7%" };
 
+  // The names sit in a fixed band of the printed card art, between the
+  // invitation line and the info icons, and that band is only tall enough for
+  // one couple plus its two flourish lines. A joint wedding therefore keeps
+  // the names — the reason the card exists — and drops the flourishes, which
+  // the guest has already read on the way here. The block is scaled on top of
+  // that so three or four couples still clear the icons.
+  const joint = couples.length > 1;
+  const blockScale = !joint ? 1 : couples.length >= 4 ? 0.55 : couples.length === 3 ? 0.7 : 0.9;
+
   return (
     <div className="relative inline-block">
       {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -104,25 +112,38 @@ export function BridalFramePass({
 
       <div
         className="absolute inset-x-[16%] flex flex-col items-center justify-start gap-1.5 text-center"
-        style={{ top: textTop, fontFamily: fontAr }}
+        style={{ top: textTop, fontFamily: fontAr, transform: `scale(${blockScale})`, transformOrigin: "top center" }}
       >
-        <p className="text-[9px] leading-snug sm:text-[10px]" style={{ color: INK_LIGHT }}>
-          {invitationTextAr}
-        </p>
-        <div className="mt-0.5 flex items-center gap-2">
-          <span className="text-base sm:text-lg" style={{ color: INK_DARK, fontFamily: nameFont }}>
-            {brideLabel}
-          </span>
-          <span className="text-xs" style={{ color: INK_LIGHT }}>
-            &amp;
-          </span>
-          <span className="text-base sm:text-lg" style={{ color: INK_DARK, fontFamily: nameFont }}>
-            {groomLabel}
-          </span>
+        {!joint && (
+          <p className="text-[9px] leading-snug sm:text-[10px]" style={{ color: INK_LIGHT }}>
+            {invitationTextAr}
+          </p>
+        )}
+        {/* One line per couple: a joint wedding used to print the first pair
+            and silently drop the rest. The names sit in a fixed band of the
+            printed card art — between the invitation text and the info icons —
+            so extra pairs step down in size instead of growing into the row
+            below. A single couple keeps the original type exactly. */}
+        <div className="mt-0.5 flex flex-col items-center" style={{ gap: 0 }}>
+          {couples.map((couple, index) => (
+            <div key={index} className="flex items-center gap-2">
+              <span className="text-base sm:text-lg" style={{ color: INK_DARK, fontFamily: nameFont }}>
+                {couple.brideLabel}
+              </span>
+              <span className="text-xs" style={{ color: INK_LIGHT }}>
+                &amp;
+              </span>
+              <span className="text-base sm:text-lg" style={{ color: INK_DARK, fontFamily: nameFont }}>
+                {couple.groomLabel}
+              </span>
+            </div>
+          ))}
         </div>
-        <p className="text-[9px] sm:text-[10px]" style={{ color: INK_LIGHT }}>
-          {godWillingLabel}
-        </p>
+        {!joint && (
+          <p className="text-[9px] sm:text-[10px]" style={{ color: INK_LIGHT }}>
+            {godWillingLabel}
+          </p>
+        )}
       </div>
 
       <div className="absolute inset-x-[14%] flex items-start justify-around" style={{ top: iconsTop }}>

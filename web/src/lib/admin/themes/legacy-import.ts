@@ -18,6 +18,7 @@ import {
   type TypographyDoc,
   type VariantPalette,
 } from "@/lib/themes/builder/types";
+import { FLOW_SCENE_TEMPLATES, defaultFlowLayers } from "@/lib/themes/builder/default-flow";
 import type { ThemeConfig } from "@/lib/themes/types";
 
 /**
@@ -1033,8 +1034,20 @@ export async function importLegacyTheme(
     // The legacy `RoseCandlelightBackground` is a fixed, full-bleed photo behind
     // every scene — which is exactly what `page` is, so it is not a layer.
     page: { slot: "background", fit: "cover", overlayColor: "#000000", overlayOpacity: 0 },
-    scenes: { cover: canvas(scenes.cover), open: canvas(scenes.open), pass: canvas(scenes.pass) },
-    layers: baseLayers,
+    // Scenes are an ordered list, not the old fixed trio. The three ids stay
+    // exactly `cover`/`open`/`pass` because every layer built above points at
+    // them by name.
+    scenes: [
+      { id: "cover", name: "الظرف المغلق", role: "cover", canvas: canvas(scenes.cover), visible: true, requires: null },
+      { id: "open", name: "الظرف المفتوح", role: "flow", canvas: canvas(scenes.open), visible: true, requires: null },
+      ...FLOW_SCENE_TEMPLATES,
+      { id: "pass", name: "بطاقة الدخول", role: "pass", canvas: canvas(scenes.pass), visible: true, requires: null },
+    ],
+    // The converted art covers the cover/open/pass screens; the rest of the
+    // flow is the same default set every other theme gets, so a converted
+    // theme keeps the greeting, countdown, details, schedule, notes and RSVP
+    // screens the hand-coded renderer used to draw for it.
+    layers: [...baseLayers, ...defaultFlowLayers()],
     animation: DEFAULT_ANIMATION,
   });
 

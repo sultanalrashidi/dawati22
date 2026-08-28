@@ -9,14 +9,20 @@
  * else later without a schema change or a deploy.
  */
 
+import type { SceneId } from "./types";
+
 export interface SlotDefinition {
   key: string;
   labelAr: string;
   labelEn: string;
   /** Publishing is blocked without this slot filled on the default variant. */
   required: boolean;
-  /** Which scene the editor drops a new layer for this slot into. */
-  scene: "cover" | "open" | "pass";
+  /**
+   * Which scene the editor drops a new layer for this slot into. A scene id,
+   * not a closed set — an admin can add and rename scenes, so this is only a
+   * sensible starting scene, resolved against the document at drop time.
+   */
+  scene: SceneId;
   hintAr: string;
 }
 

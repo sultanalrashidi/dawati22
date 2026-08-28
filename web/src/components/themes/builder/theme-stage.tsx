@@ -1,22 +1,29 @@
 import type { CSSProperties, PointerEventHandler, ReactNode, Ref } from "react";
-import { fontStackFor } from "@/lib/themes/font-registry";
+import type { ScheduleItem } from "@/lib/events/types";
 import { slotLabelAr } from "@/lib/themes/builder/slots";
-import { initialsFor, interpolate, type ResolvedContent } from "@/lib/themes/builder/content";
+import { initialsFor, interpolate, isCoupleField, type ResolvedContent } from "@/lib/themes/builder/content";
 import { resolveScene, type LayoutOverrides, type ResolvedLayer } from "@/lib/themes/builder/resolve";
 import {
-  resolveFont,
   resolveTextStyle,
+  sceneCanvas,
   type Breakpoint,
+  type ContentField,
   type LayoutDoc,
   type QrLayer,
+  type SceneCanvas,
   type SceneId,
   type SealLayer,
   type TextLayer,
-  type TextStyle,
   type Transform,
   type TypographyDoc,
   type VariantPalette,
 } from "@/lib/themes/builder/types";
+import { justifyFor, scaled, textStyleToCss } from "./layers/style";
+import { CountdownContent } from "./layers/countdown-layer";
+import { ButtonContent } from "./layers/button-layer";
+import { NotesContent } from "./layers/notes-layer";
+import { ScheduleContent } from "./layers/schedule-layer";
+import { RsvpContent, type StageRsvp } from "./layers/rsvp-layer";
 
 /**
  * The one renderer for builder themes.
@@ -26,15 +33,15 @@ import {
  * frame is proportionally identical at 1280px with no media queries and no
  * per-device maths. The editor mounts this exact component under its drag
  * handles, which is why "live preview" needs no second implementation.
+ *
+ * It stays a pure function of its props. Four of the nine layer types print
+ * live invitation data — the countdown needs the event's date, the buttons its
+ * map link, the schedule and notes their rows, the RSVP block the guest it is
+ * booking for — and every one of those arrives here as an optional prop rather
+ * than being fetched. The guest page passes the real values; the editor passes
+ * none and each layer falls back to a sample, so an admin arranges the design
+ * against something plausible instead of empty boxes.
  */
-
-/** Text sizes in the document are authored against a stage this wide. */
-const REFERENCE_STAGE_WIDTH = 390;
-
-/** px at the reference width → cqw, so it scales with the stage. */
-function scaled(px: number): string {
-  return `${(px / REFERENCE_STAGE_WIDTH) * 100}cqw`;
-}
 
 export interface ThemeStageProps {
   scene: SceneId;
@@ -48,6 +55,48 @@ export interface ThemeStageProps {
   overrides?: LayoutOverrides;
   /** The guest's real QR. Omitted in the editor, which draws a sample. */
   qrDataUrl?: string | null;
+  /**
+   * The moment a `countdown` layer counts to. Omitted in the editor, which
+   * counts to the sample invitation's date so the digits look plausible.
+   */
+  eventDateIso?: string;
+  /**
+   * The invitation's own token. A `calendar` button links to
+   * `/i/{linkToken}/calendar` with it, and the RSVP block falls back to
+   * submitting against it directly when no `onRsvp` is wired; without one both
+   * fall back to their inert preview behaviour.
+   */
+  linkToken?: string | null;
+  /** Destination for a `map` button. Missing → the button renders disabled. */
+  mapUrl?: string | null;
+  /** Handler for a `music` button. Missing → the button renders disabled. */
+  onToggleMusic?: (() => void) | null;
+  /** Drives a `music` button's pressed state. */
+  musicPlaying?: boolean;
+  /**
+   * Rows for a `schedule` layer. `undefined` is "no event attached" (the
+   * editor) and shows samples; `null`/`[]` is "this event has no schedule" and
+   * shows nothing — a guest must never read invented times.
+   */
+  scheduleItems?: ScheduleItem[] | null;
+  /** The organiser's notes for a `notes` layer, newline-separated. Same split. */
+  notesAr?: string | null;
+  /**
+   * The guest an `rsvp` layer is booking for, plus this page's RSVP copy.
+   * Omitted → a working-looking form that simulates instead of submitting.
+   */
+  rsvp?: StageRsvp | null;
+  /**
+   * True inside the admin canvas. It changes three things a guest must not see:
+   * every layer accepts pointer events so it can be selected and dragged, a
+   * `qr` layer draws the sample code, and interactive layers stay inert.
+   */
+  editing?: boolean;
+  /**
+   * The guest already answered, so an `rsvp` layer shows its thank-you state
+   * instead of the form — in place, without removing the screen it sits on.
+   */
+  rsvpResponded?: "ACCEPTED" | "DECLINED" | null;
   /** Editor-only chrome drawn on top of each layer. */
   renderLayerOverlay?: (resolved: ResolvedLayer) => ReactNode;
   /** Editor-only guides. */
@@ -69,6 +118,16 @@ export function ThemeStage({
   breakpoint,
   overrides,
   qrDataUrl,
+  eventDateIso,
+  linkToken,
+  mapUrl,
+  onToggleMusic,
+  musicPlaying,
+  scheduleItems,
+  notesAr,
+  rsvp,
+  editing = false,
+  rsvpResponded = null,
   renderLayerOverlay,
   children,
   className,
@@ -76,7 +135,7 @@ export function ThemeStage({
   ref,
   onPointerDown,
 }: ThemeStageProps) {
-  const canvas = layout.scenes[scene];
+  const canvas = sceneCanvas(layout, scene);
   const resolved = resolveScene(layout, scene, breakpoint, overrides);
 
   return (
@@ -93,15 +152,26 @@ export function ThemeStage({
       }}
     >
       {resolved.map((entry) => (
-        <LayerBox key={entry.layer.id} resolved={entry}>
+        <LayerBox key={entry.layer.id} resolved={entry} editing={editing}>
           <LayerContent
             resolved={entry}
+            canvas={canvas}
             assets={assets}
             content={content}
             typography={typography}
             palette={palette}
             breakpoint={breakpoint}
             qrDataUrl={qrDataUrl}
+            eventDateIso={eventDateIso}
+            linkToken={linkToken}
+            mapUrl={mapUrl}
+            onToggleMusic={onToggleMusic}
+            musicPlaying={musicPlaying}
+            scheduleItems={scheduleItems}
+            notesAr={notesAr}
+            rsvp={rsvp}
+            editing={editing}
+            rsvpResponded={rsvpResponded}
           />
           {renderLayerOverlay?.(entry)}
         </LayerBox>
@@ -111,12 +181,32 @@ export function ThemeStage({
   );
 }
 
-/** Positioning shell — identical for every layer type. */
-function LayerBox({ resolved, children }: { resolved: ResolvedLayer; children: ReactNode }) {
+/** Layer types a guest is meant to touch. Everything else is decoration. */
+const INTERACTIVE_LAYERS = new Set(["rsvp", "button"]);
+
+/**
+ * Positioning shell — identical for every layer type.
+ *
+ * Decorative layers are `pointer-events: none` for guests. Layers are absolute
+ * siblings painted in `z` order, so without this a photo or a text box sitting
+ * above the RSVP block would silently swallow every tap on the form and the
+ * guest would have no way to book. In the editor every box stays clickable,
+ * because that is how a layer gets selected and dragged.
+ */
+function LayerBox({
+  resolved,
+  editing,
+  children,
+}: {
+  resolved: ResolvedLayer;
+  editing: boolean;
+  children: ReactNode;
+}) {
+  const interactive = editing || INTERACTIVE_LAYERS.has(resolved.layer.type);
   return (
     <div
       data-layer-id={resolved.layer.id}
-      style={boxStyle(resolved.transform)}
+      style={{ ...boxStyle(resolved.transform), pointerEvents: interactive ? "auto" : "none" }}
     >
       {children}
     </div>
@@ -139,20 +229,42 @@ export function boxStyle(transform: Transform): CSSProperties {
 
 function LayerContent({
   resolved,
+  canvas,
   assets,
   content,
   typography,
   palette,
   breakpoint,
   qrDataUrl,
+  eventDateIso,
+  linkToken,
+  mapUrl,
+  onToggleMusic,
+  musicPlaying,
+  scheduleItems,
+  notesAr,
+  rsvp,
+  editing,
+  rsvpResponded,
 }: {
   resolved: ResolvedLayer;
+  canvas: SceneCanvas;
   assets: Record<string, string>;
   content: ResolvedContent;
   typography: TypographyDoc;
   palette: VariantPalette;
   breakpoint: Breakpoint;
   qrDataUrl?: string | null;
+  eventDateIso?: string;
+  linkToken?: string | null;
+  mapUrl?: string | null;
+  onToggleMusic?: (() => void) | null;
+  musicPlaying?: boolean;
+  scheduleItems?: ScheduleItem[] | null;
+  notesAr?: string | null;
+  rsvp?: StageRsvp | null;
+  editing: boolean;
+  rsvpResponded: "ACCEPTED" | "DECLINED" | null;
 }) {
   const { layer, transform } = resolved;
 
@@ -176,22 +288,80 @@ function LayerContent({
     case "seal":
       return <SealContent layer={layer} content={content} typography={typography} breakpoint={breakpoint} />;
     case "qr":
-      return <QrContent layer={layer} qrDataUrl={qrDataUrl} palette={palette} transform={transform} />;
+      return (
+        <QrContent
+          layer={layer}
+          qrDataUrl={qrDataUrl}
+          palette={palette}
+          transform={transform}
+          editing={editing}
+        />
+      );
+    case "countdown":
+      return <CountdownContent layer={layer} typography={typography} eventDateIso={eventDateIso} />;
+    case "button":
+      return (
+        <ButtonContent
+          layer={layer}
+          typography={typography}
+          // In the editor a button has nowhere to go on purpose: clicking a
+          // layer there means "select and drag me", and a live link would
+          // navigate the admin's browser away mid-edit.
+          linkToken={editing ? null : linkToken}
+          mapUrl={editing ? null : mapUrl}
+          musicPlaying={musicPlaying}
+          onToggleMusic={editing ? null : onToggleMusic}
+          editing={editing}
+        />
+      );
+    case "rsvp":
+      return (
+        <RsvpContent
+          layer={layer}
+          typography={typography}
+          palette={palette}
+          linkToken={linkToken}
+          rsvp={rsvp}
+          defaultGuestName={content.guestName}
+          alreadyAnswered={rsvpResponded}
+        />
+      );
+    case "schedule":
+      return (
+        <ScheduleContent
+          layer={layer}
+          typography={typography}
+          transform={transform}
+          canvas={canvas}
+          scheduleItems={scheduleItems}
+        />
+      );
+    case "notes":
+      return <NotesContent layer={layer} typography={typography} notesAr={notesAr} />;
   }
 }
 
-function textStyleToCss(style: TextStyle, typography: TypographyDoc): CSSProperties {
-  const role = resolveFont(style.font, typography);
-  return {
-    fontFamily: fontStackFor(role.family),
-    fontSize: scaled(style.fontSize),
-    fontWeight: style.fontWeight,
-    color: style.color,
-    textAlign: style.align,
-    lineHeight: style.lineHeight,
-    letterSpacing: `${style.letterSpacing}em`,
-  };
+/**
+ * The lines a `content`-sourced text layer prints.
+ *
+ * Couple-scoped fields repeat per couple, so a layer set to "groom & bride"
+ * lists a joint wedding in full instead of naming the first pair only. Fields
+ * shared by the whole invitation print once, in the order the admin chose.
+ */
+function contentLines(fields: ContentField[], content: ResolvedContent): string[] {
+  const coupleScoped = fields.filter(isCoupleField);
+  if (content.perCouple.length > 1 && coupleScoped.length > 0) {
+    return fields
+      .flatMap((field) =>
+        isCoupleField(field)
+          ? content.perCouple.map((couple) => couple[field])
+          : [content[field]],
+      )
+      .filter((value) => value.length > 0);
+  }
+  return fields.map((field) => content[field]).filter((value) => value.length > 0);
 }
+
 
 function TextContent({
   layer,
@@ -207,16 +377,14 @@ function TextContent({
   const style = resolveTextStyle(layer, breakpoint);
   const lines =
     layer.source === "content"
-      ? layer.fields.map((field) => content[field]).filter((value) => value.length > 0)
+      ? contentLines(layer.fields, content)
       : interpolate(layer.text, content).split("\n");
-
-  const justify = style.align === "start" ? "flex-start" : style.align === "end" ? "flex-end" : "center";
 
   return (
     <div
       dir="rtl"
       className="flex h-full w-full flex-col"
-      style={{ ...textStyleToCss(style, typography), justifyContent: justify }}
+      style={{ ...textStyleToCss(style, typography), justifyContent: justifyFor(style.align) }}
     >
       {lines.map((line, index) => (
         <span key={index} className="block whitespace-pre-wrap break-words">
@@ -260,11 +428,13 @@ function QrContent({
   qrDataUrl,
   palette,
   transform,
+  editing,
 }: {
   layer: QrLayer;
   qrDataUrl?: string | null;
   palette: VariantPalette;
   transform: Transform;
+  editing: boolean;
 }) {
   // Padding is a share of the layer's own width; the layer's width is a share
   // of the stage, so one multiplication keeps it in stage-relative cqw.
@@ -280,12 +450,18 @@ function QrContent({
         padding: paddingCqw,
       }}
     >
+      {/*
+        The sample pattern is EDITOR ONLY. It is deliberately convincing, so
+        showing it to a guest who has no real code yet would hand them
+        something that looks like a working entry pass and fails at the door.
+        With no code and no editor, the box simply stays empty.
+      */}
       {qrDataUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={qrDataUrl} alt="" className="block h-full w-full object-contain" />
-      ) : (
+      ) : editing ? (
         <SampleQr fg={layer.fgColor || palette.fg} />
-      )}
+      ) : null}
     </div>
   );
 }

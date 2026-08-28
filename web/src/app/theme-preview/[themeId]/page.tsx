@@ -9,6 +9,7 @@ import { builderFontStylesheetHref } from "@/lib/themes/builder/fonts-server";
 import { SAMPLE_CONTENT_INPUT } from "@/lib/themes/builder/content";
 import { defaultLocale } from "@/lib/i18n/locales";
 import { prisma } from "@/lib/db/client";
+import type { ScheduleItem } from "@/lib/events/types";
 
 /**
  * "Preview Invitation" — the real guest experience, not a mock-up.
@@ -45,6 +46,17 @@ export default async function ThemePreviewPage({
   const qrDataUrl = accepted ? await renderQrDataUrl("preview-sample-token") : null;
   const sample = SAMPLE_CONTENT_INPUT;
   const [primaryCouple] = sample.couples;
+
+  // A scene can declare that it needs the schedule, the notes, a map link or
+  // and the guest flow skips it when the event carries none. With an empty
+  // sample event every such scene would silently vanish from this preview and
+  // read as a broken design, so the sample carries one of each.
+  const sampleSchedule: ScheduleItem[] = [
+    { labelAr: "استقبال الضيوف", time: "8:00 م" },
+    { labelAr: "الزفة", time: "9:30 م" },
+    { labelAr: "العشاء", time: "10:30 م" },
+  ];
+  const sampleNotes = "يرجى الحضور قبل الموعد بنصف ساعة\nالتصوير مسموح في الصالة الرئيسية فقط";
 
   return (
     <>
@@ -84,11 +96,14 @@ export default async function ThemePreviewPage({
           eventDate: sample.eventDate,
           locationName: sample.locationName,
           regionName: sample.regionName,
-          mapUrl: null,
-          musicYoutubeId: null,
+          mapUrl: "https://maps.google.com/?q=24.7136,46.6753",
+          // Opens the gate on any scene the admin marked `requires: "music"`;
+          // the hidden 1x1 embed is a placeholder, so the preview proves the
+          // scene appears and lays out — real audio plays on a real invitation.
+          musicYoutubeId: "preview-sample",
           musicAutoplay: false,
-          scheduleItems: null,
-          notesAr: null,
+          scheduleItems: sampleSchedule,
+          notesAr: sampleNotes,
           rsvpRequired: true,
           allowGuestPartySize: true,
         }}

@@ -9,6 +9,24 @@ const TYPE_ICON: Record<Layer["type"], string> = {
   text: "T",
   seal: "◈",
   qr: "▦",
+  countdown: "⏱",
+  button: "⬭",
+  rsvp: "✍",
+  schedule: "☰",
+  notes: "✱",
+};
+
+/** Fallback caption for a layer whose name was cleared. */
+const TYPE_LABEL_AR: Record<Layer["type"], string> = {
+  asset: "صورة",
+  text: "نص",
+  seal: "ختم",
+  qr: "باركود",
+  countdown: "عد تنازلي",
+  button: "زر",
+  rsvp: "تأكيد الحضور",
+  schedule: "برنامج الحفل",
+  notes: "ملاحظات",
 };
 
 export function LayersPanel({
@@ -52,7 +70,7 @@ export function LayersPanel({
               >
                 <span className="w-4 shrink-0 text-center text-xs text-fg-muted">{TYPE_ICON[layer.type]}</span>
                 <span className={`truncate text-xs ${layer.visible ? "text-fg" : "text-fg-muted line-through"}`}>
-                  {layer.name || (layer.type === "asset" ? slotLabelAr(layer.slot) : layer.type)}
+                  {layer.name || (layer.type === "asset" ? slotLabelAr(layer.slot) : TYPE_LABEL_AR[layer.type])}
                 </span>
               </button>
 

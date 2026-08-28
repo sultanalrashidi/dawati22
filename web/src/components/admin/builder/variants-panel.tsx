@@ -12,6 +12,8 @@ import {
 } from "@/lib/admin/themes/builder-actions";
 import type { VariantPalette } from "@/lib/themes/builder/types";
 
+import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
+
 export interface VariantRow {
   id: string;
   slug: string;
@@ -19,6 +21,8 @@ export interface VariantRow {
   nameAr: string;
   colorTag: string | null;
   palette: VariantPalette;
+  /** This variant's own colours and geometry tweaks, keyed by layer id. */
+  overrides: LayoutOverrides;
   isDefault: boolean;
 }
 

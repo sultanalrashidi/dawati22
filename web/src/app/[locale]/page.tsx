@@ -2,40 +2,272 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { listPricingRates } from "@/lib/orders/service";
+import { InvitationTier } from "@/generated/prisma/enums";
+import { supportWhatsAppUrl } from "@/lib/support";
+import { EnvelopeHero } from "@/components/home/envelope-hero";
 
+/**
+ * The landing page.
+ *
+ * Every claim on it is a feature that actually ships — the envelope, the
+ * music, the countdown, the map button, RSVP with a party size, the agenda.
+ * Two lines from the design were deliberately not carried over: wallet passes
+ * (not built) and "design free, pay only when you send" (the product requires
+ * a paid order before an event exists). Marketing copy that the product cannot
+ * honour is a support ticket, not a headline.
+ */
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = await getDictionary(locale);
+  const h = dict.home;
+
+  // Read from the same table /plans reads, so the landing page can never
+  // advertise a price the pricing page contradicts.
+  const rates = await listPricingRates();
+  const priceOf = (tier: InvitationTier) => {
+    const rate = rates.find((r) => r.tier === tier);
+    return rate ? Number(rate.unitPrice) : null;
+  };
+  const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
+  const noQr = priceOf(InvitationTier.NO_QR);
+  const withQr = priceOf(InvitationTier.WITH_QR);
+
+  const steps = [
+    { n: "01", title: h.step1Title, body: h.step1Body },
+    { n: "02", title: h.step2Title, body: h.step2Body },
+    { n: "03", title: h.step3Title, body: h.step3Body },
+  ];
+
+  const features = [
+    { title: h.f1Title, body: h.f1Body },
+    { title: h.f2Title, body: h.f2Body },
+    { title: h.f3Title, body: h.f3Body },
+    { title: h.f4Title, body: h.f4Body },
+    { title: h.f5Title, body: h.f5Body },
+    { title: h.f6Title, body: h.f6Body },
+  ];
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col items-center gap-8 px-4 py-24 text-center sm:px-8">
-      <p className="font-display text-sm uppercase tracking-[0.3em] text-accent">
-        {dict.brand.name}
-      </p>
-      <h1 className="text-balance text-4xl font-semibold leading-tight text-fg sm:text-5xl">
-        {dict.home.heroTitle}
-      </h1>
-      <p className="text-balance text-lg text-fg-muted">{dict.home.heroSubtitle}</p>
-      <div className="flex flex-col items-center gap-4">
-        <div className="flex flex-wrap items-center justify-center gap-3">
+    <div className="flex flex-col">
+      {/* ── HERO ───────────────────────────────────────────────────────── */}
+      <section className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-16 sm:px-8 sm:py-24 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+        <div className="flex flex-col items-start gap-6">
+          <Kicker>{h.heroKicker}</Kicker>
+          <h1 className="font-display text-balance text-4xl leading-[1.25] text-fg sm:text-5xl lg:text-6xl">
+            {h.heroTitle}
+          </h1>
+          <p className="max-w-xl text-base leading-relaxed text-fg-muted sm:text-lg">{h.heroSubtitle}</p>
+
+          <div className="mt-1 flex flex-wrap items-center gap-3">
+            <Link
+              href={`/${locale}/plans`}
+              className="inline-flex h-12 items-center rounded-full bg-accent px-7 text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+            >
+              {h.ctaStart}
+            </Link>
+            <Link
+              href={`/${locale}/themes`}
+              className="inline-flex h-12 items-center rounded-full border border-border bg-surface px-7 text-sm font-bold text-fg transition-colors hover:border-accent"
+            >
+              {h.ctaThemes}
+            </Link>
+          </div>
+
+          <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
+            {[h.heroPoint1, h.heroPoint2, h.heroPoint3].map((point) => (
+              <li key={point} className="flex items-center gap-2 text-sm text-fg-muted">
+                <Tick />
+                {point}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <EnvelopeHero locale={locale} dict={dict} />
+      </section>
+
+      {/* ── STEPS ──────────────────────────────────────────────────────── */}
+      <Band>
+        <SectionHead kicker={h.stepsKicker} title={h.stepsTitle} />
+        <div className="mt-12 grid gap-5 md:grid-cols-3">
+          {steps.map((step) => (
+            <div
+              key={step.n}
+              className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-7"
+            >
+              <span className="font-display text-3xl text-accent-soft">{step.n}</span>
+              <h3 className="text-lg font-bold text-fg">{step.title}</h3>
+              <p className="text-sm leading-relaxed text-fg-muted">{step.body}</p>
+            </div>
+          ))}
+        </div>
+      </Band>
+
+      {/* ── GUEST EXPERIENCE ───────────────────────────────────────────── */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-8">
+        <SectionHead kicker={h.guestKicker} title={h.guestTitle} subtitle={h.guestSubtitle} />
+        <div className="mt-4 flex justify-center">
           <Link
-            href={`/${locale}/login`}
-            className="h-11 items-center rounded-full bg-accent px-6 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong inline-flex"
+            href={`/${locale}/themes`}
+            className="text-sm font-bold text-accent underline-offset-4 hover:underline"
           >
-            {dict.home.ctaStart}
-          </Link>
-          <Link
-            href={`/${locale}/plans`}
-            className="h-11 items-center rounded-full border border-border px-6 text-sm font-medium text-fg transition-colors hover:bg-surface-2 inline-flex"
-          >
-            {dict.home.ctaPlans}
+            {h.guestLink} ←
           </Link>
         </div>
-        <Link href={`/${locale}/themes`} className="text-sm font-medium text-accent underline-offset-4 hover:underline">
-          {dict.home.ctaThemes}
-        </Link>
-      </div>
+        <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {features.map((feature) => (
+            <div key={feature.title} className="rounded-2xl border border-border bg-surface p-6">
+              <h3 className="text-base font-bold text-fg">{feature.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-fg-muted">{feature.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── PRICING ────────────────────────────────────────────────────── */}
+      <Band>
+        <SectionHead kicker={h.pricingKicker} title={h.pricingTitle} subtitle={h.pricingSubtitle} />
+        {noQr !== null && withQr !== null && (
+          <div className="mx-auto mt-12 grid max-w-3xl gap-5 sm:grid-cols-2">
+            <PriceCard
+              name={dict.plans.tierNoQr}
+              price={nf.format(noQr)}
+              unit={`${dict.common.sar} ${dict.plans.perInvitation}`}
+            />
+            <PriceCard
+              featured
+              badge={dict.plans.mostPopular}
+              name={dict.plans.tierQr}
+              price={nf.format(withQr)}
+              unit={`${dict.common.sar} ${dict.plans.perInvitation}`}
+            />
+          </div>
+        )}
+        <div className="mt-8 flex justify-center">
+          <Link
+            href={`/${locale}/plans`}
+            className="inline-flex h-12 items-center rounded-full border border-accent px-7 text-sm font-bold text-accent transition-colors hover:bg-accent hover:text-accent-fg"
+          >
+            {h.pricingLink} ←
+          </Link>
+        </div>
+      </Band>
+
+      {/* ── CTA ────────────────────────────────────────────────────────── */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-8">
+        <div className="flex flex-col items-center gap-6 rounded-3xl border border-accent-soft/50 bg-surface px-6 py-14 text-center">
+          <h2 className="font-display text-balance text-3xl leading-snug text-fg sm:text-4xl">
+            {h.ctaTitle}
+          </h2>
+          <p className="max-w-xl text-base text-fg-muted">{h.ctaBody}</p>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href={`/${locale}/plans`}
+              className="inline-flex h-12 items-center rounded-full bg-accent px-7 text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+            >
+              {h.ctaStart}
+            </Link>
+            <a
+              href={supportWhatsAppUrl(h.ctaWhatsappMessage)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center rounded-full border border-border px-7 text-sm font-bold text-fg transition-colors hover:border-accent"
+            >
+              {h.ctaWhatsapp}
+            </a>
+          </div>
+        </div>
+      </section>
     </div>
+  );
+}
+
+/** A full-bleed tinted band — the design alternates these with the page ground. */
+function Band({ children }: { children: React.ReactNode }) {
+  return (
+    <section className="border-y border-border bg-surface-2/60">
+      <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-8">{children}</div>
+    </section>
+  );
+}
+
+function Kicker({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="flex items-center gap-3 text-xs font-bold tracking-[0.14em] text-accent">
+      <span aria-hidden="true" className="h-px w-10 bg-accent-soft" />
+      {children}
+    </span>
+  );
+}
+
+function SectionHead({
+  kicker,
+  title,
+  subtitle,
+}: {
+  kicker: string;
+  title: string;
+  subtitle?: string;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-4 text-center">
+      <Kicker>{kicker}</Kicker>
+      <h2 className="font-display text-balance text-3xl leading-snug text-fg sm:text-4xl">{title}</h2>
+      {subtitle && <p className="max-w-2xl text-base leading-relaxed text-fg-muted">{subtitle}</p>}
+    </div>
+  );
+}
+
+function PriceCard({
+  name,
+  price,
+  unit,
+  featured,
+  badge,
+}: {
+  name: string;
+  price: string;
+  unit: string;
+  featured?: boolean;
+  badge?: string;
+}) {
+  return (
+    <div
+      className={`flex flex-col gap-2 rounded-2xl border bg-surface p-7 ${
+        featured ? "border-accent" : "border-border"
+      }`}
+    >
+      {badge ? (
+        <span className="w-fit rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-fg">
+          {badge}
+        </span>
+      ) : (
+        <span aria-hidden="true" className="h-[26px]" />
+      )}
+      <h3 className="text-lg font-bold text-fg">{name}</h3>
+      <p className="flex items-baseline gap-2">
+        <span className="font-display text-4xl text-fg tabular-nums">{price}</span>
+        <span className="text-sm text-fg-muted">{unit}</span>
+      </p>
+    </div>
+  );
+}
+
+function Tick() {
+  return (
+    <svg
+      className="h-4 w-4 shrink-0 text-accent"
+      viewBox="0 0 20 20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 10.5l4 4 8-9" />
+    </svg>
   );
 }

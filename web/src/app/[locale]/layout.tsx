@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
+import { Almarai } from "next/font/google";
 import { locales, isLocale, dirOf } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { THEME_COOKIE } from "@/lib/theme/constants";
@@ -9,17 +9,17 @@ import { AppChrome } from "@/components/app-chrome";
 import { InlineScript } from "@/components/inline-script";
 import "../globals.css";
 
-const bodyFont = IBM_Plex_Sans_Arabic({
+const bodyFont = Almarai({
   variable: "--font-body",
-  subsets: ["arabic", "latin"],
-  weight: ["400", "500", "600", "700"],
+  subsets: ["arabic"],
+  weight: ["300", "400", "700", "800"],
 });
 
-const displayFont = Inter({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
+// `--font-display` sits on Arabic headings and the wordmark, so it has to be a
+// face with Arabic glyphs — it used to be Inter with `subsets: ["latin"]`,
+// which meant every one of those rendered in an unstyled browser fallback.
+// Aref Ruqaa is already loaded for the theme engine and already on <html> via
+// THEME_FONT_CLASS, so pointing at its variable costs no extra download.
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -50,7 +50,7 @@ export default async function LocaleLayout({
       lang={locale}
       dir={dirOf(locale)}
       data-theme="light"
-      className={`${bodyFont.variable} ${displayFont.variable} ${THEME_FONT_CLASS} h-full antialiased`}
+      className={`${bodyFont.variable} ${THEME_FONT_CLASS} h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

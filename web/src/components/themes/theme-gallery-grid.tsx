@@ -20,11 +20,12 @@ type ThemeItem = {
   builder?: BuilderTheme;
 };
 
+// One chip per category that actually exists in the catalogue. `soft` and
+// `modern` were listed here but match no theme, so both always returned an
+// empty gallery — a filter that can only ever fail is worse than no filter.
 const CATEGORY_CHIPS = [
   { key: "all", dictKey: "categoryAll", dbValue: null },
   { key: "luxury", dictKey: "categoryLuxury", dbValue: "luxury" },
-  { key: "soft", dictKey: "categorySoft", dbValue: "soft" },
-  { key: "modern", dictKey: "categoryModern", dbValue: "modern" },
   { key: "classic", dictKey: "categoryClassic", dbValue: "classic" },
   { key: "romantic", dictKey: "categoryRomantic", dbValue: "romantic" },
   { key: "simple", dictKey: "categorySimple", dbValue: "minimal" },

@@ -3,15 +3,17 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --color-bg: #fbf8f3;
+  --color-bg: #faf6ee;
   --color-surface: #ffffff;
-  --color-surface-2: #f4efe6;
-  --color-fg: #1f1b16;
-  --color-fg-muted: #6b6156;
-  --color-border: #e8e1d6;
-  --color-accent: #b08d57;
-  --color-accent-strong: #8c6d3f;
+  --color-surface-2: #f4eee0;
+  --color-fg: #241e12;
+  --color-fg-muted: #857a64;
+  --color-border: #eae1cd;
+  --color-accent: #a6863b;
+  --color-accent-strong: #8c6f2e;
   --color-accent-fg: #ffffff;
+  /* A softer gold for hairlines and dividers — too light to put text on. */
+  --color-accent-soft: #c9ae6b;
   --color-danger: #b3403a;
   --color-success: #3f7d5c;
   --color-warning: #b8863c;
@@ -44,6 +46,7 @@
   --color-accent: #d4af74;
   --color-accent-strong: #d4af74;
   --color-accent-fg: #14110d;
+  --color-accent-soft: #8a723f;
   --color-danger: #e0776f;
   --color-success: #6fbb92;
   --color-warning: #e0b262;
@@ -59,11 +62,13 @@
   --color-accent: var(--color-accent);
   --color-accent-strong: var(--color-accent-strong);
   --color-accent-fg: var(--color-accent-fg);
+  --color-accent-soft: var(--color-accent-soft);
   --color-danger: var(--color-danger);
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --font-body: var(--font-body);
-  --font-display: var(--font-display);
+  /* Aliased to the theme engine's Aref Ruqaa — see [locale]/layout.tsx. */
+  --font-display: var(--font-aref-ruqaa);
 }
 
 body {

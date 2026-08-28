@@ -263,8 +263,8 @@ function MusicToggle({
       style={{ borderColor: "var(--color-accent)", background: "var(--color-surface)" }}
     >
       <VinylIcon spinning={playing} />
-      <span className="text-xs font-medium uppercase tracking-[0.15em]" style={{ color: "var(--color-fg)" }}>
-        Music
+      <span className="text-xs font-medium tracking-[0.06em]" style={{ color: "var(--color-fg)" }}>
+        {playing ? pauseLabel : label}
       </span>
     </button>
   );

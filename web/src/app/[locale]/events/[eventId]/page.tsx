@@ -3,6 +3,7 @@ import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { getOwnedEvent } from "@/lib/events/service";
+import { orderTerms } from "@/lib/orders/terms";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { guestInvitationUrl } from "@/lib/urls";
 import { Role } from "@/generated/prisma/client";
@@ -21,7 +22,7 @@ export default async function EventDetailPage({
   const event = await getOwnedEvent(eventId, user.id);
   if (!event) notFound();
 
-  const capacity = event.order.plan.invitationCount;
+  const capacity = orderTerms(event.order).invitationCount;
   const f = dict.events.detail;
 
   const rsvpByGuestId = new Map(event.guests.map((g) => [g.id, classifyRsvp(g.invitation?.status)]));
@@ -47,6 +48,12 @@ export default async function EventDetailPage({
           {event.guests.length} / {capacity}
         </p>
       </div>
+
+      {/* There is no customer edit screen for these details — the create form
+          warns about that up front, and this is where they come looking. */}
+      <p className="mt-4 rounded-xl border border-border bg-surface-2/60 px-4 py-3 text-xs leading-relaxed text-fg-muted">
+        {f.dataLockedNotice}
+      </p>
 
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-xl border border-border bg-surface p-4 text-center">
@@ -98,6 +105,11 @@ export default async function EventDetailPage({
         </div>
       </section>
 
+      {/* The whole door section is the QR product: the reference code and the
+          guard PIN exist only to open a scanner. On an event sold without a
+          scannable pass they would be setup for a flow that refuses every
+          scan, so the section is not offered at all. */}
+      {event.hasQr && (
       <section className="mt-10">
         <h2 className="text-lg font-semibold text-fg">{f.gateAccessTitle}</h2>
         <p className="mt-1 text-sm text-fg-muted">{f.gateAccessHint}</p>
@@ -111,6 +123,7 @@ export default async function EventDetailPage({
           <GatePinForm eventId={event.id} dict={dict} hasPinSet={Boolean(event.gatePinHash)} />
         </div>
       </section>
+      )}
     </div>
   );
 }

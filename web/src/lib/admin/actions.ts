@@ -2,15 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUserOrThrow } from "@/lib/auth/guards";
-import {
-  setUserBlocked,
-  setEventStatus,
-  createPlan,
-  updatePlan,
-  setPlanStatus,
-  type PlanInput,
-} from "@/lib/admin/service";
+import { setUserBlocked, setEventStatus, updatePricingRate } from "@/lib/admin/service";
+import { EventError, updateEventDetails } from "@/lib/events/service";
+import { readEventForm } from "@/lib/events/form";
 import { Role, EventStatus } from "@/generated/prisma/client";
+import { parseTier } from "@/lib/orders/pricing";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 
 async function requireAdmin() {
@@ -31,57 +27,72 @@ export async function cancelEventAction(eventId: string, locale: string) {
   revalidatePath(`/${safeLocale}/admin/events`);
 }
 
-export type PlanFormState = { error?: string } | null;
+export type EventEditState = { error?: string; saved?: boolean } | null;
 
-function parsePlanForm(formData: FormData): PlanInput | null {
-  const name = String(formData.get("name") ?? "").trim();
-  const nameAr = String(formData.get("nameAr") ?? "").trim();
-  const invitationCount = Number(formData.get("invitationCount") ?? 0);
-  const price = Number(formData.get("price") ?? 0);
-  const sortOrder = Number(formData.get("sortOrder") ?? 0);
+/**
+ * Support's edit of a customer's event. This is the only way the details change
+ * after creation — the customer's form is create-only, and the create page says
+ * so — so it returns its outcome as state rather than redirecting: the admin
+ * stays on the filled-in form and can see what did or did not save.
+ */
+export async function updateEventDetailsAction(
+  eventId: string,
+  locale: string,
+  _prev: EventEditState,
+  formData: FormData,
+): Promise<EventEditState> {
+  await requireAdmin();
 
-  if (!name || !nameAr || invitationCount < 1 || invitationCount > 500 || price <= 0) return null;
-  return { name, nameAr, invitationCount, price, sortOrder };
+  const fields = readEventForm(formData);
+  if (!fields) return { error: "invalid" };
+
+  try {
+    await updateEventDetails(eventId, fields);
+  } catch (err) {
+    if (err instanceof EventError) return { error: err.message };
+    throw err;
+  }
+
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  revalidatePath(`/${safeLocale}/admin/events`);
+  revalidatePath(`/${safeLocale}/admin/events/${eventId}`);
+  // The owner's own dashboard reads the same row.
+  revalidatePath(`/${safeLocale}/events/${eventId}`);
+  // And the guests'. The whole promise of this screen is that a corrected name
+  // reaches invitations already sent, so the guest route is invalidated too —
+  // by pattern, because the tokens are not known here and there can be
+  // hundreds. The RSVP action revalidates the same route for the same reason.
+  revalidatePath("/i/[token]", "page");
+  return { saved: true };
 }
 
-export async function createPlanAction(
-  locale: string,
-  _prev: PlanFormState,
-  formData: FormData
-): Promise<PlanFormState> {
-  await requireAdmin();
-  const input = parsePlanForm(formData);
-  if (!input) return { error: "invalid" };
+export type PricingFormState = { error?: string; saved?: boolean } | null;
 
-  await createPlan(input);
+/**
+ * Sets the price of one invitation for one tier. Takes effect on new orders
+ * only — an order freezes its own unitPrice and total at purchase, so nothing
+ * already sold moves when this changes.
+ */
+export async function updatePricingRateAction(
+  locale: string,
+  _prev: PricingFormState,
+  formData: FormData,
+): Promise<PricingFormState> {
+  await requireAdmin();
+
+  const tier = parseTier(formData.get("tier"));
+  const unitPrice = Number(formData.get("unitPrice"));
+  if (!tier) return { error: "invalid" };
+
+  try {
+    await updatePricingRate(tier, unitPrice);
+  } catch {
+    return { error: "invalid" };
+  }
+
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
   revalidatePath(`/${safeLocale}/admin/plans`);
-  return null;
-}
-
-export async function updatePlanAction(
-  planId: string,
-  locale: string,
-  _prev: PlanFormState,
-  formData: FormData
-): Promise<PlanFormState> {
-  await requireAdmin();
-  const input = parsePlanForm(formData);
-  if (!input) return { error: "invalid" };
-
-  await updatePlan(planId, input);
-  const safeLocale = isLocale(locale) ? locale : defaultLocale;
-  revalidatePath(`/${safeLocale}/admin/plans`);
-  return null;
-}
-
-export async function setPlanStatusAction(
-  planId: string,
-  locale: string,
-  status: "ACTIVE" | "HIDDEN" | "ARCHIVED"
-) {
-  await requireAdmin();
-  await setPlanStatus(planId, status);
-  const safeLocale = isLocale(locale) ? locale : defaultLocale;
-  revalidatePath(`/${safeLocale}/admin/plans`);
+  // The public price list reads these rows on every render.
+  revalidatePath(`/${safeLocale}/plans`);
+  return { saved: true };
 }

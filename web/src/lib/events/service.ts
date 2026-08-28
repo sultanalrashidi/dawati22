@@ -10,6 +10,7 @@ import {
 import type { ScheduleItem } from "@/lib/events/types";
 import { generateReferenceCode } from "@/lib/events/reference-code";
 import type { CoupleInput } from "@/lib/themes/builder/content";
+import { orderTerms } from "@/lib/orders/terms";
 
 export class EventError extends Error {}
 
@@ -145,7 +146,7 @@ export interface CreateEventInput {
   locationName: string;
   regionName?: string;
   mapUrl?: string;
-  musicYoutubeId?: string;
+  musicYoutubeId?: string | null;
   musicAutoplay?: boolean;
   scheduleItems?: ScheduleItem[];
   notesAr?: string;
@@ -163,30 +164,138 @@ export async function createEvent(userId: string, input: CreateEventInput) {
   if (order.status !== OrderStatus.PAID) throw new EventError("Order is not paid");
   if (order.event) throw new EventError("Order already has an event");
 
-  const theme = await prisma.theme.findUnique({ where: { id: input.themeId } });
-  if (!theme || theme.status !== "PUBLISHED") throw new EventError("Theme not available");
+  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null);
+  assertCoupleCount(input.couples);
 
-  // The colour id comes from the browser alongside the theme id, so the pair
-  // has to be re-checked: an event pointing at another design's colour would
-  // render that design's artwork on this invitation.
-  if (input.themeVariantId) {
+  // Snapshotted from the order, not read through it later: the guest page must
+  // be able to answer "does this invitation have a QR?" without joining the
+  // order, and a later price-list edit must never change what was already sold.
+  const { hasQr } = orderTerms(order);
+
+  return createEventWithUniqueReferenceCode(userId, order.id, input, hasQr);
+}
+
+/**
+ * A theme+colour pair the browser sent is only usable if it really is a pair:
+ * an event pointing at another design's colour would render that design's
+ * artwork on this invitation.
+ *
+ * `alsoAllowThemeId` exists for the admin edit form — an event whose design was
+ * archived after it was created must still be saveable without support being
+ * forced to move the invitation onto a different design first.
+ */
+async function assertThemeSelectable(
+  themeId: string,
+  themeVariantId: string | null,
+  alsoAllowThemeId?: string,
+) {
+  const theme = await prisma.theme.findUnique({ where: { id: themeId } });
+  if (!theme || (theme.status !== "PUBLISHED" && theme.id !== alsoAllowThemeId)) {
+    throw new EventError("Theme not available");
+  }
+
+  if (themeVariantId) {
     const variant = await prisma.themeVariant.findUnique({
-      where: { id: input.themeVariantId },
+      where: { id: themeVariantId },
       select: { themeId: true },
     });
     if (!variant || variant.themeId !== theme.id) throw new EventError("Theme color not available");
   }
+}
 
-  if (input.couples.length === 0) throw new EventError("At least one couple is required");
-  if (input.couples.length > MAX_COUPLES_PER_EVENT) throw new EventError("Too many couples");
+function assertCoupleCount(couples: CoupleInput[]) {
+  if (couples.length === 0) throw new EventError("At least one couple is required");
+  if (couples.length > MAX_COUPLES_PER_EVENT) throw new EventError("Too many couples");
+}
 
-  return createEventWithUniqueReferenceCode(userId, order.id, input);
+/** The primary couple is mirrored onto Event's own columns — see CreateEventInput. */
+function primaryCoupleColumns(couples: CoupleInput[]) {
+  const [primary] = couples;
+  return {
+    groomNameEn: primary.groomNameEn,
+    brideNameEn: primary.brideNameEn,
+    groomNameAr: primary.groomNameAr || null,
+    groomFamilyAr: primary.groomFamilyAr || null,
+    brideNameAr: primary.brideNameAr || null,
+    brideFamilyAr: primary.brideFamilyAr || null,
+  };
+}
+
+function coupleRows(couples: CoupleInput[]) {
+  return couples.map((couple, index) => ({
+    sortOrder: index,
+    groomNameEn: couple.groomNameEn,
+    brideNameEn: couple.brideNameEn,
+    groomNameAr: couple.groomNameAr || null,
+    groomFamilyAr: couple.groomFamilyAr || null,
+    brideNameAr: couple.brideNameAr || null,
+    brideFamilyAr: couple.brideFamilyAr || null,
+  }));
+}
+
+/** Everything the event form writes; `orderId` is not among it — a paid order is not re-pointed. */
+export type UpdateEventDetailsInput = Omit<CreateEventInput, "orderId">;
+
+/**
+ * Rewrites an existing event's details. Only support reaches this: the customer
+ * form is create-only, because the names are already printed on invitations
+ * that have been sent by the time anyone wants them changed.
+ *
+ * The couple rows are replaced wholesale rather than diffed — they carry no
+ * identity of their own (nothing references an EventCouple), and a delete +
+ * recreate inside one transaction is the only way "remove the middle pair"
+ * cannot end up shifting the others.
+ */
+export async function updateEventDetails(eventId: string, input: UpdateEventDetailsInput) {
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { id: true, themeId: true },
+  });
+  if (!event) throw new EventError("Event not found");
+
+  assertCoupleCount(input.couples);
+  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null, event.themeId);
+
+  const [, updated] = await prisma.$transaction([
+    prisma.eventCouple.deleteMany({ where: { eventId } }),
+    prisma.event.update({
+      where: { id: eventId },
+      data: {
+        type: input.type,
+        name: input.name,
+        ...primaryCoupleColumns(input.couples),
+        couples: { create: coupleRows(input.couples) },
+        familiesGreetingAr: input.familiesGreetingAr || null,
+        invitationTextAr: input.invitationTextAr,
+        eventDate: input.eventDate,
+        locationName: input.locationName,
+        regionName: input.regionName || null,
+        mapUrl: input.mapUrl || null,
+        musicYoutubeId: input.musicYoutubeId || null,
+        musicAutoplay: input.musicYoutubeId ? Boolean(input.musicAutoplay) : false,
+        scheduleItems:
+          input.scheduleItems && input.scheduleItems.length > 0
+            ? (input.scheduleItems as unknown as Prisma.InputJsonValue)
+            : Prisma.JsonNull,
+        notesAr: input.notesAr || null,
+        themeId: input.themeId,
+        themeVariantId: input.themeVariantId ?? null,
+        guestManagementMode: input.guestManagementMode,
+        rsvpRequired: input.rsvpRequired,
+        allowGuestPartySize: input.allowGuestPartySize,
+      },
+    }),
+  ]);
+  return updated;
 }
 
 /** referenceCode is unique app-wide; retries a few times on the (extremely rare) collision. */
-async function createEventWithUniqueReferenceCode(userId: string, orderId: string, input: CreateEventInput) {
-  const [primary] = input.couples;
-
+async function createEventWithUniqueReferenceCode(
+  userId: string,
+  orderId: string,
+  input: CreateEventInput,
+  hasQr: boolean,
+) {
   for (let attempt = 0; attempt < 5; attempt++) {
     try {
       return await prisma.event.create({
@@ -196,25 +305,15 @@ async function createEventWithUniqueReferenceCode(userId: string, orderId: strin
           referenceCode: generateReferenceCode(),
           type: input.type,
           name: input.name,
-          groomNameEn: primary.groomNameEn,
-          brideNameEn: primary.brideNameEn,
-          groomNameAr: primary.groomNameAr || null,
-          groomFamilyAr: primary.groomFamilyAr || null,
-          brideNameAr: primary.brideNameAr || null,
-          brideFamilyAr: primary.brideFamilyAr || null,
+          // Set explicitly rather than leaning on the column default: the default
+          // is `true` so that no existing wedding loses its door scanning, which
+          // means a forgotten assignment here would silently GIVE a no-QR
+          // customer the paid product.
+          hasQr,
+          ...primaryCoupleColumns(input.couples),
           // Nested creates run inside the same transaction as the event row, so
           // an event can never exist with a half-written couple list.
-          couples: {
-            create: input.couples.map((couple, index) => ({
-              sortOrder: index,
-              groomNameEn: couple.groomNameEn,
-              brideNameEn: couple.brideNameEn,
-              groomNameAr: couple.groomNameAr || null,
-              groomFamilyAr: couple.groomFamilyAr || null,
-              brideNameAr: couple.brideNameAr || null,
-              brideFamilyAr: couple.brideFamilyAr || null,
-            })),
-          },
+          couples: { create: coupleRows(input.couples) },
           familiesGreetingAr: input.familiesGreetingAr || null,
           invitationTextAr: input.invitationTextAr,
           eventDate: input.eventDate,
@@ -254,4 +353,21 @@ export async function getOwnedEvent(eventId: string, userId: string) {
   });
   if (!event || event.ownerId !== userId) return null;
   return event;
+}
+
+/**
+ * An event plus everything the edit form needs to render its current values.
+ * Deliberately without the guest list: the form rewrites the event's own
+ * details, and pulling several hundred guests in to draw a text field is work
+ * nobody asked for.
+ */
+export async function getEventForEdit(eventId: string) {
+  return prisma.event.findUnique({
+    where: { id: eventId },
+    include: {
+      couples: COUPLES_INCLUDE,
+      owner: { select: { id: true, name: true, phone: true } },
+      order: { include: { plan: true } },
+    },
+  });
 }

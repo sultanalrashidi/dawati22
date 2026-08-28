@@ -70,11 +70,43 @@
     "ctaThemes": "Preview designs"
   },
   "plans": {
-    "title": "Plans",
-    "subtitle": "Choose the plan that fits your guest list",
+    "title": "Pricing",
+    "subtitle": "Two clear options, priced by how many invitations you need",
+    "hint": "Drag the slider and compare the two options — orders start at 25 invitations",
     "invitations": "{count} invitations",
-    "choose": "Choose this plan",
-    "mostPopular": "Most popular"
+    "choose": "Choose this package",
+    "mostPopular": "Most popular",
+    "countLabel": "Number of invitations",
+    "countUnit": "invitations",
+    "stepNote": "In steps of 25 — from 25 up to 800 invitations.",
+    "tierQr": "With QR",
+    "tierNoQr": "Without QR",
+    "tierQrShort": "with QR",
+    "tierNoQrShort": "without QR",
+    "perInvitation": "/ per invitation",
+    "total": "Total",
+    "totalFormula": "{rate} SAR × {count} invitations",
+    "chooseQr": "Choose with QR",
+    "chooseNoQr": "Choose without QR",
+    "qrIncludes": "Everything in “Without QR”, plus:",
+    "featuresNoQr": [
+      "A refined digital invitation design",
+      "A private link for every guest, by name",
+      "RSVP — accept or decline",
+      "Add the event to a phone calendar in one tap",
+      "Countdown and venue location",
+      "A dashboard to follow the replies"
+    ],
+    "featuresQr": [
+      "A personal QR code for every guest",
+      "Scan guests in at the door from a phone",
+      "One invitation can’t be used twice",
+      "Live attendance stats"
+    ],
+    "moreThanMaxLead": "Need more than 800 invitations?",
+    "contactWhatsapp": "Message us on WhatsApp",
+    "moreThanMaxMessage": "Hi, I need more than 800 invitations — what's the largest order you can do?",
+    "noQrDoorNote": "“Without QR” has no door check-in — the guest still gets the full pass card, just without a scannable code."
   },
   "checkout": {
     "title": "Checkout",
@@ -149,7 +181,11 @@
       "guestManagementAdmin": "Ask the Dawati team to manage them",
       "rsvpRequiredLabel": "Require RSVP",
       "allowGuestPartySizeLabel": "Let guests choose their party size (otherwise it's locked to the count you set per guest)",
-      "submit": "Create event"
+      "submit": "Create event",
+      "reviewNoticeTitle": "Check your details before creating the event",
+      "reviewNoticeBody": "The names, date and venue appear on every guest’s invitation and entry pass. Once the event is created you cannot change them yourself — edits go through support. Please check the spelling, date and time before saving.",
+      "confirmAccuracyLabel": "I have reviewed the details above and confirm they are correct",
+      "confirmAccuracyHint": "Confirm the review before creating the event."
     },
     "detail": {
       "guests": "Guests",
@@ -187,7 +223,8 @@
       "gatePinChangeButton": "Change",
       "gatePinClear": "Disable",
       "gatePinInvalidFormat": "PIN must be 4-8 digits",
-      "gatePinError": "Something went wrong, please try again"
+      "gatePinError": "Something went wrong, please try again",
+      "dataLockedNotice": "Event details (names, date, venue) can’t be changed here after creation — contact support for any edit."
     }
   },
   "admin": {
@@ -333,7 +370,17 @@
     "deleteThemeInUseOne": "This design is used by 1 event. Choose a replacement design to move it to before deleting.",
     "deleteThemeInUseTwo": "This design is used by 2 events. Choose a replacement design to move them to before deleting.",
     "deleteThemeInUseFew": "This design is used by {count} events. Choose a replacement design to move them to before deleting.",
-    "deleteThemeInUseMany": "This design is used by {count} events. Choose a replacement design to move them to before deleting."
+    "deleteThemeInUseMany": "This design is used by {count} events. Choose a replacement design to move them to before deleting.",
+    "editEventData": "Edit details",
+    "eventEditTitle": "Edit event details",
+    "eventEditNote": "These are the customer’s own details — anything you change here shows up immediately in the invitations and entry passes already sent.",
+    "eventEditSaved": "Changes saved",
+    "backToEvents": "Back to events",
+    "pricing": "Pricing",
+    "pricingIntro": "The price of one invitation. Editing here affects new orders only — paid orders keep the price they were sold at.",
+    "unitPrice": "Price per invitation (SAR)",
+    "legacyPlans": "Legacy packages (history only)",
+    "legacyPlansNote": "No longer sold, kept so older orders can still name what they bought."
   },
   "gate": {
     "title": "Gate Check-in",
@@ -417,7 +464,9 @@
     "rsvpPartySizeLabel": "Number of guests",
     "rsvpMessageLabel": "A word for us",
     "rsvpMessagePlaceholder": "Share your wishes and kind words with us",
-    "rsvpSubmit": "Send confirmation"
+    "rsvpSubmit": "Send confirmation",
+    "passShowCardAtEntry": "Please show this card at the door",
+    "passSeatsShort": "Guests"
   },
   "themesGallery": {
     "heading": "Choose your invitation design",

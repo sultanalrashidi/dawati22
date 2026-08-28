@@ -19,7 +19,7 @@ export default async function AdminLayout({
     [`/${locale}/admin/users`, dict.admin.users],
     [`/${locale}/admin/events`, dict.admin.events],
     [`/${locale}/admin/orders`, dict.admin.orders],
-    [`/${locale}/admin/plans`, dict.admin.plans],
+    [`/${locale}/admin/plans`, dict.admin.pricing],
     [`/${locale}/admin/themes`, dict.admin.themes],
     [`/${locale}/admin/themes/fonts`, dict.admin.fonts],
     [`/${locale}/admin/gate-staff`, dict.admin.gateStaff],

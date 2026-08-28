@@ -100,6 +100,27 @@ enum PlanStatus {
   ARCHIVED
 }
 
+/// What one invitation buys. WITH_QR includes the scannable entry pass and the
+/// door check-in; NO_QR is the same invitation without a code to scan.
+enum InvitationTier {
+  NO_QR
+  WITH_QR
+}
+
+/// The live price list — exactly two rows, one per tier. The matching row is
+/// COPIED onto the Order at purchase, so this table is settings, never history:
+/// re-pricing tomorrow must not re-price what somebody already bought.
+model PricingRate {
+  id        String         @id @default(cuid())
+  tier      InvitationTier @unique
+  unitPrice Decimal        @db.Decimal(10, 2)
+  currency  String         @default("SAR")
+  updatedAt DateTime       @updatedAt
+}
+
+/// Legacy fixed packages. Retired in favour of per-invitation pricing and kept
+/// forever so historical orders can still name what was sold; no new order
+/// points at one. Do NOT edit invitationCount on a live row — see Order.
 model Plan {
   id                     String     @id @default(cuid())
   name                   String
@@ -135,8 +156,21 @@ model Order {
   id             String          @id @default(cuid())
   userId         String
   user           User            @relation(fields: [userId], references: [id])
-  planId         String
-  plan           Plan            @relation(fields: [planId], references: [id])
+  /// The legacy package this was bought from. Null for every order placed under
+  /// per-invitation pricing.
+  planId          String?
+  plan            Plan?          @relation(fields: [planId], references: [id], onDelete: Restrict)
+  /// Invitations bought — this event's guest capacity, snapshotted at purchase.
+  /// Authoritative once set; backfilled from Plan.invitationCount for old rows
+  /// so capacity stopped being a live read of an editable settings table.
+  invitationCount Int?
+  /// Whether these invitations carry a scannable QR entry pass.
+  tier            InvitationTier?
+  /// Price of ONE invitation at purchase time. Null on legacy package orders,
+  /// which were priced as a bundle — display always reads `amount`, never
+  /// unitPrice x count, or every historical order re-prices wrongly.
+  unitPrice       Decimal?        @db.Decimal(10, 2)
+  /// Total actually charged. The only value Moyasar is reconciled against.
   amount         Decimal         @db.Decimal(10, 2)
   currency       String          @default("SAR")
   status         OrderStatus     @default(PENDING)
@@ -441,6 +475,18 @@ model Event {
   themeVariantId        String?
   themeVariant          ThemeVariant?            @relation(fields: [themeVariantId], references: [id], onDelete: SetNull)
   guestManagementMode   EventGuestManagementMode @default(SELF)
+  /**
+   * Whether this event's invitations carry a scannable QR entry pass — a
+   * snapshot of the order's tier taken at creation, so the hottest public
+   * query (`getInvitationByLinkToken`) never has to join the order.
+   *
+   * The default is `true` ONLY so that events created before per-invitation
+   * pricing keep the pass they were sold. It is the permissive value: it grants
+   * the paid feature. Every new event must therefore set this column
+   * EXPLICITLY from its order's tier — see createEventWithUniqueReferenceCode.
+   * Leaving it to the default would hand a NO_QR customer the WITH_QR product.
+   */
+  hasQr                 Boolean                  @default(true)
   rsvpRequired          Boolean                  @default(true)
   /**
    * false = each guest's seat count is fixed to what the owner set; guests can't raise it on the RSVP form.

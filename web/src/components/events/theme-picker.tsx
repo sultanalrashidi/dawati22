@@ -24,8 +24,19 @@ export interface ThemeOption {
   builder?: BuilderTheme;
 }
 
-export function ThemePicker({ options, dict }: { options: ThemeOption[]; dict: Dictionary }) {
-  const [selectedKey, setSelectedKey] = useState(options[0]?.key ?? "");
+export function ThemePicker({
+  options,
+  dict,
+  defaultKey,
+}: {
+  options: ThemeOption[];
+  dict: Dictionary;
+  /** Preselects an existing choice when the form is an edit rather than a create. */
+  defaultKey?: string;
+}) {
+  const [selectedKey, setSelectedKey] = useState(
+    defaultKey && options.some((o) => o.key === defaultKey) ? defaultKey : (options[0]?.key ?? ""),
+  );
   const [previewKey, setPreviewKey] = useState<string | null>(null);
 
   const selected = options.find((o) => o.key === selectedKey) ?? options[0];

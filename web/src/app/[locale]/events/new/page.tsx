@@ -2,24 +2,13 @@ import { notFound, redirect } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
-import { listEligibleOrders, listPublishedThemes } from "@/lib/events/service";
+import { listEligibleOrders } from "@/lib/events/service";
+import { buildThemeOptions } from "@/lib/events/theme-options";
+import { orderSummaryLabel } from "@/lib/orders/terms";
 import { createEventAction } from "@/lib/events/actions";
-import { Role, ThemeEngine } from "@/generated/prisma/client";
-import { parsePalette } from "@/lib/themes/builder/schema";
-import { builderThemeConfig, loadBuilderThemesForGallery } from "@/lib/themes/builder/guest";
-import type { ThemeConfig } from "@/lib/themes/types";
-import { ThemePicker, type ThemeOption } from "@/components/events/theme-picker";
-import { CouplesFields } from "@/components/events/couples-fields";
-
-const EVENT_TYPE_OPTIONS = [
-  ["WEDDING", "typeWedding"],
-  ["ENGAGEMENT", "typeEngagement"],
-  ["GRADUATION", "typeGraduation"],
-  ["BIRTHDAY", "typeBirthday"],
-  ["ANNIVERSARY", "typeAnniversary"],
-  ["CORPORATE", "typeCorporate"],
-  ["OTHER", "typeOther"],
-] as const;
+import { Role } from "@/generated/prisma/client";
+import { EventFields } from "@/components/events/event-fields";
+import { ConfirmSubmit } from "@/components/events/confirm-submit";
 
 export default async function NewEventPage({
   params,
@@ -31,46 +20,10 @@ export default async function NewEventPage({
   const dict = await getDictionary(locale);
   const user = await requireUserOrRedirect(locale, [Role.CUSTOMER]);
 
-  const [eligibleOrders, themes] = await Promise.all([
+  const [eligibleOrders, themeOptions] = await Promise.all([
     listEligibleOrders(user.id),
-    listPublishedThemes(user.id),
+    buildThemeOptions(locale, user.id),
   ]);
-
-  // One option per COLOUR, not per design. A builder theme's colours are
-  // ThemeVariant rows, and the gallery already advertises them individually —
-  // collapsing them here is what used to hand every customer the default
-  // colour whatever they picked.
-  const builderArt = await loadBuilderThemesForGallery(
-    themes.filter((t) => t.engine === ThemeEngine.BUILDER).map((t) => t.id),
-  );
-
-  const themeOptions: ThemeOption[] = themes.flatMap((t): ThemeOption[] => {
-    const name = locale === "ar" ? t.nameAr : t.name;
-    if (t.engine !== ThemeEngine.BUILDER) {
-      return [
-        {
-          key: t.id,
-          themeId: t.id,
-          variantId: null,
-          name,
-          category: t.category,
-          config: t.config as unknown as ThemeConfig,
-        },
-      ];
-    }
-    return t.variants.map((variant) => ({
-      key: `${t.id}:${variant.id}`,
-      themeId: t.id,
-      variantId: variant.id,
-      name,
-      // Only worth showing when the design actually offers a choice.
-      variantName: t.variants.length > 1 ? (locale === "ar" ? variant.nameAr : variant.name) : undefined,
-      category: t.category,
-      config: builderThemeConfig({ palette: parsePalette(variant.palette) }),
-      builder: builderArt.get(t.id)?.get(variant.id),
-    }));
-  });
-
 
   if (eligibleOrders.length === 0) redirect(`/${locale}/plans`);
 
@@ -86,6 +39,14 @@ export default async function NewEventPage({
     <div className="mx-auto max-w-2xl px-4 py-16 sm:px-8">
       <h1 className="text-2xl font-semibold text-fg">{dict.events.newTitle}</h1>
 
+      {/* The event is written once and the customer has no edit screen, so the
+          warning belongs before the fields — not next to the button they press
+          after they have already typed everything. */}
+      <div className="mt-4 rounded-xl border border-warning/40 bg-warning/5 p-4">
+        <p className="text-sm font-semibold text-fg">{f.reviewNoticeTitle}</p>
+        <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">{f.reviewNoticeBody}</p>
+      </div>
+
       {search?.error && (
         <p className="mt-4 rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">{dict.common.error}</p>
       )}
@@ -100,8 +61,12 @@ export default async function NewEventPage({
               className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
             >
               {eligibleOrders.map((order) => (
+                // The purchase date is what tells two same-sized orders apart —
+                // without it a customer with two 300-invitation orders is picking
+                // blind, and the wrong pick is not undoable.
                 <option key={order.id} value={order.id}>
-                  {locale === "ar" ? order.plan.nameAr : order.plan.name} — {order.plan.invitationCount}
+                  {orderSummaryLabel(order, locale, dict)} —{" "}
+                  {new Date(order.createdAt).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US")}
                 </option>
               ))}
             </select>
@@ -110,177 +75,13 @@ export default async function NewEventPage({
           <input type="hidden" name="orderId" value={preselectedOrderId} />
         )}
 
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{f.typeLabel}</span>
-          <select
-            name="type"
-            defaultValue="WEDDING"
-            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-          >
-            {EVENT_TYPE_OPTIONS.map(([value, key]) => (
-              <option key={value} value={value}>
-                {f[key]}
-              </option>
-            ))}
-          </select>
-        </label>
+        <EventFields dict={dict} themeOptions={themeOptions} />
 
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{f.nameLabel}</span>
-          <input
-            name="name"
-            required
-            minLength={2}
-            placeholder={f.namePlaceholder}
-            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-          />
-        </label>
-
-        {/* One pair by default; a joint wedding adds more, all posted under the
-            same `couple*` names. */}
-        <CouplesFields f={f} />
-
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{f.familiesGreetingLabel}</span>
-          <input
-            name="familiesGreetingAr"
-            defaultValue={f.familiesGreetingPlaceholder}
-            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{f.invitationTextLabel}</span>
-          <textarea
-            name="invitationTextAr"
-            required
-            minLength={5}
-            rows={4}
-            defaultValue={f.invitationTextPlaceholder}
-            className="rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent"
-          />
-        </label>
-
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{f.dateLabel}</span>
-          <input
-            type="datetime-local"
-            name="eventDate"
-            required
-            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-          />
-        </label>
-
-        <div className="grid grid-cols-2 gap-4">
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-fg-muted">{f.locationNameLabel}</span>
-            <input
-              name="locationName"
-              required
-              minLength={2}
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-            />
-          </label>
-          <label className="flex flex-col gap-1.5 text-sm">
-            <span className="text-fg-muted">{f.regionNameLabel}</span>
-            <input
-              name="regionName"
-              placeholder={f.regionNamePlaceholder}
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-            />
-          </label>
-        </div>
-
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{f.mapUrlLabel}</span>
-          <input
-            name="mapUrl"
-            type="url"
-            dir="ltr"
-            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-          />
-        </label>
-
-        <div className="flex flex-col gap-2 text-sm">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-fg-muted">{f.musicUrlLabel}</span>
-            <input
-              name="musicUrl"
-              type="url"
-              dir="ltr"
-              placeholder={f.musicUrlPlaceholder}
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-            />
-          </label>
-          <span className="text-xs text-fg-muted">{f.musicUrlHint}</span>
-          <div className="flex flex-col gap-2">
-            <span className="text-fg-muted">{f.musicAutoplayLabel}</span>
-            <label className="flex items-center gap-2">
-              <input type="radio" name="musicAutoplay" value="manual" defaultChecked />
-              {f.musicAutoplayManual}
-            </label>
-            <label className="flex items-center gap-2">
-              <input type="radio" name="musicAutoplay" value="auto" />
-              {f.musicAutoplayAuto}
-            </label>
-          </div>
-        </div>
-
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{f.scheduleLabel}</span>
-          <textarea
-            name="scheduleItems"
-            rows={3}
-            defaultValue={f.schedulePlaceholder}
-            dir="rtl"
-            className="rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent"
-          />
-          <span className="text-xs text-fg-muted">{f.scheduleHint}</span>
-        </label>
-
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{f.notesLabel}</span>
-          <textarea
-            name="notesAr"
-            rows={3}
-            placeholder={f.notesPlaceholder}
-            className="rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent"
-          />
-        </label>
-
-        <div className="flex flex-col gap-2 text-sm">
-          <span className="text-fg-muted">{f.themeLabel}</span>
-          <ThemePicker dict={dict} options={themeOptions} />
-        </div>
-
-        <div className="flex flex-col gap-2 text-sm">
-          <span className="text-fg-muted">{f.guestManagementLabel}</span>
-          <label className="flex items-center gap-2">
-            <input type="radio" name="guestManagementMode" value="SELF" defaultChecked />
-            {f.guestManagementSelf}
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" name="guestManagementMode" value="ADMIN" />
-            {f.guestManagementAdmin}
-          </label>
-        </div>
-
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="rsvpRequired" defaultChecked />
-          {f.rsvpRequiredLabel}
-        </label>
-
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="allowGuestPartySize" defaultChecked />
-          {f.allowGuestPartySizeLabel}
-        </label>
-
-        <button
-          type="submit"
-          className="h-11 rounded-full bg-accent text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong"
-        >
-          {f.submit}
-        </button>
+        <ConfirmSubmit
+          label={f.confirmAccuracyLabel}
+          hint={f.confirmAccuracyHint}
+          submitLabel={f.submit}
+        />
       </form>
     </div>
   );

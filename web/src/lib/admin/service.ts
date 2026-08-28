@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
 import { EventStatus, OrderStatus, Role } from "@/generated/prisma/client";
+import type { InvitationTier } from "@/generated/prisma/enums";
 
 export async function getDashboardMetrics() {
   const [events, invitations, accepted, checkedInAgg, orders, revenueAgg] = await Promise.all([
@@ -70,28 +71,38 @@ export async function listOrders() {
   });
 }
 
+/**
+ * The retired fixed packages, newest pricing first. Read-only: they are kept so
+ * an old order can still say what it bought, and editing one would be editing
+ * history — the count a customer paid for now lives on their order.
+ */
 export async function listPlans() {
   return prisma.plan.findMany({ orderBy: { sortOrder: "asc" } });
 }
 
-export interface PlanInput {
-  name: string;
-  nameAr: string;
-  invitationCount: number;
-  price: number;
-  sortOrder: number;
-}
+/** Bounds no sane price list would leave — typo guards, not business rules. */
+const MAX_UNIT_PRICE_SAR = 100;
+const MIN_UNIT_PRICE_SAR = 0.25;
 
-export async function createPlan(input: PlanInput) {
-  return prisma.plan.create({ data: input });
-}
-
-export async function updatePlan(planId: string, input: PlanInput) {
-  return prisma.plan.update({ where: { id: planId }, data: input });
-}
-
-export async function setPlanStatus(planId: string, status: "ACTIVE" | "HIDDEN" | "ARCHIVED") {
-  await prisma.plan.update({ where: { id: planId }, data: { status } });
+export async function updatePricingRate(tier: InvitationTier, unitPriceSar: number) {
+  // Validate the value that will actually be STORED, not the one submitted:
+  // the column is Decimal(10,2), so 0.004 passes a bare `> 0` check and then
+  // rounds to 0.00 — a free price list, with every order after it worth zero.
+  const stored = Number(unitPriceSar.toFixed(2));
+  if (!Number.isFinite(stored) || stored < MIN_UNIT_PRICE_SAR || stored > MAX_UNIT_PRICE_SAR) {
+    throw new Error("Invalid unit price");
+  }
+  // Upsert, not update: these two rows ARE the public price list, and the page
+  // renders nothing sellable without both. If one is ever missing, this is the
+  // only screen that can put it back — `update` would fail and leave the shop
+  // shut with no way in.
+  await prisma.pricingRate.upsert({
+    where: { tier },
+    update: { unitPrice: stored.toFixed(2) },
+    // Only new orders are affected either way: every order copies the rate onto
+    // itself at purchase, so nothing already sold is re-priced by this.
+    create: { tier, unitPrice: stored.toFixed(2) },
+  });
 }
 
 export async function listGateStaff() {

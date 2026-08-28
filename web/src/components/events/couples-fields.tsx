@@ -13,6 +13,21 @@ const MAX_COUPLES = 6;
 const FIELD =
   "h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent";
 
+/** What one groom+bride block starts out holding when the form is an edit. */
+export interface CoupleValues {
+  groomNameEn: string;
+  brideNameEn: string;
+  groomNameAr: string | null;
+  groomFamilyAr: string | null;
+  brideNameAr: string | null;
+  brideFamilyAr: string | null;
+}
+
+interface Row {
+  key: number;
+  values: CoupleValues | null;
+}
+
 /**
  * The repeatable groom+bride block. Every pair posts under the same six
  * `couple*` names, so the server reads them with `formData.getAll(...)` and the
@@ -20,25 +35,37 @@ const FIELD =
  * uncontrolled and are keyed by a stable id: removing the middle pair must drop
  * that pair's values, not shift everyone else's.
  */
-export function CouplesFields({ f }: { f: Dictionary["events"]["form"] }) {
-  const [rows, setRows] = useState<number[]>([0]);
+export function CouplesFields({
+  f,
+  defaultCouples = [],
+}: {
+  f: Dictionary["events"]["form"];
+  defaultCouples?: CoupleValues[];
+}) {
+  const [rows, setRows] = useState<Row[]>(() =>
+    defaultCouples.length > 0
+      ? defaultCouples.map((values, index) => ({ key: index, values }))
+      : [{ key: 0, values: null }],
+  );
 
   function addRow() {
     setRows((current) =>
-      current.length >= MAX_COUPLES ? current : [...current, (current[current.length - 1] ?? 0) + 1],
+      current.length >= MAX_COUPLES
+        ? current
+        : [...current, { key: (current[current.length - 1]?.key ?? 0) + 1, values: null }],
     );
   }
 
   function removeRow(key: number) {
-    setRows((current) => (current.length <= 1 ? current : current.filter((row) => row !== key)));
+    setRows((current) => (current.length <= 1 ? current : current.filter((row) => row.key !== key)));
   }
 
   const atMax = rows.length >= MAX_COUPLES;
 
   return (
     <div className="flex flex-col gap-4">
-      {rows.map((key, index) => (
-        <fieldset key={key} className="flex flex-col gap-4 rounded-xl border border-border p-4">
+      {rows.map((row, index) => (
+        <fieldset key={row.key} className="flex flex-col gap-4 rounded-xl border border-border p-4">
           <legend className="px-1 text-xs text-fg-muted">
             {rows.length > 1 ? `${f.coupleHeading} ${index + 1}` : f.coupleHeading}
           </legend>
@@ -46,37 +73,67 @@ export function CouplesFields({ f }: { f: Dictionary["events"]["form"] }) {
           <div className="grid grid-cols-2 gap-4">
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="text-fg-muted">{f.groomNameLabel}</span>
-              <input name="coupleGroomNameEn" dir="ltr" required minLength={2} className={FIELD} />
+              <input
+                name="coupleGroomNameEn"
+                dir="ltr"
+                required
+                minLength={2}
+                defaultValue={row.values?.groomNameEn ?? ""}
+                className={FIELD}
+              />
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="text-fg-muted">{f.brideNameLabel}</span>
-              <input name="coupleBrideNameEn" dir="ltr" required minLength={2} className={FIELD} />
+              <input
+                name="coupleBrideNameEn"
+                dir="ltr"
+                required
+                minLength={2}
+                defaultValue={row.values?.brideNameEn ?? ""}
+                className={FIELD}
+              />
             </label>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="text-fg-muted">{f.groomNameArLabel}</span>
-              <input name="coupleGroomNameAr" className={FIELD} />
+              <input
+                name="coupleGroomNameAr"
+                defaultValue={row.values?.groomNameAr ?? ""}
+                className={FIELD}
+              />
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="text-fg-muted">{f.groomFamilyArLabel}</span>
-              <input name="coupleGroomFamilyAr" className={FIELD} />
+              <input
+                name="coupleGroomFamilyAr"
+                defaultValue={row.values?.groomFamilyAr ?? ""}
+                className={FIELD}
+              />
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="text-fg-muted">{f.brideNameArLabel}</span>
-              <input name="coupleBrideNameAr" className={FIELD} />
+              <input
+                name="coupleBrideNameAr"
+                defaultValue={row.values?.brideNameAr ?? ""}
+                className={FIELD}
+              />
             </label>
             <label className="flex flex-col gap-1.5 text-sm">
               <span className="text-fg-muted">{f.brideFamilyArLabel}</span>
-              <input name="coupleBrideFamilyAr" className={FIELD} />
+              <input
+                name="coupleBrideFamilyAr"
+                defaultValue={row.values?.brideFamilyAr ?? ""}
+                className={FIELD}
+              />
             </label>
           </div>
 
           {index > 0 && (
             <button
               type="button"
-              onClick={() => removeRow(key)}
+              onClick={() => removeRow(row.key)}
               className="h-9 self-start rounded-full border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/10"
             >
               {f.coupleRemove}

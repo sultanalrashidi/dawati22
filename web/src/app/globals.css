@@ -266,3 +266,56 @@ body {
     display: none !important;
   }
 }
+
+/* Pricing calculator slider. The track paints its own fill through an inline
+   `background` gradient set from the current value — a range input gives no
+   other way to colour the filled portion — so everything here is the parts the
+   gradient cannot express: the shape of the track and the thumb.
+
+   `outline: none` on a range input would leave keyboard users with no visible
+   focus at all, so the ring below replaces it rather than removing it. */
+.dawati-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  width: 100%;
+  border-radius: 9999px;
+  outline: none;
+  cursor: pointer;
+}
+
+.dawati-range:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent) 45%, transparent);
+}
+
+.dawati-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 3px solid var(--color-accent);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  cursor: grab;
+}
+
+.dawati-range::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--color-surface);
+  border: 3px solid var(--color-accent);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
+  cursor: grab;
+}
+
+.dawati-range:active::-webkit-slider-thumb {
+  cursor: grabbing;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-accent) 28%, transparent);
+}
+
+.dawati-range:active::-moz-range-thumb {
+  cursor: grabbing;
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-accent) 28%, transparent);
+}

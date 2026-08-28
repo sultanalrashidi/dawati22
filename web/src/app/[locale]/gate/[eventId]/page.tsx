@@ -21,8 +21,15 @@ export default async function GateScannerPage({ params }: PageProps<"/[locale]/g
     throw err;
   }
 
-  const event = await prisma.event.findUnique({ where: { id: eventId }, select: { name: true } });
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { name: true, hasQr: true },
+  });
   if (!event) notFound();
+  // An event sold without a scannable pass has no door flow. performCheckIn
+  // refuses every scan for one anyway, so opening the camera here would only
+  // hand a guard a scanner that says "invalid" to every guest in the queue.
+  if (!event.hasQr) notFound();
 
   return (
     <div className="mx-auto max-w-md px-4 py-12 sm:px-8">

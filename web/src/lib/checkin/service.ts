@@ -38,7 +38,10 @@ export async function listAssignedEvents(userId: string) {
       },
     },
   });
-  return gateStaff?.assignments.map((a) => a.event) ?? [];
+  // An event sold without a scannable pass has no door flow at all, so it must
+  // not appear on the scanner — a staff member picking it would only ever see
+  // denials, with nothing on screen explaining why.
+  return gateStaff?.assignments.map((a) => a.event).filter((event) => event.hasQr) ?? [];
 }
 
 export async function performCheckIn(
@@ -64,6 +67,13 @@ export async function performCheckIn(
       return { result, guestName: guest.nameAr };
     };
 
+    // The tier check comes first: this event was not sold with a door pass, so
+    // there is no code that should ever open it. Tokens are still minted for
+    // every guest — that keeps a later upgrade to a single boolean flip — which
+    // is exactly why the refusal has to live here and not in token issuance.
+    if (!event.hasQr) {
+      return denyWith(CheckInResult.DENIED_INVALID);
+    }
     if (guest.isBlocked || invitation.status === InvitationStatus.BLOCKED) {
       return denyWith(CheckInResult.DENIED_BLOCKED);
     }

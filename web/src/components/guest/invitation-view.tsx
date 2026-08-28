@@ -118,6 +118,13 @@ interface Props {
   };
   guest: { nameAr: string; allowedCount: number };
   status: GuestFacingStatus;
+  /**
+   * Whether this event was sold with a scannable entry pass. False events still
+   * get the whole pass card — names, date, venue, seats — the printed frame on
+   * the card art just carries the guest's name instead of a code. Defaults true
+   * so the theme previews and every existing caller are unaffected.
+   */
+  hasQr?: boolean;
   qrDataUrl: string | null;
   /**
    * Set for BUILDER themes only. The whole invitation then comes from the
@@ -146,6 +153,41 @@ const OPEN_ANIMATIONS: Record<ThemeConfig["motion"]["openStyle"], string> = {
   "seal-break": "dawati-seal-break 0.9s ease-out",
   doors: "dawati-doors-reveal 0.9s ease-out",
 };
+
+/**
+ * What goes in the printed frame on the card art when the event was sold
+ * WITHOUT a scannable code.
+ *
+ * The frame is part of the artwork — a rounded square printed near the bottom
+ * of every pass card — so leaving it empty looks like a printing fault rather
+ * than a cheaper tier. It carries the two things a human on the door actually
+ * needs off a paper-style pass: who this is, and how many they may bring in.
+ */
+function PassholderTag({
+  nameLabel,
+  name,
+  seatsLabel,
+  seats,
+}: {
+  nameLabel: string;
+  name: string;
+  seatsLabel: string;
+  seats: number;
+}) {
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-[0.15em] break-words px-[6%] text-center leading-tight">
+      <span className="text-[7px] sm:text-[8px]" style={{ color: "var(--color-fg-muted)" }}>
+        {nameLabel}
+      </span>
+      <span className="text-[10px] font-medium sm:text-xs" style={{ color: "var(--color-fg)" }}>
+        {name}
+      </span>
+      <span className="text-[7px] sm:text-[8px]" style={{ color: "var(--color-fg-muted)" }}>
+        {seatsLabel} · {seats}
+      </span>
+    </div>
+  );
+}
 
 /** Deterministic grid standing in for a real QR in preview mode — styled like an
  * actual QR code (corner finder patterns + pseudo-random data modules) so it
@@ -369,6 +411,7 @@ function BuilderStage({
   content,
   breakpoint,
   qrDataUrl,
+  hasQr = true,
   data,
 }: {
   builder: BuilderTheme;
@@ -376,6 +419,8 @@ function BuilderStage({
   content: ResolvedContent;
   breakpoint: Breakpoint;
   qrDataUrl?: string | null;
+  /** False drops the scene's `qr` layers — see ThemeStage for why. */
+  hasQr?: boolean;
   data: StageData;
 }) {
   // `<ThemeStage>` paints `palette.bg` on the stage box. That is right for a
@@ -396,6 +441,7 @@ function BuilderStage({
       content={content}
       breakpoint={breakpoint}
       qrDataUrl={qrDataUrl}
+      hasQr={hasQr}
       eventDateIso={data.eventDateIso}
       linkToken={data.linkToken}
       mapUrl={data.mapUrl}
@@ -456,6 +502,7 @@ function InvitationScreens({
   event,
   guest,
   status,
+  hasQr = true,
   qrDataUrl,
   mode = "live",
   builder,
@@ -721,6 +768,7 @@ function InvitationScreens({
             <BuilderStage
               builder={builder}
               scene={coverScene.id}
+              hasQr={hasQr}
               content={builderContent}
               breakpoint={breakpoint}
               data={coverStageData}
@@ -985,6 +1033,25 @@ function InvitationScreens({
   // The entry-pass cards list EVERY couple. They used to print the primary
   // pair only, which meant a joint wedding's other couples never appeared on
   // the card the guest shows at the door.
+  // What fills the printed frame on the pass card art. A no-QR event still gets
+  // a filled frame — see PassholderTag — because the frame is part of the
+  // artwork and an empty one reads as a fault. FakeQr stays preview-only: it is
+  // convincing enough that showing it to a real guest would hand them something
+  // that looks like a working pass and fails at the door.
+  const passFrameNode = !hasQr ? (
+    <PassholderTag
+      nameLabel={g.passName}
+      name={guest.nameAr}
+      seatsLabel={g.passSeatsShort}
+      seats={guest.allowedCount}
+    />
+  ) : currentQr ? (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={currentQr} alt="QR" className="h-full w-full object-contain" />
+  ) : (
+    <FakeQr className="h-full w-full" />
+  );
+
   const passCouples = couples.map((couple) => ({
     groomLabel: couple.groomNameAr || couple.groomNameEn,
     brideLabel: couple.brideNameAr || couple.brideNameEn,
@@ -1046,6 +1113,7 @@ function InvitationScreens({
                   content={builderContent}
                   breakpoint={breakpoint}
                   qrDataUrl={currentQr}
+                  hasQr={hasQr}
                   data={stageData}
                 />
               </div>
@@ -1321,7 +1389,10 @@ function InvitationScreens({
 
         {currentStatus === "ACCEPTED" && (
           <Scene>
-            {currentQr || mode === "preview" ? (
+            {/* A no-QR event has no code to wait for, so it goes straight to the
+                pass. With a QR the pass waits for the real one — or for the
+                editor's preview — and otherwise shows the thank-you line. */}
+            {!hasQr || currentQr || mode === "preview" ? (
               builder && builderContent && passScene ? (
                 <div className="w-full" style={{ maxWidth: stageMaxWidth(passScene.canvas, "12rem") }}>
                   <BuilderStage
@@ -1330,6 +1401,7 @@ function InvitationScreens({
                     content={builderContent}
                     breakpoint={breakpoint}
                     qrDataUrl={currentQr}
+                    hasQr={hasQr}
                     data={stageData}
                   />
                 </div>
@@ -1340,12 +1412,7 @@ function InvitationScreens({
                   placeText={event.locationName + (event.regionName ? ` — ${event.regionName}` : "")}
                   dateText={dual.gregorian.split("، ").pop() ?? dual.gregorian}
                   timeText={dual.time}
-                  qrNode={currentQr ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={currentQr} alt="QR" className="h-full w-full object-contain" />
-                  ) : (
-                    <FakeQr className="h-full w-full" />
-                  )}
+                  qrNode={passFrameNode}
                   fontAr="var(--font-ar-body)"
                   nameFont="var(--font-ar-display)"
                   godWillingLabel={g.passGodWilling}
@@ -1361,12 +1428,7 @@ function InvitationScreens({
                   placeText={event.locationName + (event.regionName ? ` — ${event.regionName}` : "")}
                   dateText={dual.gregorian.split("، ").pop() ?? dual.gregorian}
                   timeText={dual.time}
-                  qrNode={currentQr ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={currentQr} alt="QR" className="h-full w-full object-contain" />
-                  ) : (
-                    <FakeQr className="h-full w-full" />
-                  )}
+                  qrNode={passFrameNode}
                   fontAr="var(--font-ar-body)"
                   nameFont="var(--font-ar-display)"
                   godWillingLabel={g.passGodWilling}
@@ -1379,7 +1441,10 @@ function InvitationScreens({
               ) : (
                 <div className="flex flex-col items-center gap-3 rounded-2xl border border-[var(--color-accent)]/40 bg-[var(--color-surface)] p-6">
                   <p className="text-sm font-medium">{g.passTitle}</p>
-                  {currentQr ? (
+                  {/* This card is drawn in CSS, not printed art — with no code
+                      there is no empty frame left behind, so it simply omits
+                      the square and keeps the name and seat count below. */}
+                  {!hasQr ? null : currentQr ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={currentQr} alt="QR" className="h-40 w-40" />
                   ) : (
@@ -1392,9 +1457,12 @@ function InvitationScreens({
             ) : (
               <p className="text-[var(--color-accent)]">{g.thanksAccept}</p>
             )}
-            {(builder || theme.card?.style === "rose-emboss" || isBridalFrame) && (currentQr || mode === "preview") && (
-              <p className="mt-3 text-xs text-[var(--color-fg-muted)]">{g.passShowAtEntry}</p>
-            )}
+            {(builder || theme.card?.style === "rose-emboss" || isBridalFrame) &&
+              (!hasQr || currentQr || mode === "preview") && (
+                <p className="mt-3 text-xs text-[var(--color-fg-muted)]">
+                  {hasQr ? g.passShowAtEntry : g.passShowCardAtEntry}
+                </p>
+              )}
           </Scene>
         )}
 

@@ -31,7 +31,13 @@ export async function submitRsvpAction(
 
   if (response === "ACCEPTED") {
     const invitation = await getInvitationByLinkToken(linkToken);
-    if (invitation) return { ok: true, qrDataUrl: await renderQrDataUrl(invitation.qrToken) };
+    // Same gate as the page render, and it has to be here too: the client swaps
+    // this value straight into the pass without another page load, so returning
+    // it for a no-QR event would hand over the paid feature the moment the guest
+    // accepts, whatever the server-rendered page decided a second earlier.
+    if (invitation?.event.hasQr) {
+      return { ok: true, qrDataUrl: await renderQrDataUrl(invitation.qrToken) };
+    }
   }
   return { ok: true };
 }

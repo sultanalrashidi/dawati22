@@ -3,6 +3,7 @@ import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { getOwnedOrder } from "@/lib/orders/service";
+import { orderSummaryLabel } from "@/lib/orders/terms";
 import { isMoyasarConfigured } from "@/lib/payments/moyasar";
 import { confirmMockPaymentAction } from "@/lib/orders/actions";
 import { Role } from "@/generated/prisma/client";
@@ -20,7 +21,7 @@ export default async function CheckoutPage({
   const order = await getOwnedOrder(orderId, user.id);
   if (!order) notFound();
 
-  const planName = locale === "ar" ? order.plan.nameAr : order.plan.name;
+  const planName = orderSummaryLabel(order, locale, dict);
   const boundConfirmMock = confirmMockPaymentAction.bind(null, order.id, locale);
   const hasError = search?.error === "1";
 

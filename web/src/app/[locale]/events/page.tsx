@@ -5,6 +5,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { listOwnedEvents, listEligibleOrders } from "@/lib/events/service";
 import { classifyRsvp } from "@/lib/invitations/service";
+import { orderTerms } from "@/lib/orders/terms";
 import { Role } from "@/generated/prisma/client";
 
 const STATUS_LABEL_KEY = {
@@ -79,7 +80,7 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
               {(() => {
                 const accepted = event.guests.filter((g) => classifyRsvp(g.invitation?.status) === "accepted").length;
                 const declined = event.guests.filter((g) => classifyRsvp(g.invitation?.status) === "declined").length;
-                const remaining = Math.max(0, event.order.plan.invitationCount - event.guests.length);
+                const remaining = Math.max(0, orderTerms(event.order).invitationCount - event.guests.length);
                 return (
                   <p className="text-xs text-fg-muted">
                     {dict.events.detail.statsRemaining} {remaining} · {dict.events.detail.rsvpAccepted} {accepted} · {dict.events.detail.rsvpDeclined} {declined}

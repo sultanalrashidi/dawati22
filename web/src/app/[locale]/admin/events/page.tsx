@@ -1,8 +1,10 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { listEventsAdmin } from "@/lib/admin/service";
 import { cancelEventAction } from "@/lib/admin/actions";
+import { orderSummaryLabel } from "@/lib/orders/terms";
 
 export default async function AdminEventsPage({ params }: PageProps<"/[locale]/admin/events">) {
   const { locale } = await params;
@@ -24,7 +26,7 @@ export default async function AdminEventsPage({ params }: PageProps<"/[locale]/a
                   <p className="font-medium text-fg">{event.name}</p>
                   <p className="text-sm text-fg-muted">
                     {dict.admin.owner}: {event.owner.name} · {dict.admin.plan}:{" "}
-                    {locale === "ar" ? event.order.plan.nameAr : event.order.plan.name}
+                    {orderSummaryLabel(event.order, locale, dict)}
                   </p>
                   <p className="text-sm text-fg-muted">
                     {dict.admin.guestsCount}: {event.guests.length} · {dict.admin.metricCheckedIn}: {checkedIn}
@@ -34,6 +36,14 @@ export default async function AdminEventsPage({ params }: PageProps<"/[locale]/a
                   <span className="rounded-full bg-surface-2 px-2.5 py-1 text-xs text-fg-muted">
                     {event.status}
                   </span>
+                  {/* The customer's form is create-only, so this is the only
+                      place a wrong name or date gets corrected. */}
+                  <Link
+                    href={`/${locale}/admin/events/${event.id}`}
+                    className="text-xs text-accent hover:underline"
+                  >
+                    {dict.admin.editEventData}
+                  </Link>
                   {event.status !== "ARCHIVED" && (
                     <form action={boundCancel}>
                       <button type="submit" className="text-xs text-danger hover:underline">

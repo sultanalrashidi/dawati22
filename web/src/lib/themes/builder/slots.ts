@@ -62,6 +62,15 @@ export const CORE_SLOTS: SlotDefinition[] = [
 ];
 
 export const OPTIONAL_SLOTS: SlotDefinition[] = [
+  {
+    key: "cardNoQr",
+    labelAr: "بطاقة الدعوة (بدون باركود)",
+    labelEn: "Invitation Card (No QR)",
+    required: false,
+    scene: "pass",
+    hintAr:
+      "تُستخدم تلقائيًا بدل «بطاقة الدعوة» لأي دعوة بيعت بدون باركود. اتركها فاضية لتبقى نفس بطاقة الدعوة الأساسية.",
+  },
   { key: "seal", labelAr: "الختم", labelEn: "Seal", required: false, scene: "cover", hintAr: "صورة الختم التي تُطبع فوقها أحرف العروسين" },
   { key: "overlay", labelAr: "طبقة فوقية", labelEn: "Overlay", required: false, scene: "cover", hintAr: "تدرّج أو زجاج فوق التصميم" },
   { key: "decoration", labelAr: "زخرفة", labelEn: "Decoration", required: false, scene: "cover", hintAr: "أي عنصر زخرفي إضافي" },

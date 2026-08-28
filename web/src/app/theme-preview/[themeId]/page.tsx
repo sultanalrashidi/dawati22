@@ -26,7 +26,7 @@ export default async function ThemePreviewPage({
   await requireUserOrRedirect(defaultLocale, [Role.ADMIN]);
 
   const { themeId } = await params;
-  const { status } = await searchParams;
+  const { status, noQr } = await searchParams;
   const dict = await getDictionary("ar");
 
   const theme = await prisma.theme.findUnique({
@@ -43,7 +43,10 @@ export default async function ThemePreviewPage({
   // `?status=ACCEPTED` jumps straight to the entry pass, which is otherwise
   // only reachable by filling in the RSVP form on every check.
   const accepted = status === "ACCEPTED";
-  const qrDataUrl = accepted ? await renderQrDataUrl("preview-sample-token") : null;
+  // Lets the admin check an uploaded "cardNoQr" image without a real order —
+  // the pass otherwise only ever renders without a code for a NO_QR event.
+  const hasQr = noQr !== "1";
+  const qrDataUrl = accepted && hasQr ? await renderQrDataUrl("preview-sample-token") : null;
   const sample = SAMPLE_CONTENT_INPUT;
   const [primaryCouple] = sample.couples;
 
@@ -69,6 +72,9 @@ export default async function ThemePreviewPage({
         </a>
         <a href={`/theme-preview/${theme.id}?status=ACCEPTED`} className="underline">
           بطاقة الدخول
+        </a>
+        <a href={`/theme-preview/${theme.id}?status=ACCEPTED&noQr=1`} className="underline">
+          بطاقة الدخول (بدون باركود)
         </a>
         <a href={`/ar/admin/themes/builder/${theme.id}`} className="underline">
           رجوع للمحرر
@@ -109,6 +115,7 @@ export default async function ThemePreviewPage({
         }}
         guest={{ nameAr: sample.guestName, allowedCount: 2 }}
         status={accepted ? InvitationStatus.ACCEPTED : InvitationStatus.SENT}
+        hasQr={hasQr}
         qrDataUrl={qrDataUrl}
       />
     </>

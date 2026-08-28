@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { PrismaClient, Prisma, Role, ThemeStatus } from "../src/generated/prisma/client";
+import { PrismaClient, Prisma, Role, ThemeStatus, InvitationTier } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import type { ThemeConfig } from "../src/lib/themes/types";
 
@@ -35,19 +35,22 @@ async function main() {
     create: { userId: gateUser.id, name: gateUser.name, phone: gateUser.phone },
   });
 
-  const plans = [
-    { name: "Starter", nameAr: "الأساسية", invitationCount: 50, price: 299, sortOrder: 1 },
-    { name: "Signature", nameAr: "المميزة", invitationCount: 150, price: 699, sortOrder: 2 },
-    { name: "Grand", nameAr: "الفاخرة", invitationCount: 500, price: 1799, sortOrder: 3 },
+  // Pricing is per invitation and lives in PricingRate. The Plan table is not
+  // seeded any more: fixed packages are retired, and the rows that remain in an
+  // existing database are history for the orders that point at them — a fresh
+  // install has no such orders and so needs no such rows.
+  const rates = [
+    { tier: InvitationTier.WITH_QR, unitPrice: "3.00" },
+    { tier: InvitationTier.NO_QR, unitPrice: "2.00" },
   ];
 
-  for (const plan of plans) {
-    const existing = await prisma.plan.findFirst({ where: { nameAr: plan.nameAr } });
-    if (existing) {
-      await prisma.plan.update({ where: { id: existing.id }, data: plan });
-    } else {
-      await prisma.plan.create({ data: plan });
-    }
+  for (const rate of rates) {
+    await prisma.pricingRate.upsert({
+      where: { tier: rate.tier },
+      // Never overwrite a price the owner has since changed.
+      update: {},
+      create: rate,
+    });
   }
 
   const themes: Array<{
@@ -1551,7 +1554,7 @@ async function main() {
   console.log("Seeded:", {
     admin: admin.phone,
     gateStaff: gateUser.phone,
-    plans: plans.length,
+    pricingRates: rates.length,
     themes: themes.length,
   });
 }

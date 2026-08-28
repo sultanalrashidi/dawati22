@@ -56,6 +56,13 @@ export interface ThemeStageProps {
   /** The guest's real QR. Omitted in the editor, which draws a sample. */
   qrDataUrl?: string | null;
   /**
+   * False when the event was sold without a scannable entry pass: the scene's
+   * `qr` layers are then dropped entirely. In this engine the layer owns its
+   * own frame, so removing it leaves nothing behind — unlike the legacy art
+   * passes, whose frame is printed into the card image and must be filled.
+   */
+  hasQr?: boolean;
+  /**
    * The moment a `countdown` layer counts to. Omitted in the editor, which
    * counts to the sample invitation's date so the digits look plausible.
    */
@@ -118,6 +125,7 @@ export function ThemeStage({
   breakpoint,
   overrides,
   qrDataUrl,
+  hasQr = true,
   eventDateIso,
   linkToken,
   mapUrl,
@@ -151,7 +159,18 @@ export function ThemeStage({
         ...style,
       }}
     >
-      {resolved.map((entry) => (
+      {resolved
+        // A `qr` layer in the builder engine IS its own frame — background,
+        // border and padding are the layer's. Dropping it for an event with no
+        // scannable pass removes the frame with it, and the pass scene keeps
+        // its own name/date/venue layers, so nothing is left looking broken.
+        //
+        // The legacy art passes do the OPPOSITE (see PassholderTag): their
+        // frame is printed into pass-card.jpg and cannot be removed, so there
+        // the box has to be filled instead. Do not unify these two — they are
+        // different because the artwork is different.
+        .filter((entry) => hasQr || entry.layer.type !== "qr")
+        .map((entry) => (
         <LayerBox key={entry.layer.id} resolved={entry} editing={editing}>
           <LayerContent
             resolved={entry}
@@ -162,6 +181,7 @@ export function ThemeStage({
             palette={palette}
             breakpoint={breakpoint}
             qrDataUrl={qrDataUrl}
+            hasQr={hasQr}
             eventDateIso={eventDateIso}
             linkToken={linkToken}
             mapUrl={mapUrl}
@@ -236,6 +256,7 @@ function LayerContent({
   palette,
   breakpoint,
   qrDataUrl,
+  hasQr = true,
   eventDateIso,
   linkToken,
   mapUrl,
@@ -255,6 +276,8 @@ function LayerContent({
   palette: VariantPalette;
   breakpoint: Breakpoint;
   qrDataUrl?: string | null;
+  /** False for an event sold without a scannable pass — see the "asset" case. */
+  hasQr?: boolean;
   eventDateIso?: string;
   linkToken?: string | null;
   mapUrl?: string | null;
@@ -270,7 +293,12 @@ function LayerContent({
 
   switch (layer.type) {
     case "asset": {
-      const url = assets[layer.slot];
+      // "card" is the pass scene's background art (see slots.ts). An admin can
+      // upload a second image under "cardNoQr" — a card designed without a
+      // code window — and a NO_QR event's pass then uses that instead. Nothing
+      // else changes: every other asset slot renders exactly as before.
+      const noQrCard = !hasQr && layer.slot === "card" ? assets.cardNoQr : undefined;
+      const url = noQrCard ?? assets[layer.slot];
       if (!url) return <MissingAsset slot={layer.slot} />;
       return (
         // eslint-disable-next-line @next/next/no-img-element
@@ -455,6 +483,10 @@ function QrContent({
         showing it to a guest who has no real code yet would hand them
         something that looks like a working entry pass and fails at the door.
         With no code and no editor, the box simply stays empty.
+
+        An event sold without a code never reaches here at all — ThemeStage
+        drops its `qr` layers. See the note there for why that is the right move
+        for the builder engine and the wrong one for the legacy art passes.
       */}
       {qrDataUrl ? (
         // eslint-disable-next-line @next/next/no-img-element

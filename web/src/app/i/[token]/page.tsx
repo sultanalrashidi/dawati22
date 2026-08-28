@@ -62,7 +62,15 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
       ? InvitationStatus.ACCEPTED
       : invitation.status;
 
-  const qrDataUrl = displayStatus === InvitationStatus.ACCEPTED ? await renderQrDataUrl(invitation.qrToken) : null;
+  // The QR is a paid feature. `hasQr` is a plain column on the event the query
+  // already loads, so gating it here costs nothing — and gating it HERE, on the
+  // server, is what makes it a real gate: the token is still minted for every
+  // guest (so a later upgrade is one boolean, not a backfill), it simply never
+  // reaches the browser for an event that did not buy it.
+  const qrDataUrl =
+    invitation.event.hasQr && displayStatus === InvitationStatus.ACCEPTED
+      ? await renderQrDataUrl(invitation.qrToken)
+      : null;
 
   // BUILDER themes keep their whole design in the database; LEGACY ones keep
   // reading the hand-coded `config` exactly as before.
@@ -112,6 +120,7 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
         }}
         guest={{ nameAr: invitation.guest.nameAr, allowedCount: invitation.guest.allowedCount }}
         status={displayStatus}
+        hasQr={invitation.event.hasQr}
         qrDataUrl={qrDataUrl}
       />
     </>

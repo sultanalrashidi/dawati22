@@ -2,6 +2,7 @@ import "server-only";
 import { prisma } from "@/lib/db/client";
 import { generateSecureToken } from "@/lib/security/tokens";
 import { InvitationStatus } from "@/generated/prisma/client";
+import { orderTerms } from "@/lib/orders/terms";
 
 export class GuestError extends Error {}
 
@@ -20,7 +21,10 @@ export async function addGuest(
   input: { nameAr: string; phone?: string; allowedCount: number }
 ) {
   const event = await assertOwnedEvent(eventId, userId);
-  if (event._count.guests >= event.order.plan.invitationCount) {
+  // The one place capacity is enforced in the whole product. It reads the count
+  // the customer PAID for, snapshotted on the order — not the plan row, which is
+  // editable settings: changing a package used to resize every live event on it.
+  if (event._count.guests >= orderTerms(event.order).invitationCount) {
     throw new GuestError("Guest limit reached for this event's plan");
   }
   if (input.allowedCount < 1 || input.allowedCount > 20) {

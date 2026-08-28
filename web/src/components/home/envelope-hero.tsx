@@ -12,6 +12,12 @@ import type { Locale } from "@/lib/i18n/locales";
  * as the design draws it, it reads as a live activity feed of real guests —
  * which it is not, and there is no data behind it.
  */
+/** Which published design the landing page shows off. */
+const THEME = "ribbon-bloom";
+
+/** Straight from this theme's own `card.layout` config — see lib/themes/types.ts. */
+const SEAL = { top: "55%", left: "50%", color: "#9c5f63" };
+
 export function EnvelopeHero({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const h = dict.home;
 
@@ -31,15 +37,31 @@ export function EnvelopeHero({ locale, dict }: { locale: Locale; dict: Dictionar
               fill the screen. `object-contain` over the theme's own background
               keeps the whole envelope visible and matches what a guest sees. */}
           <div
-            className="flex aspect-[4/5] items-center justify-center bg-cover bg-center p-5"
-            style={{ backgroundImage: "url('/themes/ivory-bloom/background.jpg')" }}
+            className="flex aspect-[4/5] items-center justify-center bg-cover bg-center p-4"
+            style={{ backgroundImage: `url('/themes/${THEME}/background.jpg')` }}
           >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/themes/ivory-bloom/envelope-closed.webp"
-              alt=""
-              className="block w-full rounded-lg object-contain shadow-[0_10px_26px_-10px_rgba(36,30,18,0.45)]"
-            />
+            <div className="relative w-full">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/themes/${THEME}/envelope-closed.webp`}
+                alt=""
+                className="block w-full rounded-lg object-contain shadow-[0_10px_26px_-10px_rgba(36,30,18,0.45)]"
+              />
+              {/* The monogram is printed live over the art on a real invitation
+                  rather than baked into it — same here, at the coordinates the
+                  theme's own config gives for this envelope. */}
+              <span
+                className="pointer-events-none absolute -translate-x-1/2 -translate-y-1/2 text-[0.95rem] tracking-[0.08em]"
+                style={{
+                  top: SEAL.top,
+                  left: SEAL.left,
+                  color: SEAL.color,
+                  fontFamily: "var(--font-cormorant)",
+                }}
+              >
+                N &amp; F
+              </span>
+            </div>
           </div>
 
           <div className="flex flex-col gap-2.5 px-4 py-4">

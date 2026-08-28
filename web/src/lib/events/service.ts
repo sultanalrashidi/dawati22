@@ -348,7 +348,19 @@ export async function getOwnedEvent(eventId: string, userId: string) {
       theme: true,
       order: { include: { plan: true } },
       couples: COUPLES_INCLUDE,
-      guests: { include: { invitation: true }, orderBy: { createdAt: "desc" } },
+      guests: {
+        include: {
+          invitation: {
+            include: {
+              // The guest's own reply: how many are actually coming and any
+              // note they left. Only the latest matters — a guest who changes
+              // their mind writes a second row rather than editing the first.
+              rsvps: { orderBy: { respondedAt: "desc" }, take: 1 },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+      },
     },
   });
   if (!event || event.ownerId !== userId) return null;

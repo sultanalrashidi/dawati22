@@ -13,6 +13,13 @@ const RSVP_BADGE_STYLE: Record<RsvpBadge, string> = {
   pending: "bg-surface-2 text-fg-muted",
 };
 
+/**
+ * One guest in the replies table.
+ *
+ * The actions are the ones the product actually has: copy the guest's private
+ * link, or hand it to WhatsApp. There is no automated outbound channel — the
+ * host presses send themselves, every time — so nothing here claims otherwise.
+ */
 export function GuestRow({
   eventId,
   locale,
@@ -21,48 +28,56 @@ export function GuestRow({
   invitationUrl,
   waMessage,
   rsvp,
+  companions,
+  activity,
 }: {
   eventId: string;
   locale: string;
   dict: Dictionary;
-  guest: { id: string; nameAr: string; allowedCount: number; checkedInCount: number; isBlocked: boolean };
+  guest: { id: string; nameAr: string; phone?: string | null; allowedCount: number; checkedInCount: number; isBlocked: boolean };
   invitationUrl: string;
   waMessage: string;
   rsvp?: RsvpBadge;
+  /** Seats the guest said they are bringing; null when they have not replied. */
+  companions: number | null;
+  /** Already-formatted "opened, no reply · yesterday" line. */
+  activity: string;
 }) {
   const [copied, setCopied] = useState(false);
   const boundToggleBlock = toggleGuestBlockedAction.bind(null, guest.id, eventId, locale, !guest.isBlocked);
   const boundDelete = deleteGuestAction.bind(null, guest.id, eventId, locale);
   const waHref = `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
-  const rsvpLabel =
-    rsvp === "accepted"
-      ? dict.events.detail.rsvpAccepted
-      : rsvp === "declined"
-        ? dict.events.detail.rsvpDeclined
-        : dict.events.detail.rsvpPending;
+  const d = dict.events.detail;
+  const rsvpLabel = rsvp === "accepted" ? d.rsvpAccepted : rsvp === "declined" ? d.rsvpDeclined : d.rsvpPending;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <p className="font-medium text-fg">
-          {guest.nameAr}
+    <div className="grid grid-cols-1 items-center gap-3 border-b border-border px-4 py-4 last:border-b-0 sm:grid-cols-[minmax(0,1.4fr)_auto_auto_minmax(0,1fr)_auto] sm:gap-4">
+      <div className="min-w-0">
+        <p className="flex flex-wrap items-center gap-2 font-medium text-fg">
+          <span className="truncate">{guest.nameAr}</span>
           {guest.isBlocked && (
-            <span className="ms-2 rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">
-              {dict.events.detail.blocked}
-            </span>
-          )}
-          {rsvp && (
-            <span className={`ms-2 rounded-full px-2 py-0.5 text-xs ${RSVP_BADGE_STYLE[rsvp]}`}>
-              {rsvpLabel}
-            </span>
+            <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">{d.blocked}</span>
           )}
         </p>
-        <p className="text-sm text-fg-muted">
-          {dict.events.detail.checkedIn
-            .replace("{in}", String(guest.checkedInCount))
-            .replace("{allowed}", String(guest.allowedCount))}
-        </p>
+        {guest.phone && (
+          <p dir="ltr" className="mt-0.5 text-start text-xs text-fg-muted">
+            {guest.phone}
+          </p>
+        )}
       </div>
+
+      <p className="text-sm tabular-nums text-fg-muted sm:text-center">
+        {companions === null ? "—" : companions}
+      </p>
+
+      <p>
+        <span className={`rounded-full px-2.5 py-1 text-xs ${RSVP_BADGE_STYLE[rsvp ?? "pending"]}`}>
+          {rsvpLabel}
+        </span>
+      </p>
+
+      <p className="truncate text-xs text-fg-muted">{activity}</p>
+
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -71,32 +86,32 @@ export function GuestRow({
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
           }}
-          className="h-9 rounded-full border border-border px-3 text-xs font-medium text-fg transition-colors hover:bg-surface-2"
+          className="h-8 rounded-full border border-border px-3 text-xs font-medium text-fg transition-colors hover:bg-surface-2"
         >
-          {copied ? dict.events.detail.linkCopied : dict.events.detail.copyLink}
+          {copied ? d.linkCopied : d.copyLink}
         </button>
         <a
           href={waHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="h-9 items-center rounded-full bg-accent px-3 text-xs font-medium text-accent-fg transition-colors hover:bg-accent-strong inline-flex"
+          className="inline-flex h-8 items-center rounded-full bg-accent px-3 text-xs font-medium text-accent-fg transition-colors hover:bg-accent-strong"
         >
-          {dict.events.detail.sendWhatsapp}
+          {d.sendWhatsapp}
         </a>
         <form action={boundToggleBlock}>
           <button
             type="submit"
-            className="h-9 rounded-full border border-border px-3 text-xs font-medium text-fg transition-colors hover:bg-surface-2"
+            className="h-8 rounded-full border border-border px-3 text-xs font-medium text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
           >
-            {guest.isBlocked ? dict.events.detail.unblock : dict.events.detail.block}
+            {guest.isBlocked ? d.unblock : d.block}
           </button>
         </form>
         <form action={boundDelete}>
           <ConfirmSubmitButton
-            confirmMessage={dict.events.detail.confirmRemove}
-            className="h-9 rounded-full border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/10"
+            confirmMessage={d.confirmRemove}
+            className="h-8 rounded-full border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/10"
           >
-            {dict.events.detail.remove}
+            {d.remove}
           </ConfirmSubmitButton>
         </form>
       </div>

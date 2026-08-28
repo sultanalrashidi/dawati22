@@ -25,13 +25,22 @@ export function EnvelopeHero({ locale, dict }: { locale: Locale; dict: Dictionar
 
       <div className="relative mx-auto w-[16.5rem] rounded-[2.25rem] border border-border bg-surface p-2.5 shadow-[0_18px_40px_-18px_rgba(36,30,18,0.35)] sm:w-72">
         <div className="overflow-hidden rounded-[1.75rem] bg-bg">
-          {/* A real published design, not an illustration of one. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/themes/ivory-bloom/envelope-closed.webp"
-            alt=""
-            className="block aspect-[3/4] w-full object-cover"
-          />
+          {/* A real published design, not an illustration of one.
+              The art is landscape (1200x727); `object-cover` in this portrait
+              frame cropped away most of the envelope and blew the seal up to
+              fill the screen. `object-contain` over the theme's own background
+              keeps the whole envelope visible and matches what a guest sees. */}
+          <div
+            className="flex aspect-[4/5] items-center justify-center bg-cover bg-center p-5"
+            style={{ backgroundImage: "url('/themes/ivory-bloom/background.jpg')" }}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/themes/ivory-bloom/envelope-closed.webp"
+              alt=""
+              className="block w-full rounded-lg object-contain shadow-[0_10px_26px_-10px_rgba(36,30,18,0.45)]"
+            />
+          </div>
 
           <div className="flex flex-col gap-2.5 px-4 py-4">
             <p className="text-center text-[11px] font-bold tracking-wide text-fg-muted">

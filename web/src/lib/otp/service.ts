@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/client";
 import { generateOtpCode, sha256Hex } from "@/lib/security/tokens";
 import { mockOtpAdapter } from "@/lib/otp/mock-adapter";
 import { createAuthenticaOtpAdapter } from "@/lib/otp/authentica-adapter";
-import type { OtpAdapter } from "@/lib/otp/adapter";
+import { OtpDeliveryError, type OtpAdapter } from "@/lib/otp/adapter";
 import { OtpPurpose } from "@/generated/prisma/client";
 import { isTestBypassPhone, isTestPhoneBypassEnabled } from "@/lib/settings/service";
 
@@ -22,20 +22,32 @@ const MAX_SENDS_PER_WINDOW = 3;
 /**
  * Who delivers the code, and to whom.
  *
- * With no API key configured there is nothing that can send an SMS, so every
- * number falls back to the mock — which returns the code for the screen. That
- * is right for local work and is exactly what makes an unconfigured production
- * an open door, so `assertOtpDeliveryConfigured` below is what production
- * actually leans on.
+ * The mock returns the code to the caller so the screen can show it, which is
+ * what makes local work possible and what made an unconfigured production an
+ * open door: for months, anyone could type any phone number and read the code
+ * off the page. So a built deployment REFUSES to fall back to it. Sending
+ * fails loudly and nobody signs in, which is the correct failure — the
+ * alternative is everybody signing in as anybody.
  *
- * With a key, one narrow exception stays: the two test numbers, and only while
- * an admin has switched them on. They are ordinary customer accounts, so the
- * bypass can never reach the admin panel.
+ * That covers preview deployments too, without the API key needing to be
+ * configured for them: a preview reads the same production database, so a
+ * preview that printed codes would be the same hole through a quieter door.
+ *
+ * One narrow exception survives: the two test numbers, and only while an admin
+ * has switched them on from the panel. They are ordinary customer accounts, so
+ * the bypass can never reach the admin panel.
  */
 async function getAdapter(phone: string): Promise<OtpAdapter> {
   const apiKey = process.env.AUTHENTICA_API_KEY;
-  if (!apiKey) return mockOtpAdapter;
+
   if (isTestBypassPhone(phone) && (await isTestPhoneBypassEnabled())) return mockOtpAdapter;
+
+  if (!apiKey) {
+    if (process.env.NODE_ENV === "production") {
+      throw new OtpDeliveryError("OTP delivery is not configured");
+    }
+    return mockOtpAdapter;
+  }
   return createAuthenticaOtpAdapter(apiKey);
 }
 

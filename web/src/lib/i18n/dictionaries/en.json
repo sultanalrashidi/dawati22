@@ -75,6 +75,8 @@
     "invalidCode": "Invalid verification code",
     "codeExpired": "Code expired, request a new one",
     "tooManyAttempts": "Too many attempts, try again later",
+    "adminAccount": "This account signs in from the private admin page, not here.",
+    "deliveryFailed": "We could not send a verification code right now. Try again shortly or contact us.",
     "accountBlocked": "This account is blocked, contact support",
     "devCodeNotice": "Dev mode — verification code:"
   },

@@ -58,6 +58,10 @@ export function LoginForm({
         if (result.error === "rate_limited") {
           setError(dict.auth.tooManyAttempts);
           setCooldown(result.retryAfterSeconds ?? RESEND_COOLDOWN_S);
+        } else if (result.error === "admin_account") {
+          setError(dict.auth.adminAccount);
+        } else if (result.error === "delivery") {
+          setError(dict.auth.deliveryFailed);
         } else {
           setError(dict.auth.invalidPhone);
         }
@@ -79,7 +83,9 @@ export function LoginForm({
             ? dict.auth.invalidCode
             : result.error === "account_blocked"
               ? dict.auth.accountBlocked
-              : dict.auth.invalidPhone;
+              : result.error === "admin_account"
+                ? dict.auth.adminAccount
+                : dict.auth.invalidPhone;
         setError(message);
         return;
       }

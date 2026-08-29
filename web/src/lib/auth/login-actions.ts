@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { prisma } from "@/lib/db/client";
 import { createSession } from "@/lib/auth/session";
 import { requestOtp, peekOtp, consumeOtp, OtpRateLimitError } from "@/lib/otp/service";
+import { OtpDeliveryError } from "@/lib/otp/adapter";
 import { normalizeSaudiPhone } from "@/lib/security/phone";
 import { OtpPurpose, Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
@@ -22,11 +23,28 @@ export type PendingOrder = { tier: string; count: number };
 
 export type OtpRequestResult =
   | { ok: true; devCode?: string; phone: string }
-  | { ok: false; error: "invalid_phone" | "rate_limited"; retryAfterSeconds?: number };
+  | {
+      ok: false;
+      error: "invalid_phone" | "rate_limited" | "admin_account" | "delivery";
+      retryAfterSeconds?: number;
+    };
 
 export async function requestLoginOtpAction(rawPhone: string): Promise<OtpRequestResult> {
   const phone = normalizeSaudiPhone(rawPhone);
   if (!phone) return { ok: false, error: "invalid_phone" };
+
+  // Admins do not sign in here. Refused BEFORE the code is sent, for two
+  // reasons: an owner who reached for the wrong page gets an answer instead of
+  // waiting on an SMS that was never coming, and probing this page for admin
+  // numbers costs the account nothing.
+  //
+  // It does confirm that a number is an admin's, which the private route
+  // deliberately never does. The asymmetry is the point: that route is a
+  // password-guessing surface, this one is now not a way in for admins at all,
+  // and knowing a number without the password, the phone or the address buys
+  // nothing.
+  const user = await prisma.user.findUnique({ where: { phone }, select: { role: true } });
+  if (user?.role === Role.ADMIN) return { ok: false, error: "admin_account" };
 
   try {
     const { devCode } = await requestOtp(phone, OtpPurpose.LOGIN);
@@ -35,6 +53,10 @@ export async function requestLoginOtpAction(rawPhone: string): Promise<OtpReques
     if (err instanceof OtpRateLimitError) {
       return { ok: false, error: "rate_limited", retryAfterSeconds: err.retryAfterSeconds };
     }
+    // A deployment with no SMS provider configured refuses to fall back to
+    // showing codes on screen, so sending fails. Say so plainly rather than
+    // crashing into an error page.
+    if (err instanceof OtpDeliveryError) return { ok: false, error: "delivery" };
     throw err;
   }
 }
@@ -96,7 +118,7 @@ async function startSession(
 export type OtpSubmitResult =
   | { ok: true; needsName: false; redirectTo: string }
   | { ok: true; needsName: true; otpId: string }
-  | { ok: false; error: "invalid_phone" | "invalid_code" | "account_blocked" };
+  | { ok: false; error: "invalid_phone" | "invalid_code" | "account_blocked" | "admin_account" };
 
 export async function submitOtpCodeAction(
   rawPhone: string,
@@ -117,6 +139,9 @@ export async function submitOtpCodeAction(
     return { ok: true, needsName: true, otpId };
   }
   if (user.isBlocked) return { ok: false, error: "account_blocked" };
+  // The same refusal again, because a server action is a public endpoint and
+  // the check above lives on the path a browser happens to take.
+  if (user.role === Role.ADMIN) return { ok: false, error: "admin_account" };
 
   await consumeOtp(otpId);
   if (!user.phoneVerifiedAt) {

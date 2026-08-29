@@ -2,7 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { requireUserOrThrow } from "@/lib/auth/guards";
-import { createPerInvitationOrder, confirmMockPayment, OrderError } from "@/lib/orders/service";
+import {
+  createPerInvitationOrder,
+  confirmMockPayment,
+  paidOrderDestination,
+  OrderError,
+} from "@/lib/orders/service";
 import { isValidInvitationCount, parseTier } from "@/lib/orders/pricing";
 import { Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
@@ -42,5 +47,5 @@ export async function confirmMockPaymentAction(orderId: string, locale: string) 
     if (err instanceof OrderError) redirect(`/${safeLocale}/checkout/${orderId}?error=1`);
     throw err;
   }
-  redirect(`/${safeLocale}/events?purchased=1`);
+  redirect(await paidOrderDestination(orderId, safeLocale));
 }

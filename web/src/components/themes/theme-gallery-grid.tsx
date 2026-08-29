@@ -7,6 +7,12 @@ import type { ThemeConfig } from "@/lib/themes/types";
 import type { BuilderTheme } from "@/components/guest/invitation-view";
 import { ThemeGalleryCard } from "@/components/themes/theme-gallery-card";
 import { ThemePreviewDialog } from "@/components/themes/theme-preview-dialog";
+import {
+  THEME_CATEGORIES,
+  THEME_COLORS,
+  themeCategoryLabel,
+  themeColorLabel,
+} from "@/lib/themes/vocabulary";
 
 type ThemeItem = {
   id: string;
@@ -21,35 +27,6 @@ type ThemeItem = {
   /** The design's own closed-envelope art, when it has any. */
   thumbnailUrl?: string;
 };
-
-// One chip per category that actually exists in the catalogue. `soft` and
-// `modern` were listed here but match no theme, so both always returned an
-// empty gallery — a filter that can only ever fail is worse than no filter.
-const CATEGORY_CHIPS = [
-  { key: "all", dictKey: "categoryAll", dbValue: null },
-  { key: "luxury", dictKey: "categoryLuxury", dbValue: "luxury" },
-  { key: "classic", dictKey: "categoryClassic", dbValue: "classic" },
-  { key: "romantic", dictKey: "categoryRomantic", dbValue: "romantic" },
-  { key: "simple", dictKey: "categorySimple", dbValue: "minimal" },
-  { key: "dark", dictKey: "categoryDark", dbValue: "dark" },
-  { key: "botanical", dictKey: "categoryBotanical", dbValue: "botanical" },
-  { key: "experimental", dictKey: "categoryExperimental", dbValue: "experimental" },
-  { key: "saudi", dictKey: "categorySaudi", dbValue: "saudi" },
-] as const;
-
-const COLOR_OPTIONS = [
-  { dictKey: "colorWhite", tag: "أبيض" },
-  { dictKey: "colorGold", tag: "ذهبي" },
-  { dictKey: "colorBlack", tag: "أسود" },
-  { dictKey: "colorBeige", tag: "بيج" },
-  { dictKey: "colorPink", tag: "وردي" },
-  { dictKey: "colorGreen", tag: "أخضر" },
-  { dictKey: "colorNavy", tag: "كحلي" },
-  { dictKey: "colorPurple", tag: "بنفسجي" },
-  { dictKey: "colorBlue", tag: "أزرق" },
-  { dictKey: "colorBrown", tag: "بني" },
-  { dictKey: "colorMaroon", tag: "عنابي" },
-] as const;
 
 function buildFamilies(themes: ThemeItem[]) {
   const groups = new Map<string, ThemeItem[]>();
@@ -68,18 +45,6 @@ function buildFamilies(themes: ThemeItem[]) {
 }
 
 type Family = ReturnType<typeof buildFamilies>[number];
-
-function categoryLabel(dbValue: string, dict: Dictionary) {
-  const chip = CATEGORY_CHIPS.find((c) => c.dbValue === dbValue);
-  return chip ? dict.themesGallery[chip.dictKey] : dbValue;
-}
-
-/** `colorTag` is an Arabic word used as a key; this is its label. */
-function colorLabel(tag: string | undefined, dict: Dictionary): string | undefined {
-  if (!tag) return undefined;
-  const option = COLOR_OPTIONS.find((c) => c.tag === tag);
-  return option ? dict.themesGallery[option.dictKey] : tag;
-}
 
 function colorCountLabel(n: number, dict: Dictionary, nf: Intl.NumberFormat) {
   const g = dict.themesGallery;
@@ -114,7 +79,7 @@ export function ThemeGalleryGrid({
     [locale],
   );
 
-  const activeCategoryDbValue = CATEGORY_CHIPS.find((c) => c.key === category)?.dbValue ?? null;
+  const activeCategoryDbValue = THEME_CATEGORIES.find((c) => c.key === category)?.dbValue ?? null;
 
   const filtered = families.filter((f) => {
     if (search.trim() && !f.rep.name.toLowerCase().includes(search.trim().toLowerCase())) return false;
@@ -189,7 +154,7 @@ export function ThemeGalleryGrid({
             <span className="text-xs font-medium text-fg-muted">{g.filterColorLabel}</span>
             <div className="flex max-w-xs flex-wrap gap-2">
               <Chip active={color === null} onClick={() => setColor(null)} label={g.categoryAll} />
-              {COLOR_OPTIONS.map((opt) => (
+              {THEME_COLORS.map((opt) => (
                 <Chip
                   key={opt.tag}
                   active={color === opt.tag}
@@ -207,7 +172,7 @@ export function ThemeGalleryGrid({
               onChange={(e) => setCategory(e.target.value)}
               className="h-9 rounded-lg border border-accent/30 bg-transparent px-3 text-xs outline-none"
             >
-              {CATEGORY_CHIPS.map((chip) => (
+              {THEME_CATEGORIES.map((chip) => (
                 <option key={chip.key} value={chip.key}>
                   {g[chip.dictKey]}
                 </option>
@@ -238,13 +203,13 @@ export function ThemeGalleryGrid({
             <ThemeGalleryCard
               key={family.key}
               name={family.rep.name}
-              categoryLabel={categoryLabel(family.rep.category, dict)}
+              categoryLabel={themeCategoryLabel(family.rep.category, dict.themesGallery)}
               colorCountLabel={colorCountLabel(family.members.length, dict, nf)}
               variants={family.members.map((m) => ({
                 id: m.id,
                 config: m.config,
                 thumbnailUrl: m.thumbnailUrl,
-                colorLabel: colorLabel(m.config.colorTag, dict),
+                colorLabel: themeColorLabel(m.config.colorTag, dict.themesGallery),
               }))}
               shownId={shownIn(family).id}
               onShow={(id) => setShownByFamily((prev) => ({ ...prev, [family.key]: id }))}

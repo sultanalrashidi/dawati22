@@ -1,5 +1,5 @@
 import type { Prisma } from "@/generated/prisma/client";
-import { InvitationTier } from "@/generated/prisma/enums";
+import { InvitationTier, OrderKind } from "@/generated/prisma/enums";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
 
@@ -19,6 +19,8 @@ import type { Locale } from "@/lib/i18n/locales";
 
 /** Structural, so any query shape carrying these fields can be passed in. */
 export interface OrderTermsSource {
+  /** Optional so older query shapes that never selected it still type-check. */
+  kind?: OrderKind;
   invitationCount: number | null;
   tier: InvitationTier | null;
   amount: Prisma.Decimal;
@@ -84,6 +86,10 @@ export function orderSummaryLabel(
   locale: Locale,
   dict: Dictionary,
 ): string {
+  // A design fee buys no invitations at all, so every number below would read
+  // as zero — "٠ دعوة · بدون باركود" on a 150 riyal checkout.
+  if (order.kind === OrderKind.CUSTOM_DESIGN) return dict.designRequest.checkoutLabel;
+
   const terms = orderTerms(order);
   const p = dict.plans;
   // Arabic digits next to an Arabic-formatted amount: mixing "525 دعوة" with

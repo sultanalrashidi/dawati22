@@ -3,11 +3,28 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db/client";
 import { logger } from "@/lib/logger";
 import { isMoyasarConfigured, fetchMoyasarPayment, sarToHalalas } from "@/lib/payments/moyasar";
-import { OrderStatus, PaymentProvider } from "@/generated/prisma/client";
+import { OrderKind, OrderStatus, PaymentProvider } from "@/generated/prisma/client";
 import type { InvitationTier } from "@/generated/prisma/enums";
 import { isValidInvitationCount, totalSar } from "@/lib/orders/pricing";
+import { deliverPaidDesign } from "@/lib/design-requests/service";
 
 export class OrderError extends Error {}
+
+/**
+ * Everything that must happen the moment an order is paid, whichever path got
+ * it there — the mock button, the Moyasar redirect, or the webhook.
+ *
+ * It lives in one function because there are THREE of those paths. A fulfilment
+ * step wired into only the one being exercised today is a step that silently
+ * stops happening the day real card payments are switched on, and the customer
+ * whose design never arrives is the one who finds out.
+ *
+ * An invitation order needs nothing here: creating the event is what spends it.
+ */
+async function fulfilPaidOrder(order: { id: string; kind: OrderKind }): Promise<void> {
+  if (order.kind !== OrderKind.CUSTOM_DESIGN) return;
+  await deliverPaidDesign(order.id);
+}
 
 /** The live price list — two rows, one per tier. */
 export async function listPricingRates() {
@@ -69,10 +86,31 @@ export async function confirmMockPayment(orderId: string, userId: string) {
   if (isMoyasarConfigured()) throw new OrderError("Order must be paid by card");
   if (order.provider !== PaymentProvider.MOCK) throw new OrderError("Order must be paid by card");
 
-  return prisma.order.update({
+  const paid = await prisma.order.update({
     where: { id: order.id },
     data: { status: OrderStatus.PAID, paidAt: new Date(), providerRef: `mock_${order.id}` },
   });
+  await fulfilPaidOrder(paid);
+  return paid;
+}
+
+/**
+ * Where a customer belongs once an order is paid.
+ *
+ * An invitation order sends them to their events list to create the event it
+ * bought. A design fee has nothing to create — the design has just landed on an
+ * event they already have — so it sends them to that event, which is the only
+ * screen that shows the result.
+ */
+export async function paidOrderDestination(orderId: string, locale: string): Promise<string> {
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    select: { kind: true, designRequest: { select: { eventId: true } } },
+  });
+  if (order?.kind === OrderKind.CUSTOM_DESIGN && order.designRequest) {
+    return `/${locale}/events/${order.designRequest.eventId}`;
+  }
+  return `/${locale}/events?purchased=1`;
 }
 
 /** Server-side verification after the Moyasar hosted-form redirect — never trust the redirect status alone. */
@@ -93,10 +131,12 @@ export async function confirmMoyasarPayment(orderId: string, userId: string, pay
     throw new OrderError("Payment could not be verified");
   }
 
-  return prisma.order.update({
+  const paid = await prisma.order.update({
     where: { id: order.id },
     data: { status: OrderStatus.PAID, paidAt: new Date(), providerRef: paymentId },
   });
+  await fulfilPaidOrder(paid);
+  return paid;
 }
 
 /** Webhook path — trusted via the shared secret, not a logged-in session. */
@@ -112,10 +152,11 @@ export async function applyMoyasarWebhookEvent(type: string, paymentId: string, 
       payment.amount === sarToHalalas(Number(order.amount)) &&
       payment.currency?.toUpperCase() === order.currency.toUpperCase()
     ) {
-      await prisma.order.update({
+      const paid = await prisma.order.update({
         where: { id: order.id },
         data: { status: OrderStatus.PAID, paidAt: new Date(), providerRef: paymentId },
       });
+      await fulfilPaidOrder(paid);
     }
   } else if (type === "payment_failed" && order.status === OrderStatus.PENDING) {
     await prisma.order.update({ where: { id: order.id }, data: { status: OrderStatus.FAILED } });

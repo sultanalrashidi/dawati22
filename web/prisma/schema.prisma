@@ -53,6 +53,8 @@ model User {
   sessions               Session[]
   guestManagementAsks    GuestManagementRequest[] @relation("GuestMgmtRequester")
   guestManagementDone    GuestManagementRequest[] @relation("GuestMgmtResolver")
+  designRequests         CustomDesignRequest[]    @relation("DesignRequester")
+  designsDelivered       CustomDesignRequest[]    @relation("DesignDeliverer")
 
   @@index([role])
 }
@@ -152,14 +154,24 @@ enum PaymentProvider {
   MOYASAR
 }
 
+/// What an order buys. Invitations are the product; a custom design is a
+/// one-off service fee. They must stay distinguishable, because an order that
+/// buys invitations is spendable on a new event and one that buys a design is
+/// not — see `listEligibleOrders`.
+enum OrderKind {
+  INVITATIONS
+  CUSTOM_DESIGN
+}
+
 model Order {
-  id             String          @id @default(cuid())
-  userId         String
-  user           User            @relation(fields: [userId], references: [id])
+  id              String          @id @default(cuid())
+  userId          String
+  user            User            @relation(fields: [userId], references: [id])
+  kind            OrderKind       @default(INVITATIONS)
   /// The legacy package this was bought from. Null for every order placed under
   /// per-invitation pricing.
   planId          String?
-  plan            Plan?          @relation(fields: [planId], references: [id], onDelete: Restrict)
+  plan            Plan?           @relation(fields: [planId], references: [id], onDelete: Restrict)
   /// Invitations bought — this event's guest capacity, snapshotted at purchase.
   /// Authoritative once set; backfilled from Plan.invitationCount for old rows
   /// so capacity stopped being a live read of an editable settings table.
@@ -171,17 +183,18 @@ model Order {
   /// unitPrice x count, or every historical order re-prices wrongly.
   unitPrice       Decimal?        @db.Decimal(10, 2)
   /// Total actually charged. The only value Moyasar is reconciled against.
-  amount         Decimal         @db.Decimal(10, 2)
-  currency       String          @default("SAR")
-  status         OrderStatus     @default(PENDING)
-  provider       PaymentProvider @default(MOCK)
-  providerRef    String?         @unique
-  idempotencyKey String          @unique
-  paidAt         DateTime?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  amount          Decimal         @db.Decimal(10, 2)
+  currency        String          @default("SAR")
+  status          OrderStatus     @default(PENDING)
+  provider        PaymentProvider @default(MOCK)
+  providerRef     String?         @unique
+  idempotencyKey  String          @unique
+  paidAt          DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 
-  event Event?
+  event         Event?
+  designRequest CustomDesignRequest?
 
   @@index([userId, status])
 }
@@ -247,13 +260,15 @@ model Theme {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 
-  assets            ThemeAsset[]
-  variants          ThemeVariant[]
-  layout            ThemeLayout?
-  typography        ThemeTypography?
-  assignments       ThemeAssignment[]
-  events            Event[]
-  clientAssignments ClientAssignedTheme[]
+  assets             ThemeAsset[]
+  variants           ThemeVariant[]
+  layout             ThemeLayout?
+  typography         ThemeTypography?
+  assignments        ThemeAssignment[]
+  events             Event[]
+  clientAssignments  ClientAssignedTheme[]
+  designInspirations CustomDesignRequest[] @relation("DesignInspiration")
+  designDeliveries   CustomDesignRequest[] @relation("DesignDelivery")
 
   @@index([status])
   @@index([slug])
@@ -479,7 +494,6 @@ model Event {
    * Whether this event's invitations carry a scannable QR entry pass — a
    * snapshot of the order's tier taken at creation, so the hottest public
    * query (`getInvitationByLinkToken`) never has to join the order.
-   *
    * The default is `true` ONLY so that events created before per-invitation
    * pricing keep the pass they were sold. It is the permissive value: it grants
    * the paid feature. Every new event must therefore set this column
@@ -504,6 +518,7 @@ model Event {
   clientAssignedTheme    ClientAssignedTheme?
   checkInLogs            CheckInLog[]
   guestManagementRequest GuestManagementRequest?
+  designRequest          CustomDesignRequest?
   gateAccessSessions     GateAccessSession[]
 
   @@index([ownerId])
@@ -708,6 +723,75 @@ model GuestManagementRequest {
   resolvedBy    User?                        @relation("GuestMgmtResolver", fields: [resolvedById], references: [id])
   createdAt     DateTime                     @default(now())
   resolvedAt    DateTime?
+}
+
+/// A custom design's life, start to finish. The customer only ever sees NEW →
+/// IN_PROGRESS → READY → PAID; CHANGES_REQUESTED is READY sent back for another
+/// round, and APPROVED is the gap between "I like it" and the money arriving.
+enum DesignRequestStatus {
+  NEW
+  IN_PROGRESS
+  READY
+  CHANGES_REQUESTED
+  APPROVED
+  PAID
+  CANCELLED
+}
+
+/// A customer asking the team to design something that is not in the catalogue.
+///
+/// One per event, because the design is FOR that wedding and delivery means
+/// pointing that event at the finished theme. The brief deliberately reuses the
+/// gallery's own colour and style vocabulary rather than inventing a second one.
+model CustomDesignRequest {
+  id        String              @id @default(cuid())
+  /// Short human-readable code the customer quotes over WhatsApp when sending
+  /// inspiration images — the only way to match a photo to a request.
+  reference String              @unique
+  userId    String
+  user      User                @relation("DesignRequester", fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String              @unique
+  event     Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  status    DesignRequestStatus @default(NEW)
+
+  /// The brief. Colour tags and the style key are the gallery's values.
+  colorTags          String[]
+  styleCategory      String?
+  /// An existing design the customer pointed at as "close to what I want".
+  inspirationThemeId String?
+  inspirationTheme   Theme?   @relation("DesignInspiration", fields: [inspirationThemeId], references: [id], onDelete: SetNull)
+  notes              String?
+
+  /// The finished design. Set when the team marks the request READY; it is what
+  /// the customer previews, and what the event switches to once paid.
+  deliveredThemeId String?
+  deliveredTheme   Theme?  @relation("DesignDelivery", fields: [deliveredThemeId], references: [id], onDelete: SetNull)
+  /// Who delivered it — carried onto the ClientAssignedTheme record at payment,
+  /// which needs an actor and cannot use the customer.
+  deliveredById    String?
+  deliveredBy      User?   @relation("DesignDeliverer", fields: [deliveredById], references: [id])
+
+  /// The fee, snapshotted when the request is made so re-pricing the service
+  /// never re-prices a request already in flight.
+  priceSar Decimal @db.Decimal(10, 2)
+  /// Created only when the customer approves — the whole point of the flow is
+  /// that nothing is owed until then.
+  orderId  String? @unique
+  order    Order?  @relation(fields: [orderId], references: [id])
+
+  /// How many times the customer sent it back. Policy lives in the UI copy.
+  revisionCount Int     @default(0)
+  /// The customer's latest "change this" note, and the team's reply.
+  revisionNote  String?
+  adminNote     String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deliveredAt DateTime?
+  paidAt      DateTime?
+
+  @@index([status])
+  @@index([userId])
 }
 
 model Notification {

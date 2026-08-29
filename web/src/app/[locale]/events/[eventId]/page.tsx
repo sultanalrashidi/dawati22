@@ -3,7 +3,9 @@ import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
-import { getOwnedEvent } from "@/lib/events/service";
+import { getOwnedEvent, listPublishedThemes } from "@/lib/events/service";
+import { getDesignRequestForEvent } from "@/lib/design-requests/service";
+import { THEME_CATEGORIES, THEME_COLORS } from "@/lib/themes/vocabulary";
 import { orderTerms } from "@/lib/orders/terms";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { daysUntil, relativeTime } from "@/lib/events/activity";
@@ -12,6 +14,8 @@ import { Role } from "@/generated/prisma/client";
 import { AddGuestForm } from "@/components/events/add-guest-form";
 import { GuestRow } from "@/components/events/guest-row";
 import { GatePinForm } from "@/components/events/gate-pin-form";
+import { DesignRequestCard } from "@/components/events/design-request-card";
+import { StartDesignRequestCard } from "@/components/events/custom-design-request-fields";
 
 /**
  * The host's dashboard for one event.
@@ -33,6 +37,27 @@ export default async function EventDetailPage({
 
   const event = await getOwnedEvent(eventId, user.id);
   if (!event) notFound();
+
+  // The custom design, if this event has one in flight. `listPublishedThemes`
+  // only comes along when there is no request yet — it feeds the "close to my
+  // idea" dropdown on the brief, and there is nothing to brief otherwise.
+  const designRequest = await getDesignRequestForEvent(eventId, user.id);
+  const designChoices = designRequest
+    ? null
+    : {
+        colorTags: THEME_COLORS.map((c) => ({
+          tag: c.tag,
+          label: dict.themesGallery[c.dictKey],
+        })),
+        styles: THEME_CATEGORIES.filter((c) => c.dbValue !== null).map((c) => ({
+          value: c.dbValue as string,
+          label: dict.themesGallery[c.dictKey],
+        })),
+        designs: (await listPublishedThemes(user.id)).map((theme) => ({
+          id: theme.id,
+          name: locale === "ar" ? theme.nameAr : theme.name,
+        })),
+      };
 
   const d = dict.events.detail;
   const capacity = orderTerms(event.order).invitationCount;
@@ -268,6 +293,31 @@ export default async function EventDetailPage({
                   <GatePinForm eventId={event.id} dict={dict} hasPinSet={Boolean(event.gatePinHash)} />
                 </div>
               </section>
+            )}
+
+            {designRequest ? (
+              <DesignRequestCard
+                locale={locale}
+                dict={dict}
+                eventId={event.id}
+                request={{
+                  id: designRequest.id,
+                  reference: designRequest.reference,
+                  status: designRequest.status,
+                  priceSar: Number(designRequest.priceSar),
+                  revisionCount: designRequest.revisionCount,
+                  deliveredThemeId: designRequest.deliveredThemeId,
+                }}
+              />
+            ) : (
+              designChoices && (
+                <StartDesignRequestCard
+                  locale={locale}
+                  dict={dict}
+                  eventId={event.id}
+                  choices={designChoices}
+                />
+              )
             )}
 
             <section className="rounded-2xl border border-border bg-surface p-5">

@@ -200,7 +200,13 @@ export function EventFields({
       <div className="flex flex-col gap-2 text-sm">
         <span className="text-fg-muted">{f.themeLabel}</span>
         <p className="-mt-1 text-xs text-fg-muted">{f.themeHint}</p>
-        <ThemePicker locale={locale} dict={dict} options={themeOptions} defaultKey={defaults?.themeKey} />
+        <ThemePicker
+          locale={locale}
+          dict={dict}
+          options={themeOptions}
+          defaultKey={defaults?.themeKey}
+          allowCustomRequest={!defaults}
+        />
       </div>
 
       <div className="flex flex-col gap-2 text-sm">

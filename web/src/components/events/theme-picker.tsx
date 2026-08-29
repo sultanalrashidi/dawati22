@@ -6,6 +6,13 @@ import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
 import type { BuilderTheme } from "@/components/guest/invitation-view";
 import { ThemePreviewDialog } from "@/components/themes/theme-preview-dialog";
+import { CustomDesignRequestFields } from "@/components/events/custom-design-request-fields";
+import {
+  THEME_CATEGORIES,
+  THEME_COLORS,
+  themeCategoryLabel,
+  themeColorLabel,
+} from "@/lib/themes/vocabulary";
 
 /**
  * One selectable option. A LEGACY theme contributes exactly one (each of its
@@ -31,39 +38,6 @@ export interface ThemeOption {
   thumbnailUrl?: string;
 }
 
-/**
- * The same catalogue the public gallery filters by. Kept in step with
- * `theme-gallery-grid.tsx` on purpose: a customer who narrowed the gallery to
- * "رومانسي" and came here to buy should find the same word meaning the same
- * set. Categories that match no theme are left out — a filter that can only
- * ever return nothing is worse than no filter.
- */
-const CATEGORIES = [
-  { key: "all", dictKey: "categoryAll", dbValue: null },
-  { key: "luxury", dictKey: "categoryLuxury", dbValue: "luxury" },
-  { key: "classic", dictKey: "categoryClassic", dbValue: "classic" },
-  { key: "romantic", dictKey: "categoryRomantic", dbValue: "romantic" },
-  { key: "simple", dictKey: "categorySimple", dbValue: "minimal" },
-  { key: "dark", dictKey: "categoryDark", dbValue: "dark" },
-  { key: "botanical", dictKey: "categoryBotanical", dbValue: "botanical" },
-  { key: "experimental", dictKey: "categoryExperimental", dbValue: "experimental" },
-  { key: "saudi", dictKey: "categorySaudi", dbValue: "saudi" },
-] as const;
-
-const COLORS = [
-  { dictKey: "colorWhite", tag: "أبيض" },
-  { dictKey: "colorGold", tag: "ذهبي" },
-  { dictKey: "colorBlack", tag: "أسود" },
-  { dictKey: "colorBeige", tag: "بيج" },
-  { dictKey: "colorPink", tag: "وردي" },
-  { dictKey: "colorGreen", tag: "أخضر" },
-  { dictKey: "colorNavy", tag: "كحلي" },
-  { dictKey: "colorPurple", tag: "بنفسجي" },
-  { dictKey: "colorBlue", tag: "أزرق" },
-  { dictKey: "colorBrown", tag: "بني" },
-  { dictKey: "colorMaroon", tag: "عنابي" },
-] as const;
-
 interface Family {
   key: string;
   name: string;
@@ -84,21 +58,6 @@ function buildFamilies(options: ThemeOption[]): Family[] {
     category: members[0].category,
     members,
   }));
-}
-
-function categoryLabel(dbValue: string, dict: Dictionary): string {
-  const chip = CATEGORIES.find((c) => c.dbValue === dbValue);
-  return chip ? dict.themesGallery[chip.dictKey] : dbValue;
-}
-
-/**
- * `colorTag` is stored as an Arabic word, so it is a key here, not a label —
- * printing it raw put "عنابي" on the English form.
- */
-function colorLabel(tag: string | undefined, dict: Dictionary): string | undefined {
-  if (!tag) return undefined;
-  const option = COLORS.find((c) => c.tag === tag);
-  return option ? dict.themesGallery[option.dictKey] : tag;
 }
 
 function colorCountLabel(n: number, dict: Dictionary, nf: Intl.NumberFormat) {
@@ -124,12 +83,18 @@ export function ThemePicker({
   options,
   dict,
   defaultKey,
+  allowCustomRequest = false,
 }: {
   locale: Locale;
   options: ThemeOption[];
   dict: Dictionary;
   /** Preselects an existing choice when the form is an edit rather than a create. */
   defaultKey?: string;
+  /**
+   * Offers "have one designed for me" under the grid. Create form only — the
+   * admin edit form rewrites an existing event and must not open a request.
+   */
+  allowCustomRequest?: boolean;
 }) {
   const [selectedKey, setSelectedKey] = useState(
     defaultKey && options.some((o) => o.key === defaultKey) ? defaultKey : (options[0]?.key ?? ""),
@@ -152,7 +117,7 @@ export function ThemePicker({
 
   const g = dict.themesGallery;
   const f = dict.events.form;
-  const categoryDbValue = CATEGORIES.find((c) => c.key === category)?.dbValue ?? null;
+  const categoryDbValue = THEME_CATEGORIES.find((c) => c.key === category)?.dbValue ?? null;
   const query = search.trim().toLowerCase();
   const hasFilters = Boolean(query) || category !== "all" || color !== null;
 
@@ -232,7 +197,7 @@ export function ThemePicker({
           <div className="flex flex-col gap-2">
             <span className="text-xs font-medium text-fg-muted">{g.filterStyleLabel}</span>
             <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map((chip) => (
+              {THEME_CATEGORIES.map((chip) => (
                 <Chip
                   key={chip.key}
                   active={category === chip.key}
@@ -247,7 +212,7 @@ export function ThemePicker({
             <span className="text-xs font-medium text-fg-muted">{g.filterColorLabel}</span>
             <div className="flex flex-wrap gap-2">
               <Chip active={color === null} onClick={() => setColor(null)} label={g.categoryAll} />
-              {COLORS.map((opt) => (
+              {THEME_COLORS.map((opt) => (
                 <Chip
                   key={opt.tag}
                   active={color === opt.tag}
@@ -333,12 +298,12 @@ export function ThemePicker({
                     <p className="mt-0.5 text-[11px] text-fg-muted">
                       {family.members.length > 1
                         ? [
-                            shown.variantName ?? colorLabel(shown.colorTag, dict),
+                            shown.variantName ?? themeColorLabel(shown.colorTag, dict.themesGallery),
                             colorCountLabel(family.members.length, dict, nf),
                           ]
                             .filter(Boolean)
                             .join(" · ")
-                        : categoryLabel(family.category, dict)}
+                        : themeCategoryLabel(family.category, dict.themesGallery)}
                     </p>
                   </div>
 
@@ -351,7 +316,7 @@ export function ThemePicker({
                           <button
                             key={member.key}
                             type="button"
-                            aria-label={member.variantName ?? colorLabel(member.colorTag, dict) ?? member.name}
+                            aria-label={member.variantName ?? themeColorLabel(member.colorTag, dict.themesGallery) ?? member.name}
                             aria-pressed={isShown}
                             // Touching a colour picks it: on a card the customer
                             // has already chosen, changing the swatch without
@@ -384,6 +349,23 @@ export function ThemePicker({
             );
           })}
         </div>
+      )}
+
+      {/* Under the grid, not in it: it is the answer to "none of these", which
+          only means anything once the customer has looked at all of them. */}
+      {allowCustomRequest && (
+        <CustomDesignRequestFields
+          locale={locale}
+          dict={dict}
+          choices={{
+            colorTags: THEME_COLORS.map((c) => ({ tag: c.tag, label: g[c.dictKey] })),
+            styles: THEME_CATEGORIES.filter((c) => c.dbValue !== null).map((c) => ({
+              value: c.dbValue as string,
+              label: g[c.dictKey],
+            })),
+            designs: families.map((family) => ({ id: family.members[0].themeId, name: family.name })),
+          }}
+        />
       )}
 
       {previewKey && previewFamily && (

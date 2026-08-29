@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/client";
 import {
   EventGuestManagementMode,
   EventType,
+  OrderKind,
   OrderStatus,
   Prisma,
   ThemeVisibility,
@@ -11,6 +12,7 @@ import type { ScheduleItem } from "@/lib/events/types";
 import { generateReferenceCode } from "@/lib/events/reference-code";
 import type { CoupleInput } from "@/lib/themes/builder/content";
 import { orderTerms } from "@/lib/orders/terms";
+import { designRequestCreateData, type DesignBrief } from "@/lib/design-requests/service";
 
 export class EventError extends Error {}
 
@@ -81,9 +83,17 @@ export async function listOwnedEvents(userId: string) {
   });
 }
 
+/**
+ * Paid orders this customer can still turn into an event.
+ *
+ * `kind` is load-bearing, not decoration: a paid custom-design fee is also a
+ * PAID order with no event attached, so without this filter it would appear
+ * here as a package waiting to be spent — and 150 riyals of design work would
+ * buy a free wedding with unlimited invitations.
+ */
 export async function listEligibleOrders(userId: string) {
   return prisma.order.findMany({
-    where: { userId, status: OrderStatus.PAID, event: null },
+    where: { userId, kind: OrderKind.INVITATIONS, status: OrderStatus.PAID, event: null },
     include: { plan: true },
     orderBy: { createdAt: "desc" },
   });
@@ -156,6 +166,12 @@ export interface CreateEventInput {
   guestManagementMode: EventGuestManagementMode;
   rsvpRequired: boolean;
   allowGuestPartySize: boolean;
+  /**
+   * Set when the customer ticked "design one for me" in the picker. The event
+   * is still created on the stock theme they chose — the custom design replaces
+   * it later — so this only records the brief, and never blocks creation.
+   */
+  designBrief?: DesignBrief | null;
 }
 
 export async function createEvent(userId: string, input: CreateEventInput) {
@@ -234,7 +250,13 @@ function coupleRows(couples: CoupleInput[]) {
 }
 
 /** Everything the event form writes; `orderId` is not among it — a paid order is not re-pointed. */
-export type UpdateEventDetailsInput = Omit<CreateEventInput, "orderId">;
+/**
+ * `designBrief` is excluded: it is a request made once, when the event is
+ * created. Support editing an event's names must not silently open a second
+ * design request, and un-ticking the box must not close an existing one — that
+ * lives on its own screen.
+ */
+export type UpdateEventDetailsInput = Omit<CreateEventInput, "orderId" | "designBrief">;
 
 /**
  * Rewrites an existing event's details. Only support reaches this: the customer
@@ -331,6 +353,12 @@ async function createEventWithUniqueReferenceCode(
           guestManagementMode: input.guestManagementMode,
           rsvpRequired: input.rsvpRequired,
           allowGuestPartySize: input.allowGuestPartySize,
+          // Same insert as the event itself, for the same reason the couples
+          // are: a brief for a wedding whose row failed to write is orphaned
+          // data, and the retry below regenerates its reference code too.
+          designRequest: input.designBrief
+            ? { create: designRequestCreateData(userId, input.designBrief) }
+            : undefined,
         },
       });
     } catch (err) {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
-import { confirmMoyasarPayment, OrderError } from "@/lib/orders/service";
+import { confirmMoyasarPayment, paidOrderDestination, OrderError } from "@/lib/orders/service";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 
 // Moyasar redirects the browser here after a hosted-form payment attempt.
@@ -24,7 +24,9 @@ export async function GET(request: NextRequest) {
 
   try {
     await confirmMoyasarPayment(orderId, user.id, paymentId);
-    return NextResponse.redirect(new URL(`/${locale}/events?purchased=1`, request.url));
+    // Not always the events list: a paid design fee belongs on the event the
+    // design just landed on.
+    return NextResponse.redirect(new URL(await paidOrderDestination(orderId, locale), request.url));
   } catch (err) {
     if (err instanceof OrderError) {
       return NextResponse.redirect(new URL(`/${locale}/checkout/${orderId}?error=1`, request.url));

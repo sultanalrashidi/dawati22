@@ -3,6 +3,7 @@ import { EventType, EventGuestManagementMode } from "@/generated/prisma/client";
 import { MAX_COUPLES_PER_EVENT } from "@/lib/events/service";
 import type { CoupleInput } from "@/lib/themes/builder/content";
 import type { ScheduleItem } from "@/lib/events/types";
+import type { DesignBrief } from "@/lib/design-requests/service";
 import { extractYoutubeVideoId } from "@/lib/youtube";
 
 /**
@@ -88,6 +89,28 @@ export interface EventFormValues {
   guestManagementMode: EventGuestManagementMode;
   rsvpRequired: boolean;
   allowGuestPartySize: boolean;
+  /**
+   * Present only when the customer ticked "design one for me" in the picker.
+   * Null is the normal case and means nothing about the event changes.
+   */
+  designBrief: DesignBrief | null;
+}
+
+/**
+ * The brief, or null.
+ *
+ * Only read when the box is ticked: a customer who opened the panel, typed
+ * something and then changed their mind must not be billed 150 riyals for a
+ * design they decided against.
+ */
+function readDesignBrief(formData: FormData): DesignBrief | null {
+  if (formData.get("requestCustomDesign") !== "on") return null;
+  return {
+    colorTags: formData.getAll("designColorTags").map((v) => String(v)),
+    styleCategory: String(formData.get("designStyle") ?? "") || null,
+    inspirationThemeId: String(formData.get("designInspirationThemeId") ?? "") || null,
+    notes: String(formData.get("designNotes") ?? ""),
+  };
 }
 
 /** Returns null when the submission is not usable; the caller decides how to say so. */
@@ -151,5 +174,6 @@ export function readEventForm(formData: FormData): EventFormValues | null {
         : EventGuestManagementMode.SELF,
     rsvpRequired: formData.get("rsvpRequired") === "on",
     allowGuestPartySize: formData.get("allowGuestPartySize") === "on",
+    designBrief: readDesignBrief(formData),
   };
 }

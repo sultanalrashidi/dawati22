@@ -3,6 +3,8 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { InvitationView } from "@/components/guest/invitation-view";
 import { InvitationStatus, Role, ThemeEngine } from "@/generated/prisma/client";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
+import { getSessionUser } from "@/lib/auth/session";
+import { mayPreviewDeliveredTheme } from "@/lib/design-requests/service";
 import { renderQrDataUrl } from "@/lib/qr";
 import { builderThemeConfig, loadBuilderTheme } from "@/lib/themes/builder/guest";
 import { builderFontStylesheetHref } from "@/lib/themes/builder/fonts-server";
@@ -17,15 +19,25 @@ import type { ScheduleItem } from "@/lib/events/types";
  * It mounts the same `InvitationView` a guest gets, with sample data, so a
  * design can be walked end to end (envelope → open → RSVP → entry pass) while
  * it is still a draft and invisible to customers. Outside the admin route tree
- * for chrome reasons, so it carries its own admin check.
+ * for chrome reasons, so it carries its own access check.
+ *
+ * Admin-only, with one deliberate exception: the customer whose own custom
+ * design request is waiting on this exact theme. The whole premise of that
+ * service is that they decide before paying, which they cannot do without
+ * seeing it — and the grant that would put the design in their picker is
+ * withheld until the fee is paid, so looking is all this lets them do.
  */
 export default async function ThemePreviewPage({
   params,
   searchParams,
 }: PageProps<"/theme-preview/[themeId]">) {
-  await requireUserOrRedirect(defaultLocale, [Role.ADMIN]);
-
   const { themeId } = await params;
+
+  const viewer = await getSessionUser();
+  const isRequester =
+    viewer?.role === Role.CUSTOMER && (await mayPreviewDeliveredTheme(themeId, viewer.id));
+  if (!isRequester) await requireUserOrRedirect(defaultLocale, [Role.ADMIN]);
+
   const { status, noQr } = await searchParams;
   const dict = await getDictionary("ar");
 

@@ -37,7 +37,17 @@
     "login": "Log in",
     "logout": "Log out",
     "language": "العربية",
-    "theme": "Theme"
+    "theme": "Theme",
+    "designYours": "Design yours",
+    "menu": "Menu",
+    "closeMenu": "Close menu",
+    "howItWorks": "How it works",
+    "faq": "FAQ",
+    "contact": "Contact us",
+    "contactMessage": "Hi, I have a question about Dawati",
+    "appearance": "Appearance",
+    "themeLight": "Light",
+    "themeDark": "Dark"
   },
   "theme": {
     "light": "Light",
@@ -114,7 +124,18 @@
     "footerSite": "Site",
     "footerAccount": "Account",
     "footerContact": "Contact",
-    "footerRights": "All rights reserved"
+    "footerRights": "All rights reserved",
+    "faqKicker": "FAQ",
+    "faqTitle": "Before you choose…",
+    "faqNote": "Didn’t find your answer? Message us on WhatsApp and we’ll get back to you quickly.",
+    "faq1Q": "Does my guest need an app to open the invitation?",
+    "faq1A": "No. It opens straight in the browser from the link you share on WhatsApp, on any phone.",
+    "faq2Q": "How long does the invitation link stay live?",
+    "faq2A": "The link doesn’t expire — your guests can open the invitation before the event and after it.",
+    "faq3Q": "Can I edit the details after creating the event?",
+    "faq3A": "Names, date and venue are fixed at creation because they appear on your guests’ invitations. Message us for any change and we’ll make it for you.",
+    "faq4Q": "Can I add more invitations after buying?",
+    "faq4A": "The count is set at purchase. If you need more, message us on WhatsApp and we’ll sort it out."
   },
   "plans": {
     "title": "Pricing",

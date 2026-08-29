@@ -40,6 +40,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     { n: "03", title: h.step3Title, body: h.step3Body },
   ];
 
+  const faqs = [
+    { q: h.faq1Q, a: h.faq1A },
+    { q: h.faq2Q, a: h.faq2A },
+    { q: h.faq3Q, a: h.faq3A },
+    { q: h.faq4Q, a: h.faq4A },
+  ];
+
   const features = [
     { title: h.f1Title, body: h.f1Body },
     { title: h.f2Title, body: h.f2Body },
@@ -89,7 +96,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       </section>
 
       {/* ── STEPS ──────────────────────────────────────────────────────── */}
-      <Band>
+      <Band id="how-it-works">
         <SectionHead kicker={h.stepsKicker} title={h.stepsTitle} />
         <div className="mt-12 grid gap-5 md:grid-cols-3">
           {steps.map((step) => (
@@ -155,6 +162,41 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </div>
       </Band>
 
+      {/* ── FAQ ────────────────────────────────────────────────────────── */}
+      <section id="faq" className="mx-auto w-full max-w-3xl scroll-mt-20 px-4 py-20 sm:px-8">
+        <SectionHead kicker={h.faqKicker} title={h.faqTitle} />
+        <div className="mt-10 flex flex-col">
+          {faqs.map((item) => (
+            <details
+              key={item.q}
+              className="group border-b border-border py-5 first:border-t first:border-border"
+            >
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-fg marker:hidden">
+                {item.q}
+                <span
+                  aria-hidden="true"
+                  className="shrink-0 text-xl font-normal text-accent transition-transform group-open:rotate-45"
+                >
+                  +
+                </span>
+              </summary>
+              <p className="mt-3 text-sm leading-relaxed text-fg-muted">{item.a}</p>
+            </details>
+          ))}
+        </div>
+        <p className="mt-8 text-center text-sm text-fg-muted">
+          {h.faqNote}{" "}
+          <a
+            href={supportWhatsAppUrl(h.ctaWhatsappMessage)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-accent hover:text-accent-strong"
+          >
+            {h.ctaWhatsapp}
+          </a>
+        </p>
+      </section>
+
       {/* ── CTA ────────────────────────────────────────────────────────── */}
       <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-8">
         <div className="flex flex-col items-center gap-6 rounded-3xl border border-accent-soft/50 bg-surface px-6 py-14 text-center">
@@ -185,9 +227,9 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
 }
 
 /** A full-bleed tinted band — the design alternates these with the page ground. */
-function Band({ children }: { children: React.ReactNode }) {
+function Band({ id, children }: { id?: string; children: React.ReactNode }) {
   return (
-    <section className="border-y border-border bg-surface-2/60">
+    <section id={id} className="scroll-mt-20 border-y border-border bg-surface-2/60">
       <div className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-8">{children}</div>
     </section>
   );

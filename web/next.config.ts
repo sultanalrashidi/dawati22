@@ -12,6 +12,16 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [{ source: "/", destination: `/${defaultLocale}`, permanent: false }];
   },
+  // The admin sign-in keeps its short, unlisted address while the page itself
+  // lives under `/[locale]` — where Next.js does not print its folder name into
+  // every page's flight payload the way it must for a root-level sibling of a
+  // dynamic segment. A rewrite is server-side only, so the path it maps from
+  // never reaches the browser bundle either.
+  async rewrites() {
+    return [
+      { source: "/sultannatlus", destination: `/${defaultLocale}/sultannatlus` },
+    ];
+  },
   // Inlined as a literal at build time (see lib/db/client.ts) so the Cloudflare
   // build can dead-code-eliminate the `pg` driver branch entirely instead of
   // trying to bundle it.

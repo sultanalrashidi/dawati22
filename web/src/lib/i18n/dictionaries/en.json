@@ -232,7 +232,13 @@
       "reviewNoticeTitle": "Check your details before creating the event",
       "reviewNoticeBody": "The names, date and venue appear on every guest’s invitation and entry pass. Once the event is created you cannot change them yourself — edits go through support. Please check the spelling, date and time before saving.",
       "confirmAccuracyLabel": "I have reviewed the details above and confirm they are correct",
-      "confirmAccuracyHint": "Confirm the review before creating the event."
+      "confirmAccuracyHint": "Confirm the review before creating the event.",
+      "comingSoonTitle": "Coming soon",
+      "comingSoonBody": "Dawati currently supports wedding invitations only. The other occasions are being prepared, and we’ll announce them as soon as they’re ready.",
+      "comingSoonAction": "Back to a wedding invitation",
+      "comingSoonWhatsapp": "Interested in this occasion? Message us",
+      "comingSoonMessage": "Hi, I’d like an invitation for an occasion other than a wedding",
+      "weddingOnly": "Weddings only for now — other occasions coming soon."
     },
     "detail": {
       "guests": "Guests",

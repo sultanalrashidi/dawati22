@@ -5,6 +5,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { couplesFor, getEventForEdit } from "@/lib/events/service";
 import { buildThemeOptions, themeOptionKey } from "@/lib/events/theme-options";
 import { EventFields, type EventFieldDefaults } from "@/components/events/event-fields";
+import { EventTypeGate } from "@/components/events/event-type-gate";
 import { EventEditForm } from "@/components/admin/event-edit-form";
 import type { ScheduleItem } from "@/lib/events/types";
 
@@ -101,7 +102,12 @@ export default async function AdminEventEditPage({
       </p>
 
       <EventEditForm eventId={event.id} locale={locale} dict={dict}>
-        <EventFields dict={dict} themeOptions={themeOptions} defaults={defaults} />
+        {/* `enabled={false}`: the "weddings only" gate is a sales rule for the
+            customer's create form. Support must be able to open and correct an
+            event whatever its type says, not be locked out by it. */}
+        <EventTypeGate dict={dict} defaultType={defaults.type} enabled={false}>
+          <EventFields dict={dict} themeOptions={themeOptions} defaults={defaults} />
+        </EventTypeGate>
       </EventEditForm>
     </div>
   );

@@ -7,21 +7,14 @@ import { ThemePicker, type ThemeOption } from "@/components/events/theme-picker"
  * edit page. Both post the same names, and `lib/events/form.ts` reads them
  * back — one shape written and read in one place, so a field support can
  * correct is never a field the customer could not enter.
+ *
+ * The event-type select is NOT here: it decides whether the rest of this form
+ * should render at all, so it lives in `EventTypeGate`, which wraps this.
  */
 
 const FIELD =
   "h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent";
 const AREA = "rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent";
-
-const EVENT_TYPE_OPTIONS = [
-  ["WEDDING", "typeWedding"],
-  ["ENGAGEMENT", "typeEngagement"],
-  ["GRADUATION", "typeGraduation"],
-  ["BIRTHDAY", "typeBirthday"],
-  ["ANNIVERSARY", "typeAnniversary"],
-  ["CORPORATE", "typeCorporate"],
-  ["OTHER", "typeOther"],
-] as const;
 
 /** An existing event's values, already flattened into what the inputs need. */
 export interface EventFieldDefaults {
@@ -61,17 +54,6 @@ export function EventFields({
 
   return (
     <>
-      <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-fg-muted">{f.typeLabel}</span>
-        <select name="type" defaultValue={defaults?.type ?? "WEDDING"} className={FIELD}>
-          {EVENT_TYPE_OPTIONS.map(([value, key]) => (
-            <option key={value} value={value}>
-              {f[key]}
-            </option>
-          ))}
-        </select>
-      </label>
-
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="text-fg-muted">{f.nameLabel}</span>
         <input

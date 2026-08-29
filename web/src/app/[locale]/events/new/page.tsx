@@ -8,6 +8,7 @@ import { orderSummaryLabel } from "@/lib/orders/terms";
 import { createEventAction } from "@/lib/events/actions";
 import { Role } from "@/generated/prisma/client";
 import { EventFields } from "@/components/events/event-fields";
+import { EventTypeGate } from "@/components/events/event-type-gate";
 import { ConfirmSubmit } from "@/components/events/confirm-submit";
 
 export default async function NewEventPage({
@@ -75,13 +76,19 @@ export default async function NewEventPage({
           <input type="hidden" name="orderId" value={preselectedOrderId} />
         )}
 
-        <EventFields dict={dict} themeOptions={themeOptions} />
+        {/* Everything past the type select is wedding-shaped — groom and bride
+            names, wedding artwork, wedding copy. Picking another occasion
+            replaces all of it with "not yet" rather than letting someone fill
+            in a form the product cannot deliver on. */}
+        <EventTypeGate dict={dict}>
+          <EventFields dict={dict} themeOptions={themeOptions} />
 
-        <ConfirmSubmit
-          label={f.confirmAccuracyLabel}
-          hint={f.confirmAccuracyHint}
-          submitLabel={f.submit}
-        />
+          <ConfirmSubmit
+            label={f.confirmAccuracyLabel}
+            hint={f.confirmAccuracyHint}
+            submitLabel={f.submit}
+          />
+        </EventTypeGate>
       </form>
     </div>
   );

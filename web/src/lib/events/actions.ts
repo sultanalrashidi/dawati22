@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { requireUserOrThrow } from "@/lib/auth/guards";
 import { createEvent, EventError } from "@/lib/events/service";
 import { readEventForm } from "@/lib/events/form";
-import { Role } from "@/generated/prisma/client";
+import { EventType, Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 
 export async function createEventAction(locale: string, formData: FormData) {
@@ -18,7 +18,14 @@ export async function createEventAction(locale: string, formData: FormData) {
   // only ever fires for a submission that went around the browser.
   const confirmed = formData.get("confirmAccuracy") === "on";
 
-  if (!orderId || !fields || !confirmed) {
+  // Weddings are the only occasion the product actually delivers — the form
+  // below the type select asks for a groom and a bride and offers wedding
+  // artwork. The UI replaces that form with "coming soon" for anything else,
+  // but a <select> is only a value the browser posts, so the rule is enforced
+  // here as well or it is not a rule.
+  const supported = !fields || fields.type === EventType.WEDDING;
+
+  if (!orderId || !fields || !confirmed || !supported) {
     redirect(`/${safeLocale}/events/new?error=validation&orderId=${orderId}`);
   }
 

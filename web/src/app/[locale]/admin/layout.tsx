@@ -24,6 +24,7 @@ export default async function AdminLayout({
     [`/${locale}/admin/themes`, dict.admin.themes],
     [`/${locale}/admin/themes/fonts`, dict.admin.fonts],
     [`/${locale}/admin/gate-staff`, dict.admin.gateStaff],
+    [`/${locale}/admin/security`, dict.adminAuth.securityTitle],
   ] as const;
 
   return (

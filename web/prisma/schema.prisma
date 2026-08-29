@@ -26,17 +26,22 @@ enum Locale {
 }
 
 model User {
-  id              String    @id @default(cuid())
-  role            Role      @default(CUSTOMER)
-  name            String
-  phone           String?   @unique
-  email           String?   @unique
-  passwordHash    String?
-  locale          Locale    @default(ar)
-  phoneVerifiedAt DateTime?
-  isBlocked       Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                       String    @id @default(cuid())
+  role                     Role      @default(CUSTOMER)
+  name                     String
+  phone                    String?   @unique
+  email                    String?   @unique
+  passwordHash             String?
+  locale                   Locale    @default(ar)
+  phoneVerifiedAt          DateTime?
+  isBlocked                Boolean   @default(false)
+  /// Failed password attempts on the private admin sign-in route, and the
+  /// lockout it earns. Mirrors the door PIN's counters on Event — same threat,
+  /// same shape, so the same rules are obvious to whoever reads either.
+  adminLoginFailedAttempts Int       @default(0)
+  adminLoginLockedUntil    DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   ownedEvents            Event[]                  @relation("EventOwner")
   orders                 Order[]
@@ -792,6 +797,17 @@ model CustomDesignRequest {
 
   @@index([status])
   @@index([userId])
+}
+
+/// Operational switches an admin flips from the panel, so that changing one
+/// never means editing a Vercel environment variable and redeploying.
+///
+/// Deliberately a key/value table rather than a column per setting: these are
+/// switches, not data, and each new one should cost a row, not a migration.
+model AppSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
 }
 
 model Notification {

@@ -5,16 +5,31 @@ import { mockOtpAdapter } from "@/lib/otp/mock-adapter";
 import { createAuthenticaOtpAdapter } from "@/lib/otp/authentica-adapter";
 import type { OtpAdapter } from "@/lib/otp/adapter";
 import { OtpPurpose } from "@/generated/prisma/client";
+import { isTestBypassPhone, isTestPhoneBypassEnabled } from "@/lib/settings/service";
 
 const CODE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const MAX_ATTEMPTS = 5;
 const SEND_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_SENDS_PER_WINDOW = 3;
 
-function getAdapter(): OtpAdapter {
+/**
+ * Who delivers the code, and to whom.
+ *
+ * With no API key configured there is nothing that can send an SMS, so every
+ * number falls back to the mock — which returns the code for the screen. That
+ * is right for local work and is exactly what makes an unconfigured production
+ * an open door, so `assertOtpDeliveryConfigured` below is what production
+ * actually leans on.
+ *
+ * With a key, one narrow exception stays: the two test numbers, and only while
+ * an admin has switched them on. They are ordinary customer accounts, so the
+ * bypass can never reach the admin panel.
+ */
+async function getAdapter(phone: string): Promise<OtpAdapter> {
   const apiKey = process.env.AUTHENTICA_API_KEY;
-  if (apiKey) return createAuthenticaOtpAdapter(apiKey);
-  return mockOtpAdapter;
+  if (!apiKey) return mockOtpAdapter;
+  if (isTestBypassPhone(phone) && (await isTestPhoneBypassEnabled())) return mockOtpAdapter;
+  return createAuthenticaOtpAdapter(apiKey);
 }
 
 export class OtpRateLimitError extends Error {
@@ -51,7 +66,7 @@ export async function requestOtp(
     data: { phone, purpose, codeHash, expiresAt, maxAttempts: MAX_ATTEMPTS },
   });
 
-  const result = await getAdapter().sendOtp(phone, code);
+  const result = await (await getAdapter(phone)).sendOtp(phone, code);
   return result;
 }
 

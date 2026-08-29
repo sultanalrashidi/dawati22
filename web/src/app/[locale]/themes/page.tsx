@@ -13,6 +13,7 @@ import {
 } from "@/lib/themes/builder/guest";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { ThemeGalleryGrid } from "@/components/themes/theme-gallery-grid";
+import { legacyThemeThumbnail } from "@/lib/themes/thumbnail";
 
 type GalleryItem = {
   id: string;
@@ -28,6 +29,12 @@ type GalleryItem = {
    * art — which is exactly the "theme doesn't show" symptom on the guest page.
    */
   builder?: GuestBuilderTheme;
+  /**
+   * The design's own closed-envelope art — what the card leads with. A theme
+   * drawn in CSS rather than from photos has none, and the card falls back to
+   * its palette.
+   */
+  thumbnailUrl?: string;
 };
 
 export default async function ThemesGalleryPage({ params }: PageProps<"/[locale]/themes">) {
@@ -49,15 +56,17 @@ export default async function ThemesGalleryPage({ params }: PageProps<"/[locale]
   // per color, exactly like a legacy family.
   const items: GalleryItem[] = themes.flatMap((theme): GalleryItem[] => {
     if (theme.engine !== ThemeEngine.BUILDER) {
+      const config = theme.config as unknown as ThemeConfig;
       return [
         {
           id: theme.id,
           slug: theme.slug,
           name: locale === "ar" ? theme.nameAr : theme.name,
           category: theme.category,
-          config: theme.config as unknown as ThemeConfig,
+          config,
           createdAt: theme.createdAt.toISOString(),
           eventCount: theme.eventCount,
+          thumbnailUrl: legacyThemeThumbnail(config),
         },
       ];
     }
@@ -66,24 +75,32 @@ export default async function ThemesGalleryPage({ params }: PageProps<"/[locale]
     const defaultVariant = pickDefaultVariant(theme.variants);
     if (!defaultVariant) return [];
 
-    return theme.variants.map((variant) => ({
-      id: variant.id,
-      // The family's representative card is the one whose slug matches the
-      // family key — that's the default variant here.
-      slug: variant.id === defaultVariant.id ? theme.slug : `${theme.slug}-${variant.slug}`,
-      name: locale === "ar" ? theme.nameAr : theme.name,
-      category: theme.category,
-      config: builderThemeConfig({
-        palette: parsePalette(variant.palette),
-        family: theme.slug,
-        colorTag: variant.colorTag,
-      }),
-      createdAt: theme.createdAt.toISOString(),
-      // All variants share one Theme row's usage count; crediting it to the
-      // representative keeps the family's "popular" sort from multiplying it.
-      eventCount: variant.id === defaultVariant.id ? theme.eventCount : 0,
-      builder: builderArt.get(theme.id)?.get(variant.id),
-    }));
+    return theme.variants.map((variant) => {
+      const builder = builderArt.get(theme.id)?.get(variant.id);
+      return {
+        id: variant.id,
+        // The family's representative card is the one whose slug matches the
+        // family key — that's the default variant here.
+        slug: variant.id === defaultVariant.id ? theme.slug : `${theme.slug}-${variant.slug}`,
+        name: locale === "ar" ? theme.nameAr : theme.name,
+        category: theme.category,
+        config: builderThemeConfig({
+          palette: parsePalette(variant.palette),
+          family: theme.slug,
+          colorTag: variant.colorTag,
+        }),
+        createdAt: theme.createdAt.toISOString(),
+        // All variants share one Theme row's usage count; crediting it to the
+        // representative keeps the family's "popular" sort from multiplying it.
+        eventCount: variant.id === defaultVariant.id ? theme.eventCount : 0,
+        builder,
+        // The closed envelope is what a guest sees first, so it is what the card
+        // should show; the other two only stand in for a design that has not
+        // uploaded one yet.
+        thumbnailUrl:
+          builder?.assets.envelopeClosed ?? builder?.assets.background ?? builder?.assets.card,
+      };
+    });
   });
 
   return (
@@ -93,7 +110,7 @@ export default async function ThemesGalleryPage({ params }: PageProps<"/[locale]
         <p className="mt-2 text-fg-muted">{dict.themesGallery.subheading}</p>
       </div>
 
-      <ThemeGalleryGrid themes={items} dict={dict} />
+      <ThemeGalleryGrid themes={items} dict={dict} locale={locale} />
     </div>
   );
 }

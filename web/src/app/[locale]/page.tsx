@@ -6,6 +6,7 @@ import { listPricingRates } from "@/lib/orders/service";
 import { InvitationTier } from "@/generated/prisma/enums";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { EnvelopeHero } from "@/components/home/envelope-hero";
+import { ScanIcon } from "@/components/icons/scan-icon";
 
 /**
  * The landing page.
@@ -38,6 +39,15 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     { n: "01", title: h.step1Title, body: h.step1Body },
     { n: "02", title: h.step2Title, body: h.step2Body },
     { n: "03", title: h.step3Title, body: h.step3Body },
+  ];
+
+  // The three steps above end when the links go out; this is the fourth thing
+  // that happens, on the night itself, and it is the part nobody can picture
+  // from a screenshot — so it gets its own explanation rather than a bullet.
+  const doorSteps = [
+    { title: h.door1Title, body: h.door1Body },
+    { title: h.door2Title, body: h.door2Body },
+    { title: h.door3Title, body: h.door3Body },
   ];
 
   const faqs = [
@@ -109,6 +119,44 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               <p className="text-sm leading-relaxed text-fg-muted">{step.body}</p>
             </div>
           ))}
+        </div>
+
+        {/* ── AT THE DOOR ──────────────────────────────────────────────── */}
+        <div className="mt-6 rounded-3xl border border-border bg-surface p-7 sm:p-9">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent-soft/25 text-accent">
+              <ScanIcon className="h-6 w-6" />
+            </span>
+            <div>
+              <h3 className="font-display text-2xl leading-snug text-fg">{h.doorTitle}</h3>
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fg-muted">{h.doorSubtitle}</p>
+            </div>
+          </div>
+
+          <ol className="mt-8 grid gap-4 md:grid-cols-3">
+            {doorSteps.map((step, index) => (
+              <li key={step.title} className="flex gap-3 rounded-2xl border border-border bg-bg p-5">
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-accent-fg">
+                  {nf.format(index + 1)}
+                </span>
+                <div>
+                  <h4 className="text-sm font-bold text-fg">{step.title}</h4>
+                  <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">{step.body}</p>
+                </div>
+              </li>
+            ))}
+          </ol>
+
+          <div className="mt-6 flex flex-col gap-4 border-t border-border pt-6 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-2xl text-sm leading-relaxed text-fg-muted">{h.doorNote}</p>
+            <Link
+              href={`/${locale}/gate-access`}
+              className="inline-flex shrink-0 items-center gap-2 text-sm font-bold text-accent underline-offset-4 hover:underline"
+            >
+              <ScanIcon className="h-4 w-4" />
+              {h.doorLink} ←
+            </Link>
+          </div>
         </div>
       </Band>
 

@@ -14,6 +14,7 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
   const site = [
     { href: `/${locale}/themes`, label: dict.nav.themes },
     { href: `/${locale}/plans`, label: dict.nav.plans },
+    { href: `/${locale}/gate-access`, label: dict.nav.scan },
   ];
   const account = [
     { href: `/${locale}/login`, label: dict.nav.login },

@@ -9,16 +9,21 @@ import type { SessionUser } from "@/lib/auth/session";
 import { logoutAction } from "@/lib/auth/actions";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { ScanIcon } from "@/components/icons/scan-icon";
 
 /**
- * The site header: the wordmark and a menu button at the start, and the two
- * actions that matter at the end — sign in (only when signed out) and the one
- * primary call to action.
+ * The site header: the wordmark and a menu button at the start, and at the end
+ * the three things someone actually arrives here to do — open the door
+ * scanner, sign in (only when signed out), and start a design.
  *
- * Everything else moved into a slide-in panel rather than being dropped. The
- * old header carried the scanner, a role-dependent shortcut and the whole
- * top-level nav as icons, which is a lot of decisions to put in a 64px strip;
- * the panel holds all of it, still one tap away, and nothing was lost.
+ * The scanner sits in the strip rather than in the panel because it is the one
+ * link used under pressure: a door team standing at the entrance with a queue
+ * behind them should not have to find it inside a menu. It keeps its label on
+ * a wide screen and collapses to the icon on a phone, where the panel still
+ * carries the full wording.
+ *
+ * Everything else lives in the slide-in panel, including the language switch —
+ * it was a permanent word in the strip for something most visitors never touch.
  */
 export function SiteHeader({
   locale,
@@ -72,7 +77,9 @@ export function SiteHeader({
   ];
 
   // Kept from the old header — these were icon buttons in the top strip and
-  // would otherwise have disappeared with it.
+  // would otherwise have disappeared with it. The scanner is repeated here on
+  // purpose: in the strip it is icon-only below `sm`, and this is where a
+  // first-time door team reads what that icon means.
   const accountLinks = [
     ...(user?.role === "CUSTOMER" ? [{ href: `/${locale}/events`, label: n.myEvents }] : []),
     ...(user?.role === "ADMIN" ? [{ href: `/${locale}/admin`, label: n.admin }] : []),
@@ -83,7 +90,7 @@ export function SiteHeader({
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-bg/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-8">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:gap-3 sm:px-8">
           <div className="flex items-center gap-2">
             <Link href={`/${locale}`} className="font-display text-xl text-fg">
               {dict.brand.name}
@@ -103,22 +110,27 @@ export function SiteHeader({
 
           <div className="flex items-center gap-2">
             <Link
-              href={swappedPath}
-              className="hidden h-9 items-center rounded-full px-3 text-sm font-bold text-fg-muted transition-colors hover:text-fg sm:inline-flex"
+              href={`/${locale}/gate-access`}
+              title={n.scanFull}
+              aria-label={n.scanFull}
+              className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-accent-soft/60 bg-accent-soft/15 px-2.5 text-sm font-bold text-accent transition-colors hover:border-accent hover:bg-accent-soft/30 sm:px-3.5"
             >
-              {n.language}
+              <ScanIcon className="h-[18px] w-[18px]" />
+              <span className="hidden sm:inline">{n.scan}</span>
             </Link>
             {!user && (
               <Link
                 href={`/${locale}/login`}
-                className="inline-flex h-9 items-center rounded-full px-3 text-sm font-bold text-fg transition-colors hover:text-accent"
+                aria-label={n.login}
+                className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full px-2 text-sm font-bold text-fg transition-colors hover:text-accent sm:px-3"
               >
-                {n.login}
+                <span className="sm:hidden">{n.loginShort}</span>
+                <span className="hidden sm:inline">{n.login}</span>
               </Link>
             )}
             <Link
               href={`/${locale}/plans`}
-              className="inline-flex h-10 items-center rounded-full bg-fg px-5 text-sm font-bold text-bg transition-opacity hover:opacity-90"
+              className="inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-fg px-4 text-sm font-bold text-bg transition-opacity hover:opacity-90 sm:px-5"
             >
               {n.designYours}
             </Link>
@@ -192,25 +204,27 @@ export function SiteHeader({
 
             <ThemeToggle dict={dict} />
 
-            <Link
-              href={swappedPath}
-              onClick={() => setOpen(false)}
-              className="flex h-10 items-center justify-center rounded-full border border-border text-sm font-bold text-fg-muted transition-colors hover:text-fg sm:hidden"
-            >
-              {n.language}
-            </Link>
+            <div className="mt-auto flex flex-col gap-3 pt-2">
+              <Link
+                href={swappedPath}
+                onClick={() => setOpen(false)}
+                className="flex h-11 items-center justify-center rounded-full border border-border text-sm font-bold text-fg-muted transition-colors hover:text-fg"
+              >
+                {n.language}
+              </Link>
 
-            {user && (
-              <form action={logoutAction} className="mt-auto">
-                <input type="hidden" name="locale" value={locale} />
-                <button
-                  type="submit"
-                  className="h-11 w-full rounded-full border border-danger/30 text-sm font-bold text-danger transition-colors hover:bg-danger/10"
-                >
-                  {n.logout}
-                </button>
-              </form>
-            )}
+              {user && (
+                <form action={logoutAction}>
+                  <input type="hidden" name="locale" value={locale} />
+                  <button
+                    type="submit"
+                    className="h-11 w-full rounded-full border border-danger/30 text-sm font-bold text-danger transition-colors hover:bg-danger/10"
+                  >
+                    {n.logout}
+                  </button>
+                </form>
+              )}
+            </div>
           </div>
         </div>
       )}

@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { OTP_MAX_LENGTH, isSubmittableOtp } from "@/lib/otp/format";
 import type { Locale } from "@/lib/i18n/locales";
 import { MIN_PASSWORD_LENGTH } from "@/lib/security/password-rules";
 import {
@@ -179,7 +180,7 @@ export function AdminLoginForm({ locale, dict }: { locale: Locale; dict: Diction
               type="text"
               inputMode="numeric"
               dir="ltr"
-              maxLength={6}
+              maxLength={OTP_MAX_LENGTH}
               autoComplete="one-time-code"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
@@ -192,7 +193,7 @@ export function AdminLoginForm({ locale, dict }: { locale: Locale; dict: Diction
             type="button"
             disabled={
               isPending ||
-              code.length !== 6 ||
+              !isSubmittableOtp(code) ||
               (needsPassword && newPassword.length < MIN_PASSWORD_LENGTH)
             }
             onClick={submitCode}

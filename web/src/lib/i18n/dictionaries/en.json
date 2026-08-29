@@ -66,7 +66,7 @@
     "namePlaceholder": "Enter your name",
     "sendCode": "Send code",
     "otpTitle": "Enter verification code",
-    "otpSubtitle": "We sent a 6-digit code to",
+    "otpSubtitle": "We sent a verification code to",
     "otpLabel": "Verification code",
     "verify": "Verify & continue",
     "resendCode": "Resend code",

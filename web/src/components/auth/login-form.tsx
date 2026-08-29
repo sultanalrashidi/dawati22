@@ -3,6 +3,7 @@
 import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { OTP_MAX_LENGTH, isSubmittableOtp } from "@/lib/otp/format";
 import type { Locale } from "@/lib/i18n/locales";
 import {
   requestLoginOtpAction,
@@ -149,7 +150,7 @@ export function LoginForm({
               type="text"
               inputMode="numeric"
               dir="ltr"
-              maxLength={6}
+              maxLength={OTP_MAX_LENGTH}
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
               className="h-11 rounded-lg border border-border bg-bg px-3 text-center text-lg tracking-[0.5em] text-fg outline-none focus:border-accent"
@@ -159,7 +160,7 @@ export function LoginForm({
           {error && <p className="text-sm text-danger">{error}</p>}
           <button
             type="button"
-            disabled={isPending || code.length !== 6}
+            disabled={isPending || !isSubmittableOtp(code)}
             onClick={verifyCode}
             className="h-11 rounded-full bg-accent text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong disabled:opacity-50"
           >

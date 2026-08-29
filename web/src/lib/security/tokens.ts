@@ -1,4 +1,5 @@
 import { randomBytes, randomInt, createHash } from "node:crypto";
+import { OTP_GENERATED_LENGTH } from "@/lib/otp/format";
 
 /**
  * High-entropy, non-sequential, unguessable token for invitation links / QR
@@ -13,9 +14,13 @@ export function sha256Hex(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
-/** 6-digit numeric OTP, generated with a CSPRNG (not Math.random). */
+/**
+ * Numeric OTP from a CSPRNG (not Math.random), used only when this codebase
+ * owns the code — a provider that generates its own never sees this.
+ */
 export function generateOtpCode(): string {
-  return randomInt(0, 1_000_000).toString().padStart(6, "0");
+  const max = 10 ** OTP_GENERATED_LENGTH;
+  return randomInt(0, max).toString().padStart(OTP_GENERATED_LENGTH, "0");
 }
 
 /** Masks all but the last 3 digits of a phone number, for safe logging. */

@@ -81,7 +81,7 @@ export default async function NewEventPage({
             replaces all of it with "not yet" rather than letting someone fill
             in a form the product cannot deliver on. */}
         <EventTypeGate dict={dict}>
-          <EventFields dict={dict} themeOptions={themeOptions} />
+          <EventFields locale={locale} dict={dict} themeOptions={themeOptions} />
 
           <ConfirmSubmit
             label={f.confirmAccuracyLabel}

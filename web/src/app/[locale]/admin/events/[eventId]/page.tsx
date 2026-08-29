@@ -106,7 +106,7 @@ export default async function AdminEventEditPage({
             customer's create form. Support must be able to open and correct an
             event whatever its type says, not be locked out by it. */}
         <EventTypeGate dict={dict} defaultType={defaults.type} enabled={false}>
-          <EventFields dict={dict} themeOptions={themeOptions} defaults={defaults} />
+          <EventFields locale={locale} dict={dict} themeOptions={themeOptions} defaults={defaults} />
         </EventTypeGate>
       </EventEditForm>
     </div>

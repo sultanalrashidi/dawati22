@@ -1,4 +1,5 @@
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { Locale } from "@/lib/i18n/locales";
 import { CouplesFields, type CoupleValues } from "@/components/events/couples-fields";
 import { ThemePicker, type ThemeOption } from "@/components/events/theme-picker";
 
@@ -41,10 +42,12 @@ export interface EventFieldDefaults {
 }
 
 export function EventFields({
+  locale,
   dict,
   themeOptions,
   defaults,
 }: {
+  locale: Locale;
   dict: Dictionary;
   themeOptions: ThemeOption[];
   /** Absent on the create form, where the sample texts are the starting point. */
@@ -196,7 +199,8 @@ export function EventFields({
 
       <div className="flex flex-col gap-2 text-sm">
         <span className="text-fg-muted">{f.themeLabel}</span>
-        <ThemePicker dict={dict} options={themeOptions} defaultKey={defaults?.themeKey} />
+        <p className="-mt-1 text-xs text-fg-muted">{f.themeHint}</p>
+        <ThemePicker locale={locale} dict={dict} options={themeOptions} defaultKey={defaults?.themeKey} />
       </div>
 
       <div className="flex flex-col gap-2 text-sm">

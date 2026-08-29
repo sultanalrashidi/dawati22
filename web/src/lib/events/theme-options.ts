@@ -7,6 +7,7 @@ import { builderThemeConfig, loadBuilderThemesForGallery } from "@/lib/themes/bu
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ThemeOption } from "@/components/events/theme-picker";
 import type { Locale } from "@/lib/i18n/locales";
+import { legacyThemeThumbnail } from "@/lib/themes/thumbnail";
 
 /** The columns an option needs, whichever query produced the row. */
 const THEME_SELECT = {
@@ -17,7 +18,7 @@ const THEME_SELECT = {
   category: true,
   config: true,
   variants: {
-    select: { id: true, nameAr: true, name: true, palette: true },
+    select: { id: true, nameAr: true, name: true, colorTag: true, palette: true },
     orderBy: { sortOrder: "asc" },
   },
 } as const;
@@ -29,7 +30,7 @@ type ThemeRow = {
   nameAr: string;
   category: string;
   config: unknown;
-  variants: { id: string; nameAr: string; name: string; palette: unknown }[];
+  variants: { id: string; nameAr: string; name: string; colorTag: string | null; palette: unknown }[];
 };
 
 /**
@@ -71,6 +72,7 @@ export async function buildThemeOptions(
   return rows.flatMap((theme): ThemeOption[] => {
     const name = locale === "ar" ? theme.nameAr : theme.name;
     if (theme.engine !== ThemeEngine.BUILDER) {
+      const config = theme.config as unknown as ThemeConfig;
       return [
         {
           key: theme.id,
@@ -78,22 +80,39 @@ export async function buildThemeOptions(
           variantId: null,
           name,
           category: theme.category,
-          config: theme.config as unknown as ThemeConfig,
+          config,
+          // Each colour of a hand-coded design is its own Theme row, so the
+          // grouping key is the shared `family` the gallery already groups by.
+          familyKey: config.family ?? theme.id,
+          colorTag: config.colorTag ?? undefined,
+          thumbnailUrl: legacyThemeThumbnail(config),
         },
       ];
     }
-    return theme.variants.map((variant) => ({
-      key: `${theme.id}:${variant.id}`,
-      themeId: theme.id,
-      variantId: variant.id,
-      name,
-      // Only worth showing when the design actually offers a choice.
-      variantName:
-        theme.variants.length > 1 ? (locale === "ar" ? variant.nameAr : variant.name) : undefined,
-      category: theme.category,
-      config: builderThemeConfig({ palette: parsePalette(variant.palette) }),
-      builder: builderArt.get(theme.id)?.get(variant.id),
-    }));
+    const art = builderArt.get(theme.id);
+    return theme.variants.map((variant) => {
+      const builder = art?.get(variant.id);
+      return {
+        key: `${theme.id}:${variant.id}`,
+        themeId: theme.id,
+        variantId: variant.id,
+        name,
+        // Only worth showing when the design actually offers a choice.
+        variantName:
+          theme.variants.length > 1 ? (locale === "ar" ? variant.nameAr : variant.name) : undefined,
+        category: theme.category,
+        config: builderThemeConfig({ palette: parsePalette(variant.palette) }),
+        // A builder design's colours are rows of one theme, so the theme IS
+        // the family.
+        familyKey: theme.id,
+        colorTag: variant.colorTag ?? undefined,
+        // The closed envelope is what the customer sees first on the guest
+        // page, so it is what the tile should show; the other two only stand
+        // in for a design that has not uploaded one yet.
+        thumbnailUrl:
+          builder?.assets.envelopeClosed ?? builder?.assets.background ?? builder?.assets.card,
+      };
+    });
   });
 }
 

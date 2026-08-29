@@ -8,6 +8,13 @@ import { OtpPurpose } from "@/generated/prisma/client";
 import { isTestBypassPhone, isTestPhoneBypassEnabled } from "@/lib/settings/service";
 
 const CODE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+/**
+ * Stored in `codeHash` when the PROVIDER generated the code, so this codebase
+ * holds no copy of it. Deliberately not 64 hex characters: `sha256Hex` can
+ * never produce it, so a local comparison against it can never accidentally
+ * pass — if some future edit forgets to branch, it fails closed.
+ */
+const PROVIDER_OWNED_CODE = "provider-owned";
 const MAX_ATTEMPTS = 5;
 const SEND_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_SENDS_PER_WINDOW = 3;
@@ -58,16 +65,23 @@ export async function requestOtp(
     throw new OtpRateLimitError(Math.max(1, Math.ceil(retryAfterMs / 1000)));
   }
 
+  const adapter = await getAdapter(phone);
   const code = generateOtpCode();
-  const codeHash = sha256Hex(code);
   const expiresAt = new Date(Date.now() + CODE_TTL_MS);
 
+  // The row is written either way: it is what limits sending, expires the
+  // attempt and counts wrong guesses, none of which the provider does for us.
   await prisma.otpCode.create({
-    data: { phone, purpose, codeHash, expiresAt, maxAttempts: MAX_ATTEMPTS },
+    data: {
+      phone,
+      purpose,
+      codeHash: adapter.ownsCode ? PROVIDER_OWNED_CODE : sha256Hex(code),
+      expiresAt,
+      maxAttempts: MAX_ATTEMPTS,
+    },
   });
 
-  const result = await (await getAdapter(phone)).sendOtp(phone, code);
-  return result;
+  return adapter.sendOtp(phone, code);
 }
 
 /**
@@ -87,7 +101,15 @@ export async function peekOtp(
 
   if (!record || record.attempts >= record.maxAttempts) return { valid: false };
 
-  const matches = record.codeHash === sha256Hex(submittedCode);
+  // Who decides depends on who made the code. Read from the ROW, not from the
+  // adapter alone: a code sent by the mock and checked after the test-number
+  // switch was turned off must not be handed to a provider that never sent it.
+  const adapter = await getAdapter(phone);
+  const matches =
+    record.codeHash === PROVIDER_OWNED_CODE
+      ? Boolean(adapter.ownsCode && (await adapter.verifyOtp?.(phone, submittedCode.trim())))
+      : record.codeHash === sha256Hex(submittedCode);
+
   if (!matches) {
     await prisma.otpCode.update({ where: { id: record.id }, data: { attempts: { increment: 1 } } });
     return { valid: false };

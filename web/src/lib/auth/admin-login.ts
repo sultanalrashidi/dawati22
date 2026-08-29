@@ -158,18 +158,19 @@ export async function completeAdminLogin(
   if (!admin) throw new AdminLoginError("invalid");
   assertNotLocked(admin);
 
+  // A password-less account is being recovered, so one must be set here. The
+  // check is repeated on the server because the form's own rule is only a hint,
+  // and it runs BEFORE the code is checked: with real SMS the provider spends
+  // the code on the first check, so refusing afterwards would burn a code the
+  // customer typed correctly and make them wait for another.
+  if (!admin.passwordHash && (!newPassword || !isAcceptablePassword(newPassword))) {
+    throw new AdminLoginError("password_required");
+  }
+
   const { valid, otpId } = await peekOtp(phone, OtpPurpose.LOGIN, code.trim());
   if (!valid || !otpId) {
     await countFailure(admin);
     throw new AdminLoginError("invalid_code");
-  }
-
-  // A password-less account is being recovered, so one must be set here. The
-  // check is repeated on the server because the form's own rule is only a hint.
-  if (!admin.passwordHash) {
-    if (!newPassword || !isAcceptablePassword(newPassword)) {
-      throw new AdminLoginError("password_required");
-    }
   }
 
   await consumeOtp(otpId);

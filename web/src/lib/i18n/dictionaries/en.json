@@ -604,6 +604,7 @@
     "panelTitle": "Custom design request",
     "panelIntro": "Our team designs an invitation from scratch to your taste. Pick a ready design now so you can finish creating your event — we put your custom design on the same event as soon as it is ready, and no guest's link changes.",
     "panelPayLater": "You pay nothing now. We design first, and if you like it you pay {price} SAR — the price includes {revisions} rounds of changes.",
+    "slaNote": "Delivered within 24 hours of your request.",
     "panelWaitNote": "Best to hold off sending invitations to your guests until your custom design is ready.",
     "colorsLabel": "Colours you lean towards (optional)",
     "styleLabel": "Style (optional)",

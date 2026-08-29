@@ -60,6 +60,10 @@ export function DesignRequestCard({
   const revisionsLeft = CUSTOM_DESIGN_REVISIONS_INCLUDED - request.revisionCount;
   const canPreview = Boolean(request.deliveredThemeId);
   const isReady = request.status === "READY";
+  const isWaitingOnUs =
+    request.status === "NEW" ||
+    request.status === "IN_PROGRESS" ||
+    request.status === "CHANGES_REQUESTED";
   const isAwaitingPayment = request.status === "APPROVED";
 
   return (
@@ -73,6 +77,10 @@ export function DesignRequestCard({
 
       <p className="mt-3 text-sm font-bold text-accent">{title}</p>
       <p className="mt-1 text-xs leading-relaxed text-fg-muted">{body}</p>
+      {/* Only while the ball is in our court. Repeating the turnaround next to
+          "your design is live" would read as a promise about something that has
+          already happened. */}
+      {isWaitingOnUs && <p className="mt-2 text-xs font-medium text-fg">{d.slaNote}</p>}
 
       <div className="mt-4 flex items-baseline justify-between border-t border-accent-soft/50 pt-3 text-xs">
         <span className="text-fg-muted">{d.priceLabel}</span>

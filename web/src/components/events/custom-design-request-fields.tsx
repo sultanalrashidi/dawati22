@@ -55,6 +55,7 @@ function DesignBriefFields({
             .replace("{price}", nf.format(CUSTOM_DESIGN_PRICE_SAR))
             .replace("{revisions}", nf.format(CUSTOM_DESIGN_REVISIONS_INCLUDED))}
         </p>
+        <p className="text-xs font-medium text-fg">{d.slaNote}</p>
       </div>
 
       <div className="flex flex-col gap-2">

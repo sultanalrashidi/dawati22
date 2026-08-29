@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
+import jsQR from "jsqr";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { CheckInOutcome } from "@/lib/checkin/service";
 
@@ -30,6 +31,25 @@ declare global {
   }
 }
 
+/** Why the camera isn't running — each one gets its own sentence, not one catch-all. */
+type CameraState = "starting" | "scanning" | "denied" | "noDevice" | "insecure" | "error";
+
+/**
+ * The door scanner.
+ *
+ * Two things about this are easy to get wrong and were both wrong before:
+ *
+ * 1. The <video> element is ALWAYS mounted, just hidden until the stream is
+ *    attached. It used to be rendered only once `cameraAvailable` flipped true
+ *    — which happens after the stream arrives — so `videoRef.current` was null
+ *    at the exact moment the stream needed attaching. The camera light came on
+ *    and the preview stayed blank forever.
+ *
+ * 2. `BarcodeDetector` does not exist in Safari or Firefox, i.e. on every
+ *    iPhone. It is used when present because it is native and fast, and jsQR
+ *    decodes the same frames everywhere else. A door scanner that only works
+ *    on Android is not a door scanner.
+ */
 export function GateScanner({
   eventId,
   dict,
@@ -42,82 +62,164 @@ export function GateScanner({
   const [manualToken, setManualToken] = useState("");
   const [outcome, setOutcome] = useState<CheckInOutcome | null>(null);
   const [isPending, startTransition] = useTransition();
-  const [cameraAvailable, setCameraAvailable] = useState(false);
+  const [camera, setCamera] = useState<CameraState>("starting");
+  const [attempt, setAttempt] = useState(0);
+
   const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  // The detection loop lives outside React, so it reads "am I already
+  // submitting?" through a ref — a captured `isPending` would be frozen at
+  // whatever it was on the render that started the loop.
+  const busyRef = useRef(false);
   const g = dict.gate;
 
+  const stopStream = useCallback(() => {
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+  }, []);
+
+  const submit = useCallback(
+    (token: string) => {
+      if (busyRef.current) return;
+      busyRef.current = true;
+      stopStream();
+      startTransition(async () => {
+        const result = await scanAction(eventId, token);
+        setOutcome(result);
+        busyRef.current = false;
+      });
+    },
+    [eventId, scanAction, stopStream],
+  );
+
   useEffect(() => {
+    if (outcome) return;
+
     let cancelled = false;
-    let rafId: number;
+    let rafId = 0;
 
     async function start() {
-      if (typeof window === "undefined" || !window.BarcodeDetector || !navigator.mediaDevices) return;
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
-        if (cancelled) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play();
-        }
-        setCameraAvailable(true);
-
-        const detector = new window.BarcodeDetector({ formats: ["qr_code"] });
-        const tick = async () => {
-          if (cancelled || !videoRef.current) return;
-          try {
-            const codes = await detector.detect(videoRef.current);
-            if (codes[0]?.rawValue) {
-              handleScan(codes[0].rawValue);
-              return;
-            }
-          } catch {
-            // transient decode errors are expected between frames
-          }
-          rafId = requestAnimationFrame(tick);
-        };
-        rafId = requestAnimationFrame(tick);
-      } catch {
-        setCameraAvailable(false);
+      // getUserMedia only exists on a secure origin. Saying so beats "camera
+      // not available", which sends someone hunting for a hardware fault.
+      if (typeof window === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+        setCamera(window.isSecureContext === false ? "insecure" : "noDevice");
+        return;
       }
+
+      let stream: MediaStream;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+        });
+      } catch (err) {
+        if (cancelled) return;
+        const name = (err as DOMException)?.name;
+        setCamera(
+          name === "NotAllowedError" || name === "SecurityError"
+            ? "denied"
+            : name === "NotFoundError" || name === "OverconstrainedError"
+              ? "noDevice"
+              : "error",
+        );
+        return;
+      }
+
+      if (cancelled) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+
+      streamRef.current = stream;
+      const video = videoRef.current;
+      if (!video) {
+        stream.getTracks().forEach((track) => track.stop());
+        setCamera("error");
+        return;
+      }
+
+      video.srcObject = stream;
+      try {
+        await video.play();
+      } catch {
+        // Some browsers reject play() until the element is visible; the frame
+        // loop below still works once it starts producing frames.
+      }
+      if (cancelled) return;
+      setCamera("scanning");
+
+      const native = window.BarcodeDetector
+        ? new window.BarcodeDetector({ formats: ["qr_code"] })
+        : null;
+
+      const readFrame = async (): Promise<string | null> => {
+        if (!video.videoWidth || !video.videoHeight) return null;
+
+        if (native) {
+          const codes = await native.detect(video);
+          return codes[0]?.rawValue ?? null;
+        }
+
+        // Safari / Firefox path: pull the frame into a canvas and decode it.
+        const canvas = canvasRef.current;
+        const ctx = canvas?.getContext("2d", { willReadFrequently: true });
+        if (!canvas || !ctx) return null;
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        return jsQR(frame.data, frame.width, frame.height, { inversionAttempts: "dontInvert" })?.data ?? null;
+      };
+
+      const tick = async () => {
+        if (cancelled || busyRef.current) return;
+        try {
+          const value = await readFrame();
+          if (value) {
+            submit(value);
+            return;
+          }
+        } catch {
+          // Transient decode errors between frames are normal.
+        }
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
     }
 
-    start();
+    void start();
+
     return () => {
       cancelled = true;
       if (rafId) cancelAnimationFrame(rafId);
-      streamRef.current?.getTracks().forEach((t) => t.stop());
+      stopStream();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [attempt, outcome, stopStream, submit]);
 
-  function handleScan(token: string) {
-    if (isPending) return;
-    startTransition(async () => {
-      const result = await scanAction(eventId, token);
-      setOutcome(result);
-      streamRef.current?.getTracks().forEach((t) => t.stop());
-      setCameraAvailable(false);
-    });
+  function retry() {
+    setCamera("starting");
+    setAttempt((n) => n + 1);
   }
 
   function reset() {
     setOutcome(null);
     setManualToken("");
+    setCamera("starting");
+    setAttempt((n) => n + 1);
   }
 
   if (outcome) {
     const style = RESULT_STYLE[outcome.result] ?? { bg: "bg-danger/10", fg: "text-danger" };
     return (
       <div className={`mt-6 flex flex-col items-center gap-3 rounded-2xl p-8 text-center ${style.bg}`}>
-        <p className={`text-xl font-semibold ${style.fg}`}>{g[RESULT_LABEL_KEY[outcome.result] as keyof typeof g]}</p>
+        <p className={`text-xl font-semibold ${style.fg}`}>
+          {g[RESULT_LABEL_KEY[outcome.result] as keyof typeof g]}
+        </p>
         {outcome.guestName && <p className="text-fg">{outcome.guestName}</p>}
         {typeof outcome.seatsRemaining === "number" && (
-          <p className="text-sm text-fg-muted">{g.seatsRemaining.replace("{count}", String(outcome.seatsRemaining))}</p>
+          <p className="text-sm text-fg-muted">
+            {g.seatsRemaining.replace("{count}", String(outcome.seatsRemaining))}
+          </p>
         )}
         <button
           type="button"
@@ -130,21 +232,51 @@ export function GateScanner({
     );
   }
 
+  const message: Partial<Record<CameraState, string>> = {
+    starting: g.cameraStarting,
+    denied: g.cameraDenied,
+    noDevice: g.cameraNoDevice,
+    insecure: g.cameraInsecure,
+    error: g.cameraError,
+  };
+  const canRetry = camera === "denied" || camera === "error";
+
   return (
     <div className="mt-6 flex flex-col gap-4">
-      {cameraAvailable ? (
-        <div className="overflow-hidden rounded-2xl border border-border">
-          <video ref={videoRef} className="aspect-square w-full object-cover" muted playsInline />
-          <p className="p-2 text-center text-xs text-fg-muted">{g.scanPrompt}</p>
+      {/* Always mounted — the stream needs this element to exist the moment
+          getUserMedia resolves, not one render later. */}
+      <div
+        className={`overflow-hidden rounded-2xl border border-border ${
+          camera === "scanning" ? "" : "hidden"
+        }`}
+      >
+        <video ref={videoRef} className="aspect-square w-full object-cover" muted playsInline autoPlay />
+        <p className="p-2 text-center text-xs text-fg-muted">{g.scanPrompt}</p>
+      </div>
+      <canvas ref={canvasRef} className="hidden" />
+
+      {camera !== "scanning" && (
+        <div className="rounded-xl bg-surface-2 px-4 py-3">
+          <p className="text-sm text-fg-muted">{message[camera]}</p>
+          {camera === "starting" && (
+            <p className="mt-1 text-xs text-fg-muted">{g.cameraPermissionHint}</p>
+          )}
+          {canRetry && (
+            <button
+              type="button"
+              onClick={retry}
+              className="mt-3 h-9 rounded-full border border-accent px-4 text-xs font-medium text-accent transition-colors hover:bg-accent hover:text-accent-fg"
+            >
+              {g.cameraRetry}
+            </button>
+          )}
         </div>
-      ) : (
-        <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-fg-muted">{g.cameraNotAvailable}</p>
       )}
 
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (manualToken.trim()) handleScan(manualToken.trim());
+          if (manualToken.trim()) submit(manualToken.trim());
         }}
         className="flex flex-col gap-2"
       >

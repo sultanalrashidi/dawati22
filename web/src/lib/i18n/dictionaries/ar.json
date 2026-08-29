@@ -478,7 +478,15 @@
     "resultDeniedUnconfirmed": "لم يتم تأكيد الحضور بعد",
     "resultDeniedInvalid": "رمز غير صالح",
     "seatsRemaining": "المتبقي: {count}",
-    "seatsUsed": "تم دخول {used} من {allowed}"
+    "seatsUsed": "تم دخول {used} من {allowed}",
+    "cameraStarting": "جاري فتح الكاميرا…",
+    "cameraPermissionHint": "لو ظهر طلب إذن الكاميرا، اضغط «سماح».",
+    "cameraDenied": "ما سمحت بالوصول للكاميرا. افتح إعدادات المتصفح وفعّل الكاميرا لهذا الموقع، ثم أعد المحاولة.",
+    "cameraNoDevice": "ما لقينا كاميرا في هذا الجهاز — استخدم الإدخال اليدوي تحت.",
+    "cameraError": "تعذّر تشغيل الكاميرا. أعد المحاولة أو استخدم الإدخال اليدوي.",
+    "cameraRetry": "إعادة المحاولة",
+    "cameraStart": "افتح الكاميرا",
+    "cameraInsecure": "مسح الباركود يحتاج اتصالاً آمناً (https) — استخدم الإدخال اليدوي."
   },
   "gateAccess": {
     "title": "الدخول للمسح",

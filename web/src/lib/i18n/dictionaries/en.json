@@ -478,7 +478,15 @@
     "resultDeniedUnconfirmed": "RSVP not confirmed yet",
     "resultDeniedInvalid": "Invalid code",
     "seatsRemaining": "Remaining: {count}",
-    "seatsUsed": "{used} of {allowed} checked in"
+    "seatsUsed": "{used} of {allowed} checked in",
+    "cameraStarting": "Opening the camera…",
+    "cameraPermissionHint": "If your browser asks for camera permission, tap “Allow”.",
+    "cameraDenied": "Camera access was blocked. Enable the camera for this site in your browser settings, then try again.",
+    "cameraNoDevice": "No camera found on this device — use manual entry below.",
+    "cameraError": "The camera could not be started. Try again, or use manual entry.",
+    "cameraRetry": "Try again",
+    "cameraStart": "Open the camera",
+    "cameraInsecure": "Scanning needs a secure (https) connection — use manual entry."
   },
   "gateAccess": {
     "title": "Scan invitations",

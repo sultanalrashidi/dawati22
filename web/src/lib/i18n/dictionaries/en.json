@@ -59,6 +59,7 @@
   "auth": {
     "loginTitle": "Log in",
     "loginSubtitle": "Enter your phone number to continue",
+    "pendingOrderLead": "Once you sign in we take you straight to payment:",
     "phoneLabel": "Phone number",
     "phonePlaceholder": "05xxxxxxxx",
     "nameLabel": "Name",
@@ -531,7 +532,7 @@
     "title": "Scan invitations",
     "subtitle": "Enter the event's reference code and the PIN the event owner gave you",
     "referenceCodeLabel": "Reference code",
-    "referenceCodePlaceholder": "e.g. 7X4KQ2",
+    "referenceCodePlaceholder": "7X4KQ2",
     "pinLabel": "PIN",
     "pinPlaceholder": "••••",
     "submit": "Enter",

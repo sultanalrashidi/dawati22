@@ -257,8 +257,11 @@ function TierCard({
           </button>
         </form>
       ) : (
+        // Signed out, the same button still means "I want this one". The choice
+        // rides the login URL so the customer is taken to payment afterwards
+        // instead of being dropped back here to pick a second time.
         <Link
-          href={`/${locale}/login`}
+          href={`/${locale}/login?next=order&tier=${offer.tier}&count=${count}`}
           className={`mt-auto flex h-11 w-full items-center justify-center rounded-full text-sm font-medium transition-colors ${
             featured
               ? "bg-accent text-accent-fg hover:bg-accent-strong"

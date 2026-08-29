@@ -59,6 +59,7 @@
   "auth": {
     "loginTitle": "تسجيل الدخول",
     "loginSubtitle": "أدخل رقم جوالك للمتابعة",
+    "pendingOrderLead": "بعد تسجيل الدخول ننقلك للدفع مباشرة:",
     "phoneLabel": "رقم الجوال",
     "phonePlaceholder": "05xxxxxxxx",
     "nameLabel": "الاسم",
@@ -531,7 +532,7 @@
     "title": "الدخول للمسح",
     "subtitle": "أدخل الرقم المرجعي للمناسبة والرمز السري الذي أعطاك إياه صاحب المناسبة",
     "referenceCodeLabel": "الرقم المرجعي",
-    "referenceCodePlaceholder": "مثال: 7X4KQ2",
+    "referenceCodePlaceholder": "7X4KQ2",
     "pinLabel": "الرمز السري",
     "pinPlaceholder": "••••",
     "submit": "دخول",

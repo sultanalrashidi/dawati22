@@ -7,6 +7,18 @@ import { requestOtp, peekOtp, consumeOtp, OtpRateLimitError } from "@/lib/otp/se
 import { normalizeSaudiPhone } from "@/lib/security/phone";
 import { OtpPurpose, Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
+import { createPerInvitationOrder, OrderError } from "@/lib/orders/service";
+import { isValidInvitationCount, parseTier } from "@/lib/orders/pricing";
+
+/**
+ * A tier the visitor chose on the pricing page before they had an account.
+ *
+ * It arrives from the client, so it is worth nothing until it is checked: the
+ * tier must parse and the count must land on a legal stop. Neither carries a
+ * price — the rate is read from PricingRate when the order is written, exactly
+ * as it is for a customer who was already signed in.
+ */
+export type PendingOrder = { tier: string; count: number };
 
 export type OtpRequestResult =
   | { ok: true; devCode?: string; phone: string }
@@ -33,12 +45,51 @@ function roleHome(locale: string, role: Role): string {
   return `/${locale}/events`;
 }
 
-async function startSession(userId: string, role: Role, locale: string) {
+/**
+ * Turns a pre-login tier choice into a real order, and answers with where to
+ * send the customer. Returns null when there is nothing to resume or the
+ * choice does not survive validation, in which case sign-in ends where it
+ * always did.
+ */
+async function resumePendingOrder(
+  userId: string,
+  role: Role,
+  locale: string,
+  pending: PendingOrder,
+): Promise<string | null> {
+  if (role !== Role.CUSTOMER) return null;
+
+  const tier = parseTier(pending.tier);
+  const count = Number(pending.count);
+  if (!tier || !isValidInvitationCount(count)) return null;
+
+  try {
+    const order = await createPerInvitationOrder(userId, { tier, count });
+    return `/${locale}/checkout/${order.id}`;
+  } catch (err) {
+    // The account exists and the session is live either way; only the order
+    // failed, so send them back to pricing with the banner rather than losing
+    // the sign-in they just completed.
+    if (err instanceof OrderError) return `/${locale}/plans?error=1`;
+    throw err;
+  }
+}
+
+async function startSession(
+  userId: string,
+  role: Role,
+  locale: string,
+  pending?: PendingOrder | null,
+) {
   const hdrs = await headers();
   await createSession(userId, {
     userAgent: hdrs.get("user-agent") ?? undefined,
     ip: hdrs.get("x-forwarded-for") ?? undefined,
   });
+  if (pending) {
+    const checkout = await resumePendingOrder(userId, role, locale, pending);
+    if (checkout) return checkout;
+  }
   return roleHome(locale, role);
 }
 
@@ -50,7 +101,8 @@ export type OtpSubmitResult =
 export async function submitOtpCodeAction(
   rawPhone: string,
   code: string,
-  locale: string
+  locale: string,
+  pending?: PendingOrder | null
 ): Promise<OtpSubmitResult> {
   const phone = normalizeSaudiPhone(rawPhone);
   if (!phone) return { ok: false, error: "invalid_phone" };
@@ -70,7 +122,7 @@ export async function submitOtpCodeAction(
   if (!user.phoneVerifiedAt) {
     await prisma.user.update({ where: { id: user.id }, data: { phoneVerifiedAt: new Date() } });
   }
-  const redirectTo = await startSession(user.id, user.role, safeLocale);
+  const redirectTo = await startSession(user.id, user.role, safeLocale, pending);
   return { ok: true, needsName: false, redirectTo };
 }
 
@@ -82,7 +134,8 @@ export async function completeSignupAction(
   otpId: string,
   rawPhone: string,
   name: string,
-  locale: string
+  locale: string,
+  pending?: PendingOrder | null
 ): Promise<CompleteSignupResult> {
   const phone = normalizeSaudiPhone(rawPhone);
   const trimmedName = name.trim();
@@ -115,6 +168,6 @@ export async function completeSignupAction(
     },
   });
 
-  const redirectTo = await startSession(user.id, user.role, safeLocale);
+  const redirectTo = await startSession(user.id, user.role, safeLocale, pending);
   return { ok: true, redirectTo };
 }

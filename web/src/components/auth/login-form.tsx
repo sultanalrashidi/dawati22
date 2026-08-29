@@ -8,13 +8,27 @@ import {
   requestLoginOtpAction,
   submitOtpCodeAction,
   completeSignupAction,
+  type PendingOrder,
 } from "@/lib/auth/login-actions";
 
 type Step = "phone" | "otp" | "name";
 
 const RESEND_COOLDOWN_S = 30;
 
-export function LoginForm({ locale, dict }: { locale: Locale; dict: Dictionary }) {
+export function LoginForm({
+  locale,
+  dict,
+  pendingOrder = null,
+}: {
+  locale: Locale;
+  dict: Dictionary;
+  /**
+   * A tier the visitor chose on the pricing page before signing in. When it is
+   * here, sign-in ends at that order's checkout instead of the events list —
+   * otherwise they would land back on the pricing page and pick twice.
+   */
+  pendingOrder?: PendingOrder | null;
+}) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("phone");
   const [phone, setPhone] = useState("");
@@ -57,7 +71,7 @@ export function LoginForm({ locale, dict }: { locale: Locale; dict: Dictionary }
   function verifyCode() {
     setError(null);
     startTransition(async () => {
-      const result = await submitOtpCodeAction(phone, code, locale);
+      const result = await submitOtpCodeAction(phone, code, locale, pendingOrder);
       if (!result.ok) {
         const message =
           result.error === "invalid_code"
@@ -81,7 +95,7 @@ export function LoginForm({ locale, dict }: { locale: Locale; dict: Dictionary }
     setError(null);
     if (!otpId) return;
     startTransition(async () => {
-      const result = await completeSignupAction(otpId, phone, name, locale);
+      const result = await completeSignupAction(otpId, phone, name, locale, pendingOrder);
       if (!result.ok) {
         setError(result.error === "name_required" ? dict.common.requiredField : dict.auth.codeExpired);
         return;

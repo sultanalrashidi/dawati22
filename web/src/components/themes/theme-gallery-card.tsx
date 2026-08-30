@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 
@@ -55,7 +57,7 @@ export function ThemeGalleryCard({
         className="block w-full"
       >
         <span
-          className="block aspect-[3/2] w-full"
+          className="relative block aspect-[3/2] w-full overflow-hidden"
           style={{
             background: shown.thumbnailUrl
               ? undefined
@@ -63,12 +65,15 @@ export function ThemeGalleryCard({
           }}
         >
           {shown.thumbnailUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            // The source art is ~1200px wide and this card is a third of a
+            // 1024px page at most — `sizes` is what stops a phone downloading
+            // the full-size envelope for a thumbnail.
+            <Image
               src={shown.thumbnailUrl}
               alt=""
-              loading="lazy"
-              className="h-full w-full object-cover"
+              fill
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
+              className="object-cover"
             />
           )}
         </span>

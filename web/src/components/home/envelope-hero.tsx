@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
 
@@ -40,16 +41,32 @@ export function EnvelopeHero({ locale, dict }: { locale: Locale; dict: Dictionar
               frame cropped away most of the envelope and blew the seal up to
               fill the screen. `object-contain` over the theme's own background
               keeps the whole envelope visible and matches what a guest sees. */}
-          <div
-            className="flex aspect-[4/5] items-center justify-center bg-cover bg-center p-4"
-            style={{ backgroundImage: `url('/themes/${THEME}/background.jpg')` }}
-          >
+          <div className="relative flex aspect-[4/5] items-center justify-center p-4">
+            {/*
+              An <Image> rather than a CSS background: this box is 264px wide
+              and the source is a 941x1672 photograph, and a CSS background is
+              the one place the optimiser cannot reach — it was shipping 301 KB
+              to fill a thumbnail. `sizes` is the box's real width, so a phone
+              is served a phone-sized file.
+            */}
+            <Image
+              src={`/themes/${THEME}/background.jpg`}
+              alt=""
+              fill
+              sizes="288px"
+              className="object-cover"
+            />
             <div className="relative w-full" style={{ containerType: "inline-size" }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={`/themes/${THEME}/envelope-closed.webp`}
                 alt=""
-                className="block w-full rounded-lg object-contain shadow-[0_10px_26px_-10px_rgba(36,30,18,0.45)]"
+                width={1200}
+                height={727}
+                // The one image above the fold on the landing page, so it is
+                // fetched with the page rather than after it.
+                priority
+                sizes="256px"
+                className="block h-auto w-full rounded-lg object-contain shadow-[0_10px_26px_-10px_rgba(36,30,18,0.45)]"
               />
               {/* The monogram is printed live over the art on a real invitation
                   rather than baked into it — same here, at the coordinates the

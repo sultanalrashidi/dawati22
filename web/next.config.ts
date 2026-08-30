@@ -22,6 +22,16 @@ const nextConfig: NextConfig = {
       { source: "/sultannatlus", destination: `/${defaultLocale}/sultannatlus` },
     ];
   },
+  images: {
+    // AVIF first, WebP second. Theme art is photographic, which is exactly what
+    // AVIF is best at — the same envelope lands at roughly a third of its JPEG
+    // size — and a browser that cannot read it falls through to WebP.
+    formats: ["image/avif", "image/webp"],
+    // Artwork uploaded from the theme builder lives on Vercel Blob, so the
+    // optimizer has to be allowed to fetch it; without this every builder
+    // design's image throws instead of rendering.
+    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+  },
   // Inlined as a literal at build time (see lib/db/client.ts) so the Cloudflare
   // build can dead-code-eliminate the `pg` driver branch entirely instead of
   // trying to bundle it.

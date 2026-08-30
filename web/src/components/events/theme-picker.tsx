@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useMemo, useState } from "react";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
@@ -262,7 +264,7 @@ export function ThemePicker({
                   className="relative block w-full text-start"
                 >
                   <span
-                    className="block aspect-[3/2] w-full"
+                    className="relative block aspect-[3/2] w-full overflow-hidden"
                     style={{
                       background: shown.thumbnailUrl
                         ? undefined
@@ -270,12 +272,14 @@ export function ThemePicker({
                     }}
                   >
                     {shown.thumbnailUrl && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      // Two columns on a phone, so each tile is about half a
+                      // narrow viewport — a fraction of the source art's width.
+                      <Image
                         src={shown.thumbnailUrl}
                         alt=""
-                        loading="lazy"
-                        className="h-full w-full object-cover"
+                        fill
+                        sizes="(max-width: 640px) 50vw, 220px"
+                        className="object-cover"
                       />
                     )}
                   </span>

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { CSSProperties, PointerEventHandler, ReactNode, Ref } from "react";
 import type { ScheduleItem } from "@/lib/events/types";
 import { slotLabelAr } from "@/lib/themes/builder/slots";
@@ -300,12 +301,40 @@ function LayerContent({
       const noQrCard = !hasQr && layer.slot === "card" ? assets.cardNoQr : undefined;
       const url = noQrCard ?? assets[layer.slot];
       if (!url) return <MissingAsset slot={layer.slot} />;
+      // In the editor the admin is judging the artwork itself, so it is served
+      // exactly as uploaded — untouched, unresized, un-re-encoded. A guest gets
+      // it cut to their own screen instead, which is the difference between a
+      // phone downloading a 200 KB photograph and a 25 KB one.
+      if (editing) {
+        return (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={url}
+            alt=""
+            draggable={false}
+            className="block h-full w-full select-none"
+            style={{ objectFit: layer.fit }}
+          />
+        );
+      }
       return (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <Image
           src={url}
           alt=""
           draggable={false}
+          // The box is sized by the layer, never by the file: its width is a
+          // percentage of the stage and its height is either a percentage too
+          // or follows the artwork's own proportions. So these two are only a
+          // shape to hold while the image is in flight — nothing lays out from
+          // them, and nothing here reads an intrinsic size.
+          width={1600}
+          height={1600}
+          // The layer's own share of the stage, and the stage is never wider
+          // than the screen — so this is an upper bound on every device, and
+          // an exact one on the phones that matter. An admin can upload art of
+          // any proportions, which is why it is expressed as the box's width
+          // rather than guessed from the file.
+          sizes={`${Math.min(100, Math.ceil(transform.width))}vw`}
           className="block h-full w-full select-none"
           style={{ objectFit: layer.fit }}
         />

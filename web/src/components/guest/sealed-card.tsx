@@ -5,6 +5,7 @@
  * ever renders when a theme actually opts in via `card.style`; every other
  * theme keeps using its original cover UI in invitation-view.tsx untouched.
  */
+import Image from "next/image";
 
 /**
  * A pressed wax-seal medallion carrying the couple's initials. The wax photo
@@ -24,8 +25,16 @@ function WaxSeal({
 }) {
   return (
     <div className="relative h-16 w-16 sm:h-20 sm:w-20" style={{ filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.45))" }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/themes/${assetFolder}/seal.png`} alt="" className="block h-full w-full object-contain" />
+      {/* The wax photo is a 300px PNG shown in a 64px medallion — the single
+          most over-sized image on the guest page relative to its box. `fill`
+          reads the size off this wrapper, which already has one. */}
+      <Image
+        src={`/themes/${assetFolder}/seal.png`}
+        alt=""
+        fill
+        sizes="(max-width: 640px) 64px, 80px"
+        className="object-contain"
+      />
       <span
         className="absolute left-1/2 top-[47%] -translate-x-1/2 -translate-y-1/2 text-lg font-medium sm:text-xl"
         style={{
@@ -107,8 +116,18 @@ function BridalFrameCard({
         filter: isOpening ? "brightness(1.15)" : "brightness(1)",
       }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/themes/${assetFolder}/envelope-closed.webp`} alt="" className="block h-full w-full object-cover" />
+      {/* The card the guest actually taps, and the page's largest paint —
+          `priority` so it arrives with the page instead of after it. The
+          wrapper's `aspectRatio` already fixes the box, so `fill` changes
+          nothing about the geometry: same `object-cover`, same crop. */}
+      <Image
+        src={`/themes/${assetFolder}/envelope-closed.webp`}
+        alt=""
+        fill
+        sizes="(max-width: 640px) 288px, 384px"
+        priority
+        className="object-cover"
+      />
       <BridalFrameMonogram groomInitial={groomInitial} brideInitial={brideInitial} position={sealPosition} fontSize={sealFontSize} />
       <div
         aria-hidden="true"
@@ -144,8 +163,17 @@ function RoseEmbossCard({
         filter: isOpening ? "brightness(1.15)" : "brightness(1)",
       }}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/themes/${assetFolder}/envelope-closed.jpg`} alt="" className="block h-full w-full object-cover" />
+      {/* See BridalFrameCard: same box, same crop, same reason for priority.
+          This family's art is the heaviest in the catalogue — the rose
+          envelope alone is 431 KB as a JPEG. */}
+      <Image
+        src={`/themes/${assetFolder}/envelope-closed.jpg`}
+        alt=""
+        fill
+        sizes="(max-width: 640px) 288px, 384px"
+        priority
+        className="object-cover"
+      />
       <div className="absolute left-1/2 top-[68%] -translate-x-1/2 -translate-y-1/2">
         <WaxSeal groomInitial={groomInitial} brideInitial={brideInitial} assetFolder={assetFolder} />
       </div>

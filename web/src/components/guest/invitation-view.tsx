@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   useEffect,
   useMemo,
@@ -1127,8 +1128,23 @@ function InvitationScreens({
             <Scene showHint>
               {isBridalFrame ? (
                 <div className="relative w-[320px]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/themes/${roseAssetFolder}/envelope-open.webp`} alt="" className="block w-full" />
+                  {/* The box is a fixed 320px and the height follows the file's
+                      own proportions, so `sizes` can name the width exactly.
+                      Only the RATIO decides the height, and rescaling cannot
+                      change a ratio — so a phone-sized file puts the guest's
+                      name in precisely the place the full one did. The numbers
+                      are the base ivory-bloom art: a variant with different
+                      proportions still lays out from its own file, and these
+                      only reserve the box while it loads, which the bare <img>
+                      did not do at all. */}
+                  <Image
+                    src={`/themes/${roseAssetFolder}/envelope-open.webp`}
+                    alt=""
+                    width={781}
+                    height={1108}
+                    sizes="320px"
+                    className="block h-auto w-full"
+                  />
                   {/* ink color follows the theme's own fg/fgMuted so it reads on both the
                       light ivory-bloom card and the dark (navy/burgundy/mocha/noir) variants;
                       no drop shadow needed here — cancel the scene-wide one */}
@@ -1155,8 +1171,17 @@ function InvitationScreens({
                 </div>
               ) : theme.card?.style === "rose-emboss" ? (
                 <div className="relative w-[370px]">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`/themes/${roseAssetFolder}/envelope-open.webp`} alt="" className="block w-full" />
+                  {/* Same reasoning as the bridal-frame card above, with this
+                      family's own box and its own art — every rose variant's
+                      opened envelope is 1404x1120. */}
+                  <Image
+                    src={`/themes/${roseAssetFolder}/envelope-open.webp`}
+                    alt=""
+                    width={1404}
+                    height={1120}
+                    sizes="370px"
+                    className="block h-auto w-full"
+                  />
                   {/* dark ink on light paper needs no drop shadow — cancel the scene-wide one */}
                   <div className="absolute inset-x-[18%] top-[37%] flex flex-col items-center gap-1.5 text-center" style={{ textShadow: "none" }}>
                     <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: "#8a5a3a", fontFamily: "var(--font-ar-body)" }}>

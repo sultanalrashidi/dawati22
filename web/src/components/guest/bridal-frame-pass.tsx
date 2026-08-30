@@ -5,7 +5,9 @@
  * already has printed near the bottom.
  */
 
+import Image from "next/image";
 import type { ReactNode } from "react";
+import { BRIDAL_FRAME_PASS_ART, passCardArt, passCardWidth } from "@/components/guest/pass-card-art";
 
 // Ink colors follow the theme's own fg/fgMuted (inherited CSS vars) so they
 // read on both the light ivory-bloom card and the dark (navy/burgundy/mocha/
@@ -104,11 +106,25 @@ export function BridalFramePass({
   // that so three or four couples still clear the icons.
   const joint = couples.length > 1;
   const blockScale = !joint ? 1 : couples.length >= 4 ? 0.55 : couples.length === 3 ? 0.7 : 0.9;
+  const art = passCardArt(assetFolder, BRIDAL_FRAME_PASS_ART);
 
   return (
-    <div className="relative inline-block">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/themes/${assetFolder}/pass-card.jpg`} alt="" className="block h-auto max-h-[70vh] w-auto" />
+    // Every overlay below is positioned as a PERCENTAGE of this box, so what
+    // sizes the box sizes the guest's name, the venue line and the window the
+    // QR has to land inside. The width is therefore settled here in CSS rather
+    // than read off whatever file the browser decided to fetch — see
+    // pass-card-art.ts for what goes wrong when a responsive image is asked to
+    // size a layout. The image then simply fills it, and its own proportions
+    // still set the height, so nothing here can stretch the artwork.
+    <div className="relative" style={{ width: passCardWidth(art, "70vh") }}>
+      <Image
+        src={`/themes/${assetFolder}/pass-card.jpg`}
+        alt=""
+        width={art.width}
+        height={art.height}
+        sizes="(max-width: 640px) 100vw, 60vh"
+        className="block h-auto w-full"
+      />
 
       <div
         className="absolute inset-x-[16%] flex flex-col items-center justify-start gap-1.5 text-center"

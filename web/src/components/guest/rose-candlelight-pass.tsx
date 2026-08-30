@@ -5,7 +5,9 @@
  * artwork already has printed on it.
  */
 
+import Image from "next/image";
 import type { ReactNode } from "react";
+import { ROSE_EMBOSS_PASS_ART, passCardArt, passCardWidth } from "@/components/guest/pass-card-art";
 
 const INK_DARK = "#3d2417";
 const INK_MID = "#5b3a22";
@@ -90,11 +92,22 @@ export function RoseCandlelightPass({
   // that so three or four couples still clear the icons.
   const joint = couples.length > 1;
   const blockScale = !joint ? 1 : couples.length >= 4 ? 0.55 : couples.length === 3 ? 0.7 : 0.9;
+  const art = passCardArt(assetFolder, ROSE_EMBOSS_PASS_ART);
 
   return (
-    <div className="relative inline-block">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/themes/${assetFolder}/pass-card.jpg`} alt="" className="block h-auto max-h-[58vh] w-auto" />
+    // Sized exactly as the bridal-frame pass is, and for the same reason: the
+    // overlays and the QR window are percentages of this box, so the box is
+    // measured in CSS instead of being read off the fetched file. This card's
+    // own ceiling is 58vh rather than 70vh.
+    <div className="relative" style={{ width: passCardWidth(art, "58vh") }}>
+      <Image
+        src={`/themes/${assetFolder}/pass-card.jpg`}
+        alt=""
+        width={art.width}
+        height={art.height}
+        sizes="(max-width: 640px) 100vw, 60vh"
+        className="block h-auto w-full"
+      />
 
       <div
         className="absolute inset-x-[19%] flex flex-col items-center justify-start gap-1 text-center"

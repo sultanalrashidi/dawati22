@@ -10,6 +10,7 @@
  * Modelled on `rose-candlelight-decor.tsx`, which does the same job for the
  * hand-coded rose-emboss card family.
  */
+import Image from "next/image";
 import type { PageBackground } from "@/lib/themes/builder/types";
 
 /**
@@ -44,16 +45,27 @@ export function BuilderPageBackground({
       {/* `fixed inset-0` (not absolute) so it stays put while the scene
           container scrolls through its snap points, and `z-0` so it sits above
           the wrapper's flat background colour but below every positioned
-          descendant that follows it in the tree. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={url}
-        alt=""
-        aria-hidden="true"
-        className={`pointer-events-none fixed inset-0 z-0 h-full w-full ${
-          page.fit === "contain" ? "object-contain" : "object-cover"
-        }`}
-      />
+          descendant that follows it in the tree. It moved off the image and
+          onto this wrapper because `fill` positions the image `absolute`;
+          nothing about what gets painted changed. */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 z-0">
+        <Image
+          src={url}
+          alt=""
+          fill
+          // An admin uploads whatever proportions they like here, so unlike
+          // the hand-coded backgrounds there is no aspect ratio to reason
+          // from — and `cover` crops, which means a phone can need more width
+          // than it has. 100vw is the honest floor for `contain` and a slight
+          // under-ask for `cover`; the optimiser never serves more than the
+          // file holds, so on artwork narrower than that it costs nothing.
+          sizes="100vw"
+          // Painted behind every scene from the first frame — see the
+          // rose-emboss background for why this is not lazy.
+          priority
+          className={page.fit === "contain" ? "object-contain" : "object-cover"}
+        />
+      </div>
       {/* Optional tint for holding text legible over busy art. */}
       {page.overlayOpacity > 0 && (
         <div

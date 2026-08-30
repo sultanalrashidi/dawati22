@@ -11,7 +11,12 @@ import { VariantsPanel, type VariantRow } from "@/components/admin/builder/varia
 import { SettingsPanel } from "@/components/admin/builder/settings-panel";
 import { GhostButton } from "@/components/admin/builder/builder-ui";
 import { createLayer } from "@/components/admin/builder/layer-factory";
-import { arabicNumber, useBuilderState, type VariantPaint } from "@/components/admin/builder/use-builder-state";
+import {
+  arabicNumber,
+  useBuilderState,
+  type VariantGeometry,
+  type VariantPaint,
+} from "@/components/admin/builder/use-builder-state";
 import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
 import { CORE_SLOTS } from "@/lib/themes/builder/slots";
 import { buildAssetMap } from "@/lib/themes/builder/resolve";
@@ -48,15 +53,40 @@ function paintOf(variant: VariantRow | undefined): VariantPaint {
  * for this variant, so saving a colour never drops a position the legacy
  * importer put there.
  */
-function mergeOverrides(stored: LayoutOverrides, paint: VariantPaint): LayoutOverrides {
+function mergeOverrides(
+  stored: LayoutOverrides,
+  paint: VariantPaint,
+  geometry: VariantGeometry,
+): LayoutOverrides {
   const out: LayoutOverrides = { ...stored };
-  for (const layerId of new Set([...Object.keys(stored), ...Object.keys(paint)])) {
-    const geometry = { ...(stored[layerId] ?? {}) };
-    delete geometry.paint;
+  const ids = new Set([...Object.keys(stored), ...Object.keys(paint), ...Object.keys(geometry)]);
+  for (const layerId of ids) {
+    // Whatever the editor is holding for this layer wins; a layer it never
+    // touched keeps what was stored, so saving a colour cannot drop a position
+    // the legacy importer put there.
+    const geo = geometry[layerId] ?? stripPaint(stored[layerId]);
     const colours = paint[layerId];
-    const next = colours && Object.keys(colours).length > 0 ? { ...geometry, paint: colours } : geometry;
+    const next =
+      colours && Object.keys(colours).length > 0 ? { ...geo, paint: colours } : { ...geo };
     if (Object.keys(next).length === 0) delete out[layerId];
     else out[layerId] = next;
+  }
+  return out;
+}
+
+/** A stored override with its colours removed — the geometry half. */
+function stripPaint(override: LayoutOverrides[string]): Record<string, unknown> {
+  if (!override) return {};
+  const { paint: _paint, ...geometry } = override;
+  return geometry;
+}
+
+/** Every layer's geometry override for one colour, as the editor holds it. */
+function geometryOf(variant: VariantRow | undefined): VariantGeometry {
+  const out: VariantGeometry = {};
+  for (const [layerId, override] of Object.entries(variant?.overrides ?? {})) {
+    const geometry = stripPaint(override);
+    if (Object.keys(geometry).length > 0) out[layerId] = geometry as VariantGeometry[string];
   }
   return out;
 }
@@ -113,7 +143,7 @@ export function ThemeBuilder({
 }) {
   const router = useRouter();
   const initialVariant = variants.find((v) => v.isDefault) ?? variants[0];
-  const state = useBuilderState(initialLayout, paintOf(initialVariant));
+  const state = useBuilderState(initialLayout, paintOf(initialVariant), geometryOf(initialVariant));
   const [side, setSide] = useState<SidePanel>("design");
   const [showGuides, setShowGuides] = useState(true);
   const [activeVariantId, setActiveVariantId] = useState(
@@ -130,15 +160,18 @@ export function ThemeBuilder({
    * and unsaved colour edits on the previous one would be lost, which is why
    * `selectVariant` saves them first.
    */
-  const { replacePaint } = state;
+  const { replacePaint, replaceVariantGeometry } = state;
   const selectVariant = useCallback(
     (id: string) => {
       if (id === activeVariantId) return;
       const next = variants.find((v) => v.id === id);
       setActiveVariantId(id);
       replacePaint(paintOf(next));
+      // Positions are per-colour too now, so they swap with the colour or the
+      // editor would show one colour's nudges on another.
+      replaceVariantGeometry(geometryOf(next));
     },
-    [activeVariantId, variants, replacePaint],
+    [activeVariantId, variants, replacePaint, replaceVariantGeometry],
   );
   /**
    * A colour edit does not touch the layout document, so the document's own
@@ -169,7 +202,7 @@ export function ThemeBuilder({
       // The design and this colour's own colours are two records; both have to
       // land before the editor calls itself saved.
       if (state.paintDirty && activeVariant) {
-        const merged = mergeOverrides(activeVariant.overrides, state.paint);
+        const merged = mergeOverrides(activeVariant.overrides, state.paint, state.variantGeometry);
         const painted = await saveVariantOverridesAction(activeVariant.id, merged);
         if (painted?.error) {
           setSaveError(painted.error);
@@ -317,6 +350,37 @@ export function ThemeBuilder({
           <GhostButton onClick={() => setShowGuides((v) => !v)}>
             {showGuides ? "إخفاء المساطر" : "إظهار المساطر"}
           </GhostButton>
+
+          {/*
+            Where a move lands. Sits in the toolbar rather than the inspector
+            because it governs dragging on the canvas, and an admin who has just
+            been surprised by it needs to find it without hunting.
+          */}
+          {variants.length > 1 && (
+            <div className="ms-2 flex items-center gap-1 rounded-full border border-border p-0.5">
+              {(
+                [
+                  ["all", "كل الألوان"],
+                  ["variant", "هذا اللون فقط"],
+                ] as const
+              ).map(([scope, label]) => (
+                <button
+                  key={scope}
+                  type="button"
+                  aria-pressed={state.transformScope === scope}
+                  onClick={() => state.setTransformScope(scope)}
+                  title="يحدد إذا كان تحريك العنصر يغيّر كل ألوان التصميم أو هذا اللون وحده"
+                  className={`rounded-full px-3 py-1 text-xs transition-colors ${
+                    state.transformScope === scope
+                      ? "bg-accent font-medium text-accent-fg"
+                      : "text-fg-muted hover:text-fg"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="ms-auto flex items-center gap-2">
@@ -391,6 +455,10 @@ export function ThemeBuilder({
               // The variant's own colours merged in, so the stage shows the
               // colour the admin picked rather than the shared design's.
               layout={paintedDoc}
+              // What this colour changes about the shared layout. Passing it
+              // is what makes the canvas show the colour a guest would get —
+              // without it a variant's own positions were invisible here.
+              overrides={state.variantOverrides}
               typography={typography}
               palette={activeVariant.palette}
               assets={assetMap}

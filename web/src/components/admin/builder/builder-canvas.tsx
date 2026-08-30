@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ThemeStage, boxStyle } from "@/components/themes/builder/theme-stage";
+import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
 import { findScene, resolveTransform, sceneCanvas, type Breakpoint, type Layer, type LayoutDoc, type SceneCanvas, type SceneId, type SceneRole, type Transform, type TransformOverride, type TypographyDoc, type VariantPalette } from "@/lib/themes/builder/types";
 import type { ResolvedContent } from "@/lib/themes/builder/content";
 
@@ -78,6 +79,12 @@ interface Gesture {
 export interface BuilderCanvasProps {
   layout: LayoutDoc;
   typography: TypographyDoc;
+  /**
+   * What the colour on screen changes about the shared layout. Merged over
+   * every transform here exactly as `resolveScene` merges it for a guest, so
+   * the box the admin drags is the box the guest gets.
+   */
+  overrides?: LayoutOverrides;
   palette: VariantPalette;
   assets: Record<string, string>;
   content: ResolvedContent;
@@ -96,6 +103,7 @@ export interface BuilderCanvasProps {
 export function BuilderCanvas({
   layout,
   typography,
+  overrides,
   palette,
   assets,
   content,
@@ -114,7 +122,27 @@ export function BuilderCanvas({
   const detach = useRef<(() => void) | null>(null);
 
   const selected = layout.layers.find((l) => l.id === selectedId) ?? null;
-  const selectedTransform = selected ? resolveTransform(selected, breakpoint) : null;
+  /**
+   * The layer's box as this colour actually renders it: the shared layout
+   * resolved for the breakpoint, then the colour's own override merged on top.
+   * Both the selection frame and the drag maths read it, so a per-colour nudge
+   * cannot leave the handles somewhere the layer is not.
+   */
+  const transformOf = useCallback(
+    (layer: Layer): Transform => {
+      const base = resolveTransform(layer, breakpoint);
+      const override = overrides?.[layer.id];
+      if (!override) return base;
+      const { paint: _paint, ...geometry } = override;
+      const defined = Object.fromEntries(
+        Object.entries(geometry).filter(([, value]) => value !== undefined),
+      );
+      return { ...base, ...defined } as Transform;
+    },
+    [breakpoint, overrides],
+  );
+
+  const selectedTransform = selected ? transformOf(selected) : null;
   const canvas: SceneCanvas = sceneCanvas(layout, scene);
   const role = findScene(layout, scene)?.role ?? "flow";
   const stageWidth = guestStageWidth(canvas, role, deviceWidth, deviceHeight);
@@ -232,7 +260,7 @@ export function BuilderCanvas({
       if (!stage || layer.locked) return;
 
       const rect = stage.getBoundingClientRect();
-      const transform = resolveTransform(layer, breakpoint);
+      const transform = transformOf(layer);
       const element = stage.querySelector<HTMLElement>(`[data-layer-id="${layer.id}"]`);
       // `offsetHeight`, not `getBoundingClientRect().height`: the latter is the
       // AXIS-ALIGNED bounding box of an already rotated and scaled element
@@ -277,7 +305,7 @@ export function BuilderCanvas({
       event.stopPropagation();
       onBeginInteraction();
     },
-    [breakpoint, onBeginInteraction],
+    [transformOf, onBeginInteraction],
   );
 
   // Unmounting mid-drag would otherwise leave the window listeners behind.
@@ -380,6 +408,7 @@ export function BuilderCanvas({
             palette={palette}
             assets={assets}
             content={content}
+            overrides={overrides}
             breakpoint={breakpoint}
             className="touch-none select-none"
             // Every layer stays clickable so it can be selected and dragged,

@@ -21,6 +21,26 @@ import {
 /** Per-layer colour patches for one variant: `{ [layerId]: { style: { color } } }`. */
 export type VariantPaint = Record<string, Record<string, unknown>>;
 
+/**
+ * Position and size this ONE colour changes about a layer, keyed by layer id.
+ *
+ * Separate from the paint map because they are stored side by side in the same
+ * per-variant record but mean different things, and because only one of them
+ * has a scope switch in the toolbar.
+ */
+export type VariantGeometry = Record<string, TransformOverride>;
+
+/**
+ * Where a drag lands.
+ *
+ * `all` writes the layout document, which every colour of the design shares —
+ * the right default, because most designs want one arrangement. `variant`
+ * writes only the colour on screen, which is what a family whose colours use
+ * slightly different photographs needs: moving the monogram on the navy card
+ * should not move it on the ivory one.
+ */
+export type TransformScope = "all" | "variant";
+
 /** Same deep merge the renderer uses, so the editor previews it exactly. */
 function applyPaint<T>(layer: T, patch: Record<string, unknown>): T {
   const out = { ...(layer as Record<string, unknown>) };
@@ -139,7 +159,11 @@ function mergePatch<T>(layer: T, patch: Record<string, unknown>): T {
   return out as T;
 }
 
-export function useBuilderState(initial: LayoutDoc, initialPaint: VariantPaint = {}) {
+export function useBuilderState(
+  initial: LayoutDoc,
+  initialPaint: VariantPaint = {},
+  initialGeometry: VariantGeometry = {},
+) {
   const [doc, setDoc] = useState<LayoutDoc>(initial);
   /**
    * The active variant's own colours, keyed by layer id. Kept beside the
@@ -148,7 +172,10 @@ export function useBuilderState(initial: LayoutDoc, initialPaint: VariantPaint =
    * is exactly the bug this exists to fix.
    */
   const [paint, setPaint] = useState<VariantPaint>(initialPaint);
+  const [variantGeometry, setVariantGeometry] = useState<VariantGeometry>(initialGeometry);
+  /** True when EITHER half of the variant's own record has unsaved edits. */
   const [paintDirty, setPaintDirty] = useState(false);
+  const [transformScope, setTransformScope] = useState<TransformScope>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Scenes are user-defined now, so "cover" is a likely id rather than a
   // guaranteed one — a theme whose cover was renamed must still open.
@@ -266,6 +293,22 @@ export function useBuilderState(initial: LayoutDoc, initialPaint: VariantPaint =
    */
   const patchTransform = useCallback(
     (id: string, patch: TransformOverride, options?: { history?: boolean }) => {
+      // This colour only: the variant's own record wins over the shared
+      // document at render time, so writing here moves the layer on this
+      // colour and leaves every other one exactly where it was.
+      //
+      // The stored shape has no breakpoint slots, so a per-colour nudge holds
+      // at every screen size. That is the shape the legacy importer has always
+      // written and the renderer has always read; giving it breakpoints is a
+      // schema change, not a UI one.
+      if (transformScope === "variant") {
+        setVariantGeometry((current) => ({
+          ...current,
+          [id]: { ...(current[id] ?? {}), ...patch },
+        }));
+        setPaintDirty(true);
+        return;
+      }
       mutate(
         (draft) => ({
           ...draft,
@@ -281,7 +324,7 @@ export function useBuilderState(initial: LayoutDoc, initialPaint: VariantPaint =
         options,
       );
     },
-    [mutate, breakpoint],
+    [mutate, breakpoint, transformScope],
   );
 
   const patchTextStyle = useCallback(
@@ -567,6 +610,21 @@ export function useBuilderState(initial: LayoutDoc, initialPaint: VariantPaint =
   }, []);
 
   /** Load another variant's colours — called when the admin switches colour. */
+  /**
+   * The variant's record in the shape the renderer reads: geometry at the top
+   * level, colours nested under `paint`. Built here so the canvas previews
+   * exactly what a guest would see on this colour.
+   */
+  const variantOverrides = useMemo(() => {
+    const out: Record<string, Record<string, unknown>> = {};
+    for (const id of new Set([...Object.keys(variantGeometry), ...Object.keys(paint)])) {
+      const geometry = variantGeometry[id] ?? {};
+      const colours = paint[id];
+      out[id] = colours && Object.keys(colours).length > 0 ? { ...geometry, paint: colours } : { ...geometry };
+    }
+    return out;
+  }, [variantGeometry, paint]);
+
   const replacePaint = useCallback((next: VariantPaint) => {
     setPaint(next);
     setPaintDirty(false);
@@ -578,9 +636,14 @@ export function useBuilderState(initial: LayoutDoc, initialPaint: VariantPaint =
     dirty,
     markSaved,
     paint,
+    variantGeometry,
+    variantOverrides,
     paintedLayers,
     paintDirty,
+    transformScope,
+    setTransformScope,
     replacePaint,
+    replaceVariantGeometry: setVariantGeometry,
     markPaintSaved: useCallback(() => setPaintDirty(false), []),
     scene: activeScene,
     setScene,

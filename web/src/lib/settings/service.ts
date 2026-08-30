@@ -1,5 +1,10 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
+import {
+  DEFAULT_TYPOGRAPHY_PRESET,
+  parseTypographyPreset,
+  type TypographyPreset,
+} from "@/lib/themes/typography-preset";
 
 /**
  * Operational switches, stored in the database so the admin can flip them.
@@ -13,6 +18,8 @@ import { prisma } from "@/lib/db/client";
 export const SETTING_KEYS = {
   /** Whether the two test numbers may sign in with an on-screen code. */
   testPhoneBypass: "auth.test_phone_bypass",
+  /** The house typeface new designs start from. */
+  typographyPreset: "themes.typography_preset",
 } as const;
 
 /**
@@ -51,4 +58,27 @@ export function isTestPhoneBypassEnabled(): Promise<boolean> {
 
 export function setTestPhoneBypassEnabled(enabled: boolean): Promise<void> {
   return writeFlag(SETTING_KEYS.testPhoneBypass, enabled);
+}
+
+/**
+ * The house typeface. Stored as JSON in the same key/value table: it is a
+ * setting an admin changes, not data, and it should cost a row rather than a
+ * migration.
+ */
+export async function getTypographyPreset(): Promise<TypographyPreset> {
+  const row = await prisma.appSetting.findUnique({
+    where: { key: SETTING_KEYS.typographyPreset },
+  });
+  // Unset reads as the builder's own default, so a design created before any
+  // admin touched this is still created from something sensible.
+  return row ? parseTypographyPreset(row.value) : DEFAULT_TYPOGRAPHY_PRESET;
+}
+
+export async function setTypographyPreset(preset: TypographyPreset): Promise<void> {
+  const value = JSON.stringify(preset);
+  await prisma.appSetting.upsert({
+    where: { key: SETTING_KEYS.typographyPreset },
+    create: { key: SETTING_KEYS.typographyPreset, value },
+    update: { value },
+  });
 }

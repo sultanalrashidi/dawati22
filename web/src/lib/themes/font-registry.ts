@@ -56,16 +56,24 @@ export function fontStackFor(family: string): string {
   return `"${family.replace(/"/g, "")}", var(--font-plex-arabic)`;
 }
 
+/**
+ * `ThemeFont.weights` is a comma-separated string in the database and a number
+ * array on a FontOption; this is the one place that converts between them.
+ */
+export function parseFontWeights(weights: string): number[] {
+  return weights
+    .split(",")
+    .map((w) => Number.parseInt(w.trim(), 10))
+    .filter((w) => Number.isFinite(w) && w >= 100 && w <= 900)
+    .sort((a, b) => a - b);
+}
+
 /** Google's CSS2 API wants `Family+Name` and a sorted weight list. */
 export function googleFontsHref(families: { family: string; weights: string }[]): string | null {
   const specs = families
     .filter((f) => !BUILTIN_FAMILIES.has(f.family))
     .map((f) => {
-      const weights = f.weights
-        .split(",")
-        .map((w) => Number.parseInt(w.trim(), 10))
-        .filter((w) => Number.isFinite(w) && w >= 100 && w <= 900)
-        .sort((a, b) => a - b);
+      const weights = parseFontWeights(f.weights);
       const name = f.family.trim().replace(/\s+/g, "+");
       return weights.length > 0 ? `family=${name}:wght@${weights.join(";")}` : `family=${name}`;
     });

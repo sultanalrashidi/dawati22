@@ -22,6 +22,9 @@ import {
 import { saveThemeAssetFile } from "@/lib/admin/themes/upload";
 import { Role, ThemeStatus } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
+import { setTypographyPreset } from "@/lib/settings/service";
+import { parseTypographyPreset, type TypographyPreset } from "@/lib/themes/typography-preset";
+import { applyTypographyPreset, type ApplyScope } from "@/lib/admin/themes/typography-apply";
 import { getDictionary, type Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 
@@ -367,4 +370,71 @@ export async function assignThemeToEventAction(themeId: string, locale: string, 
   await assignThemeToEvent(themeId, eventId, user.id);
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
   revalidatePath(`/${safeLocale}/admin/themes/${themeId}`);
+}
+
+// ---------------------------------------------------------------------------
+// House typeface
+// ---------------------------------------------------------------------------
+
+export type TypographyPresetState =
+  | { error?: string; saved?: boolean; applied?: number }
+  | null;
+
+function readPreset(formData: FormData): TypographyPreset {
+  const role = (key: string) => ({
+    family: String(formData.get(`${key}Family`) ?? "").trim(),
+    weight: Number(formData.get(`${key}Weight`) ?? 400),
+  });
+  // Parsed through the same lenient reader the stored value uses, so a blank
+  // select falls back rather than writing an empty family into every design.
+  return parseTypographyPreset({ display: role("display"), body: role("body"), latin: role("latin") });
+}
+
+/** Saves the house typeface. Changes nothing that already exists — new designs start from it. */
+export async function saveTypographyPresetAction(
+  locale: string,
+  _prev: TypographyPresetState,
+  formData: FormData,
+): Promise<TypographyPresetState> {
+  await requireAdmin();
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  await setTypographyPreset(readPreset(formData));
+  revalidatePath(`/${safeLocale}/admin/themes/fonts`);
+  return { saved: true };
+}
+
+/**
+ * Saves it AND writes it onto existing designs. Separate from the action above
+ * because one of them is reversible and the other is not.
+ */
+export async function applyTypographyPresetAction(
+  locale: string,
+  _prev: TypographyPresetState,
+  formData: FormData,
+): Promise<TypographyPresetState> {
+  await requireAdmin();
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+
+  const preset = readPreset(formData);
+  const scopeKind = String(formData.get("scopeKind") ?? "all");
+  const scope: ApplyScope =
+    scopeKind === "category"
+      ? { kind: "category", category: String(formData.get("scopeCategory") ?? "") }
+      : scopeKind === "themes"
+        ? { kind: "themes", themeIds: formData.getAll("scopeThemeIds").map(String) }
+        : { kind: "all" };
+
+  if (scope.kind === "category" && !scope.category) return { error: "scope" };
+  if (scope.kind === "themes" && scope.themeIds.length === 0) return { error: "scope" };
+
+  await setTypographyPreset(preset);
+  const { updated } = await applyTypographyPreset(preset, scope);
+
+  revalidatePath(`/${safeLocale}/admin/themes/fonts`);
+  revalidatePath(`/${safeLocale}/admin/themes`);
+  revalidatePath(`/${safeLocale}/themes`);
+  // Every invitation already sent renders with its design's fonts, so they all
+  // change the moment this does.
+  revalidatePath("/i/[token]", "page");
+  return { saved: true, applied: updated };
 }

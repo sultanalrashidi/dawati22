@@ -1,5 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
+import { getTypographyPreset } from "@/lib/settings/service";
+import { presetToTypographyDoc } from "@/lib/themes/typography-preset";
 import {
   Prisma,
   ThemeEngine,
@@ -162,7 +164,9 @@ export async function createBuilderTheme(actorId: string, input: CreateBuilderTh
       config: json({ engine: "builder" }),
       createdById: actorId,
       layout: { create: { doc: json(starterLayoutDoc()) } },
-      typography: { create: { doc: json(DEFAULT_TYPOGRAPHY_DOC) } },
+      // The house typeface, so a new design starts consistent instead of
+      // starting from a default and being corrected afterwards.
+      typography: { create: { doc: json(presetToTypographyDoc(await getTypographyPreset())) } },
       variants: {
         create: {
           slug: "default",

@@ -68,6 +68,22 @@ export function sarToHalalas(amountSar: number): number {
  * anywhere either way — verification compares against the stored order — but
  * it fails as a declined order instead of a wrong charge.
  */
+/**
+ * Apple Pay's hosted-form block. All three fields are REQUIRED by Moyasar's
+ * form the moment `applepay` is listed as a method — a missing one throws
+ * during init and takes the whole card form down with it, on every device.
+ * So this is built here, always complete, rather than assembled in the browser.
+ *
+ * `validateMerchantUrl` is Moyasar's own endpoint: the form POSTs the Apple
+ * session to it so we never handle the Apple Pay merchant certificate
+ * ourselves. `label` is the store name Apple shows in the payment sheet.
+ */
+export interface ApplePayConfig {
+  country: string;
+  label: string;
+  validateMerchantUrl: string;
+}
+
 export interface MoyasarFormConfig {
   publishableApiKey: string;
   /** Halalas. Moyasar accepts no other unit, and 1 SAR = 100. */
@@ -76,6 +92,28 @@ export interface MoyasarFormConfig {
   description: string;
   callbackUrl: string;
   metadata: { order_id: string };
+  /** Null until the Apple Pay domain is verified — see moyasarFormConfig. */
+  applePay: ApplePayConfig | null;
+}
+
+/** The store name Apple shows in the payment sheet ("Pay <label>"). */
+const APPLE_PAY_LABEL = "Dawati";
+/** Moyasar's own merchant-validation endpoint — see ApplePayConfig. */
+const APPLE_PAY_VALIDATE_URL = "https://api.moyasar.com/v1/applepay/initiate";
+
+/**
+ * Apple Pay is offered only when it is switched ON by env, because the button
+ * cannot work until the domain is verified with Apple. Left off, the field is
+ * null and the form ships card-only exactly as before — flipping the flag is
+ * the whole rollout, with no code change and no redeploy of the form itself.
+ */
+function applePayConfig(): ApplePayConfig | null {
+  if (process.env.MOYASAR_APPLE_PAY !== "on") return null;
+  return {
+    country: "SA",
+    label: APPLE_PAY_LABEL,
+    validateMerchantUrl: APPLE_PAY_VALIDATE_URL,
+  };
 }
 
 export function moyasarFormConfig(input: {
@@ -103,5 +141,6 @@ export function moyasarFormConfig(input: {
     description: input.description,
     callbackUrl: callbackUrl.toString(),
     metadata: { order_id: input.orderId },
+    applePay: applePayConfig(),
   };
 }

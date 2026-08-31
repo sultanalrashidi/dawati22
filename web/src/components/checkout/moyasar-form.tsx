@@ -82,9 +82,22 @@ export function MoyasarForm({
           publishable_api_key: config.publishableApiKey,
           callback_url: config.callbackUrl,
           // mada, Visa and Mastercard all arrive through `creditcard`. Apple Pay
-          // is a separate method that only works once the domain is verified
-          // with Apple, so it is not offered until that file is hosted.
-          methods: ["creditcard"],
+          // is listed first (so its button leads on a device that supports it)
+          // ONLY when the server switched it on — its config must be complete
+          // and its domain verified, or Moyasar's form throws and the card form
+          // dies with it. On a non-Apple device the button simply never renders.
+          methods: config.applePay ? ["applepay", "creditcard"] : ["creditcard"],
+          // Moyasar reads Apple Pay settings from this nested block. Omitted
+          // entirely when off — an empty/partial block is what breaks the form.
+          ...(config.applePay
+            ? {
+                apple_pay: {
+                  country: config.applePay.country,
+                  label: config.applePay.label,
+                  validate_merchant_url: config.applePay.validateMerchantUrl,
+                },
+              }
+            : {}),
           // `confirmMoyasarPayment` refuses any payment whose metadata does not
           // name this order. Dropping this line does not weaken a check — it
           // breaks every payment.

@@ -97,7 +97,7 @@ export interface MoyasarFormConfig {
 }
 
 /** The store name Apple shows in the payment sheet ("Pay <label>"). */
-const APPLE_PAY_LABEL = "Dawati";
+const APPLE_PAY_LABEL = "دعوتي";
 /** Moyasar's own merchant-validation endpoint — see ApplePayConfig. */
 const APPLE_PAY_VALIDATE_URL = "https://api.moyasar.com/v1/applepay/initiate";
 

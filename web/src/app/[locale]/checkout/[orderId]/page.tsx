@@ -4,8 +4,9 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { getOwnedOrder } from "@/lib/orders/service";
 import { orderSummaryLabel } from "@/lib/orders/terms";
-import { isMoyasarConfigured } from "@/lib/payments/moyasar";
+import { isMoyasarConfigured, moyasarFormConfig } from "@/lib/payments/moyasar";
 import { confirmMockPaymentAction } from "@/lib/orders/actions";
+import { MoyasarForm } from "@/components/checkout/moyasar-form";
 import { Role } from "@/generated/prisma/client";
 
 export default async function CheckoutPage({
@@ -50,8 +51,21 @@ export default async function CheckoutPage({
       {order.status === "PAID" ? (
         <p className="mt-6 rounded-xl bg-success/10 px-4 py-3 text-sm text-success">{dict.common.success}</p>
       ) : isMoyasarConfigured() ? (
-        <div className="mt-6 rounded-xl border border-border bg-surface p-4 text-sm text-fg-muted">
-          {dict.checkout.payMoyasar} — {dict.common.comingSoon}
+        <div className="mt-6 space-y-4">
+          <h2 className="text-sm font-medium text-fg-muted">{dict.checkout.payMoyasar}</h2>
+          {/* The order's own stored total is what gets charged and what the
+              callback verifies against — the browser is never told a price it
+              could send back changed. */}
+          <MoyasarForm
+            config={moyasarFormConfig({
+              orderId: order.id,
+              amountSar: Number(order.amount),
+              currency: order.currency,
+              description: planName,
+              locale,
+            })}
+            unavailableLabel={dict.checkout.payUnavailable}
+          />
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-3">

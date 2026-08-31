@@ -21,7 +21,6 @@
     "success": "Success",
     "sar": "SAR",
     "requiredField": "This field is required",
-    "comingSoon": "Coming soon",
     "notFoundTitle": "Page not found",
     "notFoundBody": "This link is not valid, or the page has moved. Try starting from the home page.",
     "notFoundHome": "Back to home"
@@ -199,6 +198,7 @@
     "mockNotice": "Dev mode — no real payment. This simulates a successful checkout.",
     "payMock": "Pay now (dev mode)",
     "payMoyasar": "Pay with Moyasar",
+    "payUnavailable": "The payment form could not be loaded. Refresh the page or try again shortly.",
     "error": "Something went wrong, please try again",
     "comingSoonMada": "Mada — coming soon",
     "comingSoonApplePay": "Apple Pay — coming soon"

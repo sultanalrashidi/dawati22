@@ -1,10 +1,16 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { OTP_MAX_LENGTH, isSubmittableOtp } from "@/lib/otp/format";
 import type { Locale } from "@/lib/i18n/locales";
+import {
+  PHONE_COUNTRIES,
+  DEFAULT_PHONE_COUNTRY,
+  getPhoneCountry,
+  normalizePhone,
+} from "@/lib/security/phone";
 import {
   requestLoginOtpAction,
   submitOtpCodeAction,
@@ -32,7 +38,9 @@ export function LoginForm({
 }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("phone");
+  const [country, setCountry] = useState(DEFAULT_PHONE_COUNTRY);
   const [phone, setPhone] = useState("");
+  const [sentTo, setSentTo] = useState("");
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [otpId, setOtpId] = useState<string | null>(null);
@@ -41,6 +49,23 @@ export function LoginForm({
   const [cooldown, setCooldown] = useState(0);
   const [isPending, startTransition] = useTransition();
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const selected = getPhoneCountry(country) ?? PHONE_COUNTRIES[0];
+  // The button is live exactly when the server would accept the number, so the
+  // client's idea of "valid" and the action's never drift apart.
+  const normalized = normalizePhone(phone, country);
+  const groups = useMemo(
+    () => ({
+      gulf: PHONE_COUNTRIES.filter((c) => c.region === "gulf"),
+      arab: PHONE_COUNTRIES.filter((c) => c.region === "arab"),
+    }),
+    [],
+  );
+  const countryName = (iso: string) => {
+    const c = getPhoneCountry(iso);
+    if (!c) return "";
+    return locale === "ar" ? c.nameAr : c.nameEn;
+  };
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -53,7 +78,7 @@ export function LoginForm({
   function sendCode() {
     setError(null);
     startTransition(async () => {
-      const result = await requestLoginOtpAction(phone);
+      const result = await requestLoginOtpAction(phone, country);
       if (!result.ok) {
         if (result.error === "rate_limited") {
           setError(dict.auth.tooManyAttempts);
@@ -67,6 +92,7 @@ export function LoginForm({
         }
         return;
       }
+      setSentTo(result.phone);
       setDevCode(result.devCode ?? null);
       setCooldown(RESEND_COOLDOWN_S);
       setStep("otp");
@@ -76,7 +102,7 @@ export function LoginForm({
   function verifyCode() {
     setError(null);
     startTransition(async () => {
-      const result = await submitOtpCodeAction(phone, code, locale, pendingOrder);
+      const result = await submitOtpCodeAction(phone, country, code, locale, pendingOrder);
       if (!result.ok) {
         const message =
           result.error === "invalid_code"
@@ -102,7 +128,7 @@ export function LoginForm({
     setError(null);
     if (!otpId) return;
     startTransition(async () => {
-      const result = await completeSignupAction(otpId, phone, name, locale, pendingOrder);
+      const result = await completeSignupAction(otpId, phone, country, name, locale, pendingOrder);
       if (!result.ok) {
         setError(result.error === "name_required" ? dict.common.requiredField : dict.auth.codeExpired);
         return;
@@ -117,21 +143,47 @@ export function LoginForm({
         <>
           <label className="flex flex-col gap-1.5 text-sm">
             <span className="text-fg-muted">{dict.auth.phoneLabel}</span>
-            <input
-              type="tel"
-              inputMode="numeric"
-              dir="ltr"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder={dict.auth.phonePlaceholder}
-              className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
-              autoFocus
-            />
+            <div className="flex gap-2" dir="ltr">
+              <select
+                aria-label={dict.auth.countryLabel}
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                className="h-11 max-w-[42%] shrink-0 rounded-lg border border-border bg-bg px-2 text-fg outline-none focus:border-accent"
+              >
+                <optgroup label={dict.auth.countryGroupGulf}>
+                  {groups.gulf.map((c) => (
+                    <option key={c.iso} value={c.iso}>
+                      {c.flag} {countryName(c.iso)}
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label={dict.auth.countryGroupArab}>
+                  {groups.arab.map((c) => (
+                    <option key={c.iso} value={c.iso}>
+                      {c.flag} {countryName(c.iso)}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+              <div className="flex h-11 min-w-0 flex-1 items-center rounded-lg border border-border bg-bg focus-within:border-accent">
+                <span className="select-none ps-3 pe-1 text-fg-muted">+{selected.dialCode}</span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  dir="ltr"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={selected.example}
+                  className="h-full min-w-0 flex-1 rounded-e-lg bg-transparent pe-3 text-fg outline-none"
+                  autoFocus
+                />
+              </div>
+            </div>
           </label>
           {error && <p className="text-sm text-danger">{error}</p>}
           <button
             type="button"
-            disabled={isPending || phone.length < 9 || cooldown > 0}
+            disabled={isPending || !normalized || cooldown > 0}
             onClick={sendCode}
             className="h-11 rounded-full bg-accent text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong disabled:opacity-50"
           >
@@ -143,7 +195,7 @@ export function LoginForm({
       {step === "otp" && (
         <>
           <p className="text-sm text-fg-muted">
-            {dict.auth.otpSubtitle} <span dir="ltr">{phone}</span>
+            {dict.auth.otpSubtitle} <span dir="ltr">{sentTo || phone}</span>
           </p>
           {devCode && (
             <p className="rounded-lg bg-surface-2 px-3 py-2 text-sm text-fg" dir="ltr">

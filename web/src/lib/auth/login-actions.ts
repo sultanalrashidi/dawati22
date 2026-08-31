@@ -5,7 +5,7 @@ import { prisma } from "@/lib/db/client";
 import { createSession } from "@/lib/auth/session";
 import { requestOtp, peekOtp, consumeOtp, OtpRateLimitError } from "@/lib/otp/service";
 import { OtpDeliveryError } from "@/lib/otp/adapter";
-import { normalizeSaudiPhone } from "@/lib/security/phone";
+import { normalizePhone } from "@/lib/security/phone";
 import { OtpPurpose, Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 import { createPerInvitationOrder, OrderError } from "@/lib/orders/service";
@@ -29,8 +29,11 @@ export type OtpRequestResult =
       retryAfterSeconds?: number;
     };
 
-export async function requestLoginOtpAction(rawPhone: string): Promise<OtpRequestResult> {
-  const phone = normalizeSaudiPhone(rawPhone);
+export async function requestLoginOtpAction(
+  rawPhone: string,
+  iso: string,
+): Promise<OtpRequestResult> {
+  const phone = normalizePhone(rawPhone, iso);
   if (!phone) return { ok: false, error: "invalid_phone" };
 
   // Admins do not sign in here. Refused BEFORE the code is sent, for two
@@ -122,11 +125,12 @@ export type OtpSubmitResult =
 
 export async function submitOtpCodeAction(
   rawPhone: string,
+  iso: string,
   code: string,
   locale: string,
   pending?: PendingOrder | null
 ): Promise<OtpSubmitResult> {
-  const phone = normalizeSaudiPhone(rawPhone);
+  const phone = normalizePhone(rawPhone, iso);
   if (!phone) return { ok: false, error: "invalid_phone" };
 
   const { valid, otpId } = await peekOtp(phone, OtpPurpose.LOGIN, code.trim());
@@ -158,11 +162,12 @@ export type CompleteSignupResult =
 export async function completeSignupAction(
   otpId: string,
   rawPhone: string,
+  iso: string,
   name: string,
   locale: string,
   pending?: PendingOrder | null
 ): Promise<CompleteSignupResult> {
-  const phone = normalizeSaudiPhone(rawPhone);
+  const phone = normalizePhone(rawPhone, iso);
   const trimmedName = name.trim();
   if (trimmedName.length < 2) return { ok: false, error: "name_required" };
   if (!phone) return { ok: false, error: "invalid_code" };

@@ -65,7 +65,13 @@ export type ResolvedContent = Record<ContentField, string> & {
   perCouple: Record<CoupleField, string>[];
 };
 
-const DATE_FORMATTER = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
+// The full date prints as TWO lines — Hijri (Umm al-Qura) leading with the
+// weekday, Gregorian under it — because a Saudi invitation that shows only the
+// Gregorian date reads as unfinished. Two lines rather than one long
+// "الموافق…" string, so each line stays no wider than the old single-line date
+// and existing layouts don't overflow sideways; text layers render `\n` as a
+// line break, the same way `coupleNames` grows down the card.
+const HIJRI_DATE_FORMATTER = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
   weekday: "long",
   day: "numeric",
   month: "long",
@@ -139,9 +145,13 @@ export function resolveContent(input: InvitationContentInput): ResolvedContent {
     groomNameEn: primary.groomNameEn,
     brideNameEn: primary.brideNameEn,
     hostName: input.familiesGreetingAr ?? "",
-    eventDate: DATE_FORMATTER.format(date),
-    // The long form leads with the weekday; the compact one drops it, which is
-    // what the hand-coded entry pass shows in its narrow date column.
+    // "هـ" comes from Intl for the Islamic calendar; "م" is appended by hand
+    // because Intl leaves the Gregorian year bare, and next to a Hijri line
+    // the pair of era marks is what makes each calendar unmistakable.
+    eventDate: `${HIJRI_DATE_FORMATTER.format(date)}\n${SHORT_DATE_FORMATTER.format(date)} م`,
+    // The full form leads with the weekday and carries both calendars; the
+    // compact one is Gregorian only and stays that way — it fills the
+    // hand-coded entry pass's narrow date column, where two lines don't fit.
     eventDateShort: SHORT_DATE_FORMATTER.format(date),
     eventTime: TIME_FORMATTER.format(date),
     locationName: input.locationName,

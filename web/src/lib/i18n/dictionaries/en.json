@@ -149,7 +149,8 @@
     "faq3Q": "Can I edit the details after creating the event?",
     "faq3A": "Names, date and venue are fixed at creation because they appear on your guests’ invitations. Message us for any change and we’ll make it for you.",
     "faq4Q": "Can I add more invitations after buying?",
-    "faq4A": "The count is set at purchase. If you need more, message us on WhatsApp and we’ll sort it out."
+    "faq4A": "The count is set at purchase. If you need more, message us on WhatsApp and we’ll sort it out.",
+    "footerLegal": "Legal"
   },
   "plans": {
     "title": "Pricing",
@@ -768,5 +769,11 @@
     "previewDesign": "Preview design",
     "exitPreview": "Exit",
     "noResults": "No designs match your search"
+  },
+  "legal": {
+    "updatedPrefix": "Last updated",
+    "terms": "Terms & Conditions",
+    "privacy": "Privacy Policy",
+    "refunds": "Refund Policy"
   }
 }

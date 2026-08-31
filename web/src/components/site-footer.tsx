@@ -4,9 +4,9 @@ import type { Locale } from "@/lib/i18n/locales";
 import { supportWhatsAppUrl } from "@/lib/support";
 
 /**
- * The site footer. Every link here points at a route that exists — the design
- * also lists privacy and terms, which have no pages yet, so they are left out
- * rather than shipped as links to a 404.
+ * The site footer. Every link here points at a route that exists. The legal
+ * pages (terms, privacy, refunds) are required for the payment provider and now
+ * ship, so they get their own column instead of being left out.
  */
 export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const h = dict.home;
@@ -20,10 +20,15 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
     { href: `/${locale}/login`, label: dict.nav.login },
     { href: `/${locale}/events`, label: dict.events.title },
   ];
+  const legal = [
+    { href: `/${locale}/terms`, label: dict.legal.terms },
+    { href: `/${locale}/privacy`, label: dict.legal.privacy },
+    { href: `/${locale}/refunds`, label: dict.legal.refunds },
+  ];
 
   return (
     <footer className="border-t border-border bg-surface-2/40">
-      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-8 lg:grid-cols-4">
+      <div className="mx-auto grid w-full max-w-6xl gap-10 px-4 py-14 sm:grid-cols-2 sm:px-8 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <p className="font-display text-2xl text-fg">{dict.brand.name}</p>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-fg-muted">{h.footerTagline}</p>
@@ -31,6 +36,7 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
 
         <FooterColumn title={h.footerSite} links={site} />
         <FooterColumn title={h.footerAccount} links={account} />
+        <FooterColumn title={h.footerLegal} links={legal} />
       </div>
 
       <div className="border-t border-border">

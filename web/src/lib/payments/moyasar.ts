@@ -68,6 +68,13 @@ export function sarToHalalas(amountSar: number): number {
  * anywhere either way — verification compares against the stored order — but
  * it fails as a declined order instead of a wrong charge.
  */
+// NOTE: keep this label ASCII. It is not only shown in the sheet — Moyasar
+// sends it to Apple as the merchant-session `display_name` during merchant
+// validation, and an Arabic value there makes that validation fail: the Apple
+// Pay sheet shows the cards, then aborts before a payment is ever created.
+// Verified the hard way on 2026-08-31 — "دعوتي" broke it, "Dawati" fixed it.
+// The store is still دعوتي everywhere the customer actually reads a name.
+
 /**
  * Apple Pay's hosted-form block. All three fields are REQUIRED by Moyasar's
  * form the moment `applepay` is listed as a method — a missing one throws
@@ -97,7 +104,7 @@ export interface MoyasarFormConfig {
 }
 
 /** The store name Apple shows in the payment sheet ("Pay <label>"). */
-const APPLE_PAY_LABEL = "دعوتي";
+const APPLE_PAY_LABEL = "Dawati";
 /** Moyasar's own merchant-validation endpoint — see ApplePayConfig. */
 const APPLE_PAY_VALIDATE_URL = "https://api.moyasar.com/v1/applepay/initiate";
 

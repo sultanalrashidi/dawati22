@@ -524,6 +524,26 @@ function InvitationScreens({
   const breakpoint = useStageBreakpoint(Boolean(builder));
   const g = dict.guest;
 
+  // Answering the RSVP appends the outcome — the entry pass, or the decline
+  // note — as the LAST scene, below wherever the guest currently is. Without
+  // help they are left staring at the form's thank-you state, with the pass
+  // hidden somewhere further down; this pair scrolls them to it the moment
+  // their answer lands. A ref (not state) because it must not survive a
+  // re-render it didn't cause: only a fresh answer scrolls, never a reload of
+  // an invitation that was answered days ago.
+  const sceneContainerRef = useRef<HTMLDivElement>(null);
+  const scrollToOutcomeRef = useRef(false);
+  useEffect(() => {
+    if (!scrollToOutcomeRef.current) return;
+    if (currentStatus !== "ACCEPTED" && currentStatus !== "DECLINED") return;
+    scrollToOutcomeRef.current = false;
+    const el = sceneContainerRef.current;
+    // The outcome scene is always the container's final screen, and every
+    // scene is exactly one viewport tall — so "the end" IS the pass, whether
+    // or not its artwork has loaded yet.
+    el?.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+  }, [currentStatus]);
+
   // Server callers hand us a non-empty list; rebuilding one from the event's
   // own columns keeps a malformed caller from blanking the names out entirely.
   const couples = useMemo<CoupleInput[]>(
@@ -615,6 +635,7 @@ function InvitationScreens({
     details: { guestNameAr?: string; guestPhone?: string; partySize?: number; messageAr?: string },
   ) {
     if (mode === "preview") {
+      scrollToOutcomeRef.current = true;
       setCurrentStatus(response);
       return;
     }
@@ -625,6 +646,7 @@ function InvitationScreens({
         setRsvpError(g.rsvpError);
         return;
       }
+      scrollToOutcomeRef.current = true;
       setCurrentStatus(response);
       if (result.qrDataUrl) setCurrentQr(result.qrDataUrl);
     });
@@ -646,6 +668,7 @@ function InvitationScreens({
   // this has to do is move the page on to the pass, exactly as `respond` does.
 
   function handleStageRsvp(response: RsvpResponse, qr: string | null) {
+    scrollToOutcomeRef.current = true;
     setCurrentStatus(response);
     if (qr) setCurrentQr(qr);
   }
@@ -1092,6 +1115,7 @@ function InvitationScreens({
       {/* Universal post-open flow: a scroll-snapped sequence of scenes, same
           structure for every theme — only palette/fonts/decoration differ. */}
       <div
+        ref={sceneContainerRef}
         className="dawati-scene-container"
         style={{
           ...(hasPhotoBg ? { textShadow: "0 1px 4px rgba(0,0,0,0.6)" } : null),

@@ -774,6 +774,11 @@
     "updatedPrefix": "Last updated",
     "terms": "Terms & Conditions",
     "privacy": "Privacy Policy",
-    "refunds": "Refund Policy"
+    "refunds": "Refund Policy",
+    "contactVia": "via",
+    "contactOr": "or",
+    "contactWhatsapp": "WhatsApp",
+    "contactEmail": "email",
+    "contactWhatsappMessage": "Hello, I have a question about Dawati"
   }
 }

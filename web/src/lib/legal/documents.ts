@@ -1,5 +1,4 @@
 import type { Locale } from "@/lib/i18n/locales";
-import { SUPPORT_EMAIL, SUPPORT_WHATSAPP_DISPLAY } from "@/lib/support";
 
 /**
  * The site's legal pages — terms, privacy, and refunds — live here rather than
@@ -19,12 +18,26 @@ import { SUPPORT_EMAIL, SUPPORT_WHATSAPP_DISPLAY } from "@/lib/support";
  * from `@/lib/support` so there is one place to change a number or address.
  */
 
+/**
+ * A "contact us" line rendered with clickable WhatsApp and email links rather
+ * than a spelled-out number and address — the number/address never appear as
+ * text; the reader taps the channel name to open WhatsApp or their mail app.
+ * `lead` is the sentence up to the channels; `trailing` (if any) continues the
+ * sentence after them, otherwise the renderer ends it with a full stop.
+ */
+export interface LegalContact {
+  lead: string;
+  trailing?: string;
+}
+
 export interface LegalSection {
   heading: string;
   /** Paragraphs of body text, rendered in order. */
   body?: string[];
   /** Optional bullet list rendered under the paragraphs. */
   bullets?: string[];
+  /** A contact line with live WhatsApp/email links — see LegalContact. */
+  contact?: LegalContact;
 }
 
 export interface LegalDoc {
@@ -130,9 +143,7 @@ const ar: Record<LegalDocId, LegalDoc> = {
       },
       {
         heading: "١٢. التواصل معنا",
-        body: [
-          `لأي استفسار حول هذه الشروط يمكنك التواصل معنا عبر واتساب على ${SUPPORT_WHATSAPP_DISPLAY} أو عبر البريد الإلكتروني ${SUPPORT_EMAIL}.`,
-        ],
+        contact: { lead: "لأي استفسار حول هذه الشروط يمكنك التواصل معنا" },
       },
     ],
   },
@@ -210,9 +221,7 @@ const ar: Record<LegalDocId, LegalDoc> = {
       },
       {
         heading: "١٠. التواصل معنا",
-        body: [
-          `لأي استفسار أو طلب يتعلق بخصوصيتك، تواصل معنا عبر واتساب على ${SUPPORT_WHATSAPP_DISPLAY} أو البريد الإلكتروني ${SUPPORT_EMAIL}.`,
-        ],
+        contact: { lead: "لأي استفسار أو طلب يتعلق بخصوصيتك، تواصل معنا" },
       },
     ],
   },
@@ -251,9 +260,11 @@ const ar: Record<LegalDocId, LegalDoc> = {
       },
       {
         heading: "٥. كيفية طلب الاسترجاع",
-        body: [
-          `تواصل معنا عبر واتساب على ${SUPPORT_WHATSAPP_DISPLAY} أو البريد الإلكتروني ${SUPPORT_EMAIL}، مع ذكر رقم الطلب وسبب الطلب. سنردّ عليك ونوضّح ما إذا كان طلبك مستوفيًا لشروط الاسترجاع.`,
-        ],
+        contact: {
+          lead: "تواصل معنا",
+          trailing:
+            "، مع ذكر رقم الطلب وسبب الطلب. سنردّ عليك ونوضّح ما إذا كان طلبك مستوفيًا لشروط الاسترجاع.",
+        },
       },
       {
         heading: "٦. مدة معالجة الاسترجاع",
@@ -263,9 +274,7 @@ const ar: Record<LegalDocId, LegalDoc> = {
       },
       {
         heading: "٧. التواصل معنا",
-        body: [
-          `لأي استفسار حول الإلغاء أو الاسترجاع، تواصل معنا عبر واتساب على ${SUPPORT_WHATSAPP_DISPLAY} أو البريد الإلكتروني ${SUPPORT_EMAIL}.`,
-        ],
+        contact: { lead: "لأي استفسار حول الإلغاء أو الاسترجاع، تواصل معنا" },
       },
     ],
   },
@@ -356,9 +365,7 @@ const en: Record<LegalDocId, LegalDoc> = {
       },
       {
         heading: "12. Contact us",
-        body: [
-          `For any question about these terms, contact us on WhatsApp at ${SUPPORT_WHATSAPP_DISPLAY} or by email at ${SUPPORT_EMAIL}.`,
-        ],
+        contact: { lead: "For any question about these terms, you can reach us" },
       },
     ],
   },
@@ -436,9 +443,7 @@ const en: Record<LegalDocId, LegalDoc> = {
       },
       {
         heading: "10. Contact us",
-        body: [
-          `For any privacy question or request, contact us on WhatsApp at ${SUPPORT_WHATSAPP_DISPLAY} or by email at ${SUPPORT_EMAIL}.`,
-        ],
+        contact: { lead: "For any privacy question or request, you can reach us" },
       },
     ],
   },
@@ -477,9 +482,11 @@ const en: Record<LegalDocId, LegalDoc> = {
       },
       {
         heading: "5. How to request a refund",
-        body: [
-          `Contact us on WhatsApp at ${SUPPORT_WHATSAPP_DISPLAY} or by email at ${SUPPORT_EMAIL}, quoting your order number and the reason. We will respond and let you know whether your request meets the refund conditions.`,
-        ],
+        contact: {
+          lead: "Reach us",
+          trailing:
+            ", quoting your order number and the reason. We will respond and let you know whether your request meets the refund conditions.",
+        },
       },
       {
         heading: "6. Refund processing time",
@@ -489,9 +496,7 @@ const en: Record<LegalDocId, LegalDoc> = {
       },
       {
         heading: "7. Contact us",
-        body: [
-          `For any question about cancellation or refunds, contact us on WhatsApp at ${SUPPORT_WHATSAPP_DISPLAY} or by email at ${SUPPORT_EMAIL}.`,
-        ],
+        contact: { lead: "For any question about cancellation or refunds, you can reach us" },
       },
     ],
   },

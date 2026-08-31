@@ -15,5 +15,5 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = await getDictionary(locale);
-  return <LegalPage doc={getLegalDoc(locale, "privacy")} updatedLabel={dict.legal.updatedPrefix} />;
+  return <LegalPage doc={getLegalDoc(locale, "privacy")} labels={dict.legal} />;
 }

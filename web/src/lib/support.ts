@@ -8,12 +8,6 @@
 /** E.164 without the leading `+` — the format wa.me links expect. */
 const SUPPORT_WHATSAPP_NUMBER = "966509076741";
 
-/**
- * The display form of the WhatsApp number, shown verbatim in the legal pages
- * where a customer (or a Moyasar reviewer) reads the contact details.
- */
-export const SUPPORT_WHATSAPP_DISPLAY = "+966 50 907 6741";
-
 /** The support/enquiries inbox listed in the legal pages and support links. */
 export const SUPPORT_EMAIL = "info@dawati.store";
 

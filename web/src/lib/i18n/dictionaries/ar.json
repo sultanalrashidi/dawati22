@@ -774,6 +774,11 @@
     "updatedPrefix": "آخر تحديث",
     "terms": "الشروط والأحكام",
     "privacy": "سياسة الخصوصية",
-    "refunds": "سياسة الاسترجاع"
+    "refunds": "سياسة الاسترجاع",
+    "contactVia": "عبر",
+    "contactOr": "أو",
+    "contactWhatsapp": "واتساب",
+    "contactEmail": "البريد الإلكتروني",
+    "contactWhatsappMessage": "مرحبًا، عندي استفسار عن دعوتي"
   }
 }

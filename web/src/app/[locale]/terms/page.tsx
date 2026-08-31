@@ -15,5 +15,5 @@ export default async function TermsPage({ params }: PageProps<"/[locale]/terms">
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = await getDictionary(locale);
-  return <LegalPage doc={getLegalDoc(locale, "terms")} updatedLabel={dict.legal.updatedPrefix} />;
+  return <LegalPage doc={getLegalDoc(locale, "terms")} labels={dict.legal} />;
 }

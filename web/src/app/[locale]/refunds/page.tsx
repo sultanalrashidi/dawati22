@@ -15,5 +15,5 @@ export default async function RefundsPage({ params }: PageProps<"/[locale]/refun
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = await getDictionary(locale);
-  return <LegalPage doc={getLegalDoc(locale, "refunds")} updatedLabel={dict.legal.updatedPrefix} />;
+  return <LegalPage doc={getLegalDoc(locale, "refunds")} labels={dict.legal} />;
 }

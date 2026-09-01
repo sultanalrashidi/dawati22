@@ -25,7 +25,7 @@ export type OtpRequestResult =
   | { ok: true; devCode?: string; phone: string }
   | {
       ok: false;
-      error: "invalid_phone" | "rate_limited" | "admin_account" | "delivery";
+      error: "invalid_phone" | "rate_limited" | "delivery";
       retryAfterSeconds?: number;
     };
 
@@ -36,18 +36,21 @@ export async function requestLoginOtpAction(
   const phone = normalizePhone(rawPhone, iso);
   if (!phone) return { ok: false, error: "invalid_phone" };
 
-  // Admins do not sign in here. Refused BEFORE the code is sent, for two
-  // reasons: an owner who reached for the wrong page gets an answer instead of
-  // waiting on an SMS that was never coming, and probing this page for admin
-  // numbers costs the account nothing.
+  // Admins do not sign in here — but this page must not SAY so. It used to
+  // answer "this account signs in from the admin page", which handed anyone
+  // probing phone numbers a confirmed list of admin accounts. Now an admin
+  // number gets the same answer as any other: "code sent". Nothing is sent,
+  // no OtpCode row is written, and whatever code gets typed fails as a plain
+  // wrong code — the illusion the private route has always kept.
   //
-  // It does confirm that a number is an admin's, which the private route
-  // deliberately never does. The asymmetry is the point: that route is a
-  // password-guessing surface, this one is now not a way in for admins at all,
-  // and knowing a number without the password, the phone or the address buys
-  // nothing.
+  // The pause stands in for the SMS round-trip the real path pays; without it
+  // the instant answer would be its own tell. Known, accepted residue: a
+  // pretend-send never rate-limits, where a real number eventually would.
   const user = await prisma.user.findUnique({ where: { phone }, select: { role: true } });
-  if (user?.role === Role.ADMIN) return { ok: false, error: "admin_account" };
+  if (user?.role === Role.ADMIN) {
+    await new Promise((resolve) => setTimeout(resolve, 400 + Math.random() * 600));
+    return { ok: true, phone };
+  }
 
   try {
     const { devCode } = await requestOtp(phone, OtpPurpose.LOGIN);
@@ -121,7 +124,7 @@ async function startSession(
 export type OtpSubmitResult =
   | { ok: true; needsName: false; redirectTo: string }
   | { ok: true; needsName: true; otpId: string }
-  | { ok: false; error: "invalid_phone" | "invalid_code" | "account_blocked" | "admin_account" };
+  | { ok: false; error: "invalid_phone" | "invalid_code" | "account_blocked" };
 
 export async function submitOtpCodeAction(
   rawPhone: string,
@@ -143,9 +146,12 @@ export async function submitOtpCodeAction(
     return { ok: true, needsName: true, otpId };
   }
   if (user.isBlocked) return { ok: false, error: "account_blocked" };
-  // The same refusal again, because a server action is a public endpoint and
-  // the check above lives on the path a browser happens to take.
-  if (user.role === Role.ADMIN) return { ok: false, error: "admin_account" };
+  // An admin can only reach this line with a REAL code — one the private
+  // route sent for their own sign-in, pasted here instead. Still refused (a
+  // customer session for an admin must never exist), but as a plain wrong
+  // code: naming the real reason would un-hide what the pretend-send above
+  // hides.
+  if (user.role === Role.ADMIN) return { ok: false, error: "invalid_code" };
 
   await consumeOtp(otpId);
   if (!user.phoneVerifiedAt) {

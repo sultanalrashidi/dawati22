@@ -10,12 +10,16 @@
 -- transaction, so a failure part-way leaves the data exactly as it was.
 --
 -- DELETED
---   every account except the admin(s) — customers and door staff
---   their orders, events, guests, invitations, RSVPs and check-ins
+--   every account except the admin(s) and the two TEST numbers below —
+--   customers and door staff
+--   ALL orders, events, guests, invitations, RSVPs and check-ins — including
+--   the test accounts' own: their accounts stay, their fake data does not
 --   custom design requests, gate sessions, notifications, audit log, OTP codes
 --
 -- KEPT
 --   the ADMIN account, INCLUDING its password — do not lose panel access
+--   the two test accounts (+966500000004, +966500000006) — the on-screen-code
+--   bypass numbers, kept so the panel switch still has accounts to work with
 --   every design: themes, colours, artwork, layouts, typography, fonts
 --   the price list (PricingRate) and the panel switches (AppSetting)
 --   the archived legacy plans, which are kept as a record of what was sold
@@ -61,22 +65,35 @@ DELETE FROM "Order";
 -- Private designs granted to a customer. The DESIGNS themselves stay; only the
 -- grant goes, so a theme built for a test account is still there to publish or
 -- hand to somebody real.
-DELETE FROM "ThemeAssignment" WHERE "userId" IN (SELECT id FROM "User" WHERE role <> 'ADMIN');
+DELETE FROM "ThemeAssignment"
+ WHERE "userId" IN (SELECT id FROM "User"
+                     WHERE role <> 'ADMIN'
+                       AND (phone IS NULL OR phone NOT IN ('+966500000004', '+966500000006')));
 
 DELETE FROM "Notification";
 DELETE FROM "AuditLog";
 DELETE FROM "OtpCode";
 -- Scoped to the accounts being removed: wiping every session would sign the
 -- admin out of the panel mid-cleanup.
-DELETE FROM "Session" WHERE "userId" IN (SELECT id FROM "User" WHERE role <> 'ADMIN');
+DELETE FROM "Session"
+ WHERE "userId" IN (SELECT id FROM "User"
+                     WHERE role <> 'ADMIN'
+                       AND (phone IS NULL OR phone NOT IN ('+966500000004', '+966500000006')));
 
-DELETE FROM "User" WHERE role <> 'ADMIN';
+-- Everyone except the admin(s) and the two test numbers. Their fake orders and
+-- events are already gone with everyone else's above; the accounts themselves
+-- stay so the test-phone bypass still has something to sign in as.
+DELETE FROM "User"
+ WHERE role <> 'ADMIN'
+   AND (phone IS NULL OR phone NOT IN ('+966500000004', '+966500000006'));
 
 COMMIT;
 
--- What is left. Users should be your admin(s) only; designs and rates untouched.
+-- What is left. Users should be your admin(s) plus the two test accounts;
+-- designs and rates untouched.
 SELECT 'users'    AS what, count(*) FROM "User"
 UNION ALL SELECT 'admins',        count(*) FROM "User" WHERE role = 'ADMIN'
+UNION ALL SELECT 'test accounts', count(*) FROM "User" WHERE phone IN ('+966500000004', '+966500000006')
 UNION ALL SELECT 'events',        count(*) FROM "Event"
 UNION ALL SELECT 'orders',        count(*) FROM "Order"
 UNION ALL SELECT 'guests',        count(*) FROM "Guest"

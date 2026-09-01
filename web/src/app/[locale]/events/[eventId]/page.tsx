@@ -269,7 +269,12 @@ export default async function EventDetailPage({
                           ? `${invitation.respondedAt ? "" : `${d.openedNoReply} · `}${
                               relativeTime(lastActivityAt, locale) ?? ""
                             }`
-                          : d.notOpenedYet
+                          : // Unshared and unopened are different kinds of
+                            // silence: one asks the host to act, the other to
+                            // wait. sentAt distinguishes them.
+                            invitation?.sentAt
+                            ? d.notOpenedYet
+                            : d.notSentYet
                       }
                       invitationUrl={invitation ? guestInvitationUrl(invitation.linkToken) : ""}
                       waMessage={

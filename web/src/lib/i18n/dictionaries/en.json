@@ -345,6 +345,7 @@
       "colStatus": "Status",
       "colActivity": "Last activity",
       "notOpenedYet": "Not opened yet",
+      "notSentYet": "Not sent yet",
       "openedNoReply": "Opened, no reply",
       "gateHint": "Every guest carries their code in their invitation. Scan it at the door from the organiser’s phone — no extra device.",
       "openScanner": "Open the scanner",

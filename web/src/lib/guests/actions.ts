@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUserOrThrow } from "@/lib/auth/guards";
-import { addGuest, setGuestBlocked, deleteGuest, GuestError } from "@/lib/guests/service";
+import { addGuest, markInvitationShared, setGuestBlocked, deleteGuest, GuestError } from "@/lib/guests/service";
 import { Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 
@@ -32,6 +32,18 @@ export async function addGuestAction(
 
   revalidatePath(`/${safeLocale}/events/${eventId}`);
   return null;
+}
+
+/**
+ * The host pressed copy or WhatsApp on a guest's row — record the invitation
+ * as sent. Fired alongside the share itself, so it swallows nothing: a
+ * tampered guestId still throws, an honest click updates the "sent" count.
+ */
+export async function markInvitationSharedAction(guestId: string, eventId: string, locale: string) {
+  const user = await requireUserOrThrow([Role.CUSTOMER]);
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  await markInvitationShared(guestId, user.id);
+  revalidatePath(`/${safeLocale}/events/${eventId}`);
 }
 
 export async function toggleGuestBlockedAction(guestId: string, eventId: string, locale: string, blocked: boolean) {

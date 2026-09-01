@@ -2,8 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUserOrThrow } from "@/lib/auth/guards";
-import { setUserBlocked, setEventStatus, updatePricingRate } from "@/lib/admin/service";
+import { setUserBlocked, setEventStatus, setGuestManagementDone, updatePricingRate } from "@/lib/admin/service";
 import { EventError, updateEventDetails } from "@/lib/events/service";
+import { markInvitationShared } from "@/lib/guests/service";
 import { readEventForm } from "@/lib/events/form";
 import { Role, EventStatus } from "@/generated/prisma/client";
 import { parseTier } from "@/lib/orders/pricing";
@@ -25,6 +26,27 @@ export async function cancelEventAction(eventId: string, locale: string) {
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
   await setEventStatus(eventId, EventStatus.ARCHIVED);
   revalidatePath(`/${safeLocale}/admin/events`);
+}
+
+/**
+ * The team pressed copy or WhatsApp for one guest on the admin guests page —
+ * the same "this invitation was actually sent" record the customer's own
+ * share buttons write, minus the ownership check an admin cannot pass.
+ */
+export async function markInvitationSharedAdminAction(guestId: string, eventId: string, locale: string) {
+  await requireAdmin();
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  await markInvitationShared(guestId, null);
+  revalidatePath(`/${safeLocale}/admin/events/${eventId}/guests`);
+}
+
+/** "The team sent this event's invitations" — and the undo for a misclick. */
+export async function toggleGuestMgmtDoneAction(eventId: string, locale: string, done: boolean) {
+  const admin = await requireAdmin();
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  await setGuestManagementDone(eventId, admin.id, done);
+  revalidatePath(`/${safeLocale}/admin/events`);
+  revalidatePath(`/${safeLocale}/admin/events/${eventId}/guests`);
 }
 
 export type EventEditState = { error?: string; saved?: boolean } | null;

@@ -1,6 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
-import { EventStatus, OrderStatus, Role } from "@/generated/prisma/client";
+import { EventStatus, GuestManagementRequestStatus, OrderStatus, Role } from "@/generated/prisma/client";
 import type { InvitationTier } from "@/generated/prisma/enums";
 
 export async function getDashboardMetrics() {
@@ -40,9 +40,36 @@ export async function listEventsAdmin() {
       theme: true,
       order: { include: { plan: true } },
       guests: { select: { id: true, checkedInCount: true } },
+      // Whether the team has sent this event's invitations yet — only
+      // meaningful when the customer picked team-managed guests.
+      guestManagementRequest: { select: { status: true } },
     },
     orderBy: { createdAt: "desc" },
     take: 200,
+  });
+}
+
+/**
+ * Marks a team-managed event's invitations as sent (or walks that back).
+ *
+ * The request row is written lazily, HERE, rather than when the customer
+ * creates the event: the badge in the events list derives "pending" from the
+ * event's own `guestManagementMode`, so a missing row already reads as
+ * pending and event creation never gained a step that could fail. The row
+ * exists to remember the one thing the mode cannot: that the team finished.
+ */
+export async function setGuestManagementDone(eventId: string, adminId: string, done: boolean) {
+  const event = await prisma.event.findUnique({ where: { id: eventId }, select: { ownerId: true } });
+  if (!event) throw new Error("Event not found");
+
+  const resolution = done
+    ? { status: GuestManagementRequestStatus.COMPLETED, resolvedById: adminId, resolvedAt: new Date() }
+    : { status: GuestManagementRequestStatus.PENDING, resolvedById: null, resolvedAt: null };
+
+  await prisma.guestManagementRequest.upsert({
+    where: { eventId },
+    update: resolution,
+    create: { eventId, requestedById: event.ownerId, ...resolution },
   });
 }
 
@@ -54,6 +81,7 @@ export async function getEventAdmin(eventId: string) {
       theme: true,
       order: { include: { plan: true } },
       guests: { include: { invitation: true }, orderBy: { createdAt: "desc" } },
+      guestManagementRequest: { select: { status: true } },
       gateStaffAssignments: { include: { gateStaff: { include: { user: true } } }, where: { revokedAt: null } },
     },
   });

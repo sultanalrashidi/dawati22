@@ -10,7 +10,8 @@ import { orderTerms } from "@/lib/orders/terms";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { daysUntil, relativeTime } from "@/lib/events/activity";
 import { guestInvitationUrl } from "@/lib/urls";
-import { Role } from "@/generated/prisma/client";
+import { supportWhatsAppUrl } from "@/lib/support";
+import { Role, EventGuestManagementMode } from "@/generated/prisma/client";
 import { AddGuestForm } from "@/components/events/add-guest-form";
 import { GuestRow } from "@/components/events/guest-row";
 import { GatePinForm } from "@/components/events/gate-pin-form";
@@ -199,6 +200,30 @@ export default async function EventDetailPage({
               <div className="bg-success" style={{ width: `${(accepted.length / sent) * 100}%` }} />
               <div className="bg-danger" style={{ width: `${(declined.length / sent) * 100}%` }} />
             </div>
+          </section>
+        )}
+
+        {/* The customer asked the Dawati team to send the invitations. Say so
+            — and say what we need from them: the guest list below, then a
+            WhatsApp ping so the team actually hears about it. The message
+            carries the event's reference code, which is how support finds the
+            right event without asking. */}
+        {event.guestManagementMode === EventGuestManagementMode.ADMIN && (
+          <section className="mt-4 rounded-2xl border border-accent/40 bg-accent-soft/15 px-5 py-4">
+            <h2 className="text-base font-bold text-fg">{d.teamMgmtTitle}</h2>
+            <p className="mt-1 text-sm leading-relaxed text-fg-muted">{d.teamMgmtBody}</p>
+            <a
+              href={supportWhatsAppUrl(
+                d.teamMgmtWhatsappMessage
+                  .replace("{name}", event.name)
+                  .replace("{reference}", event.referenceCode ?? event.id.slice(-6)),
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-block rounded-full bg-accent px-5 py-2 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong"
+            >
+              {d.teamMgmtCta}
+            </a>
           </section>
         )}
 

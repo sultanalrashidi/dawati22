@@ -38,7 +38,15 @@ export async function markViewed(invitationId: string, currentStatus: Invitation
   if (!VIEW_ELIGIBLE.has(currentStatus)) return;
   await prisma.invitation.update({
     where: { id: invitationId },
-    data: { status: InvitationStatus.VIEWED, viewedAt: new Date() },
+    data: {
+      status: InvitationStatus.VIEWED,
+      viewedAt: new Date(),
+      // A DRAFT that a guest is looking at was evidently delivered, whatever
+      // route it took — the host may have shared the link outside the share
+      // buttons that normally record the send. A real SENT keeps its original
+      // sentAt untouched.
+      ...(currentStatus === InvitationStatus.DRAFT ? { sentAt: new Date() } : {}),
+    },
   });
 }
 

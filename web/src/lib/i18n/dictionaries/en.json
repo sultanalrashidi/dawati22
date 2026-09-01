@@ -349,7 +349,11 @@
       "openedNoReply": "Opened, no reply",
       "gateHint": "Every guest carries their code in their invitation. Scan it at the door from the organiser’s phone — no extra device.",
       "openScanner": "Open the scanner",
-      "noGuestsYet": "No guests yet — add your first and start sending."
+      "noGuestsYet": "No guests yet — add your first and start sending.",
+      "teamMgmtTitle": "The Dawati team sends your invitations",
+      "teamMgmtBody": "Add your guests and their numbers to the list below, then message us on WhatsApp once you're ready — our team will send the invitations for you.",
+      "teamMgmtCta": "Message us on WhatsApp",
+      "teamMgmtWhatsappMessage": "Hello, I chose Dawati team guest management for my event “{name}” — reference: {reference}"
     }
   },
   "admin": {
@@ -534,7 +538,23 @@
     "pricingIntro": "The price of one invitation. Editing here affects new orders only — paid orders keep the price they were sold at.",
     "unitPrice": "Price per invitation (SAR)",
     "legacyPlans": "Legacy packages (history only)",
-    "legacyPlansNote": "No longer sold, kept so older orders can still name what they bought."
+    "legacyPlansNote": "No longer sold, kept so older orders can still name what they bought.",
+    "guestMgmtBadge": "Guests: Dawati team",
+    "guestMgmtDone": "Invitations sent",
+    "guestMgmtCounter": "{count} events awaiting the team to send invitations",
+    "guestsLink": "Guests",
+    "guestsPageTitle": "Event guests",
+    "guestColPhone": "Phone",
+    "guestColSeats": "Seats",
+    "sendViaWhatsapp": "Send via WhatsApp",
+    "copyLink": "Copy link",
+    "copiedShort": "Copied",
+    "copyAllLinks": "Copy all (names & links)",
+    "adminNoGuestsYet": "The customer hasn't added guests yet.",
+    "noInvitationYet": "No invitation",
+    "markGuestsDone": "Mark: invitations sent",
+    "markGuestsPending": "Back to pending",
+    "sentMark": "Sent"
   },
   "gate": {
     "title": "Gate Check-in",

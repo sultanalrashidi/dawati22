@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
-import { toggleGuestBlockedAction, deleteGuestAction } from "@/lib/guests/actions";
+import {
+  toggleGuestBlockedAction,
+  deleteGuestAction,
+  markInvitationSharedAction,
+} from "@/lib/guests/actions";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 
 type RsvpBadge = "accepted" | "declined" | "pending";
@@ -46,6 +50,12 @@ export function GuestRow({
   const [copied, setCopied] = useState(false);
   const boundToggleBlock = toggleGuestBlockedAction.bind(null, guest.id, eventId, locale, !guest.isBlocked);
   const boundDelete = deleteGuestAction.bind(null, guest.id, eventId, locale);
+  // Records "this invitation was actually sent" the moment the host shares —
+  // fire-and-forget so a hiccup here can never get in the way of the share
+  // itself, which has already happened.
+  const recordShare = () => {
+    void markInvitationSharedAction(guest.id, eventId, locale).catch(() => {});
+  };
   const waHref = `https://wa.me/?text=${encodeURIComponent(waMessage)}`;
   const d = dict.events.detail;
   const rsvpLabel = rsvp === "accepted" ? d.rsvpAccepted : rsvp === "declined" ? d.rsvpDeclined : d.rsvpPending;
@@ -85,6 +95,7 @@ export function GuestRow({
             navigator.clipboard.writeText(invitationUrl);
             setCopied(true);
             setTimeout(() => setCopied(false), 2000);
+            recordShare();
           }}
           className="h-8 rounded-full border border-border px-3 text-xs font-medium text-fg transition-colors hover:bg-surface-2"
         >
@@ -94,6 +105,7 @@ export function GuestRow({
           href={waHref}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={recordShare}
           className="inline-flex h-8 items-center rounded-full bg-accent px-3 text-xs font-medium text-accent-fg transition-colors hover:bg-accent-strong"
         >
           {d.sendWhatsapp}

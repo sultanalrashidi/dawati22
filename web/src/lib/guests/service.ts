@@ -40,14 +40,51 @@ export async function addGuest(
       invitation: {
         create: {
           eventId,
-          status: InvitationStatus.SENT,
+          // DRAFT, not SENT: adding a guest only prepares the link. "Sent"
+          // is recorded when the host actually shares it (copy / WhatsApp —
+          // see markInvitationShared) or, failing that, when the guest opens
+          // it — so the event page's "sent" count stops flattering a list
+          // nobody has invited yet.
+          status: InvitationStatus.DRAFT,
           linkToken: generateSecureToken(),
           qrToken: generateSecureToken(),
-          sentAt: new Date(),
         },
       },
     },
     include: { invitation: true },
+  });
+}
+
+/**
+ * Records that an invitation was actually shared — the host (or the Dawati
+ * team, on a team-managed event) pressed copy or WhatsApp for this guest.
+ *
+ * `userId` null means the caller is the admin flow, whose action has already
+ * checked the role; any other caller must own the event. Idempotent: the first
+ * share sets SENT + sentAt, later clicks change nothing, and a status that has
+ * already moved on (VIEWED, ACCEPTED…) is never dragged back to SENT.
+ */
+export async function markInvitationShared(guestId: string, userId: string | null) {
+  const guest = await prisma.guest.findUnique({
+    where: { id: guestId },
+    select: {
+      event: { select: { ownerId: true } },
+      invitation: { select: { id: true, status: true, sentAt: true } },
+    },
+  });
+  if (!guest || (userId !== null && guest.event.ownerId !== userId)) {
+    throw new GuestError("Guest not found");
+  }
+  const invitation = guest.invitation;
+  if (!invitation) return;
+  if (invitation.status !== InvitationStatus.DRAFT && invitation.sentAt) return;
+
+  await prisma.invitation.update({
+    where: { id: invitation.id },
+    data: {
+      ...(invitation.status === InvitationStatus.DRAFT ? { status: InvitationStatus.SENT } : {}),
+      ...(invitation.sentAt ? {} : { sentAt: new Date() }),
+    },
   });
 }
 

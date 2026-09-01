@@ -102,6 +102,10 @@ export async function buildThemeOptions(
           theme.variants.length > 1 ? (locale === "ar" ? variant.nameAr : variant.name) : undefined,
         category: theme.category,
         config: builderThemeConfig({ palette: parsePalette(variant.palette) }),
+        // Without this the preview dialog gets no artwork and renders the
+        // generic legacy invitation -- the "theme doesn't show in preview"
+        // bug. The real invitation loads it straight from loadBuilderTheme.
+        builder,
         // A builder design's colours are rows of one theme, so the theme IS
         // the family.
         familyKey: theme.id,

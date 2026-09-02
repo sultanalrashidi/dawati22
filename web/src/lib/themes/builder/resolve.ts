@@ -6,6 +6,7 @@
 
 import {
   layersForScene,
+  resolveLayerColors,
   resolveTransform,
   type Breakpoint,
   type Layer,
@@ -13,6 +14,7 @@ import {
   type SceneId,
   type Transform,
   type TransformOverride,
+  type VariantPalette,
 } from "@/lib/themes/builder/types";
 
 export interface ResolvedLayer {
@@ -60,11 +62,19 @@ export function parseLayoutOverrides(raw: unknown): LayoutOverrides {
   return raw as LayoutOverrides;
 }
 
+/**
+ * @param palette The colour being rendered. Every `@role` colour on a layer —
+ *   in the shared document or in this variant's own `paint` — resolves against
+ *   it here, so the layer renderers only ever see hex. Omitted only by callers
+ *   that never paint (geometry-only work); a role then reaches the renderer
+ *   as-is and `textStyleToCss` lets it inherit the stage colour.
+ */
 export function resolveScene(
   doc: LayoutDoc,
   scene: SceneId,
   breakpoint: Breakpoint,
   overrides: LayoutOverrides = {},
+  palette?: VariantPalette,
 ): ResolvedLayer[] {
   return layersForScene(doc, scene)
     .filter((layer) => layer.visible)
@@ -75,15 +85,21 @@ export function resolveScene(
     .map((layer) => {
       const transform = resolveTransform(layer, breakpoint);
       const variantOverride = overrides[layer.id];
-      if (!variantOverride) return { layer, transform };
+      if (!variantOverride) return { layer: paletted(layer, palette), transform };
 
       // `paint` is not a transform key; strip it before merging geometry.
       const { paint, ...geometry } = variantOverride;
       return {
-        layer: paint ? applyPaint(layer, paint) : layer,
+        // Paint first, then resolve: a variant's own `@fgMuted` on a layer the
+        // design keeps at `@fg` must win before either becomes a hex.
+        layer: paletted(paint ? applyPaint(layer, paint) : layer, palette),
         transform: { ...transform, ...stripUndefined(geometry) },
       };
     });
+}
+
+function paletted(layer: Layer, palette: VariantPalette | undefined): Layer {
+  return palette ? resolveLayerColors(layer, palette) : layer;
 }
 
 function stripUndefined<T extends object>(source: T): Partial<T> {

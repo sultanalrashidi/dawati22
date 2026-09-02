@@ -14,8 +14,16 @@
  * mobile-first values; `tablet`/`desktop` are sparse overrides applied on top.
  */
 
-/** Bumped when a migration of stored documents is required. */
-export const BUILDER_SCHEMA_VERSION = 2;
+/**
+ * Bumped when a migration of stored documents is required.
+ *
+ * - v2: scenes became an ordered, designable list.
+ * - v3: colours became palette ROLES (`@fg`, `@fgMuted`, …) instead of hex
+ *   baked from whichever colour the design happened to be converted on. The
+ *   upgrade needs the variants' palettes, so it runs in `ink-roles.ts` from
+ *   the server loaders rather than in `parseLayoutDoc`.
+ */
+export const BUILDER_SCHEMA_VERSION = 3;
 
 /**
  * A scene is one screen of the invitation. They are an ORDERED LIST, not a
@@ -113,6 +121,64 @@ export type FontRef = string;
 
 export const FONT_ROLE_PREFIX = "@";
 
+// ---------------------------------------------------------------------------
+// Palette colour roles
+// ---------------------------------------------------------------------------
+
+/**
+ * A colour is either a literal hex ("#5C4526") or a reference to one slot of
+ * the variant's palette, written `@fg` — the same idea as `@display` for
+ * fonts. A role resolves against whichever COLOUR of the design is being
+ * rendered, so a text box set to `@fg` follows every variant's own "النص"
+ * without anyone repainting it per colour. A literal hex is an explicit
+ * override and stays exactly that colour.
+ *
+ * This is what makes "the primary text colour" one setting on the palette
+ * rather than a per-layer, per-variant chore — the bug that motivated it was a
+ * new colour whose text kept the ink of the colour it was copied from.
+ */
+export type ColorRef = string;
+
+export const COLOR_ROLE_PREFIX = "@";
+
+export const PALETTE_ROLES = ["fg", "fgMuted", "accent", "accentFg", "surface", "bg"] as const;
+export type PaletteRole = (typeof PALETTE_ROLES)[number];
+
+export const PALETTE_ROLE_LABELS_AR: Record<PaletteRole, string> = {
+  fg: "النص",
+  fgMuted: "نص ثانوي",
+  accent: "اللون المميز",
+  accentFg: "نص فوق المميز",
+  surface: "السطح",
+  bg: "الخلفية",
+};
+
+/** The palette slot a `@role` reference names, or null for a literal colour. */
+export function colorRoleOf(ref: string): PaletteRole | null {
+  if (!ref.startsWith(COLOR_ROLE_PREFIX)) return null;
+  const role = ref.slice(COLOR_ROLE_PREFIX.length);
+  return (PALETTE_ROLES as readonly string[]).includes(role) ? (role as PaletteRole) : null;
+}
+
+export function isColorRole(ref: string): boolean {
+  return ref.startsWith(COLOR_ROLE_PREFIX);
+}
+
+export function roleRef(role: PaletteRole): ColorRef {
+  return `${COLOR_ROLE_PREFIX}${role}`;
+}
+
+/**
+ * A stored colour as CSS: a role becomes the variant's own value, a literal
+ * passes through. An unknown role falls back to the primary text colour — the
+ * one value every design can be read in.
+ */
+export function resolveColor(ref: ColorRef, palette: VariantPalette): string {
+  if (!isColorRole(ref)) return ref;
+  const role = colorRoleOf(ref);
+  return role ? palette[role] : palette.fg;
+}
+
 export interface TextStyle {
   font: FontRef;
   /**
@@ -121,7 +187,8 @@ export interface TextStyle {
    */
   fontSize: number;
   fontWeight: number;
-  color: string;
+  /** A hex literal or a palette role — see `ColorRef`. */
+  color: ColorRef;
   align: "start" | "center" | "end";
   lineHeight: number;
   /** em */
@@ -134,7 +201,9 @@ export const DEFAULT_TEXT_STYLE: TextStyle = {
   font: "@body",
   fontSize: 16,
   fontWeight: 400,
-  color: "#000000",
+  // The palette's primary text colour, so a new text box follows each colour
+  // of the design from the moment it is added.
+  color: "@fg",
   align: "center",
   lineHeight: 1.6,
   letterSpacing: 0,
@@ -597,6 +666,61 @@ export function resolveFont(ref: FontRef, typography: TypographyDoc): FontRole {
     return typography.roles[roleName] ?? typography.roles.body ?? DEFAULT_TYPOGRAPHY_DOC.roles.body;
   }
   return { family: ref, weight: 400 };
+}
+
+/**
+ * Every layer property that holds a colour, and every nested text style whose
+ * `color` does. One list, so the renderer's role resolution, the editor's
+ * variant-paint routing and the stored-document upgrade cannot disagree about
+ * what a colour IS.
+ */
+export const TEXT_STYLE_KEYS = [
+  "style",
+  "tabletStyle",
+  "desktopStyle",
+  "titleStyle",
+  "numberStyle",
+  "labelStyle",
+  "timeStyle",
+  "itemStyle",
+  "fieldStyle",
+] as const;
+export type TextStyleKey = (typeof TEXT_STYLE_KEYS)[number];
+
+export const LAYER_COLOR_KEYS = [
+  "background",
+  "borderColor",
+  "boxColor",
+  "fgColor",
+  "fieldBackground",
+  "accent",
+  "accentFg",
+] as const;
+export type LayerColorKey = (typeof LAYER_COLOR_KEYS)[number];
+
+/**
+ * A layer with every `@role` colour replaced by the palette's value, so the
+ * layer renderers only ever see CSS-ready hex. Returns the same object when
+ * nothing needed resolving — most layers, once resolved, are cheap to skip.
+ */
+export function resolveLayerColors<T extends Layer>(layer: T, palette: VariantPalette): T {
+  const source = layer as unknown as Record<string, unknown>;
+  let out: Record<string, unknown> | null = null;
+  const draft = () => (out ??= { ...source });
+
+  for (const key of LAYER_COLOR_KEYS) {
+    const value = source[key];
+    if (typeof value === "string" && isColorRole(value)) draft()[key] = resolveColor(value, palette);
+  }
+  for (const key of TEXT_STYLE_KEYS) {
+    const style = source[key];
+    if (!style || typeof style !== "object") continue;
+    const color = (style as { color?: unknown }).color;
+    if (typeof color === "string" && isColorRole(color)) {
+      draft()[key] = { ...(style as object), color: resolveColor(color, palette) };
+    }
+  }
+  return (out ?? source) as unknown as T;
 }
 
 /** Layers of one scene, in paint order. */

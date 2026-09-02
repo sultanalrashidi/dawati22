@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { BuilderCanvas } from "@/components/admin/builder/builder-canvas";
 import { AssetsPanel, type AssetRow } from "@/components/admin/builder/assets-panel";
@@ -23,6 +23,7 @@ import { buildAssetMap } from "@/lib/themes/builder/resolve";
 import { resolveContent, SAMPLE_CONTENT_INPUT } from "@/lib/themes/builder/content";
 import { parseLayoutDoc } from "@/lib/themes/builder/schema";
 import {
+  DEFAULT_PALETTE,
   DEVICE_PRESETS,
   type Breakpoint,
   type LayerType,
@@ -160,18 +161,60 @@ export function ThemeBuilder({
    * and unsaved colour edits on the previous one would be lost, which is why
    * `selectVariant` saves them first.
    */
-  const { replacePaint, replaceVariantGeometry } = state;
+  const { replacePaint, replaceVariantGeometry, paintDirty, paint, variantGeometry, markPaintSaved } = state;
+
+  // A save captures the document and this colour's record in its closure,
+  // then awaits a round trip. Anything edited meanwhile is not in what was
+  // written, so a continuation must compare against what the editor holds
+  // NOW before it declares the editor clean. Identity is enough: every
+  // setter in the state hook creates a new object.
+  const latest = useRef({ doc: state.doc, paint, variantGeometry });
+  useEffect(() => {
+    latest.current = { doc: state.doc, paint, variantGeometry };
+  });
+  const paintUnchangedSince = (snapshot: { paint: VariantPaint; variantGeometry: VariantGeometry }) =>
+    latest.current.paint === snapshot.paint && latest.current.variantGeometry === snapshot.variantGeometry;
+
   const selectVariant = useCallback(
     (id: string) => {
-      if (id === activeVariantId) return;
+      // While a save (and the refresh it ends with) is in flight, `variants`
+      // still holds the pre-save rows: switching back to the colour just
+      // saved would re-seed the editor from them, and the next save would
+      // write the old colours over the new ones. Wait for the refresh.
+      if (saving || id === activeVariantId) return;
       const next = variants.find((v) => v.id === id);
-      setActiveVariantId(id);
-      replacePaint(paintOf(next));
-      // Positions are per-colour too now, so they swap with the colour or the
-      // editor would show one colour's nudges on another.
-      replaceVariantGeometry(geometryOf(next));
+      const switchTo = () => {
+        setActiveVariantId(id);
+        replacePaint(paintOf(next));
+        // Positions are per-colour too now, so they swap with the colour or
+        // the editor would show one colour's nudges on another.
+        replaceVariantGeometry(geometryOf(next));
+      };
+      if (!paintDirty || !activeVariant) {
+        switchTo();
+        return;
+      }
+      // This colour's unsaved edits would be replaced by the next colour's
+      // record; write them first, and stay here if that fails.
+      setSaveError(null);
+      const snapshot = { paint, variantGeometry };
+      startSaving(async () => {
+        const merged = mergeOverrides(activeVariant.overrides, paint, variantGeometry);
+        const result = await saveVariantOverridesAction(activeVariant.id, merged);
+        if (result?.error) {
+          setSaveError(result.error);
+          return;
+        }
+        router.refresh();
+        // Edits made while the save was in flight are not in `merged`: stay
+        // on this colour with them still marked unsaved, so the next switch
+        // writes them too instead of replacing them with the other colour's.
+        if (!paintUnchangedSince(snapshot)) return;
+        markPaintSaved();
+        switchTo();
+      });
     },
-    [activeVariantId, variants, replacePaint, replaceVariantGeometry],
+    [saving, activeVariantId, activeVariant, variants, replacePaint, replaceVariantGeometry, paintDirty, paint, variantGeometry, markPaintSaved, router],
   );
   /**
    * A colour edit does not touch the layout document, so the document's own
@@ -192,9 +235,11 @@ export function ThemeBuilder({
   const content = useMemo(() => resolveContent(SAMPLE_CONTENT_INPUT), []);
 
   const save = useCallback(() => {
+    if (saving) return;
     setSaveError(null);
+    const snapshot = { doc: state.doc, paint: state.paint, variantGeometry: state.variantGeometry };
     startSaving(async () => {
-      const result = await saveLayoutAction(themeId, state.doc);
+      const result = await saveLayoutAction(themeId, snapshot.doc);
       if (result?.error) {
         setSaveError(result.error);
         return;
@@ -202,18 +247,22 @@ export function ThemeBuilder({
       // The design and this colour's own colours are two records; both have to
       // land before the editor calls itself saved.
       if (state.paintDirty && activeVariant) {
-        const merged = mergeOverrides(activeVariant.overrides, state.paint, state.variantGeometry);
+        const merged = mergeOverrides(activeVariant.overrides, snapshot.paint, snapshot.variantGeometry);
         const painted = await saveVariantOverridesAction(activeVariant.id, merged);
         if (painted?.error) {
           setSaveError(painted.error);
           return;
         }
-        state.markPaintSaved();
+        // Only what was written is saved; a colour edit made during the round
+        // trip stays flagged so the next save carries it.
+        if (paintUnchangedSince(snapshot)) state.markPaintSaved();
       }
-      state.markSaved(state.doc);
+      // Likewise for the design: marking a newer document as saved would
+      // silently revert the edits made while this one was being written.
+      if (latest.current.doc === snapshot.doc) state.markSaved(snapshot.doc);
       router.refresh();
     });
-  }, [themeId, state, router, activeVariant]);
+  }, [saving, themeId, state, router, activeVariant]);
 
   // Ctrl/Cmd+S saves, Ctrl/Cmd+Z undoes — muscle memory in a canvas editor.
   useEffect(() => {
@@ -509,6 +558,9 @@ export function ThemeBuilder({
                 layer={state.selected}
                 breakpoint={state.breakpoint}
                 typography={typography}
+                // The colour chips show THIS colour's palette, so the swatch
+                // beside "النص" is the ink the stage is painting right now.
+                palette={activeVariant?.palette ?? DEFAULT_PALETTE}
                 fonts={fonts}
                 onTransform={(patch) => state.selected && state.patchTransform(state.selected.id, patch)}
                 onPatch={(patch) => state.selected && state.patchLayer(state.selected.id, patch)}
@@ -548,6 +600,7 @@ export function ThemeBuilder({
 
           {side === "colors" && (
             <VariantsPanel
+              switching={saving}
               themeId={themeId}
               locale={locale}
               variants={variants}

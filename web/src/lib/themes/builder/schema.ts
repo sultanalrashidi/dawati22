@@ -12,7 +12,6 @@
 import { z } from "zod";
 import { upgradeStockFlowLayers, withDefaultFlow } from "@/lib/themes/builder/default-flow";
 import {
-  BUILDER_SCHEMA_VERSION,
   CARD_ENTRANCES,
   CONTENT_FIELDS,
   DEFAULT_ANIMATION,
@@ -23,6 +22,7 @@ import {
   DEFAULT_TYPOGRAPHY_DOC,
   BUTTON_ACTIONS,
   ENVELOPE_ENTRANCES,
+  PALETTE_ROLES,
   ENVELOPE_OPENINGS,
   SCENE_REQUIREMENTS,
   SCENE_ROLES,
@@ -37,6 +37,18 @@ import {
 const hexColor = z
   .string()
   .regex(/^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/, "Expected a hex color");
+
+/** `@fg`, `@fgMuted`, … — one slot of the variant palette (see `ColorRef`). */
+const paletteRoleRef = z
+  .string()
+  .regex(new RegExp(`^@(?:${PALETTE_ROLES.join("|")})$`), "Expected a palette role");
+
+/**
+ * What a layer colour may hold: a literal, or a role that resolves against
+ * the palette of whichever colour is being rendered. The palette itself stays
+ * hex-only below — a role inside the palette would point at itself.
+ */
+const colorValue = z.union([hexColor, paletteRoleRef]);
 
 const percent = z.number().finite().min(-200).max(300);
 const positivePercent = z.number().finite().min(0.1).max(400);
@@ -57,7 +69,7 @@ const textStyleSchema = z.object({
   font: z.string().min(1).max(80),
   fontSize: z.number().finite().min(4).max(200),
   fontWeight: z.number().int().min(100).max(900),
-  color: hexColor,
+  color: colorValue,
   align: z.enum(["start", "center", "end"]),
   lineHeight: z.number().finite().min(0.5).max(4),
   letterSpacing: z.number().finite().min(-0.5).max(2),
@@ -116,10 +128,10 @@ const qrLayerSchema = z.object({
   type: z.literal("qr"),
   padding: z.number().finite().min(0).max(40),
   borderRadius: z.number().finite().min(0).max(200),
-  background: hexColor,
-  borderColor: hexColor,
+  background: colorValue,
+  borderColor: colorValue,
   borderWidth: z.number().finite().min(0).max(40),
-  fgColor: hexColor,
+  fgColor: colorValue,
 });
 
 const countdownLayerSchema = z.object({
@@ -129,9 +141,9 @@ const countdownLayerSchema = z.object({
   titleStyle: textStyleSchema,
   numberStyle: textStyleSchema,
   labelStyle: textStyleSchema,
-  boxColor: hexColor,
+  boxColor: colorValue,
   boxOpacity: z.number().finite().min(0).max(1),
-  borderColor: hexColor,
+  borderColor: colorValue,
   borderWidth: z.number().finite().min(0).max(20),
   borderRadius: z.number().finite().min(0).max(200),
   showSeconds: z.boolean(),
@@ -144,9 +156,9 @@ const buttonLayerSchema = z.object({
   label: z.string().max(80),
   href: z.string().max(500),
   style: textStyleSchema,
-  background: hexColor,
+  background: colorValue,
   backgroundOpacity: z.number().finite().min(0).max(1),
-  borderColor: hexColor,
+  borderColor: colorValue,
   borderWidth: z.number().finite().min(0).max(20),
   borderRadius: z.number().finite().min(0).max(200),
 });
@@ -157,11 +169,11 @@ const rsvpLayerSchema = z.object({
   title: z.string().max(120),
   titleStyle: textStyleSchema,
   fieldStyle: textStyleSchema,
-  fieldBackground: hexColor,
-  borderColor: hexColor,
+  fieldBackground: colorValue,
+  borderColor: colorValue,
   borderRadius: z.number().finite().min(0).max(200),
-  accent: hexColor,
-  accentFg: hexColor,
+  accent: colorValue,
+  accentFg: colorValue,
 });
 
 const scheduleLayerSchema = z.object({
@@ -349,6 +361,19 @@ function upgradeLegacyScenes(raw: unknown): SceneDef[] | null {
   return scenes;
 }
 
+/** The version the salvage path below can honestly claim — see its return. */
+const SALVAGED_DOC_VERSION = 2;
+
+/**
+ * Whether a stored document is valid as stored, i.e. `parseLayoutDoc` would
+ * return it whole rather than salvaging it layer by layer. The ink-role
+ * upgrade writes its result back only when this holds: persisting a salvaged
+ * document would make the layers salvage dropped permanent.
+ */
+export function isStrictLayoutDoc(raw: unknown): boolean {
+  return layoutDocSchema.safeParse(raw).success;
+}
+
 export function parseLayoutDoc(raw: unknown): LayoutDoc {
   const direct = layoutDocSchema.safeParse(raw);
   if (direct.success) {
@@ -401,7 +426,11 @@ export function parseLayoutDoc(raw: unknown): LayoutDoc {
   const page = pageBackgroundSchema.safeParse(source.page);
 
   return {
-    version: BUILDER_SCHEMA_VERSION,
+    // Not BUILDER_SCHEMA_VERSION: a salvaged document has been brought up to
+    // the v2 scene list here, but its colours are still whatever hex it was
+    // saved with. Stamping v3 would tell the ink-role upgrade (see
+    // ink-roles.ts) that it has nothing to do.
+    version: SALVAGED_DOC_VERSION,
     page: page.success ? page.data : DEFAULT_PAGE_BACKGROUND,
     scenes,
     layers: upgradeStockFlowLayers(scenes, grafted),
@@ -468,7 +497,7 @@ export function assertTypographyDoc(raw: unknown): TypographyDoc {
  * variant rewrite a layer's text, geometry or type.
  */
 const paintValueSchema: z.ZodType<Record<string, unknown>> = z.lazy(() =>
-  z.record(z.string().max(40), z.union([hexColor, paintValueSchema])),
+  z.record(z.string().max(40), z.union([colorValue, paintValueSchema])),
 );
 
 const layerOverrideSchema = transformOverrideSchema.extend({

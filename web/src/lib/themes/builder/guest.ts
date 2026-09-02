@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db/client";
 import { ThemeEngine } from "@/generated/prisma/client";
 import { parseLayoutDoc, parsePalette, parseTypographyDoc } from "@/lib/themes/builder/schema";
 import { buildAssetMap, parseLayoutOverrides, type LayoutOverrides } from "@/lib/themes/builder/resolve";
+import { ensureInkRoles } from "@/lib/themes/builder/ink-roles-server";
+import type { InkVariant } from "@/lib/themes/builder/ink-roles";
 import {
   DEFAULT_TYPOGRAPHY_DOC,
   type LayoutDoc,
@@ -78,13 +80,40 @@ export async function loadBuilderTheme(
 
   // Every parser here is the lenient kind on purpose: a guest's invitation must
   // render even if one stored layer carries a stale field.
+  const inkVariants = theme.variants.map(inkVariantOf);
+  const ink = await ensureInkRoles(themeId, theme.layout?.doc, parseLayoutDoc(theme.layout?.doc), inkVariants);
   return {
-    layout: parseLayoutDoc(theme.layout?.doc),
+    layout: ink.layout,
     typography: parseTypographyDoc(theme.typography?.doc),
     palette: parsePalette(variant?.palette),
     assets: buildAssetMap(theme.assets, variant?.id ?? null),
-    overrides: parseLayoutOverrides(variant?.layoutOverrides),
+    overrides: variant ? overridesFor(ink.overrides, variant) : {},
   };
+}
+
+/** A variant row as the ink upgrade reads it. */
+function inkVariantOf(variant: {
+  id: string;
+  isDefault: boolean;
+  sortOrder: number;
+  palette: unknown;
+  layoutOverrides: unknown;
+}): InkVariant {
+  return {
+    id: variant.id,
+    isDefault: variant.isDefault,
+    sortOrder: variant.sortOrder,
+    palette: parsePalette(variant.palette),
+    overrides: parseLayoutOverrides(variant.layoutOverrides),
+  };
+}
+
+/** The variant's overrides as the ink upgrade left them, else as stored. */
+function overridesFor(
+  upgraded: Map<string, LayoutOverrides>,
+  variant: { id: string; layoutOverrides: unknown },
+): LayoutOverrides {
+  return upgraded.get(variant.id) ?? parseLayoutOverrides(variant.layoutOverrides);
 }
 
 /**
@@ -108,7 +137,7 @@ export async function loadBuilderThemesForGallery(
       layout: { select: { doc: true } },
       typography: { select: { doc: true } },
       variants: {
-        select: { id: true, palette: true, layoutOverrides: true },
+        select: { id: true, isDefault: true, sortOrder: true, palette: true, layoutOverrides: true },
         orderBy: { sortOrder: "asc" },
       },
       assets: { select: { slot: true, url: true, variantId: true } },
@@ -116,16 +145,21 @@ export async function loadBuilderThemesForGallery(
   });
 
   for (const theme of themes) {
-    const layout = parseLayoutDoc(theme.layout?.doc);
+    const ink = await ensureInkRoles(
+      theme.id,
+      theme.layout?.doc,
+      parseLayoutDoc(theme.layout?.doc),
+      theme.variants.map(inkVariantOf),
+    );
     const typography = parseTypographyDoc(theme.typography?.doc);
     const perVariant = new Map<string, GuestBuilderTheme>();
     for (const variant of theme.variants) {
       perVariant.set(variant.id, {
-        layout,
+        layout: ink.layout,
         typography,
         palette: parsePalette(variant.palette),
         assets: buildAssetMap(theme.assets, variant.id),
-        overrides: parseLayoutOverrides(variant.layoutOverrides),
+        overrides: overridesFor(ink.overrides, variant),
       });
     }
     byTheme.set(theme.id, perVariant);

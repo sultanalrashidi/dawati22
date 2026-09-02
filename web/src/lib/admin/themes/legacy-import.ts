@@ -101,11 +101,39 @@ const BRIDAL_PASS_TEXT_INSET_X = 16;
 const BRIDAL_PASS_ICONS_INSET_X = 14;
 const BRIDAL_PASS_GAP_PX = 6;
 
-/** Ink the rose renderers hardcode instead of reading the theme palette. */
+/**
+ * Ink is written as palette ROLES, not as the palette's hex: the layout is
+ * shared by every colour of the design, so baking `source.palette.fg` in
+ * would hand every later colour the first colour's ink.
+ *
+ * The rose designs are the exception, on purpose. Their palettes describe
+ * text over the DARK page (`fg` is a pale pink or mint), while the card the
+ * text actually sits on is cream — which is why the rose renderers always
+ * hardcoded these browns. A role would set pale ink on a cream card, so a
+ * rose conversion keeps the browns as literals; the admin can point any line
+ * at a palette slot from the inspector when a rose palette is reworked.
+ */
+const INK_PRIMARY = "@fg";
+const INK_MUTED = "@fgMuted";
+const INK_ACCENT = "@accent";
 const ROSE_INK_DARK = "#3d2417";
 const ROSE_INK_MID = "#5b3a22";
 const ROSE_INK_LIGHT = "#8a5a3a";
 const ROSE_OPEN_WELCOME_INK = "#6b4530";
+
+/**
+ * A QR is scanned, not read: its modules must stay dark whatever the palette
+ * says, so this is always a literal. The design's own ink is used when it is
+ * dark enough to scan, near-black otherwise (a pale `fg` over the printed
+ * white window would be a code no phone can read).
+ */
+function qrInk(fg: string): string {
+  const raw = fg.replace("#", "");
+  const hex = raw.length === 3 ? raw.split("").map((c) => c + c).join("") : raw.slice(0, 6);
+  const [r, g, b] = [0, 2, 4].map((i) => Number.parseInt(hex.slice(i, i + 2), 16) / 255);
+  const luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return Number.isFinite(luminance) && luminance < 0.35 ? fg : "#1A1A1A";
+}
 
 /**
  * Line boxes of the legacy type, in CSS px on their own card.
@@ -528,7 +556,7 @@ function coverLayers(source: VariantSource, style: CardStyle, stage: Aspect): La
       font: style === "rose-emboss" ? ROSE_MONOGRAM_FAMILY : "@latin",
       fontSize: monogramFont,
       fontWeight: 500,
-      color: source.palette.accent,
+      color: INK_ACCENT,
       lineHeight: 1.1,
     }),
     base: transform({
@@ -569,9 +597,9 @@ function openLayers(source: VariantSource, style: CardStyle, stage: Aspect): Lay
   );
 
   const rose = style === "rose-emboss";
-  const inkLabel = rose ? ROSE_INK_LIGHT : source.palette.fgMuted;
-  const inkName = rose ? ROSE_INK_DARK : source.palette.fg;
-  const inkWelcome = rose ? ROSE_OPEN_WELCOME_INK : source.palette.fgMuted;
+  const inkLabel = rose ? ROSE_INK_LIGHT : INK_MUTED;
+  const inkName = rose ? ROSE_INK_DARK : INK_PRIMARY;
+  const inkWelcome = rose ? ROSE_OPEN_WELCOME_INK : INK_MUTED;
 
   const box = (line: { centre: number; height: number }) =>
     transform({
@@ -668,9 +696,9 @@ function passLayers(source: VariantSource, style: CardStyle, stage: Aspect): Lay
   const textInsetX = rose ? ROSE_PASS.textInsetX : BRIDAL_PASS_TEXT_INSET_X;
   const iconsInsetX = rose ? ROSE_PASS.iconsInsetX : BRIDAL_PASS_ICONS_INSET_X;
 
-  const inkDark = rose ? ROSE_INK_DARK : source.palette.fg;
-  const inkMid = rose ? ROSE_INK_MID : source.palette.fg;
-  const inkLight = rose ? ROSE_INK_LIGHT : source.palette.fgMuted;
+  const inkDark = rose ? ROSE_INK_DARK : INK_PRIMARY;
+  const inkMid = rose ? ROSE_INK_MID : INK_PRIMARY;
+  const inkLight = rose ? ROSE_INK_LIGHT : INK_MUTED;
 
   const [invitation, names, godWilling] = stack(
     frame,
@@ -853,7 +881,7 @@ function passLayers(source: VariantSource, style: CardStyle, stage: Aspect): Lay
       background: "#FFFFFF00",
       borderColor: "#FFFFFF00",
       borderWidth: 0,
-      fgColor: inkDark,
+      fgColor: rose ? ROSE_INK_DARK : qrInk(source.palette.fg),
       base: transform({
         x: round2(mapX(frame, source.pass.qr.left + source.pass.qr.width / 2)),
         y: round2(mapY(frame, source.pass.qr.top + source.pass.qr.height / 2)),

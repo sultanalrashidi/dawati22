@@ -27,8 +27,11 @@ import {
  * layer, so the admin can move, restyle or delete any of it.
  */
 
-const INK = "#5C4526";
-const INK_MUTED = "#8C7248";
+// Every colour below is a palette ROLE, never a hex: the flow is shared by all
+// colours of a design, and a hex here would be one brown for all of them —
+// which is exactly what these layers used to ship with.
+const INK = "@fg";
+const INK_MUTED = "@fgMuted";
 
 const style = (over: Partial<TextStyle>): TextStyle => ({ ...DEFAULT_TEXT_STYLE, ...over });
 
@@ -176,9 +179,12 @@ export function defaultFlowLayers(): Layer[] {
       z: 0, visible: true, locked: false, title: "نرجو تأكيد حضوركم",
       titleStyle: style({ font: "@display", fontSize: 24, color: INK }),
       fieldStyle: style({ fontSize: 14, color: INK, align: "start" }),
-      fieldBackground: "#FFFFFF",
+      // The palette's surface rather than white: a design whose ink is light
+      // (white text on dark art) would otherwise get white fields with white
+      // text in them.
+      fieldBackground: "@surface",
       borderColor: INK_MUTED, borderRadius: 14,
-      accent: "#9A754D", accentFg: "#FFFFFF",
+      accent: "@accent", accentFg: "@accentFg",
       base: { ...DEFAULT_TRANSFORM, x: 50, y: 50, width: 88, height: 76 },
     },
   ];

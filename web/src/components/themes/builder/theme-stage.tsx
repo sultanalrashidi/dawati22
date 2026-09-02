@@ -145,7 +145,7 @@ export function ThemeStage({
   onPointerDown,
 }: ThemeStageProps) {
   const canvas = sceneCanvas(layout, scene);
-  const resolved = resolveScene(layout, scene, breakpoint, overrides);
+  const resolved = resolveScene(layout, scene, breakpoint, overrides, palette);
 
   return (
     <div

@@ -58,7 +58,7 @@ export function starterLayoutDoc(): LayoutDoc {
       text: "",
       separator: "&",
       maxChars: 1,
-      style: { ...DEFAULT_TEXT_STYLE, font: "@latin", fontSize: 15, letterSpacing: 0.06, color: "#5C4526" },
+      style: { ...DEFAULT_TEXT_STYLE, font: "@latin", fontSize: 15, letterSpacing: 0.06, color: "@fg" },
       base: { ...DEFAULT_TRANSFORM, x: 50, y: 57, width: 20, height: 6 },
     }),
 
@@ -86,7 +86,7 @@ export function starterLayoutDoc(): LayoutDoc {
       source: "static",
       text: "دعوة خاصة إلى",
       fields: [],
-      style: { ...DEFAULT_TEXT_STYLE, font: "@body", fontSize: 10, letterSpacing: 0.25, color: "#8C7248" },
+      style: { ...DEFAULT_TEXT_STYLE, font: "@body", fontSize: 10, letterSpacing: 0.25, color: "@fgMuted" },
       base: { ...DEFAULT_TRANSFORM, x: 50, y: 36, width: 56, height: 5 },
     }),
     layer({
@@ -100,7 +100,7 @@ export function starterLayoutDoc(): LayoutDoc {
       source: "content",
       fields: ["guestName"],
       text: "",
-      style: { ...DEFAULT_TEXT_STYLE, font: "@display", fontSize: 20, color: "#5C4526", lineHeight: 1.4 },
+      style: { ...DEFAULT_TEXT_STYLE, font: "@display", fontSize: 20, color: "@fg", lineHeight: 1.4 },
       base: { ...DEFAULT_TRANSFORM, x: 50, y: 43, width: 60, height: 9 },
     }),
     layer({
@@ -116,7 +116,7 @@ export function starterLayoutDoc(): LayoutDoc {
       // free `invitationText` is optional now and empty by default.
       fields: ["inviteLine"],
       text: "",
-      style: { ...DEFAULT_TEXT_STYLE, font: "@body", fontSize: 11, color: "#8C7248", lineHeight: 1.8 },
+      style: { ...DEFAULT_TEXT_STYLE, font: "@body", fontSize: 11, color: "@fgMuted", lineHeight: 1.8 },
       base: { ...DEFAULT_TRANSFORM, x: 50, y: 56, width: 58, height: 14 },
     }),
 
@@ -144,7 +144,7 @@ export function starterLayoutDoc(): LayoutDoc {
       source: "content",
       fields: ["coupleNames"],
       text: "",
-      style: { ...DEFAULT_TEXT_STYLE, font: "@display", fontSize: 15, color: "#5C4526", lineHeight: 1.6 },
+      style: { ...DEFAULT_TEXT_STYLE, font: "@display", fontSize: 15, color: "@fg", lineHeight: 1.6 },
       base: { ...DEFAULT_TRANSFORM, x: 50, y: 28, width: 64, height: 12 },
     }),
     layer({
@@ -158,7 +158,7 @@ export function starterLayoutDoc(): LayoutDoc {
       source: "content",
       fields: ["eventDate", "eventTime", "locationName"],
       text: "",
-      style: { ...DEFAULT_TEXT_STYLE, font: "@body", fontSize: 10, color: "#8C7248", lineHeight: 1.9 },
+      style: { ...DEFAULT_TEXT_STYLE, font: "@body", fontSize: 10, color: "@fgMuted", lineHeight: 1.9 },
       base: { ...DEFAULT_TRANSFORM, x: 50, y: 45, width: 62, height: 12 },
     }),
     layer({
@@ -188,7 +188,7 @@ export function starterLayoutDoc(): LayoutDoc {
       source: "content",
       fields: ["guestName"],
       text: "",
-      style: { ...DEFAULT_TEXT_STYLE, font: "@body", fontSize: 11, color: "#5C4526" },
+      style: { ...DEFAULT_TEXT_STYLE, font: "@body", fontSize: 11, color: "@fg" },
       base: { ...DEFAULT_TRANSFORM, x: 50, y: 84, width: 60, height: 6 },
     }),
   ];

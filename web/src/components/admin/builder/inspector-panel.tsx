@@ -1,17 +1,17 @@
 "use client";
 
 import {
-  ColorField,
   Field,
   GhostButton,
   NumberField,
+  PaletteColorField,
   Panel,
   SelectField,
   TextField,
   ToggleField,
 } from "@/components/admin/builder/builder-ui";
 import { ALL_SLOTS } from "@/lib/themes/builder/slots";
-import { BUTTON_ACTIONS, CONTENT_FIELD_LABELS_AR, CONTENT_FIELDS, resolveTextStyle, resolveTransform, type Breakpoint, type ButtonAction, type ContentField, type Layer, type TextStyle, type TextStyleOverride, type TransformOverride, type TypographyDoc } from "@/lib/themes/builder/types";
+import { BUTTON_ACTIONS, CONTENT_FIELD_LABELS_AR, CONTENT_FIELDS, resolveTextStyle, resolveTransform, type Breakpoint, type ButtonAction, type ContentField, type Layer, type PaletteRole, type TextStyle, type TextStyleOverride, type TransformOverride, type TypographyDoc, type VariantPalette } from "@/lib/themes/builder/types";
 import type { FontOption } from "@/lib/themes/font-registry";
 
 const ALIGN_OPTIONS = [
@@ -24,6 +24,23 @@ const WEIGHT_OPTIONS = [300, 400, 500, 600, 700, 800].map((weight) => ({
   value: String(weight),
   label: String(weight),
 }));
+
+/*
+ * Block sections send ONLY what changed, never the whole style spread over
+ * the patch: the layer they hold is the painted one, so spreading it would
+ * re-send this colour's own override on every font-size nudge — and a role
+ * in that override would then read as a fresh choice. `patchLayer` deep-
+ * merges, so a partial style patch lands exactly where it should.
+ */
+
+/**
+ * Which palette slots each kind of colour offers as chips. Ink offers the two
+ * text colours first; a box or a border offers what a box or a border is
+ * usually painted with. "مخصص" is always there for anything else.
+ */
+const INK_ROLES: readonly PaletteRole[] = ["fg", "fgMuted", "accent", "accentFg"];
+const FILL_ROLES: readonly PaletteRole[] = ["surface", "bg", "accent", "accentFg"];
+const BORDER_ROLES: readonly PaletteRole[] = ["accent", "fgMuted", "fg"];
 
 const BREAKPOINT_LABEL: Record<Breakpoint, string> = {
   base: "الجوال",
@@ -59,6 +76,7 @@ export function InspectorPanel({
   layer,
   breakpoint,
   typography,
+  palette,
   fonts,
   onTransform,
   onPatch,
@@ -68,6 +86,8 @@ export function InspectorPanel({
   layer: Layer | null;
   breakpoint: Breakpoint;
   typography: TypographyDoc;
+  /** The colour on screen — what the colour chips show and resolve against. */
+  palette: VariantPalette;
   fonts: FontOption[];
   onTransform: (patch: TransformOverride) => void;
   onPatch: (patch: Partial<Layer>) => void;
@@ -212,6 +232,7 @@ export function InspectorPanel({
           layer={layer}
           breakpoint={breakpoint}
           typography={typography}
+          palette={palette}
           fonts={fonts}
           onPatch={onPatch}
           onTextStyle={onTextStyle}
@@ -250,9 +271,9 @@ export function InspectorPanel({
               step={0.5}
               onChange={(borderWidth) => onPatch({ borderWidth } as Partial<Layer>)}
             />
-            <ColorField label="لون الخلفية" value={layer.background} onChange={(background) => onPatch({ background } as Partial<Layer>)} />
-            <ColorField label="لون الإطار" value={layer.borderColor} onChange={(borderColor) => onPatch({ borderColor } as Partial<Layer>)} />
-            <ColorField label="لون الباركود" value={layer.fgColor} onChange={(fgColor) => onPatch({ fgColor } as Partial<Layer>)} />
+            <PaletteColorField label="لون الخلفية" value={layer.background} palette={palette} roles={FILL_ROLES} onChange={(background) => onPatch({ background } as Partial<Layer>)} />
+            <PaletteColorField label="لون الإطار" value={layer.borderColor} palette={palette} roles={BORDER_ROLES} onChange={(borderColor) => onPatch({ borderColor } as Partial<Layer>)} />
+            <PaletteColorField label="لون الباركود" value={layer.fgColor} palette={palette} roles={["fg", "accent"]} onChange={(fgColor) => onPatch({ fgColor } as Partial<Layer>)} />
           </div>
           <p className="mt-2 text-[11px] text-fg-muted">
             الباركود المعروض هنا تجريبي — كل مدعو يحصل على باركوده الخاص تلقائيًا.
@@ -261,16 +282,16 @@ export function InspectorPanel({
       )}
 
       {layer.type === "countdown" && (
-        <CountdownSection layer={layer} fontOptions={fontOptions} onPatch={onPatch} />
+        <CountdownSection layer={layer} fontOptions={fontOptions} palette={palette} onPatch={onPatch} />
       )}
       {layer.type === "button" && (
-        <ButtonSection layer={layer} fontOptions={fontOptions} onPatch={onPatch} />
+        <ButtonSection layer={layer} fontOptions={fontOptions} palette={palette} onPatch={onPatch} />
       )}
-      {layer.type === "rsvp" && <RsvpSection layer={layer} fontOptions={fontOptions} onPatch={onPatch} />}
+      {layer.type === "rsvp" && <RsvpSection layer={layer} fontOptions={fontOptions} palette={palette} onPatch={onPatch} />}
       {layer.type === "schedule" && (
-        <ScheduleSection layer={layer} fontOptions={fontOptions} onPatch={onPatch} />
+        <ScheduleSection layer={layer} fontOptions={fontOptions} palette={palette} onPatch={onPatch} />
       )}
-      {layer.type === "notes" && <NotesSection layer={layer} fontOptions={fontOptions} onPatch={onPatch} />}
+      {layer.type === "notes" && <NotesSection layer={layer} fontOptions={fontOptions} palette={palette} onPatch={onPatch} />}
     </div>
   );
 }
@@ -287,12 +308,14 @@ function StyleGroup({
   title,
   style,
   fontOptions,
+  palette,
   onChange,
   defaultOpen,
 }: {
   title: string;
   style: TextStyle;
   fontOptions: FontOptions;
+  palette: VariantPalette;
   onChange: (patch: Partial<TextStyle>) => void;
   defaultOpen?: boolean;
 }) {
@@ -323,7 +346,7 @@ function StyleGroup({
             onChange={(value) => onChange({ fontWeight: Number.parseInt(value, 10) })}
           />
         </div>
-        <ColorField label="اللون" value={style.color} onChange={(color) => onChange({ color })} />
+        <PaletteColorField label="اللون" value={style.color} palette={palette} roles={INK_ROLES} onChange={(color) => onChange({ color })} />
         <div className="grid grid-cols-2 gap-2">
           <SelectField
             label="المحاذاة"
@@ -370,15 +393,17 @@ function AllSizesNote() {
 function CountdownSection({
   layer,
   fontOptions,
+  palette,
   onPatch,
 }: {
   layer: Extract<Layer, { type: "countdown" }>;
   fontOptions: FontOptions;
+  palette: VariantPalette;
   onPatch: (patch: Partial<Layer>) => void;
 }) {
   const patchStyle =
     (key: "titleStyle" | "numberStyle" | "labelStyle") => (patch: Partial<TextStyle>) =>
-      onPatch({ [key]: { ...layer[key], ...patch } } as Partial<Layer>);
+      onPatch({ [key]: patch } as Partial<Layer>);
 
   return (
     <>
@@ -396,9 +421,11 @@ function CountdownSection({
             checked={layer.showSeconds}
             onChange={(showSeconds) => onPatch({ showSeconds } as Partial<Layer>)}
           />
-          <ColorField
+          <PaletteColorField
             label="لون خلفية الأرقام"
             value={layer.boxColor}
+            palette={palette}
+            roles={FILL_ROLES}
             onChange={(boxColor) => onPatch({ boxColor } as Partial<Layer>)}
           />
           <NumberField
@@ -410,9 +437,11 @@ function CountdownSection({
             slider
             onChange={(boxOpacity) => onPatch({ boxOpacity } as Partial<Layer>)}
           />
-          <ColorField
+          <PaletteColorField
             label="لون الإطار"
             value={layer.borderColor}
+            palette={palette}
+            roles={BORDER_ROLES}
             onChange={(borderColor) => onPatch({ borderColor } as Partial<Layer>)}
           />
           <div className="grid grid-cols-2 gap-2">
@@ -448,18 +477,21 @@ function CountdownSection({
             defaultOpen
             style={layer.titleStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("titleStyle")}
           />
           <StyleGroup
             title="الأرقام"
             style={layer.numberStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("numberStyle")}
           />
           <StyleGroup
             title="التسميات (يوم · ساعة · دقيقة)"
             style={layer.labelStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("labelStyle")}
           />
         </div>
@@ -472,10 +504,12 @@ function CountdownSection({
 function ButtonSection({
   layer,
   fontOptions,
+  palette,
   onPatch,
 }: {
   layer: Extract<Layer, { type: "button" }>;
   fontOptions: FontOptions;
+  palette: VariantPalette;
   onPatch: (patch: Partial<Layer>) => void;
 }) {
   return (
@@ -508,9 +542,11 @@ function ButtonSection({
               onChange={(href) => onPatch({ href } as Partial<Layer>)}
             />
           )}
-          <ColorField
+          <PaletteColorField
             label="لون الخلفية"
             value={layer.background}
+            palette={palette}
+            roles={FILL_ROLES}
             onChange={(background) => onPatch({ background } as Partial<Layer>)}
           />
           <NumberField
@@ -522,9 +558,11 @@ function ButtonSection({
             slider
             onChange={(backgroundOpacity) => onPatch({ backgroundOpacity } as Partial<Layer>)}
           />
-          <ColorField
+          <PaletteColorField
             label="لون الإطار"
             value={layer.borderColor}
+            palette={palette}
+            roles={BORDER_ROLES}
             onChange={(borderColor) => onPatch({ borderColor } as Partial<Layer>)}
           />
           <div className="grid grid-cols-2 gap-2">
@@ -556,7 +594,8 @@ function ButtonSection({
           defaultOpen
           style={layer.style}
           fontOptions={fontOptions}
-          onChange={(patch) => onPatch({ style: { ...layer.style, ...patch } } as Partial<Layer>)}
+          palette={palette}
+          onChange={(patch) => onPatch({ style: patch } as Partial<Layer>)}
         />
         <AllSizesNote />
       </Panel>
@@ -567,14 +606,16 @@ function ButtonSection({
 function RsvpSection({
   layer,
   fontOptions,
+  palette,
   onPatch,
 }: {
   layer: Extract<Layer, { type: "rsvp" }>;
   fontOptions: FontOptions;
+  palette: VariantPalette;
   onPatch: (patch: Partial<Layer>) => void;
 }) {
   const patchStyle = (key: "titleStyle" | "fieldStyle") => (patch: Partial<TextStyle>) =>
-    onPatch({ [key]: { ...layer[key], ...patch } } as Partial<Layer>);
+    onPatch({ [key]: patch } as Partial<Layer>);
 
   return (
     <>
@@ -591,14 +632,18 @@ function RsvpSection({
             placeholder="تأكيد الحضور"
             onChange={(title) => onPatch({ title } as Partial<Layer>)}
           />
-          <ColorField
+          <PaletteColorField
             label="لون خلفية الحقول"
             value={layer.fieldBackground}
+            palette={palette}
+            roles={FILL_ROLES}
             onChange={(fieldBackground) => onPatch({ fieldBackground } as Partial<Layer>)}
           />
-          <ColorField
+          <PaletteColorField
             label="لون حدود الحقول"
             value={layer.borderColor}
+            palette={palette}
+            roles={BORDER_ROLES}
             onChange={(borderColor) => onPatch({ borderColor } as Partial<Layer>)}
           />
           <NumberField
@@ -612,14 +657,18 @@ function RsvpSection({
             onChange={(borderRadius) => onPatch({ borderRadius } as Partial<Layer>)}
           />
           <div className="grid grid-cols-2 gap-2">
-            <ColorField
+            <PaletteColorField
               label="لون زر التأكيد"
               value={layer.accent}
+              palette={palette}
+              roles={["accent", "fg"]}
               onChange={(accent) => onPatch({ accent } as Partial<Layer>)}
             />
-            <ColorField
+            <PaletteColorField
               label="لون نص الزر"
               value={layer.accentFg}
+              palette={palette}
+              roles={["accentFg", "surface", "bg"]}
               onChange={(accentFg) => onPatch({ accentFg } as Partial<Layer>)}
             />
           </div>
@@ -633,12 +682,14 @@ function RsvpSection({
             defaultOpen
             style={layer.titleStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("titleStyle")}
           />
           <StyleGroup
             title="الحقول والأزرار"
             style={layer.fieldStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("fieldStyle")}
           />
         </div>
@@ -651,15 +702,17 @@ function RsvpSection({
 function ScheduleSection({
   layer,
   fontOptions,
+  palette,
   onPatch,
 }: {
   layer: Extract<Layer, { type: "schedule" }>;
   fontOptions: FontOptions;
+  palette: VariantPalette;
   onPatch: (patch: Partial<Layer>) => void;
 }) {
   const patchStyle =
     (key: "titleStyle" | "timeStyle" | "labelStyle") => (patch: Partial<TextStyle>) =>
-      onPatch({ [key]: { ...layer[key], ...patch } } as Partial<Layer>);
+      onPatch({ [key]: patch } as Partial<Layer>);
 
   return (
     <>
@@ -695,18 +748,21 @@ function ScheduleSection({
             defaultOpen
             style={layer.titleStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("titleStyle")}
           />
           <StyleGroup
             title="الوقت"
             style={layer.timeStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("timeStyle")}
           />
           <StyleGroup
             title="اسم الفقرة"
             style={layer.labelStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("labelStyle")}
           />
         </div>
@@ -719,14 +775,16 @@ function ScheduleSection({
 function NotesSection({
   layer,
   fontOptions,
+  palette,
   onPatch,
 }: {
   layer: Extract<Layer, { type: "notes" }>;
   fontOptions: FontOptions;
+  palette: VariantPalette;
   onPatch: (patch: Partial<Layer>) => void;
 }) {
   const patchStyle = (key: "titleStyle" | "itemStyle") => (patch: Partial<TextStyle>) =>
-    onPatch({ [key]: { ...layer[key], ...patch } } as Partial<Layer>);
+    onPatch({ [key]: patch } as Partial<Layer>);
 
   return (
     <>
@@ -760,12 +818,14 @@ function NotesSection({
             defaultOpen
             style={layer.titleStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("titleStyle")}
           />
           <StyleGroup
             title="الملاحظة"
             style={layer.itemStyle}
             fontOptions={fontOptions}
+            palette={palette}
             onChange={patchStyle("itemStyle")}
           />
         </div>
@@ -779,6 +839,7 @@ function TypographySection({
   layer,
   breakpoint,
   typography,
+  palette,
   fonts,
   onPatch,
   onTextStyle,
@@ -786,6 +847,7 @@ function TypographySection({
   layer: Extract<Layer, { type: "text" | "seal" }>;
   breakpoint: Breakpoint;
   typography: TypographyDoc;
+  palette: VariantPalette;
   fonts: FontOption[];
   onPatch: (patch: Partial<Layer>) => void;
   onTextStyle: (patch: TextStyleOverride) => void;
@@ -907,7 +969,7 @@ function TypographySection({
               onChange={(value) => onTextStyle({ fontWeight: Number.parseInt(value, 10) })}
             />
           </div>
-          <ColorField label="اللون" value={style.color} onChange={(color) => onTextStyle({ color })} />
+          <PaletteColorField label="اللون" value={style.color} palette={palette} roles={INK_ROLES} onChange={(color) => onTextStyle({ color })} />
           <SelectField label="المحاذاة" value={style.align} options={ALIGN_OPTIONS} onChange={(align) => onTextStyle({ align })} />
           <div className="grid grid-cols-2 gap-2">
             <NumberField

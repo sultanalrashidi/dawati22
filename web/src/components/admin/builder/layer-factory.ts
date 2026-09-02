@@ -8,7 +8,11 @@ import {
   type TextStyle,
 } from "@/lib/themes/builder/types";
 
-/** One place for the small style tweaks the block defaults keep repeating. */
+/**
+ * One place for the small style tweaks the block defaults keep repeating.
+ * Colours are palette roles (`@fg`, `@accent`, …) so a new element takes each
+ * colour's own ink from the moment it lands on the canvas.
+ */
 function style(patch: Partial<TextStyle>): TextStyle {
   return { ...DEFAULT_TEXT_STYLE, ...patch };
 }
@@ -89,10 +93,10 @@ export function createLayer(type: LayerType, scene: SceneId, z: number, slot?: s
         title: "يفصلنا عن الموعد",
         titleStyle: style({ font: "@display", fontSize: 14 }),
         numberStyle: style({ font: "@latin", fontSize: 26, fontWeight: 500 }),
-        labelStyle: style({ fontSize: 10, color: "#6B6055" }),
+        labelStyle: style({ fontSize: 10, color: "@fgMuted" }),
         boxColor: "#FFFFFF",
         boxOpacity: 0,
-        borderColor: "#B08D57",
+        borderColor: "@accent",
         borderWidth: 1,
         borderRadius: 12,
         showSeconds: true,
@@ -107,10 +111,10 @@ export function createLayer(type: LayerType, scene: SceneId, z: number, slot?: s
         action: "calendar",
         label: "أضف الموعد للتقويم",
         href: "",
-        style: style({ fontSize: 13, color: "#FFFFFF" }),
-        background: "#B08D57",
+        style: style({ fontSize: 13, color: "@accentFg" }),
+        background: "@accent",
         backgroundOpacity: 1,
-        borderColor: "#B08D57",
+        borderColor: "@accent",
         borderWidth: 0,
         borderRadius: 999,
         base: { ...DEFAULT_TRANSFORM, width: 56, height: 8, y: 88 },
@@ -124,11 +128,11 @@ export function createLayer(type: LayerType, scene: SceneId, z: number, slot?: s
         title: "تأكيد الحضور",
         titleStyle: style({ font: "@display", fontSize: 18 }),
         fieldStyle: style({ fontSize: 13, align: "start" }),
-        fieldBackground: "#FFFFFF",
-        borderColor: "#D9CDBB",
+        fieldBackground: "@surface",
+        borderColor: "@fgMuted",
         borderRadius: 12,
-        accent: "#B08D57",
-        accentFg: "#FFFFFF",
+        accent: "@accent",
+        accentFg: "@accentFg",
         base: { ...DEFAULT_TRANSFORM, width: 88, height: 72, y: 50 },
       };
 

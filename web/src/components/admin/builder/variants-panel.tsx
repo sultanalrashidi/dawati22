@@ -41,12 +41,15 @@ export function VariantsPanel({
   variants,
   activeId,
   onSelect,
+  switching = false,
 }: {
   themeId: string;
   locale: string;
   variants: VariantRow[];
   activeId: string;
   onSelect: (id: string) => void;
+  /** A colour switch is saving the previous colour; clicks are ignored until it lands. */
+  switching?: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -62,6 +65,7 @@ export function VariantsPanel({
             <button
               key={variant.id}
               type="button"
+              disabled={switching}
               onClick={() => onSelect(variant.id)}
               title={variant.nameAr}
               className={`flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs ${
@@ -185,6 +189,8 @@ function PaletteEditor({
     <Panel title="ألوان الواجهة">
       <p className="mb-2 text-[11px] text-fg-muted">
         هذي ألوان الواجهة حول التصميم (الأزرار، النصوص، الخلفية) — الصور نفسها ما تتغيّر.
+        نصوص التصميم تاخذ ألوانها من هذي اللوحة تلقائيًا («النص» للأساسي، «نص ثانوي» للسطور الفرعية،
+        «اللون المميز» للختم والأزرار…) — إلا النص اللي اخترت له لونًا «مخصص» من خصائصه، فيبقى على لونه.
       </p>
       <div className="flex flex-col gap-2">
         <TextField label="اسم اللون" dir="rtl" value={nameAr} onChange={setNameAr} />

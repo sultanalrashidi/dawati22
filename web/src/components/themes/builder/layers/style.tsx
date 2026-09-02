@@ -15,6 +15,7 @@
 import type { CSSProperties } from "react";
 import { fontStackFor } from "@/lib/themes/font-registry";
 import {
+  isColorRole,
   resolveFont,
   type SceneCanvas,
   type TextStyle,
@@ -36,7 +37,11 @@ export function textStyleToCss(style: TextStyle, typography: TypographyDoc): CSS
     fontFamily: fontStackFor(role.family),
     fontSize: scaled(style.fontSize),
     fontWeight: style.fontWeight,
-    color: style.color,
+    // `resolveScene` has already turned roles into the variant's hex. A role
+    // that still reaches here came from a palette-less caller; inheriting the
+    // stage's `color: palette.fg` is the right reading of "@fg" there and a
+    // readable one for the rest.
+    color: typeof style.color === "string" && isColorRole(style.color) ? "inherit" : style.color,
     textAlign: style.align,
     lineHeight: style.lineHeight,
     letterSpacing: `${style.letterSpacing}em`,

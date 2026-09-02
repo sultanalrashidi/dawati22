@@ -31,6 +31,7 @@ import {
   type VariantPalette,
 } from "@/lib/themes/builder/types";
 import { parseLayoutOverrides, type LayoutOverrides } from "@/lib/themes/builder/resolve";
+import { ensureInkRoles } from "@/lib/themes/builder/ink-roles-server";
 
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
@@ -68,22 +69,25 @@ export interface BuilderTheme {
   assets: { id: string; slot: string; url: string; variantId: string | null; blobPath: string | null; width: number | null; height: number | null; fileSize: number | null }[];
 }
 
-function hydrate(row: BuilderThemeRow): BuilderTheme {
+async function hydrate(row: BuilderThemeRow): Promise<BuilderTheme> {
+  const variants = row.variants.map((v) => ({
+    id: v.id,
+    slug: v.slug,
+    name: v.name,
+    nameAr: v.nameAr,
+    colorTag: v.colorTag,
+    palette: parsePalette(v.palette),
+    overrides: parseLayoutOverrides(v.layoutOverrides),
+    isDefault: v.isDefault,
+    sortOrder: v.sortOrder,
+  }));
+  // The editor must open the same document a guest sees — see ink-roles.ts.
+  const ink = await ensureInkRoles(row.id, row.layout?.doc, parseLayoutDoc(row.layout?.doc), variants);
   return {
     theme: row,
-    layout: parseLayoutDoc(row.layout?.doc),
+    layout: ink.layout,
     typography: parseTypographyDoc(row.typography?.doc),
-    variants: row.variants.map((v) => ({
-      id: v.id,
-      slug: v.slug,
-      name: v.name,
-      nameAr: v.nameAr,
-      colorTag: v.colorTag,
-      palette: parsePalette(v.palette),
-      overrides: parseLayoutOverrides(v.layoutOverrides),
-      isDefault: v.isDefault,
-      sortOrder: v.sortOrder,
-    })),
+    variants: variants.map((v) => ({ ...v, overrides: ink.overrides.get(v.id) ?? v.overrides })),
     assets: row.assets.map((a) => ({
       id: a.id,
       slot: a.slot,

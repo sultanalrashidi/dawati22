@@ -1,6 +1,15 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import {
+  PALETTE_ROLES,
+  PALETTE_ROLE_LABELS_AR,
+  colorRoleOf,
+  resolveColor,
+  roleRef,
+  type PaletteRole,
+  type VariantPalette,
+} from "@/lib/themes/builder/types";
 
 /**
  * Small field primitives for the builder's inspector.
@@ -113,6 +122,101 @@ export function ColorField({
           className={INPUT_CLASS}
         />
       </div>
+    </Field>
+  );
+}
+
+/**
+ * A colour that is usually one of the palette's slots.
+ *
+ * The chips are the palette of the colour on screen — pick "النص" and the
+ * layer follows every colour's own primary ink from now on. "مخصص" freezes
+ * the current value as a hex that belongs to this colour only, which is what
+ * "I changed this text's colour myself" means in the editor. A layer already
+ * holding a hex opens on the hex row so the override stays visible.
+ */
+export function PaletteColorField({
+  label,
+  value,
+  palette,
+  roles = PALETTE_ROLES,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  palette: VariantPalette;
+  /** The slots this colour can sensibly take — text roles for ink, fills for boxes. */
+  roles?: readonly PaletteRole[];
+  onChange: (value: string) => void;
+}) {
+  const role = colorRoleOf(value);
+  // "مخصص" was pressed for THIS value. Keyed by value rather than a bare
+  // boolean, so selecting another layer (or colour) whose value is a role
+  // shows its chips instead of a hex row left open from the last one.
+  const [customFor, setCustomFor] = useState<string | null>(null);
+  const customOpen = customFor === value;
+  const showCustom = role === null || customOpen;
+
+  return (
+    <Field label={label}>
+      <div className="flex flex-wrap gap-1">
+        {roles.map((option) => (
+          <button
+            key={option}
+            type="button"
+            title={`${PALETTE_ROLE_LABELS_AR[option]} — من لوحة ألوان هذا اللون`}
+            onClick={() => {
+              setCustomFor(null);
+              onChange(roleRef(option));
+            }}
+            className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] ${
+              role === option && !customOpen ? "border-accent bg-accent/10 text-fg" : "border-border text-fg-muted"
+            }`}
+          >
+            <span
+              className="h-3 w-3 rounded-full border border-border"
+              style={{ backgroundColor: palette[option] }}
+            />
+            {PALETTE_ROLE_LABELS_AR[option]}
+          </button>
+        ))}
+        <button
+          type="button"
+          title="لون خاص بهذا اللون فقط — ما يتبع لوحة الألوان"
+          onClick={() => {
+            // Freeze what is on screen as a hex of this colour's own; the
+            // field then shows the hex row because the value is a literal.
+            const frozen = resolveColor(value, palette);
+            setCustomFor(frozen);
+            if (role !== null) onChange(frozen);
+          }}
+          className={`rounded-full border px-2 py-0.5 text-[11px] ${
+            showCustom ? "border-accent bg-accent/10 text-fg" : "border-border text-fg-muted"
+          }`}
+        >
+          مخصص
+        </button>
+      </div>
+      {showCustom && (
+        <div className="mt-1 flex items-center gap-2">
+          <input
+            type="color"
+            value={normalizeHex(resolveColor(value, palette))}
+            onChange={(event) => onChange(event.target.value)}
+            className="h-9 w-10 shrink-0 cursor-pointer rounded-lg border border-border bg-bg"
+          />
+          <input
+            type="text"
+            dir="ltr"
+            // The stored value, not its resolution: a half-typed "@" is a
+            // literal in the variant paint and must stay visible so it can be
+            // corrected before the save rejects it.
+            value={role === null ? value : resolveColor(value, palette)}
+            onChange={(event) => onChange(event.target.value)}
+            className={INPUT_CLASS}
+          />
+        </div>
+      )}
     </Field>
   );
 }

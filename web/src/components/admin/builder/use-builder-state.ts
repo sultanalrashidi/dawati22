@@ -16,6 +16,7 @@ import {
   type Transform,
   type TransformOverride,
   type AnimationSettings,
+  colorRoleOf,
 } from "@/lib/themes/builder/types";
 
 /** Per-layer colour patches for one variant: `{ [layerId]: { style: { color } } }`. */
@@ -138,6 +139,113 @@ function splitColors<T extends Record<string, unknown>>(patch: T): { colors: Rec
     }
   }
   return { colors, rest: rest as T };
+}
+
+/** A breakpoint style without its colour; `undefined` when nothing is left. */
+function stripColor(style: TextStyleOverride): TextStyleOverride | undefined {
+  const { color: _color, ...rest } = style;
+  void _color;
+  return Object.keys(rest).length > 0 ? rest : undefined;
+}
+
+/**
+ * A text/seal layer without its per-size colours. A colour applies at every
+ * size (the inspector says so), and a tablet/desktop colour left behind would
+ * shadow both the base style and the variant's own paint at that size — so
+ * choosing ANY colour lifts them, whether or not the base itself changed.
+ * Returns the same object when there is nothing to lift.
+ */
+function liftSizedInk(layer: Layer): Layer {
+  if (layer.type !== "text" && layer.type !== "seal") return layer;
+  if (layer.tabletStyle?.color === undefined && layer.desktopStyle?.color === undefined) return layer;
+  const next = { ...layer };
+  if (next.tabletStyle?.color !== undefined) next.tabletStyle = stripColor(next.tabletStyle);
+  if (next.desktopStyle?.color !== undefined) next.desktopStyle = stripColor(next.desktopStyle);
+  return next;
+}
+
+/**
+ * Splits the colours of a patch by what they ARE: a `@role` is a decision
+ * about the design ("this line is the secondary ink") and belongs in the
+ * shared document, where every colour of the design resolves it against its
+ * own palette; a literal hex is an override for the colour on screen and
+ * belongs in that variant's paint. Both halves keep the patch's nesting.
+ */
+function partitionColors(colors: Record<string, unknown>): {
+  roles: Record<string, unknown>;
+  literals: Record<string, unknown>;
+} {
+  const roles: Record<string, unknown> = {};
+  const literals: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(colors)) {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      const nested = partitionColors(value as Record<string, unknown>);
+      if (Object.keys(nested.roles).length > 0) roles[key] = nested.roles;
+      if (Object.keys(nested.literals).length > 0) literals[key] = nested.literals;
+    } else if (typeof value === "string" && colorRoleOf(value) !== null) {
+      // Only a COMPLETE role is a decision; "@" half-typed into the hex box
+      // is not one, and travels as a literal the way any other typo does.
+      roles[key] = value;
+    } else {
+      literals[key] = value;
+    }
+  }
+  return { roles, literals };
+}
+
+/** Every string leaf of a nested patch, with the path that reaches it. */
+function leavesOf(shape: Record<string, unknown>, prefix: string[] = []): { path: string[]; value: string }[] {
+  const out: { path: string[]; value: string }[] = [];
+  for (const [key, value] of Object.entries(shape)) {
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      out.push(...leavesOf(value as Record<string, unknown>, [...prefix, key]));
+    } else if (typeof value === "string") {
+      out.push({ path: [...prefix, key], value });
+    }
+  }
+  return out;
+}
+
+function readAt(source: Record<string, unknown> | undefined, path: string[]): unknown {
+  let current: unknown = source;
+  for (const key of path) {
+    if (!current || typeof current !== "object") return undefined;
+    current = (current as Record<string, unknown>)[key];
+  }
+  return current;
+}
+
+/** `{a: {b: value}}` for a path `["a", "b"]`. */
+function shapeAt(path: string[], value: string): Record<string, unknown> {
+  return path.reduceRight<Record<string, unknown>>((inner, key) => ({ [key]: inner }), value as unknown as Record<string, unknown>);
+}
+
+/**
+ * Removes from `paint` every leaf that `shape` names, pruning objects left
+ * empty. Returns the same object when nothing was removed, so callers can
+ * tell "cleared" from "there was nothing to clear".
+ */
+function withoutLeaves(
+  paint: Record<string, unknown>,
+  shape: Record<string, unknown>,
+): Record<string, unknown> {
+  let out: Record<string, unknown> | null = null;
+  for (const [key, value] of Object.entries(shape)) {
+    if (!(key in paint)) continue;
+    const current = paint[key];
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      if (!current || typeof current !== "object" || Array.isArray(current)) continue;
+      const pruned = withoutLeaves(current as Record<string, unknown>, value as Record<string, unknown>);
+      if (pruned === current) continue;
+      out ??= { ...paint };
+      if (Object.keys(pruned).length === 0) delete out[key];
+      else out[key] = pruned;
+    } else {
+      out ??= { ...paint };
+      delete out[key];
+    }
+  }
+  return out ?? paint;
 }
 
 /**
@@ -269,11 +377,80 @@ export function useBuilderState(
     setPaintDirty(true);
   }, []);
 
+  /**
+   * The admin picked palette roles for some colours of a layer. What that
+   * means depends on what this colour already says about the leaf:
+   *
+   * - The leaf already shows that role: nothing to do. (A block section
+   *   re-sends the whole style on every edit, so this is the common case.)
+   * - This colour has NO override of its own: the role is a decision about
+   *   the design — "this line is the secondary ink" — and goes to the shared
+   *   document, where every colour without an override follows it.
+   * - This colour HAS an override: the choice is about this colour only, so
+   *   the override becomes the role. Picking the role the design already
+   *   holds drops the override instead — that is how a colour goes back to
+   *   following the design, and it keeps the stored record minimal.
+   *
+   * The document half is undoable like every design edit; the paint half is
+   * not, like every other colour edit — the two never move together, so an
+   * undo cannot leave them contradicting each other.
+   */
+  const chooseRoles = useCallback(
+    (id: string, roles: Record<string, unknown>) => {
+      const designLayer = doc.layers.find((layer) => layer.id === id);
+      if (!designLayer) return;
+      const own = paint[id] ?? {};
+      let nextOwn: Record<string, unknown> = own;
+      const forDesign: Record<string, unknown> = {};
+
+      for (const leaf of leavesOf(roles)) {
+        const designValue = readAt(designLayer as unknown as Record<string, unknown>, leaf.path);
+        const ownValue = readAt(own, leaf.path);
+        const shown = ownValue ?? designValue;
+        if (shown === leaf.value) continue;
+        if (ownValue !== undefined) {
+          nextOwn =
+            leaf.value === designValue
+              ? withoutLeaves(nextOwn, shapeAt(leaf.path, leaf.value))
+              : mergePatch(nextOwn, shapeAt(leaf.path, leaf.value));
+        } else {
+          Object.assign(forDesign, mergePatch(forDesign, shapeAt(leaf.path, leaf.value)));
+        }
+      }
+
+      if (nextOwn !== own) {
+        setPaint((current) => {
+          const next = { ...current };
+          if (Object.keys(nextOwn).length === 0) delete next[id];
+          else next[id] = nextOwn;
+          return next;
+        });
+        setPaintDirty(true);
+      }
+      const choosesInk = typeof (roles.style as { color?: unknown } | undefined)?.color === "string";
+      const liftsInk = choosesInk && liftSizedInk(designLayer) !== designLayer;
+      if (Object.keys(forDesign).length > 0 || liftsInk) {
+        mutate((draft) => ({
+          ...draft,
+          layers: draft.layers.map((layer) => {
+            if (layer.id !== id) return layer;
+            const next = mergePatch(layer, forDesign);
+            return choosesInk ? liftSizedInk(next) : next;
+          }),
+        }));
+      }
+    },
+    [doc.layers, paint, mutate],
+  );
+
   const patchLayer = useCallback(
     (id: string, patch: Partial<Layer>, options?: { history?: boolean }) => {
-      // Colours belong to the variant on screen; everything else to the design.
+      // A literal colour belongs to the variant on screen; a palette role is
+      // a choice (see `chooseRoles`); everything else is the design itself.
       const { colors, rest } = splitColors(patch as Record<string, unknown>);
-      if (Object.keys(colors).length > 0) paintLayer(id, colors);
+      const { roles, literals } = partitionColors(colors);
+      if (Object.keys(literals).length > 0) paintLayer(id, literals);
+      if (Object.keys(roles).length > 0) chooseRoles(id, roles);
       if (Object.keys(rest).length === 0) return;
       mutate(
         (draft) => ({
@@ -283,7 +460,7 @@ export function useBuilderState(
         options,
       );
     },
-    [mutate, paintLayer],
+    [mutate, paintLayer, chooseRoles],
   );
 
   /**
@@ -330,11 +507,21 @@ export function useBuilderState(
   const patchTextStyle = useCallback(
     (id: string, patch: TextStyleOverride) => {
       const { colors, rest } = splitColors(patch as Record<string, unknown>);
-      if (Object.keys(colors).length > 0) {
+      const { roles, literals } = partitionColors(colors);
+      if (Object.keys(literals).length > 0) {
         // Nested under the same key the renderer reads, so the deep merge in
         // `resolveScene` lands it on `layer.style.color`.
-        paintLayer(id, { style: colors });
+        paintLayer(id, { style: literals });
+        // …and a per-size colour in the design would still shadow it there.
+        const current = doc.layers.find((layer) => layer.id === id);
+        if (typeof literals.color === "string" && current && liftSizedInk(current) !== current) {
+          mutate((draft) => ({
+            ...draft,
+            layers: draft.layers.map((layer) => (layer.id === id ? liftSizedInk(layer) : layer)),
+          }));
+        }
       }
+      if (typeof roles.color === "string") chooseRoles(id, { style: { color: roles.color } });
       if (Object.keys(rest).length === 0) return;
       patch = rest as TextStyleOverride;
       mutate((draft) => ({
@@ -347,7 +534,7 @@ export function useBuilderState(
         }),
       }));
     },
-    [mutate, breakpoint, paintLayer],
+    [mutate, breakpoint, paintLayer, chooseRoles, doc.layers],
   );
 
   /** Drop a breakpoint's overrides so the layer inherits mobile again. */

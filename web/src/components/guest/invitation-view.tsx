@@ -19,7 +19,18 @@ import { fontVarFor } from "@/lib/themes/fonts";
 import { fontStackFor } from "@/lib/themes/font-registry";
 import { ThemeStage } from "@/components/themes/builder/theme-stage";
 import type { RsvpResponse, StageRsvp } from "@/components/themes/builder/layers/rsvp-layer";
-import { resolveContent, type CoupleInput, type ResolvedContent } from "@/lib/themes/builder/content";
+import {
+  closingText,
+  composeHostLine,
+  coupleLineFor,
+  INSHALLAH,
+  INVITE_VERB,
+  openingText,
+  resolveContent,
+  type CoupleInput,
+  type InvitationTextFields,
+  type ResolvedContent,
+} from "@/lib/themes/builder/content";
 import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
 import {
   breakpointForWidth,
@@ -61,6 +72,17 @@ function isUsableLayer(layer: { visible: boolean; base: { width: number; height:
   return x > -10 && x < 110 && y > -10 && y < 110;
 }
 
+/**
+ * The first letter for a seal monogram. The English names are optional now,
+ * so an empty one falls back to the Arabic given name rather than leaving the
+ * seal with a lone "&". Spread into code points, not `charAt`, so a name that
+ * starts outside the BMP can never yield half a surrogate pair.
+ */
+function initialOf(nameEn: string, nameAr: string | null | undefined): string {
+  const name = nameEn.trim() || (nameAr ?? "").trim();
+  return [...name][0] ?? "";
+}
+
 type GuestFacingStatus = "DRAFT" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED";
 
 /**
@@ -84,7 +106,13 @@ interface Props {
   theme: ThemeConfig;
   /** Theme.category — drives which decorative motif kit renders (see theme-decor.tsx). */
   themeCategory?: string;
-  event: {
+  /**
+   * The wording columns (`Partial<InvitationTextFields>`: opening, host mode
+   * and mothers, couple format, closing) are all optional so every existing
+   * caller compiles; an event that predates them renders with the defaults —
+   * the verse, no host line, "نورة على فيصل", the default closing.
+   */
+  event: Partial<InvitationTextFields> & {
     name: string;
     /**
      * Every couple this invitation announces — a joint wedding names more than
@@ -96,7 +124,7 @@ interface Props {
     /**
      * The primary couple's own Event columns. Still here because the legacy
      * cover screens (sealed card, doors, plain) read the initials straight off
-     * them; they always mirror `couples[0]`.
+     * them; they always mirror `couples[0]`. The English names may be "".
      */
     groomNameEn: string;
     brideNameEn: string;
@@ -104,7 +132,9 @@ interface Props {
     groomFamilyAr?: string | null;
     brideNameAr?: string | null;
     brideFamilyAr?: string | null;
+    /** Legacy — no longer written by the form; only old builder docs print it. */
     familiesGreetingAr?: string | null;
+    /** Optional extra text under the composed invitation line; "" when none. */
     invitationTextAr: string;
     eventDate: string;
     locationName: string;
@@ -571,6 +601,13 @@ function InvitationScreens({
         ? resolveContent({
             guestName: guest.nameAr,
             couples,
+            openingKind: event.openingKind,
+            hostMode: event.hostMode,
+            groomMotherAr: event.groomMotherAr ?? null,
+            brideMotherAr: event.brideMotherAr ?? null,
+            hostLineAr: event.hostLineAr ?? null,
+            coupleFormat: event.coupleFormat,
+            closingAr: event.closingAr ?? null,
             familiesGreetingAr: event.familiesGreetingAr ?? null,
             invitationTextAr: event.invitationTextAr,
             eventDate: event.eventDate,
@@ -580,6 +617,17 @@ function InvitationScreens({
         : null,
     [builder, couples, event, guest],
   );
+
+  // The composed wording the LEGACY screens print — the same helpers the
+  // builder stage, the WhatsApp message and the ICS description use, so the
+  // guest reads one sentence wherever she meets it.
+  const hostLine = composeHostLine(event);
+  const extraText = event.invitationTextAr.trim();
+  // The hand-coded pass cards print the couple's names themselves, right under
+  // this line, so it stops at the verb: repeating the names inside the text
+  // would print them twice in a band with room for one.
+  const passInviteText =
+    extraText || [hostLine, INVITE_VERB].filter(Boolean).join(" ").replace(/\s+/g, " ");
 
   /**
    * The one way the invitation opens. Every cover routes through here — the
@@ -845,8 +893,8 @@ function InvitationScreens({
           accentFg={theme.palette.accentFg}
           surface={theme.palette.surface}
           fg={theme.palette.fg}
-          groomInitial={event.groomNameEn.charAt(0)}
-          brideInitial={event.brideNameEn.charAt(0)}
+          groomInitial={initialOf(event.groomNameEn, event.groomNameAr)}
+          brideInitial={initialOf(event.brideNameEn, event.brideNameAr)}
           label={g.openInvitation}
           isOpening={isOpening}
           onOpen={handleOpenClick}
@@ -898,7 +946,7 @@ function InvitationScreens({
             style={{ borderColor: "var(--color-accent)" }}
           >
             <span className="text-sm font-medium tracking-widest text-[var(--color-accent)]" style={{ fontFamily: "var(--font-en-display)" }}>
-              {event.groomNameEn.charAt(0)}&amp;{event.brideNameEn.charAt(0)}
+              {initialOf(event.groomNameEn, event.groomNameAr)}&amp;{initialOf(event.brideNameEn, event.brideNameAr)}
             </span>
           </span>
           <span className="text-xs uppercase tracking-[0.3em] text-[var(--color-accent)]">{g.openInvitation}</span>
@@ -955,9 +1003,15 @@ function InvitationScreens({
             <h1 className="text-3xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
               {guest.nameAr}
             </h1>
-            <p className="text-lg" style={{ fontFamily: "var(--font-en-display)" }}>
-              {event.groomNameEn} &amp; {event.brideNameEn}
-            </p>
+            {/* The Latin names line. Both English names are optional: with
+                neither given the line goes — the Arabic names follow on the
+                next screen — and with one missing that side falls back to
+                the Arabic given name. Bride first, as everywhere else. */}
+            {(event.brideNameEn.trim() || event.groomNameEn.trim()) && (
+              <p className="text-lg" style={{ fontFamily: "var(--font-en-display)" }}>
+                {event.brideNameEn.trim() || event.brideNameAr} &amp; {event.groomNameEn.trim() || event.groomNameAr}
+              </p>
+            )}
           </div>
           {hasSealOpen ? (
             <button
@@ -1231,35 +1285,46 @@ function InvitationScreens({
               )}
             </Scene>
 
-            {/* Scene 2: blessing, invitation text, couple names, date */}
+            {/* Scene 2: the invitation itself, in the order it is read —
+                opening (basmala / verse / dua), the host line (the two
+                mothers), the fixed verb, the couple line in the host's chosen
+                format, "وذلك بمشيئة الله تعالى", the date, then any extra text
+                and the closing. All composed by content.ts, so this screen,
+                the builder stage and the share texts print the same words. */}
             <Scene showHint>
-              {event.familiesGreetingAr && (
-                <p className="max-w-md text-2xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
-                  {event.familiesGreetingAr}
+              <div className="flex max-w-md flex-col items-center gap-3">
+                {openingText(event.openingKind) && (
+                  <p className="whitespace-pre-line text-lg leading-loose" style={{ fontFamily: "var(--font-ar-display)" }}>
+                    {openingText(event.openingKind)}
+                  </p>
+                )}
+                {hostLine && (
+                  <p className="whitespace-pre-line leading-loose" style={{ fontFamily: "var(--font-ar-display)" }}>
+                    {hostLine}
+                  </p>
+                )}
+                <p className="leading-loose text-[var(--color-fg-muted)]">{INVITE_VERB}</p>
+                {/* One row per couple — a joint wedding announces several. Bride
+                    first, in the format the host picked (BRIDE_FOCUS breaks
+                    after her name, hence `whitespace-pre-line`). */}
+                <div className="flex flex-col items-center gap-3">
+                  {couples.map((couple, i) => (
+                    <p key={i} className="whitespace-pre-line text-2xl leading-snug" style={{ fontFamily: "var(--font-ar-display)" }}>
+                      {coupleLineFor(couple, event.coupleFormat)}
+                    </p>
+                  ))}
+                </div>
+                <p className="leading-loose text-[var(--color-fg-muted)]">{INSHALLAH}</p>
+                <div className="text-center">
+                  <p className="text-lg text-[var(--color-fg)]">{dual.gregorian}</p>
+                  <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{dual.hijri}</p>
+                </div>
+                {extraText && (
+                  <p className="whitespace-pre-line leading-loose text-[var(--color-fg-muted)]">{extraText}</p>
+                )}
+                <p className="mt-1 text-lg leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
+                  {closingText(event.closingAr)}
                 </p>
-              )}
-              <p className="max-w-md whitespace-pre-line leading-loose text-[var(--color-fg-muted)]">
-                {event.invitationTextAr}
-              </p>
-              {/* One row per couple — a joint wedding announces several. With a
-                  single couple the wrapper collapses to exactly the row that was
-                  here before, so the common case is pixel-identical. */}
-              <div className="flex flex-col items-center gap-3">
-                {couples.map((couple, i) => (
-                  <div key={i} className="flex items-center justify-center gap-4">
-                    <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>
-                      {couple.brideNameAr || couple.brideNameEn}
-                    </p>
-                    <div className="h-8 w-px" style={{ background: "var(--color-accent)", opacity: 0.5 }} />
-                    <p className="text-2xl" style={{ fontFamily: "var(--font-ar-display)" }}>
-                      {couple.groomNameAr || couple.groomNameEn}
-                    </p>
-                  </div>
-                ))}
-              </div>
-              <div className="mt-2 text-center">
-                <p className="text-lg text-[var(--color-fg)]">{dual.gregorian}</p>
-                <p className="mt-1 text-sm text-[var(--color-fg-muted)]">{dual.hijri}</p>
               </div>
             </Scene>
 
@@ -1457,7 +1522,7 @@ function InvitationScreens({
               ) : theme.card?.style === "rose-emboss" ? (
                 <RoseCandlelightPass
                   couples={passCouples}
-                  invitationTextAr={event.invitationTextAr}
+                  invitationTextAr={passInviteText}
                   placeText={event.locationName + (event.regionName ? ` — ${event.regionName}` : "")}
                   dateText={dual.gregorian.split("، ").pop() ?? dual.gregorian}
                   timeText={dual.time}
@@ -1473,7 +1538,7 @@ function InvitationScreens({
               ) : isBridalFrame ? (
                 <BridalFramePass
                   couples={passCouples}
-                  invitationTextAr={event.invitationTextAr}
+                  invitationTextAr={passInviteText}
                   placeText={event.locationName + (event.regionName ? ` — ${event.regionName}` : "")}
                   dateText={dual.gregorian.split("، ").pop() ?? dual.gregorian}
                   timeText={dual.time}

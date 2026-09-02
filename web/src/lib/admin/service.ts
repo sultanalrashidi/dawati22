@@ -80,6 +80,7 @@ export async function getEventAdmin(eventId: string) {
       owner: true,
       theme: true,
       order: { include: { plan: true } },
+      couples: { orderBy: { sortOrder: "asc" } },
       guests: { include: { invitation: true }, orderBy: { createdAt: "desc" } },
       guestManagementRequest: { select: { status: true } },
       gateStaffAssignments: { include: { gateStaff: { include: { user: true } } }, where: { revokedAt: null } },

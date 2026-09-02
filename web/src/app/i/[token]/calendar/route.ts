@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getInvitationByLinkToken } from "@/lib/invitations/service";
+import { invitationShareText } from "@/lib/events/share-text";
 
 /** Escapes text per RFC 5545 §3.3.11 — commas, semicolons, backslashes, newlines. */
 function escapeIcsText(text: string) {
@@ -40,7 +41,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
     `DTEND:${toUtcStamp(end)}`,
     `SUMMARY:${escapeIcsText(event.name)}`,
     `LOCATION:${escapeIcsText(location)}`,
-    `DESCRIPTION:${escapeIcsText(event.invitationTextAr)}`,
+    // The host's extra text when she wrote one, else the composed invitation
+    // sentence — the free text is optional now and usually empty.
+    `DESCRIPTION:${escapeIcsText(invitationShareText(event))}`,
     "END:VEVENT",
     "END:VCALENDAR",
   ];

@@ -71,6 +71,11 @@ export function RoseCandlelightPass({
 }: {
   /** Every couple on the invitation, in order. Never empty. */
   couples: { groomLabel: string; brideLabel: string }[];
+  /**
+   * The line printed above the names. Never empty: the host's extra text is
+   * optional, so the caller passes the composed host line + verb when she
+   * wrote none — the card prints the names itself, right under this.
+   */
   invitationTextAr: string;
   placeText: string;
   dateText: string;

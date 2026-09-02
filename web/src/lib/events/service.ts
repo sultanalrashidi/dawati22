@@ -10,7 +10,7 @@ import {
 } from "@/generated/prisma/client";
 import type { ScheduleItem } from "@/lib/events/types";
 import { generateReferenceCode } from "@/lib/events/reference-code";
-import type { CoupleInput } from "@/lib/themes/builder/content";
+import type { CoupleInput, InvitationTextFields } from "@/lib/themes/builder/content";
 import { orderTerms } from "@/lib/orders/terms";
 import { designRequestCreateData, type DesignBrief } from "@/lib/design-requests/service";
 
@@ -140,7 +140,14 @@ export async function listPublishedThemes(userId: string | null) {
   return themes.map(({ _count, ...theme }) => ({ ...theme, eventCount: _count.events }));
 }
 
-export interface CreateEventInput {
+/**
+ * The wording columns are `InvitationTextFields` — the same shape the guest
+ * renderer and the share texts read — so the form saves exactly what prints.
+ * `familiesGreetingAr` is deliberately absent: the form stopped writing it
+ * with the women's-invitation redesign, and support editing an event must not
+ * wipe the legacy greeting an old invitation still prints.
+ */
+export interface CreateEventInput extends InvitationTextFields {
   orderId: string;
   type: EventType;
   name: string;
@@ -150,7 +157,7 @@ export interface CreateEventInput {
    * existing read of those keeps working exactly as it did.
    */
   couples: CoupleInput[];
-  familiesGreetingAr?: string;
+  /** Optional extra text under the composed invitation line; "" when unused. */
   invitationTextAr: string;
   eventDate: Date;
   locationName: string;
@@ -159,6 +166,10 @@ export interface CreateEventInput {
   musicYoutubeId?: string | null;
   musicAutoplay?: boolean;
   scheduleItems?: ScheduleItem[];
+  /** The three standard guest notes, printed before the free notes when on. */
+  noteNoPhotos: boolean;
+  noteNoChildren: boolean;
+  noteShowPass: boolean;
   notesAr?: string;
   themeId: string;
   /** Chosen colour of a BUILDER theme; null for LEGACY themes. */
@@ -249,6 +260,27 @@ function coupleRows(couples: CoupleInput[]) {
   }));
 }
 
+/**
+ * The columns that compose the printed invitation sentence and its notes.
+ * One helper for both write paths, so a wording field the create form saves
+ * is never one the admin edit silently drops.
+ */
+function wordingColumns(input: UpdateEventDetailsInput) {
+  return {
+    openingKind: input.openingKind,
+    hostMode: input.hostMode,
+    groomMotherAr: input.groomMotherAr || null,
+    brideMotherAr: input.brideMotherAr || null,
+    hostLineAr: input.hostLineAr || null,
+    coupleFormat: input.coupleFormat,
+    // Null means "the default preset", resolved at render time.
+    closingAr: input.closingAr || null,
+    noteNoPhotos: input.noteNoPhotos,
+    noteNoChildren: input.noteNoChildren,
+    noteShowPass: input.noteShowPass,
+  };
+}
+
 /** Everything the event form writes; `orderId` is not among it — a paid order is not re-pointed. */
 /**
  * `designBrief` is excluded: it is a request made once, when the event is
@@ -287,7 +319,7 @@ export async function updateEventDetails(eventId: string, input: UpdateEventDeta
         name: input.name,
         ...primaryCoupleColumns(input.couples),
         couples: { create: coupleRows(input.couples) },
-        familiesGreetingAr: input.familiesGreetingAr || null,
+        ...wordingColumns(input),
         invitationTextAr: input.invitationTextAr,
         eventDate: input.eventDate,
         locationName: input.locationName,
@@ -336,7 +368,7 @@ async function createEventWithUniqueReferenceCode(
           // Nested creates run inside the same transaction as the event row, so
           // an event can never exist with a half-written couple list.
           couples: { create: coupleRows(input.couples) },
-          familiesGreetingAr: input.familiesGreetingAr || null,
+          ...wordingColumns(input),
           invitationTextAr: input.invitationTextAr,
           eventDate: input.eventDate,
           locationName: input.locationName,

@@ -188,6 +188,14 @@ export const CONTENT_FIELDS = [
   "regionName",
   "invitationText",
   "greeting",
+  // --- Women's-section invitation wording (composed in content.ts) ---
+  "opening",
+  "hostLine",
+  "inviteVerb",
+  "coupleLine",
+  "inviteLine",
+  "inshallah",
+  "closing",
 ] as const;
 export type ContentField = (typeof CONTENT_FIELDS)[number];
 
@@ -209,6 +217,13 @@ export const CONTENT_FIELD_LABELS_AR: Record<ContentField, string> = {
   regionName: "المدينة",
   invitationText: "نص الدعوة",
   greeting: "ترحيب العائلات",
+  opening: "الافتتاحية (بسملة / آية / دعاء)",
+  hostLine: "سطر الداعي",
+  inviteVerb: "بدعوتكم لحضور حفل زفاف",
+  coupleLine: "سطر العروسين (حسب الصيغة المختارة)",
+  inviteLine: "الدعوة كاملة (الداعي + العروسين)",
+  inshallah: "وذلك بمشيئة الله تعالى",
+  closing: "الخاتمة",
 };
 
 // ---------------------------------------------------------------------------

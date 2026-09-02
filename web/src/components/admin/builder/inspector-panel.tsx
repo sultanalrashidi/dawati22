@@ -33,7 +33,7 @@ const BREAKPOINT_LABEL: Record<Breakpoint, string> = {
 
 const BUTTON_ACTION_LABELS: Record<ButtonAction, string> = {
   calendar: "إضافة الموعد للتقويم",
-  map: "فتح الموقع في الخريطة",
+  map: "الموقع على الخريطة",
   music: "تشغيل الموسيقى",
   link: "رابط مخصص",
 };

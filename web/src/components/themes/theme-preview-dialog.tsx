@@ -5,6 +5,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { InvitationView, type BuilderTheme } from "@/components/guest/invitation-view";
+import { SAMPLE_CONTENT_INPUT, noteLines } from "@/lib/themes/builder/content";
 
 const SAMPLE_COUPLE = {
   groomNameEn: "Faisal",
@@ -15,14 +16,30 @@ const SAMPLE_COUPLE = {
   brideFamilyAr: "آل مطلق",
 };
 
+// All three standard note toggles on, so the gallery shows the same note
+// lines a guest gets ahead of the host's own notes.
+const SAMPLE_NOTE_FLAGS = { noteNoPhotos: true, noteNoChildren: true, noteShowPass: true };
+const SAMPLE_NOTES = "الحضور بالزي الرسمي";
+
 const SAMPLE_EVENT = {
   name: "Sample",
   // Gallery previews show a single couple — the joint-wedding stack is real
   // event data, not something a theme card should invent.
   couples: [SAMPLE_COUPLE],
   ...SAMPLE_COUPLE,
+  // The wording fields match the builder editor's sample, so a design reads
+  // the same in the gallery as it did on the admin's canvas.
+  openingKind: SAMPLE_CONTENT_INPUT.openingKind,
+  hostMode: SAMPLE_CONTENT_INPUT.hostMode,
+  groomMotherAr: SAMPLE_CONTENT_INPUT.groomMotherAr,
+  brideMotherAr: SAMPLE_CONTENT_INPUT.brideMotherAr,
+  hostLineAr: SAMPLE_CONTENT_INPUT.hostLineAr,
+  coupleFormat: SAMPLE_CONTENT_INPUT.coupleFormat,
+  closingAr: SAMPLE_CONTENT_INPUT.closingAr,
   familiesGreetingAr: "يسعدنا انضمامكم لنا في هذا اليوم",
-  invitationTextAr: "يسعدنا دعوتكم لحضور حفل زفافنا ومشاركتنا فرحتنا",
+  // The composed invitation line replaces the old free text; this is the
+  // optional extra, empty like the editor's sample.
+  invitationTextAr: SAMPLE_CONTENT_INPUT.invitationTextAr,
   eventDate: new Date(Date.now() + 45 * 86_400_000).toISOString(),
   locationName: "قاعة الأمير الكبرى - الرياض",
   mapUrl: "https://maps.google.com/?q=" + encodeURIComponent("قاعة الأمير الكبرى الرياض"),
@@ -35,12 +52,14 @@ const SAMPLE_EVENT = {
     { labelAr: "الزفة", time: "٩:٠٠ م" },
     { labelAr: "العشاء", time: "١٠:٠٠ م" },
   ],
-  notesAr: "عدم اصطحاب الأطفال\nالحضور بالزي الرسمي",
+  ...SAMPLE_NOTE_FLAGS,
+  // Composed exactly as the guest page composes it: standard lines first.
+  notesAr: noteLines(SAMPLE_NOTE_FLAGS, SAMPLE_NOTES).join("\n"),
   rsvpRequired: true,
   allowGuestPartySize: true,
 };
 
-const SAMPLE_GUEST = { nameAr: "أم عبدالله", allowedCount: 3 };
+const SAMPLE_GUEST = { nameAr: "أم فهد", allowedCount: 3 };
 
 export function ThemePreviewDialog({
   variants,

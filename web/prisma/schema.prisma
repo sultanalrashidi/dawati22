@@ -439,6 +439,31 @@ enum EventStatus {
   ARCHIVED
 }
 
+/// What opens the invitation text: the verse (basmala + Qur'anic verse),
+/// a dua (basmala + blessing), the basmala alone, or nothing. The Arabic
+/// strings live in src/lib/themes/builder/content.ts, not in the database.
+enum InvitationOpening {
+  VERSE
+  DUA
+  BASMALA
+  NONE
+}
+
+/// How the host line (سطر الداعي) is produced: composed from the two mothers'
+/// kunyas (TEMPLATE) or typed verbatim by the customer (FREE).
+enum HostMode {
+  TEMPLATE
+  FREE
+}
+
+/// How the couple's given names are joined on the invitation. The bride is
+/// always first — this is a women's-section invitation.
+enum CoupleFormat {
+  ALA
+  WAW
+  BRIDE_FOCUS
+}
+
 model Event {
   id                    String                   @id @default(cuid())
   ownerId               String
@@ -447,14 +472,33 @@ model Event {
   order                 Order                    @relation(fields: [orderId], references: [id])
   type                  EventType
   name                  String
-  groomNameEn           String
-  brideNameEn           String
+  /// English names are OPTIONAL since the women's-invitation redesign; ""
+  /// means "not given" and the Arabic name stands in everywhere (seal, OG
+  /// image, metadata). Kept NOT NULL so CoupleInput/couplesFor need no change.
+  groomNameEn           String                   @default("")
+  brideNameEn           String                   @default("")
   groomNameAr           String?
   groomFamilyAr         String?
   brideNameAr           String?
   brideFamilyAr         String?
+  /// Legacy — no longer written by the form. Still read as the `greeting` content field.
   familiesGreetingAr    String?
-  invitationTextAr      String
+  /// Optional extra text under the composed invitation line ("نص إضافي").
+  invitationTextAr      String                   @default("")
+  /// The opening (الافتتاحية) printed above the host line.
+  openingKind           InvitationOpening        @default(VERSE)
+  /// TEMPLATE composes the host line from the two mothers; FREE prints hostLineAr.
+  hostMode              HostMode                 @default(TEMPLATE)
+  /// Kunya of the groom's mother, e.g. "أم عبدالله" (hostMode TEMPLATE).
+  groomMotherAr         String?
+  /// Kunya of the bride's mother, e.g. "أم سعد" (hostMode TEMPLATE).
+  brideMotherAr         String?
+  /// The whole host line, verbatim (hostMode FREE).
+  hostLineAr            String?
+  /// How the couple's given names are joined: "نورة على فيصل" / "نورة و فيصل" / bride on her own line.
+  coupleFormat          CoupleFormat             @default(ALA)
+  /// The closing line (الخاتمة), e.g. "بحضوركم تكتمل فرحتنا". Null = the default preset.
+  closingAr             String?
   eventDate             DateTime
   locationName          String
   /**
@@ -476,6 +520,10 @@ model Event {
    * Free text, one note per line — e.g. "no children", dress code.
    */
   notesAr               String?
+  /// Standard guest notes, prepended to the notesAr lines when on.
+  noteNoPhotos          Boolean                  @default(false)
+  noteNoChildren        Boolean                  @default(false)
+  noteShowPass          Boolean                  @default(false)
   /**
    * Short human-typeable code the owner can read out to a door guard — generated once at creation.
    */
@@ -539,8 +587,8 @@ model EventCouple {
   eventId       String
   event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   sortOrder     Int      @default(0)
-  groomNameEn   String
-  brideNameEn   String
+  groomNameEn   String   @default("")
+  brideNameEn   String   @default("")
   groomNameAr   String?
   groomFamilyAr String?
   brideNameAr   String?

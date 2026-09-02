@@ -6,6 +6,7 @@ import { getEventAdmin } from "@/lib/admin/service";
 import { toggleGuestMgmtDoneAction } from "@/lib/admin/actions";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { guestInvitationUrl } from "@/lib/urls";
+import { invitationShareText } from "@/lib/events/share-text";
 import { normalizeSaudiPhone } from "@/lib/security/phone";
 import { CopyTextButton } from "@/components/admin/copy-text-button";
 import { GuestShareCell } from "@/components/admin/guest-share-cell";
@@ -34,10 +35,15 @@ export default async function AdminEventGuestsPage({
   const done = event.guestManagementRequest?.status === GuestManagementRequestStatus.COMPLETED;
   const boundToggleDone = toggleGuestMgmtDoneAction.bind(null, event.id, locale, !done);
 
+  // The line above the link in every WhatsApp message: the host's extra text
+  // if she wrote one, else the composed invitation sentence. One per event,
+  // not per guest.
+  const shareText = invitationShareText(event);
+
   const rows = event.guests.map((guest) => {
     const invitation = guest.invitation;
     const url = invitation ? guestInvitationUrl(invitation.linkToken) : null;
-    const waMessage = url ? `${event.invitationTextAr}\n${url}` : null;
+    const waMessage = url ? `${shareText}\n${url}` : null;
     // Send straight to the guest's own number when it reads as a Saudi mobile;
     // anything else falls back to WhatsApp's share screen rather than risking
     // a guessed international prefix putting the invitation in a stranger's

@@ -13,7 +13,7 @@ const MAX_COUPLES = 6;
 const FIELD =
   "h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent";
 
-/** What one groom+bride block starts out holding when the form is an edit. */
+/** What one bride+groom block starts out holding when the form is an edit. */
 export interface CoupleValues {
   groomNameEn: string;
   brideNameEn: string;
@@ -29,11 +29,16 @@ interface Row {
 }
 
 /**
- * The repeatable groom+bride block. Every pair posts under the same six
- * `couple*` names, so the server reads them with `formData.getAll(...)` and the
- * Nth value of each array is the Nth couple — which is why the inputs stay
- * uncontrolled and are keyed by a stable id: removing the middle pair must drop
- * that pair's values, not shift everyone else's.
+ * The repeatable bride+groom block — bride first, because she is the star of
+ * a women's-section invitation and the card prints her name first. Every pair
+ * posts under the same six `couple*` names, so the server reads them with
+ * `formData.getAll(...)` and the Nth value of each array is the Nth couple —
+ * which is why the inputs stay uncontrolled and are keyed by a stable id:
+ * removing the middle pair must drop that pair's values, not shift everyone
+ * else's.
+ *
+ * The Arabic given names are required (they are what prints); the English
+ * names are optional and only feed the Latin monogram and the link preview.
  */
 export function CouplesFields({
   f,
@@ -70,64 +75,70 @@ export function CouplesFields({
             {rows.length > 1 ? `${f.coupleHeading} ${index + 1}` : f.coupleHeading}
           </legend>
 
-          <div className="grid grid-cols-2 gap-4">
-            <label className="flex flex-col gap-1.5 text-sm">
-              <span className="text-fg-muted">{f.groomNameLabel}</span>
-              <input
-                name="coupleGroomNameEn"
-                dir="ltr"
-                required
-                minLength={2}
-                defaultValue={row.values?.groomNameEn ?? ""}
-                className={FIELD}
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm">
-              <span className="text-fg-muted">{f.brideNameLabel}</span>
-              <input
-                name="coupleBrideNameEn"
-                dir="ltr"
-                required
-                minLength={2}
-                defaultValue={row.values?.brideNameEn ?? ""}
-                className={FIELD}
-              />
-            </label>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-fg">{f.brideHeading}</span>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="text-fg-muted">{f.brideNameArLabel}</span>
+                <input
+                  name="coupleBrideNameAr"
+                  required
+                  minLength={2}
+                  defaultValue={row.values?.brideNameAr ?? ""}
+                  className={FIELD}
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="text-fg-muted">{f.brideFamilyArLabel}</span>
+                <input
+                  name="coupleBrideFamilyAr"
+                  defaultValue={row.values?.brideFamilyAr ?? ""}
+                  className={FIELD}
+                />
+              </label>
+              <label className="col-span-2 flex flex-col gap-1.5 text-sm">
+                <span className="text-fg-muted">{f.brideNameLabel}</span>
+                <input
+                  name="coupleBrideNameEn"
+                  dir="ltr"
+                  defaultValue={row.values?.brideNameEn ?? ""}
+                  className={FIELD}
+                />
+              </label>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <label className="flex flex-col gap-1.5 text-sm">
-              <span className="text-fg-muted">{f.groomNameArLabel}</span>
-              <input
-                name="coupleGroomNameAr"
-                defaultValue={row.values?.groomNameAr ?? ""}
-                className={FIELD}
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm">
-              <span className="text-fg-muted">{f.groomFamilyArLabel}</span>
-              <input
-                name="coupleGroomFamilyAr"
-                defaultValue={row.values?.groomFamilyAr ?? ""}
-                className={FIELD}
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm">
-              <span className="text-fg-muted">{f.brideNameArLabel}</span>
-              <input
-                name="coupleBrideNameAr"
-                defaultValue={row.values?.brideNameAr ?? ""}
-                className={FIELD}
-              />
-            </label>
-            <label className="flex flex-col gap-1.5 text-sm">
-              <span className="text-fg-muted">{f.brideFamilyArLabel}</span>
-              <input
-                name="coupleBrideFamilyAr"
-                defaultValue={row.values?.brideFamilyAr ?? ""}
-                className={FIELD}
-              />
-            </label>
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-fg">{f.groomHeading}</span>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="text-fg-muted">{f.groomNameArLabel}</span>
+                <input
+                  name="coupleGroomNameAr"
+                  required
+                  minLength={2}
+                  defaultValue={row.values?.groomNameAr ?? ""}
+                  className={FIELD}
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="text-fg-muted">{f.groomFamilyArLabel}</span>
+                <input
+                  name="coupleGroomFamilyAr"
+                  defaultValue={row.values?.groomFamilyAr ?? ""}
+                  className={FIELD}
+                />
+              </label>
+              <label className="col-span-2 flex flex-col gap-1.5 text-sm">
+                <span className="text-fg-muted">{f.groomNameLabel}</span>
+                <input
+                  name="coupleGroomNameEn"
+                  dir="ltr"
+                  defaultValue={row.values?.groomNameEn ?? ""}
+                  className={FIELD}
+                />
+              </label>
+            </div>
           </div>
 
           {index > 0 && (

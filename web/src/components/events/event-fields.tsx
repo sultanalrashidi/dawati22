@@ -1,6 +1,17 @@
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
+import {
+  COUPLE_FORMAT_KINDS,
+  DEFAULT_COUPLE_FORMAT,
+  DEFAULT_OPENING_KIND,
+  INVITATION_OPENING_KINDS,
+  type CoupleFormatKind,
+  type HostModeKind,
+  type InvitationOpeningKind,
+} from "@/lib/themes/builder/content";
+import { ClosingField } from "@/components/events/closing-field";
 import { CouplesFields, type CoupleValues } from "@/components/events/couples-fields";
+import { HostFields } from "@/components/events/host-fields";
 import { ThemePicker, type ThemeOption } from "@/components/events/theme-picker";
 
 /**
@@ -8,6 +19,10 @@ import { ThemePicker, type ThemeOption } from "@/components/events/theme-picker"
  * edit page. Both post the same names, and `lib/events/form.ts` reads them
  * back — one shape written and read in one place, so a field support can
  * correct is never a field the customer could not enter.
+ *
+ * The fields follow the invitation's own reading order — opening, host,
+ * couple, date, venue, notes, closing — so the host fills the card in the
+ * order her guests will read it.
  *
  * The event-type select is NOT here: it decides whether the rest of this form
  * should render at all, so it lives in `EventTypeGate`, which wraps this.
@@ -17,12 +32,33 @@ const FIELD =
   "h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent";
 const AREA = "rounded-lg border border-border bg-bg px-3 py-2 text-fg outline-none focus:border-accent";
 
+type FormCopy = Dictionary["events"]["form"];
+
+/** Which dictionary label names each opening — the long texts themselves live in content.ts. */
+const OPENING_LABEL_KEYS: Record<InvitationOpeningKind, keyof FormCopy> = {
+  VERSE: "openingVerse",
+  DUA: "openingDua",
+  BASMALA: "openingBasmala",
+  NONE: "openingNone",
+};
+
+const COUPLE_FORMAT_LABEL_KEYS: Record<CoupleFormatKind, keyof FormCopy> = {
+  ALA: "coupleFormatAla",
+  WAW: "coupleFormatWaw",
+  BRIDE_FOCUS: "coupleFormatBrideFocus",
+};
+
 /** An existing event's values, already flattened into what the inputs need. */
 export interface EventFieldDefaults {
   type: string;
   name: string;
+  openingKind: InvitationOpeningKind;
+  hostMode: HostModeKind;
+  groomMotherAr: string;
+  brideMotherAr: string;
+  hostLineAr: string;
   couples: CoupleValues[];
-  familiesGreetingAr: string;
+  coupleFormat: CoupleFormatKind;
   invitationTextAr: string;
   /** `YYYY-MM-DDTHH:mm`, in the same clock the server parses it back with. */
   eventDateLocal: string;
@@ -33,7 +69,12 @@ export interface EventFieldDefaults {
   musicAutoplay: boolean;
   /** One `label|time` line per schedule item. */
   scheduleText: string;
+  noteNoPhotos: boolean;
+  noteNoChildren: boolean;
+  noteShowPass: boolean;
   notesAr: string;
+  /** "" when the event has no closing of its own — the field then shows the default preset. */
+  closingAr: string;
   /** `themeId` or `themeId:variantId` — see themeOptionKey(). */
   themeKey: string;
   guestManagementMode: string;
@@ -69,29 +110,63 @@ export function EventFields({
         />
       </label>
 
+      <label className="flex flex-col gap-1.5 text-sm">
+        <span className="text-fg-muted">{f.openingLabel}</span>
+        <select
+          name="openingKind"
+          defaultValue={defaults?.openingKind ?? DEFAULT_OPENING_KIND}
+          className={FIELD}
+        >
+          {INVITATION_OPENING_KINDS.map((kind) => (
+            <option key={kind} value={kind}>
+              {f[OPENING_LABEL_KEYS[kind]]}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <HostFields
+        f={f}
+        defaults={
+          defaults && {
+            hostMode: defaults.hostMode,
+            groomMotherAr: defaults.groomMotherAr,
+            brideMotherAr: defaults.brideMotherAr,
+            hostLineAr: defaults.hostLineAr,
+          }
+        }
+      />
+
       {/* One pair by default; a joint wedding adds more, all posted under the
           same `couple*` names. */}
       <CouplesFields f={f} defaultCouples={defaults?.couples} />
 
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-fg-muted">{f.familiesGreetingLabel}</span>
-        <input
-          name="familiesGreetingAr"
-          defaultValue={defaults ? defaults.familiesGreetingAr : f.familiesGreetingPlaceholder}
+        <span className="text-fg-muted">{f.coupleFormatLabel}</span>
+        <select
+          name="coupleFormat"
+          defaultValue={defaults?.coupleFormat ?? DEFAULT_COUPLE_FORMAT}
           className={FIELD}
-        />
+        >
+          {COUPLE_FORMAT_KINDS.map((format) => (
+            <option key={format} value={format}>
+              {f[COUPLE_FORMAT_LABEL_KEYS[format]]}
+            </option>
+          ))}
+        </select>
+        <span className="text-xs text-fg-muted">{f.coupleFormatHint}</span>
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-fg-muted">{f.invitationTextLabel}</span>
+        <span className="text-fg-muted">{f.extraTextLabel}</span>
         <textarea
           name="invitationTextAr"
-          required
-          minLength={5}
-          rows={4}
-          defaultValue={defaults ? defaults.invitationTextAr : f.invitationTextPlaceholder}
+          rows={3}
+          placeholder={f.invitationTextPlaceholder}
+          defaultValue={defaults?.invitationTextAr ?? ""}
           className={AREA}
         />
+        <span className="text-xs text-fg-muted">{f.extraTextHint}</span>
       </label>
 
       <label className="flex flex-col gap-1.5 text-sm">
@@ -139,6 +214,39 @@ export function EventFields({
       </label>
 
       <div className="flex flex-col gap-2 text-sm">
+        <span className="text-fg-muted">{f.notesLabel}</span>
+        <span className="text-xs text-fg-muted">{f.notesStandardLabel}</span>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" name="noteNoPhotos" defaultChecked={defaults?.noteNoPhotos ?? false} />
+          {f.noteNoPhotosLabel}
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            name="noteNoChildren"
+            defaultChecked={defaults?.noteNoChildren ?? false}
+          />
+          {f.noteNoChildrenLabel}
+        </label>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" name="noteShowPass" defaultChecked={defaults?.noteShowPass ?? false} />
+          {f.noteShowPassLabel}
+        </label>
+        <label className="flex flex-col gap-1.5">
+          <span className="text-fg-muted">{f.notesFreeLabel}</span>
+          <textarea
+            name="notesAr"
+            rows={3}
+            placeholder={f.notesPlaceholder}
+            defaultValue={defaults?.notesAr ?? ""}
+            className={AREA}
+          />
+        </label>
+      </div>
+
+      <ClosingField f={f} defaultValue={defaults?.closingAr} />
+
+      <div className="flex flex-col gap-2 text-sm">
         <label className="flex flex-col gap-1.5">
           <span className="text-fg-muted">{f.musicUrlLabel}</span>
           <input
@@ -184,17 +292,6 @@ export function EventFields({
           className={AREA}
         />
         <span className="text-xs text-fg-muted">{f.scheduleHint}</span>
-      </label>
-
-      <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-fg-muted">{f.notesLabel}</span>
-        <textarea
-          name="notesAr"
-          rows={3}
-          placeholder={f.notesPlaceholder}
-          defaultValue={defaults?.notesAr ?? ""}
-          className={AREA}
-        />
       </label>
 
       <div className="flex flex-col gap-2 text-sm">

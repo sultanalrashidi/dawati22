@@ -127,7 +127,7 @@ const PASS_INFO_COLUMN = { valueSize: 8, valueLeading: 1.5, heightPx: 37, tracki
 
 /** Seeded from the guest dictionary; static text layers, so now editable. */
 const COPY_GUEST_OF = "دعوة خاصة إلى";
-const COPY_GUEST_WELCOME = "يسعدنا حضوركم ومشاركتنا هذه الفرحة";
+const COPY_GUEST_WELCOME = "نتشرف بحضوركم";
 const COPY_GOD_WILLING = "وذلك بمشيئة الله تعالى";
 const COPY_PLACE = "المكان";
 const COPY_DATE = "التاريخ";
@@ -730,14 +730,19 @@ function passLayers(source: VariantSource, style: CardStyle, stage: Aspect): Lay
     {
       id: L.passInvitation,
       type: "text",
-      name: "نص الدعوة",
+      name: "سطر الداعي",
       scene: "pass",
       z: 1,
       visible: true,
       locked: false,
-      source: "content",
-      text: "",
-      fields: ["invitationText"],
+      // The hand-coded pass prints the host line and the verb as ONE wrapped
+      // sentence ("تتشرف والدة العريس … بدعوتكم لحضور حفل زفاف") right above
+      // the names, so a static template joins the two fields with a space —
+      // two content fields would print as two blocks. `invitationText` is
+      // now the optional extra text and is usually empty.
+      source: "static",
+      text: "{hostLine} {inviteVerb}",
+      fields: [],
       style: textStyle({
         font: "@body",
         fontSize: fontPx(PASS_INVITATION.size, LEGACY_PASS_WIDTH),

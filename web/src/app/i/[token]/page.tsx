@@ -8,6 +8,7 @@ import { InvitationView } from "@/components/guest/invitation-view";
 import { GuestMessage } from "@/components/guest/guest-message";
 import { builderThemeConfig, loadBuilderTheme } from "@/lib/themes/builder/guest";
 import { couplesFor } from "@/lib/events/service";
+import { noteLines } from "@/lib/themes/builder/content";
 import { builderFontStylesheetHref } from "@/lib/themes/builder/fonts-server";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ScheduleItem } from "@/lib/events/types";
@@ -25,12 +26,16 @@ export async function generateMetadata({ params }: PageProps<"/i/[token]">): Pro
     invitation.event.eventDate,
   );
   // A joint wedding still gets one preview line: the primary couple, same as
-  // the seal monogram and the link-preview image.
+  // the seal monogram and the link-preview image. The English names are
+  // optional, so an empty one gives way to the Arabic given name; bride first,
+  // as on the invitation itself.
   const [primaryCouple] = couplesFor(invitation.event);
+  const bride = primaryCouple.brideNameEn.trim() || primaryCouple.brideNameAr || "";
+  const groom = primaryCouple.groomNameEn.trim() || primaryCouple.groomNameAr || "";
 
   return {
     title: `دعوة خاصة إلى ${invitation.guest.nameAr}`,
-    description: `${primaryCouple.groomNameEn} و ${primaryCouple.brideNameEn} — ${dual} · ${invitation.event.locationName}`,
+    description: `${bride} و ${groom} — ${dual} · ${invitation.event.locationName}`,
   };
 }
 
@@ -83,6 +88,11 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
   // theme's own stylesheet has to come with it or its type renders as fallback.
   const fontsHref = builder ? await builderFontStylesheetHref(builder.layout, builder.typography) : null;
 
+  // What the notes screen prints: the standard lines the host switched on
+  // (no photos, no children, show the pass) ahead of her own lines. Composed
+  // here so the view — and the builder's notes layer — see one plain list.
+  const effectiveNotes = noteLines(invitation.event, invitation.event.notesAr).join("\n") || null;
+
   return (
     <>
       {fontsHref && <link rel="stylesheet" href={fontsHref} />}
@@ -105,6 +115,13 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
           groomFamilyAr: invitation.event.groomFamilyAr,
           brideNameAr: invitation.event.brideNameAr,
           brideFamilyAr: invitation.event.brideFamilyAr,
+          openingKind: invitation.event.openingKind,
+          hostMode: invitation.event.hostMode,
+          groomMotherAr: invitation.event.groomMotherAr,
+          brideMotherAr: invitation.event.brideMotherAr,
+          hostLineAr: invitation.event.hostLineAr,
+          coupleFormat: invitation.event.coupleFormat,
+          closingAr: invitation.event.closingAr,
           familiesGreetingAr: invitation.event.familiesGreetingAr,
           invitationTextAr: invitation.event.invitationTextAr,
           eventDate: invitation.event.eventDate.toISOString(),
@@ -114,7 +131,7 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
           musicYoutubeId: invitation.event.musicYoutubeId,
           musicAutoplay: invitation.event.musicAutoplay,
           scheduleItems: invitation.event.scheduleItems as unknown as ScheduleItem[] | null,
-          notesAr: invitation.event.notesAr,
+          notesAr: effectiveNotes,
           rsvpRequired: invitation.event.rsvpRequired,
           allowGuestPartySize: invitation.event.allowGuestPartySize,
         }}

@@ -10,7 +10,7 @@
  */
 
 import { z } from "zod";
-import { withDefaultFlow } from "@/lib/themes/builder/default-flow";
+import { upgradeStockFlowLayers, withDefaultFlow } from "@/lib/themes/builder/default-flow";
 import {
   BUILDER_SCHEMA_VERSION,
   CARD_ENTRANCES,
@@ -265,6 +265,11 @@ export const paletteSchema = z.object({
  * A guest's invitation must never 500 because one layer in a 30-layer theme
  * carries a stale field. Whole-document parse first; if that fails, keep every
  * layer that validates on its own and fall back to defaults for the rest.
+ *
+ * Every path that yields a document — the valid v2, the salvaged array, the
+ * grafted v1 — runs the stock greeting upgrade last, so the guest page and the
+ * editor (which share this parser) both see the redesigned wording and the
+ * editor persists it on the next save.
  */
 /**
  * Upgrade a v1 document's fixed `{cover, open, pass}` scene object into the v2
@@ -352,7 +357,8 @@ export function parseLayoutDoc(raw: unknown): LayoutDoc {
     // Normalize on the way out so the renderer and the editor can both assume
     // exactly one cover, at most one pass, and unique ids.
     const doc = direct.data as LayoutDoc;
-    return { ...doc, scenes: normalizeScenes(doc.scenes) };
+    const scenes = normalizeScenes(doc.scenes);
+    return { ...doc, scenes, layers: upgradeStockFlowLayers(scenes, doc.layers) };
   }
 
   const source = (raw ?? {}) as Record<string, unknown>;
@@ -398,7 +404,7 @@ export function parseLayoutDoc(raw: unknown): LayoutDoc {
     version: BUILDER_SCHEMA_VERSION,
     page: page.success ? page.data : DEFAULT_PAGE_BACKGROUND,
     scenes,
-    layers: grafted,
+    layers: upgradeStockFlowLayers(scenes, grafted),
     animation: animation.success ? animation.data : DEFAULT_ANIMATION,
   };
 }

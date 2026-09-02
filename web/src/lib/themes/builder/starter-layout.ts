@@ -106,16 +106,18 @@ export function starterLayoutDoc(): LayoutDoc {
     layer({
       id: "s_open_invitation_text",
       type: "text",
-      name: "نص الدعوة",
+      name: "الدعوة كاملة",
       scene: "open",
       z: 3,
       visible: true,
       locked: false,
       source: "content",
-      fields: ["invitationText"],
+      // The whole composed invitation (host line, verb, couple line): the
+      // free `invitationText` is optional now and empty by default.
+      fields: ["inviteLine"],
       text: "",
       style: { ...DEFAULT_TEXT_STYLE, font: "@body", fontSize: 11, color: "#8C7248", lineHeight: 1.8 },
-      base: { ...DEFAULT_TRANSFORM, x: 50, y: 53, width: 58, height: 10 },
+      base: { ...DEFAULT_TRANSFORM, x: 50, y: 56, width: 58, height: 14 },
     }),
 
     // --- Scene 3: the entry pass ------------------------------------------

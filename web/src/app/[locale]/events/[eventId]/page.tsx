@@ -10,6 +10,7 @@ import { orderTerms } from "@/lib/orders/terms";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { daysUntil, relativeTime } from "@/lib/events/activity";
 import { guestInvitationUrl } from "@/lib/urls";
+import { invitationShareText } from "@/lib/events/share-text";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { Role, EventGuestManagementMode } from "@/generated/prisma/client";
 import { AddGuestForm } from "@/components/events/add-guest-form";
@@ -63,6 +64,9 @@ export default async function EventDetailPage({
   const d = dict.events.detail;
   const capacity = orderTerms(event.order).invitationCount;
   const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
+  // The line above the link in the WhatsApp message a host sends each guest:
+  // her extra text if she wrote one, else the composed invitation sentence.
+  const shareText = invitationShareText(event);
 
   const rows = event.guests.map((guest) => {
     const invitation = guest.invitation;
@@ -277,11 +281,7 @@ export default async function EventDetailPage({
                             : d.notSentYet
                       }
                       invitationUrl={invitation ? guestInvitationUrl(invitation.linkToken) : ""}
-                      waMessage={
-                        invitation
-                          ? `${event.invitationTextAr}\n${guestInvitationUrl(invitation.linkToken)}`
-                          : ""
-                      }
+                      waMessage={invitation ? `${shareText}\n${guestInvitationUrl(invitation.linkToken)}` : ""}
                       rsvp={rsvp}
                     />
                   ))}

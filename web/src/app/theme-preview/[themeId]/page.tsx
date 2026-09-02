@@ -8,7 +8,7 @@ import { mayPreviewDeliveredTheme } from "@/lib/design-requests/service";
 import { renderQrDataUrl } from "@/lib/qr";
 import { builderThemeConfig, loadBuilderTheme } from "@/lib/themes/builder/guest";
 import { builderFontStylesheetHref } from "@/lib/themes/builder/fonts-server";
-import { SAMPLE_CONTENT_INPUT } from "@/lib/themes/builder/content";
+import { SAMPLE_CONTENT_INPUT, noteLines } from "@/lib/themes/builder/content";
 import { defaultLocale } from "@/lib/i18n/locales";
 import { prisma } from "@/lib/db/client";
 import type { ScheduleItem } from "@/lib/events/types";
@@ -71,7 +71,10 @@ export default async function ThemePreviewPage({
     { labelAr: "الزفة", time: "9:30 م" },
     { labelAr: "العشاء", time: "10:30 م" },
   ];
-  const sampleNotes = "يرجى الحضور قبل الموعد بنصف ساعة\nالتصوير مسموح في الصالة الرئيسية فقط";
+  // All three standard note toggles on, composed exactly as the guest page
+  // composes them: standard lines first, then the host's own notes.
+  const sampleNoteFlags = { noteNoPhotos: true, noteNoChildren: true, noteShowPass: true };
+  const sampleNotes = noteLines(sampleNoteFlags, "يرجى الحضور قبل الموعد بنصف ساعة").join("\n");
 
   return (
     <>
@@ -109,6 +112,13 @@ export default async function ThemePreviewPage({
           groomFamilyAr: primaryCouple.groomFamilyAr,
           brideNameAr: primaryCouple.brideNameAr,
           brideFamilyAr: primaryCouple.brideFamilyAr,
+          openingKind: sample.openingKind,
+          hostMode: sample.hostMode,
+          groomMotherAr: sample.groomMotherAr,
+          brideMotherAr: sample.brideMotherAr,
+          hostLineAr: sample.hostLineAr,
+          coupleFormat: sample.coupleFormat,
+          closingAr: sample.closingAr,
           familiesGreetingAr: sample.familiesGreetingAr,
           invitationTextAr: sample.invitationTextAr,
           eventDate: sample.eventDate,

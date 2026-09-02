@@ -9,7 +9,11 @@ export class GuestError extends Error {}
 async function assertOwnedEvent(eventId: string, userId: string) {
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    include: { order: { include: { plan: true } }, _count: { select: { guests: true } } },
+    include: {
+      order: { include: { plan: true } },
+      // Only the status, to count who's still occupying a slot — see addGuest.
+      guests: { select: { invitation: { select: { status: true } } } },
+    },
   });
   if (!event || event.ownerId !== userId) throw new GuestError("Event not found");
   return event;
@@ -24,7 +28,15 @@ export async function addGuest(
   // The one place capacity is enforced in the whole product. It reads the count
   // the customer PAID for, snapshotted on the order — not the plan row, which is
   // editable settings: changing a package used to resize every live event on it.
-  if (event._count.guests >= orderTerms(event.order).invitationCount) {
+  //
+  // A declined guest gives their slot back — she said no, so the host may
+  // invite someone else in her place — which is also why removing a declined
+  // guest must never free a slot a second time: her slot was already given
+  // back the moment she declined, not when her row disappears.
+  const occupiedSlots = event.guests.filter(
+    (g) => g.invitation?.status !== InvitationStatus.DECLINED,
+  ).length;
+  if (occupiedSlots >= orderTerms(event.order).invitationCount) {
     throw new GuestError("Guest limit reached for this event's plan");
   }
   if (input.allowedCount < 1 || input.allowedCount > 20) {

@@ -91,6 +91,14 @@ export default async function EventDetailPage({
   const people = accepted.reduce((sum, r) => sum + r.people, 0);
   const pct = (n: number) => (sent > 0 ? Math.round((n / sent) * 100) : 0);
 
+  // A declined guest gives her invitation back — the host can invite someone
+  // else in her place — so she is not counted against the plan's capacity.
+  // Mirrors the check in guests/service.ts addGuest(); deleting her row must
+  // never free a slot a second time, which is exactly why this counts
+  // everyone EXCEPT the declined, rather than counting the declined and
+  // subtracting them from rows.length.
+  const occupiedSlots = rows.length - declined.length;
+
   // Door check-ins, not RSVPs: who actually showed up versus who only said
   // yes. Only meaningful once the event has happened — mid-event it would
   // just read as "look who hasn't arrived yet", which isn't the point.
@@ -141,13 +149,13 @@ export default async function EventDetailPage({
             <p className="flex items-baseline justify-between text-xs text-bg/70">
               <span>{locale === "ar" ? event.order.plan?.nameAr : event.order.plan?.name}</span>
               <span className="font-bold tabular-nums text-bg">
-                {nf.format(rows.length)} / {nf.format(capacity)}
+                {nf.format(occupiedSlots)} / {nf.format(capacity)}
               </span>
             </p>
             <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bg/15">
               <div
                 className="h-full rounded-full bg-accent"
-                style={{ width: `${capacity > 0 ? Math.min(100, (rows.length / capacity) * 100) : 0}%` }}
+                style={{ width: `${capacity > 0 ? Math.min(100, (occupiedSlots / capacity) * 100) : 0}%` }}
               />
             </div>
           </div>
@@ -303,7 +311,7 @@ export default async function EventDetailPage({
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4">
             <h2 className="text-base font-bold text-fg">{d.latestReplies}</h2>
             <span className="text-xs text-fg-muted">
-              {d.seatsRemaining.replace("{count}", nf.format(Math.max(0, capacity - rows.length)))}
+              {d.seatsRemaining.replace("{count}", nf.format(Math.max(0, capacity - occupiedSlots)))}
             </span>
           </div>
 
@@ -355,10 +363,11 @@ export default async function EventDetailPage({
         </section>
 
         {/* ── ATTENDANCE REPORT ────────────────────────────────────────────
-            Door check-ins only, never surfaced during the event itself — the
-            gate staff sees allow/deny, not names, so this comparison against
-            RSVPs is a purely after-the-fact report for the host. */}
-        {event.hasQr && daysLeft < 0 && (
+            Live from the moment the gate opens: fills in with every scan and
+            keeps reading the same way once the event is over. The gate staff
+            themselves only ever see allow/deny, never a name — this
+            comparison against RSVPs is host-only, on this page alone. */}
+        {event.hasQr && (
           <section className="mt-4 rounded-2xl border border-border bg-surface p-5">
             <h2 className="text-base font-bold text-fg">{d.attendanceTitle}</h2>
             <p className="mt-1 text-sm leading-relaxed text-fg-muted">{d.attendanceHint}</p>

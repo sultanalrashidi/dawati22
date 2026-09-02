@@ -80,7 +80,10 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
               {(() => {
                 const accepted = event.guests.filter((g) => classifyRsvp(g.invitation?.status) === "accepted").length;
                 const declined = event.guests.filter((g) => classifyRsvp(g.invitation?.status) === "declined").length;
-                const remaining = Math.max(0, orderTerms(event.order).invitationCount - event.guests.length);
+                // A declined guest gives her slot back — see guests/service.ts
+                // addGuest() for the actual enforcement this mirrors.
+                const occupiedSlots = event.guests.length - declined;
+                const remaining = Math.max(0, orderTerms(event.order).invitationCount - occupiedSlots);
                 return (
                   <p className="text-xs text-fg-muted">
                     {dict.events.detail.statsRemaining} {remaining} · {dict.events.detail.rsvpAccepted} {accepted} · {dict.events.detail.rsvpDeclined} {declined}

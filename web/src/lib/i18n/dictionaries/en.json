@@ -396,6 +396,7 @@
       "teamMgmtWhatsappMessage": "Hello, I chose Dawati team guest management for my event “{name}” — reference: {reference}",
       "attendanceTitle": "Attendance report",
       "attendanceHint": "Based on door barcode scans, and updates live during the event and afterward.",
+      "attendanceNotStarted": "This report activates automatically once the event begins.",
       "attendedLabel": "Attended",
       "noShowLabel": "Not yet arrived",
       "attendedListTitle": "Attended",

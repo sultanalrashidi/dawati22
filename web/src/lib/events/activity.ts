@@ -17,6 +17,11 @@ export function daysUntil(date: Date, now: number = Date.now()): number {
   return Math.ceil((date.getTime() - now) / DAY);
 }
 
+/** Whether `eventDate`'s own start time has arrived — day-granular `daysUntil` says "today" for hours before it actually starts. */
+export function eventHasStarted(eventDate: Date, now: number = Date.now()): boolean {
+  return now >= eventDate.getTime();
+}
+
 /**
  * "2 minutes ago" / "yesterday", in the viewer's language. Returns null for a
  * missing date so the caller can say what "never happened" means in context.

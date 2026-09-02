@@ -396,6 +396,7 @@
       "teamMgmtWhatsappMessage": "مرحبًا، اخترت إدارة المدعوين من فريق دعوتي لمناسبة «{name}» — رقم المرجع: {reference}",
       "attendanceTitle": "تقرير الحضور",
       "attendanceHint": "يعتمد على مسح الباركود عند الباب، ويتحدّث لحظياً أثناء المناسبة وبعدها.",
+      "attendanceNotStarted": "يتفعّل هذا التقرير تلقائياً عند بداية المناسبة.",
       "attendedLabel": "حضروا فعلياً",
       "noShowLabel": "لم يحضروا بعد",
       "attendedListTitle": "الحضور",

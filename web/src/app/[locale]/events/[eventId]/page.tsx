@@ -8,7 +8,7 @@ import { getDesignRequestForEvent } from "@/lib/design-requests/service";
 import { THEME_CATEGORIES, THEME_COLORS } from "@/lib/themes/vocabulary";
 import { orderTerms } from "@/lib/orders/terms";
 import { classifyRsvp } from "@/lib/invitations/service";
-import { daysUntil, relativeTime } from "@/lib/events/activity";
+import { daysUntil, eventHasStarted, relativeTime } from "@/lib/events/activity";
 import { guestInvitationUrl } from "@/lib/urls";
 import { invitationShareText } from "@/lib/events/share-text";
 import { supportWhatsAppUrl } from "@/lib/support";
@@ -116,6 +116,10 @@ export default async function EventDetailPage({
       : daysLeft === 0
         ? d.eventToday
         : d.eventPassed;
+  // The attendance report's own switch: it exists on the page from day one,
+  // but only turns on once the event's own start time has actually passed —
+  // `daysLeft` is day-granular ("today") and would flip it on hours too early.
+  const eventStarted = eventHasStarted(event.eventDate);
 
   const navItems = [
     { href: "#overview", label: d.overview },
@@ -363,49 +367,59 @@ export default async function EventDetailPage({
         </section>
 
         {/* ── ATTENDANCE REPORT ────────────────────────────────────────────
-            Live from the moment the gate opens: fills in with every scan and
-            keeps reading the same way once the event is over. The gate staff
+            Present on the page from day one, but switched off until the
+            event's own start time — the gate itself can't record a check-in
+            before then anyway, and it reads as a promise ("this is where
+            you'll watch it") rather than a section that just appears out of
+            nowhere on the day. Once on, it fills in with every scan and
+            keeps reading the same way after the event too. The gate staff
             themselves only ever see allow/deny, never a name — this
             comparison against RSVPs is host-only, on this page alone. */}
         {event.hasQr && (
           <section className="mt-4 rounded-2xl border border-border bg-surface p-5">
             <h2 className="text-base font-bold text-fg">{d.attendanceTitle}</h2>
-            <p className="mt-1 text-sm leading-relaxed text-fg-muted">{d.attendanceHint}</p>
-
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <StatCard label={d.attendedLabel} value={nf.format(attendedRows.length)} unit={d.statGuestUnit} tone="success" />
-              <StatCard label={d.noShowLabel} value={nf.format(noShowRows.length)} unit={d.statGuestUnit} tone="danger" />
-            </div>
-
-            {attendedRows.length === 0 && noShowRows.length === 0 ? (
-              <p className="mt-4 text-sm text-fg-muted">{d.attendanceEmpty}</p>
+            {!eventStarted ? (
+              <p className="mt-1 text-sm leading-relaxed text-fg-muted">{d.attendanceNotStarted}</p>
             ) : (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {attendedRows.length > 0 && (
-                  <div>
-                    <p className="text-xs font-bold text-fg-muted">{d.attendedListTitle}</p>
-                    <ul className="mt-2 flex flex-col divide-y divide-border">
-                      {attendedRows.map((r) => (
-                        <li key={r.guest.id} className="py-2 text-sm text-fg">
-                          {r.guest.nameAr}
-                        </li>
-                      ))}
-                    </ul>
+              <>
+                <p className="mt-1 text-sm leading-relaxed text-fg-muted">{d.attendanceHint}</p>
+
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <StatCard label={d.attendedLabel} value={nf.format(attendedRows.length)} unit={d.statGuestUnit} tone="success" />
+                  <StatCard label={d.noShowLabel} value={nf.format(noShowRows.length)} unit={d.statGuestUnit} tone="danger" />
+                </div>
+
+                {attendedRows.length === 0 && noShowRows.length === 0 ? (
+                  <p className="mt-4 text-sm text-fg-muted">{d.attendanceEmpty}</p>
+                ) : (
+                  <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                    {attendedRows.length > 0 && (
+                      <div>
+                        <p className="text-xs font-bold text-fg-muted">{d.attendedListTitle}</p>
+                        <ul className="mt-2 flex flex-col divide-y divide-border">
+                          {attendedRows.map((r) => (
+                            <li key={r.guest.id} className="py-2 text-sm text-fg">
+                              {r.guest.nameAr}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {noShowRows.length > 0 && (
+                      <div>
+                        <p className="text-xs font-bold text-fg-muted">{d.noShowListTitle}</p>
+                        <ul className="mt-2 flex flex-col divide-y divide-border">
+                          {noShowRows.map((r) => (
+                            <li key={r.guest.id} className="py-2 text-sm text-fg">
+                              {r.guest.nameAr}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 )}
-                {noShowRows.length > 0 && (
-                  <div>
-                    <p className="text-xs font-bold text-fg-muted">{d.noShowListTitle}</p>
-                    <ul className="mt-2 flex flex-col divide-y divide-border">
-                      {noShowRows.map((r) => (
-                        <li key={r.guest.id} className="py-2 text-sm text-fg">
-                          {r.guest.nameAr}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+              </>
             )}
           </section>
         )}

@@ -61,34 +61,48 @@ export function GuestRow({
   const rsvpLabel = rsvp === "accepted" ? d.rsvpAccepted : rsvp === "declined" ? d.rsvpDeclined : d.rsvpPending;
 
   return (
-    <div className="grid grid-cols-1 items-center gap-3 border-b border-border px-4 py-4 last:border-b-0 sm:grid-cols-[minmax(0,1.4fr)_auto_auto_minmax(0,1fr)_auto] sm:gap-4">
-      <div className="min-w-0">
-        <p className="flex flex-wrap items-center gap-2 font-medium text-fg">
-          <span className="truncate">{guest.nameAr}</span>
-          {guest.isBlocked && (
-            <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">{d.blocked}</span>
-          )}
-        </p>
-        {guest.phone && (
-          <p dir="ltr" className="mt-0.5 text-start text-xs text-fg-muted">
-            {guest.phone}
+    <div className="flex flex-col gap-3 border-b border-border px-4 py-4 last:border-b-0 sm:grid sm:grid-cols-[minmax(0,1.4fr)_auto_auto_minmax(0,1fr)_auto] sm:items-center sm:gap-4">
+      <div className="flex items-start justify-between gap-3 sm:block sm:min-w-0">
+        <div className="min-w-0">
+          <p className="flex flex-wrap items-center gap-2 font-medium text-fg">
+            <span className="truncate">{guest.nameAr}</span>
+            {guest.isBlocked && (
+              <span className="rounded-full bg-danger/10 px-2 py-0.5 text-xs text-danger">{d.blocked}</span>
+            )}
           </p>
-        )}
+          {guest.phone && (
+            <p dir="ltr" className="mt-0.5 text-start text-xs text-fg-muted">
+              {guest.phone}
+            </p>
+          )}
+        </div>
+        <span
+          className={`shrink-0 rounded-full px-2.5 py-1 text-xs sm:hidden ${RSVP_BADGE_STYLE[rsvp ?? "pending"]}`}
+        >
+          {rsvpLabel}
+        </span>
       </div>
 
-      <p className="text-sm tabular-nums text-fg-muted sm:text-center">
+      <div className="flex items-center justify-between gap-3 text-xs text-fg-muted sm:hidden">
+        <span>
+          {d.colCompanions}: <span className="tabular-nums">{companions === null ? "—" : companions}</span>
+        </span>
+        <span className="truncate">{activity}</span>
+      </div>
+
+      <p className="hidden text-sm tabular-nums text-fg-muted sm:block sm:text-center">
         {companions === null ? "—" : companions}
       </p>
 
-      <p>
+      <p className="hidden sm:block">
         <span className={`rounded-full px-2.5 py-1 text-xs ${RSVP_BADGE_STYLE[rsvp ?? "pending"]}`}>
           {rsvpLabel}
         </span>
       </p>
 
-      <p className="truncate text-xs text-fg-muted">{activity}</p>
+      <p className="hidden truncate text-xs text-fg-muted sm:block">{activity}</p>
 
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <button
           type="button"
           onClick={() => {
@@ -97,7 +111,7 @@ export function GuestRow({
             setTimeout(() => setCopied(false), 2000);
             recordShare();
           }}
-          className="h-8 rounded-full border border-border px-3 text-xs font-medium text-fg transition-colors hover:bg-surface-2"
+          className="h-8 rounded-full border border-border px-3 text-center text-xs font-medium text-fg transition-colors hover:bg-surface-2"
         >
           {copied ? d.linkCopied : d.copyLink}
         </button>
@@ -106,22 +120,22 @@ export function GuestRow({
           target="_blank"
           rel="noopener noreferrer"
           onClick={recordShare}
-          className="inline-flex h-8 items-center rounded-full bg-accent px-3 text-xs font-medium text-accent-fg transition-colors hover:bg-accent-strong"
+          className="inline-flex h-8 items-center justify-center rounded-full bg-accent px-3 text-xs font-medium text-accent-fg transition-colors hover:bg-accent-strong"
         >
           {d.sendWhatsapp}
         </a>
-        <form action={boundToggleBlock}>
+        <form action={boundToggleBlock} className="contents">
           <button
             type="submit"
-            className="h-8 rounded-full border border-border px-3 text-xs font-medium text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+            className="h-8 rounded-full border border-border px-3 text-center text-xs font-medium text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
           >
             {guest.isBlocked ? d.unblock : d.block}
           </button>
         </form>
-        <form action={boundDelete}>
+        <form action={boundDelete} className="contents">
           <ConfirmSubmitButton
             confirmMessage={d.confirmRemove}
-            className="h-8 rounded-full border border-danger/30 px-3 text-xs font-medium text-danger transition-colors hover:bg-danger/10"
+            className="h-8 rounded-full border border-danger/30 px-3 text-center text-xs font-medium text-danger transition-colors hover:bg-danger/10"
           >
             {d.remove}
           </ConfirmSubmitButton>

@@ -91,6 +91,12 @@ export default async function EventDetailPage({
   const people = accepted.reduce((sum, r) => sum + r.people, 0);
   const pct = (n: number) => (sent > 0 ? Math.round((n / sent) * 100) : 0);
 
+  // Door check-ins, not RSVPs: who actually showed up versus who only said
+  // yes. Only meaningful once the event has happened — mid-event it would
+  // just read as "look who hasn't arrived yet", which isn't the point.
+  const attendedRows = rows.filter((r) => r.guest.checkedInCount > 0);
+  const noShowRows = accepted.filter((r) => r.guest.checkedInCount === 0);
+
   const messages = rows
     .filter((r) => r.reply?.messageAr)
     .sort((a, b) => (b.reply!.respondedAt.getTime() ?? 0) - (a.reply!.respondedAt.getTime() ?? 0));
@@ -150,7 +156,46 @@ export default async function EventDetailPage({
 
       {/* ── MAIN ───────────────────────────────────────────────────────── */}
       <div className="min-w-0 flex-1">
-        <div id="overview" className="flex flex-wrap items-center justify-between gap-3">
+        {/* ── GATE ─────────────────────────────────────────────────────── */}
+        {event.hasQr && (
+          <section id="gate" className="rounded-2xl bg-fg p-5 text-bg">
+            <h2 className="font-bold">{d.gateAccessTitle}</h2>
+            <p className="mt-2 text-xs leading-relaxed text-bg/70">{d.gateHint}</p>
+            <ol className="mt-2 flex flex-col gap-1.5 text-xs leading-relaxed text-bg/70">
+              {d.gateSteps.map((step, i) => (
+                <li key={step} className="flex gap-2">
+                  <span className="shrink-0 font-bold text-bg/50">{nf.format(i + 1)}.</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+
+            {/* Events created before reference codes existed have none, and
+                an empty framed box reads as a fault rather than an absence. */}
+            {event.referenceCode && (
+              <div className="mt-4 rounded-xl bg-bg/10 px-4 py-3">
+                <p className="text-[11px] text-bg/60">{d.referenceCodeLabel}</p>
+                <p dir="ltr" className="mt-1 text-center text-xl font-bold tracking-[0.3em]">
+                  {event.referenceCode}
+                </p>
+              </div>
+            )}
+
+            <Link
+              href={`/${locale}/gate-access`}
+              className="mt-3 flex h-11 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+            >
+              {d.openScanner}
+            </Link>
+
+            <div className="mt-4 border-t border-bg/15 pt-4 [&_input]:text-fg">
+              <GatePinForm eventId={event.id} dict={dict} hasPinSet={Boolean(event.gatePinHash)} />
+            </div>
+          </section>
+        )}
+
+        {/* ── OVERVIEW ─────────────────────────────────────────────────── */}
+        <div id="overview" className={`flex flex-wrap items-center justify-between gap-3 ${event.hasQr ? "mt-6" : ""}`}>
           <h1 className="font-display text-3xl text-fg">{d.overview}</h1>
           <span className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs font-medium text-fg-muted">
             {countdown}
@@ -162,7 +207,7 @@ export default async function EventDetailPage({
         </p>
 
         {/* ── STATS ────────────────────────────────────────────────────── */}
-        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">
           <StatCard
             label={d.statSent}
             value={nf.format(sent)}
@@ -207,6 +252,11 @@ export default async function EventDetailPage({
           </section>
         )}
 
+        {/* ── ADD GUEST ────────────────────────────────────────────────── */}
+        <div className="mt-4">
+          <AddGuestForm eventId={event.id} locale={locale} dict={dict} />
+        </div>
+
         {/* The customer asked the Dawati team to send the invitations. Say so
             — and say what we need from them: the guest list below, then a
             WhatsApp ping so the team actually hears about it. The message
@@ -231,141 +281,152 @@ export default async function EventDetailPage({
           </section>
         )}
 
-        <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,1fr)_20rem]">
-          {/* ── GUESTS ─────────────────────────────────────────────────── */}
-          <section id="guests" className="order-2 xl:order-1">
-            <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4">
-                <h2 className="text-base font-bold text-fg">{d.latestReplies}</h2>
-                <span className="text-xs text-fg-muted">
-                  {d.seatsRemaining.replace("{count}", nf.format(Math.max(0, capacity - rows.length)))}
-                </span>
+        {/* ── MESSAGES FOR THE COUPLE ──────────────────────────────────── */}
+        <section className="mt-4 rounded-2xl border border-border bg-surface p-5">
+          <h2 className="text-base font-bold text-fg">{d.messagesTitle}</h2>
+          {messages.length === 0 ? (
+            <p className="mt-3 text-sm text-fg-muted">{d.messagesEmpty}</p>
+          ) : (
+            <ul className="mt-3 flex flex-col">
+              {messages.slice(0, 3).map(({ guest, reply }) => (
+                <li key={guest.id} className="border-b border-border py-3 last:border-b-0 last:pb-0">
+                  <p className="text-sm leading-relaxed text-fg">«{reply!.messageAr}»</p>
+                  <p className="mt-1 text-xs text-fg-muted">{reply!.guestNameAr || guest.nameAr}</p>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        {/* ── GUESTS ─────────────────────────────────────────────────────── */}
+        <section id="guests" className="mt-4 overflow-hidden rounded-2xl border border-border bg-surface">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-4">
+            <h2 className="text-base font-bold text-fg">{d.latestReplies}</h2>
+            <span className="text-xs text-fg-muted">
+              {d.seatsRemaining.replace("{count}", nf.format(Math.max(0, capacity - rows.length)))}
+            </span>
+          </div>
+
+          {rows.length === 0 ? (
+            <p className="px-4 py-10 text-center text-sm text-fg-muted">{d.noGuestsYet}</p>
+          ) : (
+            <>
+              <div className="hidden grid-cols-[minmax(0,1.4fr)_auto_auto_minmax(0,1fr)_auto] gap-4 border-b border-border px-4 py-2.5 text-[11px] font-bold text-fg-muted sm:grid">
+                <span>{d.colGuest}</span>
+                <span className="text-center">{d.colCompanions}</span>
+                <span>{d.colStatus}</span>
+                <span>{d.colActivity}</span>
+                <span />
               </div>
+              {rows.map(({ guest, invitation, reply, rsvp, lastActivityAt }) => (
+                <GuestRow
+                  key={guest.id}
+                  eventId={event.id}
+                  locale={locale}
+                  dict={dict}
+                  guest={{
+                    id: guest.id,
+                    nameAr: guest.nameAr,
+                    phone: guest.phone,
+                    allowedCount: guest.allowedCount,
+                    checkedInCount: guest.checkedInCount,
+                    isBlocked: guest.isBlocked,
+                  }}
+                  companions={rsvp === "accepted" ? (reply?.partySize ?? guest.allowedCount) : null}
+                  activity={
+                    invitation?.respondedAt || invitation?.viewedAt
+                      ? `${invitation.respondedAt ? "" : `${d.openedNoReply} · `}${
+                          relativeTime(lastActivityAt, locale) ?? ""
+                        }`
+                      : // Unshared and unopened are different kinds of
+                        // silence: one asks the host to act, the other to
+                        // wait. sentAt distinguishes them.
+                        invitation?.sentAt
+                        ? d.notOpenedYet
+                        : d.notSentYet
+                  }
+                  invitationUrl={invitation ? guestInvitationUrl(invitation.linkToken) : ""}
+                  waMessage={invitation ? `${shareText}\n${guestInvitationUrl(invitation.linkToken)}` : ""}
+                  rsvp={rsvp}
+                />
+              ))}
+            </>
+          )}
+        </section>
 
-              {rows.length === 0 ? (
-                <p className="px-4 py-10 text-center text-sm text-fg-muted">{d.noGuestsYet}</p>
-              ) : (
-                <>
-                  <div className="hidden grid-cols-[minmax(0,1.4fr)_auto_auto_minmax(0,1fr)_auto] gap-4 border-b border-border px-4 py-2.5 text-[11px] font-bold text-fg-muted sm:grid">
-                    <span>{d.colGuest}</span>
-                    <span className="text-center">{d.colCompanions}</span>
-                    <span>{d.colStatus}</span>
-                    <span>{d.colActivity}</span>
-                    <span />
-                  </div>
-                  {rows.map(({ guest, invitation, reply, rsvp, lastActivityAt }) => (
-                    <GuestRow
-                      key={guest.id}
-                      eventId={event.id}
-                      locale={locale}
-                      dict={dict}
-                      guest={{
-                        id: guest.id,
-                        nameAr: guest.nameAr,
-                        phone: guest.phone,
-                        allowedCount: guest.allowedCount,
-                        checkedInCount: guest.checkedInCount,
-                        isBlocked: guest.isBlocked,
-                      }}
-                      companions={rsvp === "accepted" ? (reply?.partySize ?? guest.allowedCount) : null}
-                      activity={
-                        invitation?.respondedAt || invitation?.viewedAt
-                          ? `${invitation.respondedAt ? "" : `${d.openedNoReply} · `}${
-                              relativeTime(lastActivityAt, locale) ?? ""
-                            }`
-                          : // Unshared and unopened are different kinds of
-                            // silence: one asks the host to act, the other to
-                            // wait. sentAt distinguishes them.
-                            invitation?.sentAt
-                            ? d.notOpenedYet
-                            : d.notSentYet
-                      }
-                      invitationUrl={invitation ? guestInvitationUrl(invitation.linkToken) : ""}
-                      waMessage={invitation ? `${shareText}\n${guestInvitationUrl(invitation.linkToken)}` : ""}
-                      rsvp={rsvp}
-                    />
-                  ))}
-                </>
-              )}
+        {/* ── ATTENDANCE REPORT ────────────────────────────────────────────
+            Door check-ins only, never surfaced during the event itself — the
+            gate staff sees allow/deny, not names, so this comparison against
+            RSVPs is a purely after-the-fact report for the host. */}
+        {event.hasQr && daysLeft < 0 && (
+          <section className="mt-4 rounded-2xl border border-border bg-surface p-5">
+            <h2 className="text-base font-bold text-fg">{d.attendanceTitle}</h2>
+            <p className="mt-1 text-sm leading-relaxed text-fg-muted">{d.attendanceHint}</p>
+
+            <div className="mt-4 grid grid-cols-2 gap-3">
+              <StatCard label={d.attendedLabel} value={nf.format(attendedRows.length)} unit={d.statGuestUnit} tone="success" />
+              <StatCard label={d.noShowLabel} value={nf.format(noShowRows.length)} unit={d.statGuestUnit} tone="danger" />
             </div>
 
-            <div className="mt-4">
-              <AddGuestForm eventId={event.id} locale={locale} dict={dict} />
-            </div>
-          </section>
-
-          {/* ── SIDE CARDS ─────────────────────────────────────────────── */}
-          <div className="order-1 flex flex-col gap-4 xl:order-2">
-            {event.hasQr && (
-              <section id="gate" className="rounded-2xl bg-fg p-5 text-bg">
-                <h2 className="font-bold">{d.gateAccessTitle}</h2>
-                <p className="mt-2 text-xs leading-relaxed text-bg/70">{d.gateHint}</p>
-
-                {/* Events created before reference codes existed have none, and
-                    an empty framed box reads as a fault rather than an absence. */}
-                {event.referenceCode && (
-                  <div className="mt-4 rounded-xl bg-bg/10 px-4 py-3">
-                    <p className="text-[11px] text-bg/60">{d.referenceCodeLabel}</p>
-                    <p dir="ltr" className="mt-1 text-center text-xl font-bold tracking-[0.3em]">
-                      {event.referenceCode}
-                    </p>
+            {attendedRows.length === 0 && noShowRows.length === 0 ? (
+              <p className="mt-4 text-sm text-fg-muted">{d.attendanceEmpty}</p>
+            ) : (
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                {attendedRows.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-fg-muted">{d.attendedListTitle}</p>
+                    <ul className="mt-2 flex flex-col divide-y divide-border">
+                      {attendedRows.map((r) => (
+                        <li key={r.guest.id} className="py-2 text-sm text-fg">
+                          {r.guest.nameAr}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
                 )}
-
-                <Link
-                  href={`/${locale}/gate-access`}
-                  className="mt-3 flex h-11 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
-                >
-                  {d.openScanner}
-                </Link>
-
-                <div className="mt-4 border-t border-bg/15 pt-4 [&_input]:text-fg">
-                  <GatePinForm eventId={event.id} dict={dict} hasPinSet={Boolean(event.gatePinHash)} />
-                </div>
-              </section>
+                {noShowRows.length > 0 && (
+                  <div>
+                    <p className="text-xs font-bold text-fg-muted">{d.noShowListTitle}</p>
+                    <ul className="mt-2 flex flex-col divide-y divide-border">
+                      {noShowRows.map((r) => (
+                        <li key={r.guest.id} className="py-2 text-sm text-fg">
+                          {r.guest.nameAr}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
             )}
+          </section>
+        )}
 
-            {designRequest ? (
-              <DesignRequestCard
+        {/* ── CUSTOM DESIGN ────────────────────────────────────────────── */}
+        <div className="mt-4">
+          {designRequest ? (
+            <DesignRequestCard
+              locale={locale}
+              dict={dict}
+              eventId={event.id}
+              request={{
+                id: designRequest.id,
+                reference: designRequest.reference,
+                status: designRequest.status,
+                priceSar: Number(designRequest.priceSar),
+                revisionCount: designRequest.revisionCount,
+                deliveredThemeId: designRequest.deliveredThemeId,
+              }}
+            />
+          ) : (
+            designChoices && (
+              <StartDesignRequestCard
                 locale={locale}
                 dict={dict}
                 eventId={event.id}
-                request={{
-                  id: designRequest.id,
-                  reference: designRequest.reference,
-                  status: designRequest.status,
-                  priceSar: Number(designRequest.priceSar),
-                  revisionCount: designRequest.revisionCount,
-                  deliveredThemeId: designRequest.deliveredThemeId,
-                }}
+                choices={designChoices}
               />
-            ) : (
-              designChoices && (
-                <StartDesignRequestCard
-                  locale={locale}
-                  dict={dict}
-                  eventId={event.id}
-                  choices={designChoices}
-                />
-              )
-            )}
-
-            <section className="rounded-2xl border border-border bg-surface p-5">
-              <h2 className="text-base font-bold text-fg">{d.messagesTitle}</h2>
-              {messages.length === 0 ? (
-                <p className="mt-3 text-sm text-fg-muted">{d.messagesEmpty}</p>
-              ) : (
-                <ul className="mt-3 flex flex-col">
-                  {messages.slice(0, 3).map(({ guest, reply }) => (
-                    <li key={guest.id} className="border-b border-border py-3 last:border-b-0 last:pb-0">
-                      <p className="text-sm leading-relaxed text-fg">«{reply!.messageAr}»</p>
-                      <p className="mt-1 text-xs text-fg-muted">{reply!.guestNameAr || guest.nameAr}</p>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
-          </div>
+            )
+          )}
         </div>
       </div>
     </div>
@@ -387,10 +448,10 @@ function StatCard({
 }) {
   const valueColor = tone === "success" ? "text-success" : tone === "danger" ? "text-danger" : "text-fg";
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5">
+    <div className="rounded-2xl border border-border bg-surface p-4 sm:p-5">
       <p className="text-xs font-bold text-fg-muted">{label}</p>
-      <p className="mt-2 flex items-baseline gap-2">
-        <span className={`text-3xl font-bold tabular-nums ${valueColor}`}>{value}</span>
+      <p className="mt-2 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span className={`text-2xl font-bold tabular-nums sm:text-3xl ${valueColor}`}>{value}</span>
         <span className="text-xs text-fg-muted">{unit}</span>
       </p>
       {note && <p className="mt-1.5 text-[11px] text-fg-muted">{note}</p>}

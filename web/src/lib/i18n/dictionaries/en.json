@@ -379,13 +379,27 @@
       "notOpenedYet": "Not opened yet",
       "notSentYet": "Not sent yet",
       "openedNoReply": "Opened, no reply",
-      "gateHint": "Every guest carries their code in their invitation. Scan it at the door from the organiser’s phone — no extra device.",
+      "gateHint": "Every guest carries their own code in their invitation. Here's how entry works:",
+      "gateSteps": [
+        "Set the entry PIN by typing four digits in the box below.",
+        "The door staff opens the site on their phone — no sign-in needed.",
+        "They go to the \"Door team\" page.",
+        "They enter the event's reference code and the 4-digit PIN.",
+        "They scan each guest's invitation barcode."
+      ],
       "openScanner": "Open the scanner",
       "noGuestsYet": "No guests yet — add your first and start sending.",
       "teamMgmtTitle": "The Dawati team sends your invitations",
       "teamMgmtBody": "Add your guests and their numbers to the list below, then message us on WhatsApp once you're ready — our team will send the invitations for you.",
       "teamMgmtCta": "Message us on WhatsApp",
-      "teamMgmtWhatsappMessage": "Hello, I chose Dawati team guest management for my event “{name}” — reference: {reference}"
+      "teamMgmtWhatsappMessage": "Hello, I chose Dawati team guest management for my event “{name}” — reference: {reference}",
+      "attendanceTitle": "Attendance report",
+      "attendanceHint": "Based on door barcode scans — shows who actually attended versus who only confirmed.",
+      "attendedLabel": "Attended",
+      "noShowLabel": "Confirmed, no-show",
+      "attendedListTitle": "Attended",
+      "noShowListTitle": "Did not attend",
+      "attendanceEmpty": "No door-scan data recorded for this event yet."
     }
   },
   "admin": {

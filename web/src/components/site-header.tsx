@@ -18,9 +18,9 @@ import { ScanIcon } from "@/components/icons/scan-icon";
  *
  * The scanner sits in the strip rather than in the panel because it is the one
  * link used under pressure: a door team standing at the entrance with a queue
- * behind them should not have to find it inside a menu. It keeps its label on
- * a wide screen and collapses to the icon on a phone, where the panel still
- * carries the full wording.
+ * behind them should not have to find it inside a menu. It always carries a
+ * label — the full wording on a wide screen, a shorter one on a phone — so
+ * nobody has to guess what a bare icon means.
  *
  * Everything else lives in the slide-in panel, including the language switch —
  * it was a permanent word in the strip for something most visitors never touch.
@@ -78,8 +78,8 @@ export function SiteHeader({
 
   // Kept from the old header — these were icon buttons in the top strip and
   // would otherwise have disappeared with it. The scanner is repeated here on
-  // purpose: in the strip it is icon-only below `sm`, and this is where a
-  // first-time door team reads what that icon means.
+  // purpose: the strip only ever has room for its short label, and this is
+  // where a first-time door team reads the full wording.
   const accountLinks = [
     ...(user?.role === "CUSTOMER" ? [{ href: `/${locale}/events`, label: n.myEvents }] : []),
     ...(user?.role === "ADMIN" ? [{ href: `/${locale}/admin`, label: n.admin }] : []),
@@ -108,14 +108,15 @@ export function SiteHeader({
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Link
               href={`/${locale}/gate-access`}
               title={n.scanFull}
               aria-label={n.scanFull}
-              className="inline-flex h-9 shrink-0 items-center gap-2 whitespace-nowrap rounded-full border border-accent-soft/60 bg-accent-soft/15 px-2.5 text-sm font-bold text-accent transition-colors hover:border-accent hover:bg-accent-soft/30 sm:px-3.5"
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-accent-soft/60 bg-accent-soft/15 px-2 text-sm font-bold text-accent transition-colors hover:border-accent hover:bg-accent-soft/30 sm:gap-2 sm:px-3.5"
             >
               <ScanIcon className="h-[18px] w-[18px]" />
+              <span className="hidden min-[360px]:inline sm:hidden">{n.scanShort}</span>
               <span className="hidden sm:inline">{n.scan}</span>
             </Link>
             {!user && (
@@ -130,7 +131,7 @@ export function SiteHeader({
             )}
             <Link
               href={`/${locale}/plans`}
-              className="inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-fg px-4 text-sm font-bold text-bg transition-opacity hover:opacity-90 sm:px-5"
+              className="inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-fg px-3.5 text-sm font-bold text-bg transition-opacity hover:opacity-90 sm:px-5"
             >
               {n.designYours}
             </Link>

@@ -33,6 +33,7 @@
     "admin": "Admin",
     "gate": "Gate Check-in",
     "scan": "Door team",
+    "scanShort": "Door team",
     "scanFull": "Scan invitations — door team",
     "login": "Log in",
     "loginShort": "Log in",

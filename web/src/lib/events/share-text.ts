@@ -71,7 +71,7 @@ function flatten(text: string): string {
 
 /**
  * The composed invitation sentence on one line, e.g.
- * "تتشرف والدة العريس أم عبدالله ووالدة العروس أم سعد بدعوتكم لحضور حفل زفاف نورة على فيصل".
+ * "تتشرف والدة العريس أم عبدالله ووالدة العروس أم سعد بدعوتكم لحضور حفل زفاف فيصل على نورة".
  * A joint wedding lists its couples separated by "،".
  */
 export function composedShareLine(event: ShareTextSource): string {

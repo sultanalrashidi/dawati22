@@ -43,9 +43,9 @@ function WaxSeal({
           textShadow: "-1px -1px 1px rgba(0,0,0,0.55), 1px 1px 1px rgba(255,255,255,0.35)",
         }}
       >
-        {brideInitial}
-        <span style={{ margin: "0 0.05em" }}>&amp;</span>
         {groomInitial}
+        <span style={{ margin: "0 0.05em" }}>&amp;</span>
+        {brideInitial}
       </span>
     </div>
   );
@@ -81,9 +81,9 @@ function BridalFrameMonogram({
         textShadow: "0 1px 1px rgba(255,255,255,0.6), 0 -1px 1px rgba(0,0,0,0.12)",
       }}
     >
-      {brideInitial}
-      <span style={{ margin: "0 0.15em" }}>&amp;</span>
       {groomInitial}
+      <span style={{ margin: "0 0.15em" }}>&amp;</span>
+      {brideInitial}
     </span>
   );
 }

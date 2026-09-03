@@ -110,7 +110,7 @@ interface Props {
    * The wording columns (`Partial<InvitationTextFields>`: opening, host mode
    * and mothers, couple format, closing) are all optional so every existing
    * caller compiles; an event that predates them renders with the defaults —
-   * the verse, no host line, "نورة على فيصل", the default closing.
+   * the verse, no host line, "فيصل على نورة", the default closing.
    */
   event: Partial<InvitationTextFields> & {
     name: string;
@@ -1006,10 +1006,10 @@ function InvitationScreens({
             {/* The Latin names line. Both English names are optional: with
                 neither given the line goes — the Arabic names follow on the
                 next screen — and with one missing that side falls back to
-                the Arabic given name. Bride first, as everywhere else. */}
+                the Arabic given name. Groom first, as everywhere else. */}
             {(event.brideNameEn.trim() || event.groomNameEn.trim()) && (
               <p className="text-lg" style={{ fontFamily: "var(--font-en-display)" }}>
-                {event.brideNameEn.trim() || event.brideNameAr} &amp; {event.groomNameEn.trim() || event.groomNameAr}
+                {event.groomNameEn.trim() || event.groomNameAr} &amp; {event.brideNameEn.trim() || event.brideNameAr}
               </p>
             )}
           </div>
@@ -1304,9 +1304,9 @@ function InvitationScreens({
                   </p>
                 )}
                 <p className="leading-loose text-[var(--color-fg-muted)]">{INVITE_VERB}</p>
-                {/* One row per couple — a joint wedding announces several. Bride
+                {/* One row per couple — a joint wedding announces several. Groom
                     first, in the format the host picked (BRIDE_FOCUS breaks
-                    after her name, hence `whitespace-pre-line`). */}
+                    after his name, hence `whitespace-pre-line`). */}
                 <div className="flex flex-col items-center gap-3">
                   {couples.map((couple, i) => (
                     <p key={i} className="whitespace-pre-line text-2xl leading-snug" style={{ fontFamily: "var(--font-ar-display)" }}>

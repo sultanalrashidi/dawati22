@@ -546,9 +546,9 @@ function coverLayers(source: VariantSource, style: CardStyle, stage: Aspect): La
     locked: false,
     mode: "initials",
     script: "latin",
-    // sealed-card.tsx prints `{brideInitial} & {groomInitial}` — matching it
+    // sealed-card.tsx prints `{groomInitial} & {brideInitial}` — matching it
     // matters, or every converted design quietly flips its monogram.
-    order: "bride-first",
+    order: "groom-first",
     text: "",
     separator: "&",
     maxChars: 1,
@@ -790,10 +790,10 @@ function passLayers(source: VariantSource, style: CardStyle, stage: Aspect): Lay
       locked: false,
       // A static template, not the `coupleNames` field: that field renders
       // "groom family و bride family", whereas bridal-frame-pass.tsx prints the
-      // BRIDE first, given names only, joined by "&". Interpolation reproduces
+      // GROOM first, given names only, joined by "&". Interpolation reproduces
       // it exactly while staying fully dynamic per invitation.
       source: "static",
-      text: "{brideFirstName} & {groomFirstName}",
+      text: "{groomFirstName} & {brideFirstName}",
       fields: [],
       style: textStyle({
         font: "@display",

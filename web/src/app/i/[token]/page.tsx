@@ -27,7 +27,7 @@ export async function generateMetadata({ params }: PageProps<"/i/[token]">): Pro
   );
   // A joint wedding still gets one preview line: the primary couple, same as
   // the seal monogram and the link-preview image. The English names are
-  // optional, so an empty one gives way to the Arabic given name; bride first,
+  // optional, so an empty one gives way to the Arabic given name; groom first,
   // as on the invitation itself.
   const [primaryCouple] = couplesFor(invitation.event);
   const bride = primaryCouple.brideNameEn.trim() || primaryCouple.brideNameAr || "";
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: PageProps<"/i/[token]">): Pro
 
   return {
     title: `دعوة خاصة إلى ${invitation.guest.nameAr}`,
-    description: `${bride} و ${groom} — ${dual} · ${invitation.event.locationName}`,
+    description: `${groom} و ${bride} — ${dual} · ${invitation.event.locationName}`,
   };
 }
 

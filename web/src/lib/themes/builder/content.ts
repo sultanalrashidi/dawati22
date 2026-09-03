@@ -198,14 +198,13 @@ function brideGivenName(couple: CoupleInput): string {
 }
 
 /**
- * "نورة القحطاني و فيصل العتيبي" for one pair — BRIDE FIRST. This is a
- * women's-section invitation: the bride is the one being celebrated, so her
- * name leads everywhere the two are printed together.
+ * "فيصل العتيبي و نورة القحطاني" for one pair — GROOM FIRST, everywhere the
+ * two are printed together.
  */
 export function coupleLabel(couple: CoupleInput): string {
   const groom = joinName(couple.groomNameAr, couple.groomFamilyAr, couple.groomNameEn);
   const bride = joinName(couple.brideNameAr, couple.brideFamilyAr, couple.brideNameEn);
-  return `${bride} و ${groom}`;
+  return `${groom} و ${bride}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -255,8 +254,8 @@ export function composeHostLine(
 }
 
 /**
- * ONE couple's names in the chosen format, bride first:
- *   ALA → "نورة على فيصل"   WAW → "نورة و فيصل"   BRIDE_FOCUS → "نورة\nعلى فيصل"
+ * ONE couple's names in the chosen format, groom first:
+ *   ALA → "فيصل على نورة"   WAW → "فيصل و نورة"   BRIDE_FOCUS → "فيصل\nعلى نورة"
  * Given names only (Arabic, else English). A pair with only one name filled
  * in prints that name alone instead of a dangling connector.
  */
@@ -266,11 +265,11 @@ export function coupleLineFor(couple: CoupleInput, format: CoupleFormatKind | nu
   if (!bride || !groom) return bride || groom;
   switch (format ?? DEFAULT_COUPLE_FORMAT) {
     case "ALA":
-      return `${bride} على ${groom}`;
+      return `${groom} على ${bride}`;
     case "WAW":
-      return `${bride} و ${groom}`;
+      return `${groom} و ${bride}`;
     case "BRIDE_FOCUS":
-      return `${bride}\nعلى ${groom}`;
+      return `${groom}\nعلى ${bride}`;
   }
 }
 
@@ -349,7 +348,7 @@ export function resolveContent(input: InvitationContentInput): ResolvedContent {
     guestName: input.guestName,
     groomName: groom,
     brideName: bride,
-    // One pair per line, bride first, so a text layer holding this field grows
+    // One pair per line, groom first, so a text layer holding this field grows
     // down the card for a joint wedding instead of running off its edges.
     coupleNames: input.couples.map(coupleLabel).join("\n"),
     // Given name only. The hand-coded pass card prints the couple without

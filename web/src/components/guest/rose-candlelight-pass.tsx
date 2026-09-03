@@ -132,13 +132,13 @@ export function RoseCandlelightPass({
           {couples.map((couple, index) => (
             <div key={index} className="flex items-center gap-2">
               <span className="text-base sm:text-lg" style={{ color: INK_DARK, fontFamily: nameFont }}>
-                {couple.brideLabel}
+                {couple.groomLabel}
               </span>
               <span className="text-xs" style={{ color: INK_LIGHT }}>
                 &amp;
               </span>
               <span className="text-base sm:text-lg" style={{ color: INK_DARK, fontFamily: nameFont }}>
-                {couple.groomLabel}
+                {couple.brideLabel}
               </span>
             </div>
           ))}

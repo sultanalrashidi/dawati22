@@ -40,7 +40,7 @@ async function loadGoogleFont(family: string, text: string, weight: number): Pro
 }
 
 /**
- * The names line, bride first. "Noura & Faisal" when both English names were
+ * The names line, groom first. "Faisal & Noura" when both English names were
  * given; otherwise the Arabic given names — the English ones are optional and
  * the Arabic ones required — joined with "و". Never one of each: a Latin word
  * and an Arabic word on one line sit on different baselines in Satori.
@@ -53,10 +53,10 @@ function previewNames(couple: {
 }): { text: string; script: "latin" | "arabic" } {
   const brideEn = couple.brideNameEn.trim();
   const groomEn = couple.groomNameEn.trim();
-  if (brideEn && groomEn) return { text: `${brideEn} & ${groomEn}`, script: "latin" };
+  if (brideEn && groomEn) return { text: `${groomEn} & ${brideEn}`, script: "latin" };
   const bride = couple.brideNameAr?.trim() || brideEn;
   const groom = couple.groomNameAr?.trim() || groomEn;
-  const text = [bride, groom].filter(Boolean).join(" و ");
+  const text = [groom, bride].filter(Boolean).join(" و ");
   return { text: text || "دعوتي", script: "arabic" };
 }
 

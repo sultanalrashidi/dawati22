@@ -21,6 +21,8 @@ export function PreviewBar({
   activated: boolean;
 }) {
   const d = dict.draft;
+  // Starts closed: she came here to look at her invitation, not at a toolbar.
+  const [open, setOpen] = useState(false);
   const [share, setShare] = useState<{ url: string; remaining: number } | null>(null);
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -48,12 +50,50 @@ export function PreviewBar({
   return (
     <div
       dir="rtl"
-      className="fixed inset-x-0 bottom-0 z-[70] border-t border-black/10 bg-white/95 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] backdrop-blur"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-[70] flex flex-col items-center gap-2 p-3"
     >
-      <div className="mx-auto flex max-w-2xl flex-col gap-2">
-        <p className="text-xs font-bold text-black">
-          {activated ? d.previewBarActivated : d.previewBarTitle}
-        </p>
+      {/* Collapsed by default, and small.
+          The invitation is laid out as full-height scroll-snapped screens, so
+          ANY fixed bar sits on top of the bottom of every one of them — which
+          on a phone meant covering the RSVP form she was trying to look at.
+          The toolbar's job is to be reachable, not to be read: one pill wide
+          enough to say what this is and get on with it, and everything else
+          one tap away. */}
+      {!open ? (
+        <div className="pointer-events-auto flex max-w-full items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-expanded={false}
+            className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-black/10 bg-white/95 px-4 text-xs font-bold text-black shadow-lg backdrop-blur"
+          >
+            {activated ? d.previewBarActivated : d.watermarkPrimary}
+            <span aria-hidden="true" className="text-black/40">⌃</span>
+          </button>
+          {!activated && (
+            <Link
+              href={`/ar/draft/${eventId}/activate`}
+              className="flex h-10 shrink-0 items-center rounded-full bg-black px-5 text-xs font-bold text-white shadow-lg"
+            >
+              {d.previewBarActivate}
+            </Link>
+          )}
+        </div>
+      ) : (
+      <div className="pointer-events-auto mx-auto flex w-full max-w-2xl flex-col gap-2 rounded-2xl border border-black/10 bg-white/95 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] backdrop-blur">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-xs font-bold text-black">
+            {activated ? d.previewBarActivated : d.previewBarTitle}
+          </p>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-label={dict.common.close}
+            className="-m-1 shrink-0 p-1 text-black/40"
+          >
+            ✕
+          </button>
+        </div>
         <p className="text-[11px] leading-relaxed text-black/60">
           {activated ? d.previewBarActivatedHint : d.previewBarHint}
         </p>
@@ -115,6 +155,7 @@ export function PreviewBar({
           )}
         </div>
       </div>
+      )}
     </div>
   );
 }

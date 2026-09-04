@@ -178,6 +178,16 @@ interface Props {
    * asked for exactly that: protected before payment, clean after it.
    */
   watermark?: { primary: string; secondary: string };
+  /**
+   * Says so, at the two places where this rendering would otherwise claim
+   * something it cannot deliver: the reply form (which records nothing) and
+   * the entry pass (whose code no scanner accepts).
+   *
+   * Set only by the owner's test invitation — the link she forwards to her
+   * mother to see what a guest gets. Everything else on the screen stays
+   * exactly as a guest receives it, which is the point of the link.
+   */
+  testCopy?: boolean;
 }
 
 /** Opening-transition length in ms — kept in sync with the CSS animation durations below. */
@@ -553,6 +563,7 @@ function InvitationScreens({
   hasQr = true,
   qrDataUrl,
   mode = "live",
+  testCopy = false,
   builder,
   music,
 }: Props & { music: BackgroundMusic }) {
@@ -1517,6 +1528,11 @@ function InvitationScreens({
               >
                 {g.rsvpSubmit}
               </button>
+              {/* Before she taps, not after: a reply from a test link reaches
+                  nobody, and finding that out afterwards is the whole harm. */}
+              {testCopy && (
+                <p className="text-center text-xs text-[var(--color-fg-muted)]">{g.testRsvpNotice}</p>
+              )}
               {rsvpError && <p className="text-sm text-red-400">{rsvpError}</p>}
             </form>
           </Scene>
@@ -1595,7 +1611,7 @@ function InvitationScreens({
             {(builder || theme.card?.style === "rose-emboss" || isBridalFrame) &&
               (!hasQr || currentQr || mode === "preview") && (
                 <p className="mt-3 text-xs text-[var(--color-fg-muted)]">
-                  {hasQr ? g.passShowAtEntry : g.passShowCardAtEntry}
+                  {testCopy ? g.testPassNotice : hasQr ? g.passShowAtEntry : g.passShowCardAtEntry}
                 </p>
               )}
           </Scene>

@@ -9,7 +9,7 @@ import { THEME_CATEGORIES, THEME_COLORS } from "@/lib/themes/vocabulary";
 import { orderTerms } from "@/lib/orders/terms";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { daysUntil, eventHasStarted, relativeTime } from "@/lib/events/activity";
-import { guestInvitationUrl } from "@/lib/urls";
+import { guestInvitationUrl, testInvitationUrl } from "@/lib/urls";
 import { invitationShareText } from "@/lib/events/share-text";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { Role, EventGuestManagementMode } from "@/generated/prisma/client";
@@ -18,6 +18,8 @@ import { GuestRow } from "@/components/events/guest-row";
 import { GatePinForm } from "@/components/events/gate-pin-form";
 import { DesignRequestCard } from "@/components/events/design-request-card";
 import { StartDesignRequestCard } from "@/components/events/custom-design-request-fields";
+import { TestInvitationCard } from "@/components/events/test-invitation-card";
+import { ensureSelfPreviewToken } from "@/lib/preview/self";
 
 /**
  * The host's dashboard for one event.
@@ -60,6 +62,11 @@ export default async function EventDetailPage({
           name: locale === "ar" ? theme.nameAr : theme.name,
         })),
       };
+
+  // Minted here rather than assumed: every event activated before the test
+  // invitation shipped has a null token, and the column is unique, so a
+  // blanket backfill is exactly the migration that fails halfway.
+  const testToken = await ensureSelfPreviewToken(eventId, user.id);
 
   const d = dict.events.detail;
   const capacity = orderTerms(event.order).invitationCount;
@@ -301,6 +308,15 @@ export default async function EventDetailPage({
               <div className="bg-danger" style={{ width: `${(declined.length / sent) * 100}%` }} />
             </div>
           </section>
+        )}
+
+        {testToken && (
+          <TestInvitationCard
+            eventId={event.id}
+            locale={locale}
+            dict={dict}
+            url={testInvitationUrl(testToken)}
+          />
         )}
 
         {/* ── ADD GUEST ────────────────────────────────────────────────── */}

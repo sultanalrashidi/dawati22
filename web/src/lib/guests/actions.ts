@@ -7,6 +7,7 @@ import {
   addGuestsBulk,
   undoImport,
   markInvitationShared,
+  unmarkInvitationShared,
   setGuestBlocked,
   deleteGuest,
   GuestError,
@@ -67,6 +68,21 @@ export async function deleteGuestAction(guestId: string, eventId: string, locale
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
   await deleteGuest(guestId, user.id);
   revalidatePath(`/${safeLocale}/events/${eventId}`);
+}
+
+/**
+ * "I did not actually send that one" — the send queue's correction.
+ *
+ * Deliberately does not un-freeze the event's details: something else in the
+ * batch may well have reached a guest, and one correction is not evidence that
+ * nothing went out.
+ */
+export async function unmarkGuestSentAction(guestId: string, eventId: string, locale: string) {
+  const user = await requireUserOrThrow([Role.CUSTOMER]);
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  await unmarkInvitationShared(guestId, user.id);
+  revalidatePath(`/${safeLocale}/events/${eventId}`);
+  revalidatePath(`/${safeLocale}/events/${eventId}/send`);
 }
 
 export type ImportActionState = {

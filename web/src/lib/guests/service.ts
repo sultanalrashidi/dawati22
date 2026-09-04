@@ -329,6 +329,37 @@ export async function undoImport(
   });
 }
 
+/**
+ * Un-records a send — the escape hatch for a mis-tap on the send queue.
+ *
+ * Deliberately does NOT touch `Event.detailsLockedAt`. Unmarking says "I did
+ * not actually send this one", not "nothing has ever gone out", and the lock
+ * answers the second question. Something else in the batch may well have
+ * reached a guest, and un-freezing her names on the strength of one correction
+ * would be exactly the wrong direction to be wrong in.
+ *
+ * Only an invitation still at SENT is unmarked: once a guest has opened it
+ * (VIEWED) or replied, the send is a fact, not a claim.
+ */
+export async function unmarkInvitationShared(guestId: string, userId: string) {
+  const guest = await prisma.guest.findUnique({
+    where: { id: guestId },
+    select: { eventId: true, event: { select: { ownerId: true } }, invitation: { select: { id: true } } },
+  });
+  if (!guest || guest.event.ownerId !== userId) throw new GuestError("Guest not found");
+  // Never let an optional id reach a Prisma filter. `Guest.invitation` is
+  // optional in the schema, and Prisma DROPS an undefined field rather than
+  // matching nothing — `where: { id: undefined, status: SENT }` would be
+  // "every SENT invitation in the database".
+  const invitation = guest.invitation;
+  if (!invitation) throw new GuestError("Guest has no invitation");
+
+  await prisma.invitation.updateMany({
+    where: { id: invitation.id, eventId: guest.eventId, status: InvitationStatus.SENT },
+    data: { status: InvitationStatus.DRAFT, sentAt: null },
+  });
+}
+
 export async function setGuestBlocked(guestId: string, userId: string, blocked: boolean) {
   const guest = await prisma.guest.findUnique({
     where: { id: guestId },

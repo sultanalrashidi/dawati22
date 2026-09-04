@@ -93,6 +93,11 @@ export default async function EventDetailPage({
   });
 
   const sent = rows.filter((r) => r.invitation?.sentAt).length;
+  // The send queue's own predicate, computed here from rows this page already
+  // has — the two screens must never disagree about how many are left, and
+  // that is only guaranteed by both asking the same question. Blocked guests
+  // are out of both: you do not send to somebody you have blocked.
+  const unsent = rows.filter((r) => !r.guest.isBlocked && !r.invitation?.sentAt).length;
   const accepted = rows.filter((r) => r.rsvp === "accepted");
   const declined = rows.filter((r) => r.rsvp === "declined");
   const pending = rows.length - accepted.length - declined.length;
@@ -359,6 +364,16 @@ export default async function EventDetailPage({
               {d.teamMgmtCta}
             </a>
           </section>
+        )}
+
+        {/* ── SEND QUEUE ───────────────────────────────────────────────── */}
+        {unsent > 0 && (
+          <Link
+            href={`/${locale}/events/${eventId}/send`}
+            className="mt-4 flex h-12 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+          >
+            {d.sendQueueOpen.replace("{count}", nf.format(unsent))}
+          </Link>
         )}
 
         {/* ── MESSAGES FOR THE COUPLE ──────────────────────────────────── */}

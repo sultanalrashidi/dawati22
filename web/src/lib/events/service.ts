@@ -439,6 +439,62 @@ export async function updateOwnedEventDetails(
  * Without the guest list, for the reason `getEventForEdit` gives: several
  * hundred guests is a lot of rows to render a text field.
  */
+/**
+ * The send queue's own read: her guests whose invitation has not gone out yet.
+ *
+ * Narrow on purpose — the dashboard's query pulls every guest with their
+ * invitations and RSVPs, and this screen draws one name at a time on a phone.
+ *
+ * `sentAt: null` rather than `status: DRAFT`, because unblocking a guest
+ * writes SENT with no sentAt: she would otherwise vanish from the queue having
+ * never been invited. Blocked guests are excluded here AND from the count the
+ * dashboard links with, so the two screens cannot disagree about how many are
+ * left.
+ */
+export async function getEventSendQueue(eventId: string, userId: string) {
+  const event = await prisma.event.findFirst({
+    where: { id: eventId, ownerId: userId, orderId: { not: null } },
+    select: {
+      id: true,
+      name: true,
+      hostLineAr: true,
+      invitationTextAr: true,
+      groomNameAr: true,
+      groomFamilyAr: true,
+      brideNameAr: true,
+      brideFamilyAr: true,
+      groomNameEn: true,
+      brideNameEn: true,
+      openingKind: true,
+      hostMode: true,
+      groomMotherAr: true,
+      brideMotherAr: true,
+      coupleFormat: true,
+      eventDate: true,
+      locationName: true,
+      regionName: true,
+      couples: COUPLES_INCLUDE,
+      _count: { select: { guests: { where: { isBlocked: false } } } },
+    },
+  });
+  if (!event) return null;
+
+  const pending = await prisma.guest.findMany({
+    where: { eventId, isBlocked: false, invitation: { is: { sentAt: null } } },
+    select: {
+      id: true,
+      nameAr: true,
+      phone: true,
+      allowedCount: true,
+      invitation: { select: { linkToken: true } },
+    },
+    // Oldest first: the order she added them is the order she thinks of them.
+    orderBy: { createdAt: "asc" },
+  });
+
+  return { event, pending, total: event._count.guests };
+}
+
 export async function getOwnedEventForEdit(eventId: string, userId: string) {
   return prisma.event.findFirst({
     where: { id: eventId, ownerId: userId, orderId: { not: null } },

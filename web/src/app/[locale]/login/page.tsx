@@ -30,7 +30,13 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
 
   const tier = search?.next === "order" ? parseTier(search.tier) : null;
   const count = Number(search?.count);
-  const pendingOrder = tier && isValidInvitationCount(count) ? { tier, count } : null;
+  // The invitation this sign-in is on the way to paying for. Without it there
+  // is nothing to activate, so the whole pending order is dropped rather than
+  // carried half-formed — she lands on her events page and finds the draft
+  // waiting under «دعوات غير مكتملة».
+  const eventId = typeof search?.event === "string" ? search.event : "";
+  const pendingOrder =
+    tier && eventId && isValidInvitationCount(count) ? { tier, count, eventId } : null;
 
   const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
 

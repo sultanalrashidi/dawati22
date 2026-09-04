@@ -3,10 +3,15 @@
 import Image from "next/image";
 
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { Locale } from "@/lib/i18n/locales";
 import type { ThemeConfig } from "@/lib/themes/types";
+import { StartWithDesign } from "@/components/themes/start-with-design";
 
 export interface GalleryVariant {
   id: string;
+  /** What "start with this design" writes onto the draft. */
+  themeId: string;
+  themeVariantId: string | null;
   config: ThemeConfig;
   /** The design's own closed-envelope art, when it has any. */
   thumbnailUrl?: string;
@@ -35,6 +40,8 @@ export function ThemeGalleryCard({
   onShow,
   onPreview,
   dict,
+  locale,
+  intent,
 }: {
   name: string;
   categoryLabel: string;
@@ -45,6 +52,9 @@ export function ThemeGalleryCard({
   onShow: (variantId: string) => void;
   onPreview: (variantId: string) => void;
   dict: Dictionary;
+  locale: Locale;
+  /** What she chose on the pricing page, carried into the draft. */
+  intent?: { tier: string | null; count: number | null };
 }) {
   const shown = variants.find((v) => v.id === shownId) ?? variants[0];
 
@@ -114,13 +124,26 @@ export function ThemeGalleryCard({
           </div>
         )}
 
-        <button
-          type="button"
-          onClick={() => onPreview(shown.id)}
-          className="mt-auto h-10 rounded-full border border-accent text-sm font-medium text-accent transition-colors hover:bg-accent hover:text-accent-fg"
-        >
-          {dict.themesGallery.previewDesign}
-        </button>
+        {/* Starting is the primary act now — the gallery is the front door of
+            the whole journey, not a lookbook. Previewing stays available but
+            steps back to a quiet link, because looking is what someone does
+            when they are not ready to start. */}
+        <div className="mt-auto flex flex-col gap-2">
+          <StartWithDesign
+            themeId={shown.themeId}
+            themeVariantId={shown.themeVariantId}
+            locale={locale}
+            dict={dict}
+            intent={intent}
+          />
+          <button
+            type="button"
+            onClick={() => onPreview(shown.id)}
+            className="h-9 rounded-full text-sm font-medium text-fg-muted transition-colors hover:text-accent"
+          >
+            {dict.themesGallery.previewDesign}
+          </button>
+        </div>
       </div>
     </div>
   );

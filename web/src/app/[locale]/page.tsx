@@ -77,20 +77,24 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           </h1>
           <p className="max-w-xl text-base leading-relaxed text-fg-muted sm:text-lg">{h.heroSubtitle}</p>
 
+          {/* Starting is free and needs no account, so the hero says that
+              plainly and goes straight to the designs. Pricing is still one tap
+              away for someone who wants the number before the pretty part. */}
           <div className="mt-1 flex flex-wrap items-center gap-3">
             <Link
-              href={`/${locale}/plans`}
+              href={`/${locale}/themes`}
               className="inline-flex h-12 items-center rounded-full bg-accent px-7 text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
             >
-              {h.ctaStart}
+              {h.ctaStartFree}
             </Link>
             <Link
-              href={`/${locale}/themes`}
+              href={`/${locale}/plans`}
               className="inline-flex h-12 items-center rounded-full border border-border bg-surface px-7 text-sm font-bold text-fg transition-colors hover:border-accent"
             >
-              {h.ctaThemes}
+              {h.ctaPlans}
             </Link>
           </div>
+          <p className="text-xs text-fg-muted">{h.ctaStartFreeNote}</p>
 
           <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
             {[h.heroPoint1, h.heroPoint2, h.heroPoint3].map((point) => (
@@ -254,10 +258,10 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <p className="max-w-xl text-base text-fg-muted">{h.ctaBody}</p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
-              href={`/${locale}/plans`}
+              href={`/${locale}/themes`}
               className="inline-flex h-12 items-center rounded-full bg-accent px-7 text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
             >
-              {h.ctaStart}
+              {h.ctaStartFree}
             </Link>
             <a
               href={supportWhatsAppUrl(h.ctaWhatsappMessage)}

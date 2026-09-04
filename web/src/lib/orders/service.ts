@@ -3,10 +3,13 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db/client";
 import { logger } from "@/lib/logger";
 import { isMoyasarConfigured, fetchMoyasarPayment, sarToHalalas } from "@/lib/payments/moyasar";
-import { OrderKind, OrderStatus, PaymentProvider } from "@/generated/prisma/client";
+import { EventStatus, OrderKind, OrderStatus, PaymentProvider } from "@/generated/prisma/client";
 import type { InvitationTier } from "@/generated/prisma/enums";
 import { isValidInvitationCount, totalSar } from "@/lib/orders/pricing";
 import { deliverPaidDesign } from "@/lib/design-requests/service";
+import { orderTerms } from "@/lib/orders/terms";
+import { generateReferenceCode } from "@/lib/events/reference-code";
+import { generateSecureToken } from "@/lib/security/tokens";
 
 export class OrderError extends Error {}
 
@@ -19,11 +22,21 @@ export class OrderError extends Error {}
  * stops happening the day real card payments are switched on, and the customer
  * whose design never arrives is the one who finds out.
  *
- * An invitation order needs nothing here: creating the event is what spends it.
+ * For an invitations order this is where the draft she designed becomes a real
+ * invitation — the single point all three payment paths funnel through, which
+ * is exactly why activation belongs here rather than in the redirect handler.
  */
-async function fulfilPaidOrder(order: { id: string; kind: OrderKind }): Promise<void> {
-  if (order.kind !== OrderKind.CUSTOM_DESIGN) return;
-  await deliverPaidDesign(order.id);
+async function fulfilPaidOrder(order: {
+  id: string;
+  userId: string;
+  kind: OrderKind;
+  draftEventId: string | null;
+}): Promise<void> {
+  if (order.kind === OrderKind.CUSTOM_DESIGN) {
+    await deliverPaidDesign(order.id);
+    return;
+  }
+  await activateDraftEvent(order);
 }
 
 /** The live price list — two rows, one per tier. */
@@ -42,18 +55,42 @@ export async function listPricingRates() {
  */
 export async function createPerInvitationOrder(
   userId: string,
-  input: { tier: InvitationTier; count: number },
+  input: { tier: InvitationTier; count: number; draftEventId: string },
 ) {
   if (!isValidInvitationCount(input.count)) throw new OrderError("Invalid invitation count");
 
+  // The order exists to activate one specific invitation she has already
+  // designed. Verified here rather than trusted from the form: this is what
+  // makes "every payment has something to activate" true no matter which
+  // route raised the order.
+  const draft = await prisma.event.findUnique({
+    where: { id: input.draftEventId },
+    select: { ownerId: true, orderId: true },
+  });
+  if (!draft || draft.ownerId !== userId) throw new OrderError("Draft not found");
+  if (draft.orderId !== null) throw new OrderError("Draft is already activated");
+
   const rate = await prisma.pricingRate.findUnique({ where: { tier: input.tier } });
   if (!rate) throw new OrderError("Pricing not available");
+
+  // At most one payable order per draft, ever.
+  //
+  // Changing the guest count and pressing pay again used to leave the first
+  // order sitting there, still payable — and since only ONE order can ever
+  // activate the draft, paying the stale one would charge a card and buy
+  // literally nothing. Superseding is only half of it; the other half is that
+  // CANCELLED can no longer become PAID (see confirmMoyasarPayment).
+  await prisma.order.updateMany({
+    where: { draftEventId: input.draftEventId, status: OrderStatus.PENDING },
+    data: { status: OrderStatus.CANCELLED },
+  });
 
   return prisma.order.create({
     data: {
       userId,
       // No plan: fixed packages are retired. The order carries its own terms.
       planId: null,
+      draftEventId: input.draftEventId,
       invitationCount: input.count,
       tier: input.tier,
       // A frozen copy of today's rate, so re-pricing never re-prices this sale.
@@ -64,6 +101,85 @@ export async function createPerInvitationOrder(
       idempotencyKey: randomUUID(),
     },
   });
+}
+
+/**
+ * Turns the paid draft into a live invitation. THE moment guests, sharing and
+ * the door scanner become possible.
+ *
+ * A compare-and-set, and deliberately not a plain update: the redirect from
+ * Moyasar and the webhook both settle the same payment, often within
+ * milliseconds of each other. `orderId: null` in the filter means exactly one
+ * of them wins and the loser updates zero rows — no transaction, no lock, and
+ * no way to activate a draft twice or activate one that another order already
+ * claimed.
+ *
+ * It never throws. It runs after the card has been charged, and an exception
+ * here would surface as a 500 on the callback with the money already taken.
+ */
+export async function activateDraftEvent(order: {
+  id: string;
+  userId: string;
+  draftEventId: string | null;
+  kind: OrderKind;
+}) {
+  if (order.kind !== OrderKind.INVITATIONS || !order.draftEventId) return;
+
+  const { hasQr } = orderTerms(await prisma.order.findUnique({ where: { id: order.id } }));
+
+  const activated = await prisma.event.updateMany({
+    where: { id: order.draftEventId, orderId: null, ownerId: order.userId },
+    data: {
+      orderId: order.id,
+      // Snapshotted from what she actually bought. hasQr's column default is
+      // the permissive `true`, kept for legacy rows, so leaving it unset here
+      // would hand a NO_QR customer the paid entry pass.
+      hasQr,
+      referenceCode: await allocateReferenceCode(),
+      selfPreviewToken: generateSecureToken(),
+      status: EventStatus.PUBLISHED,
+    },
+  });
+
+  if (activated.count === 0) {
+    // Zero rows updated has two very different meanings, and logging both as
+    // an error would cry wolf on every single payment: the redirect and the
+    // webhook BOTH settle the same payment, so one of them always loses this
+    // race and always updates nothing.
+    const draft = await prisma.event.findUnique({
+      where: { id: order.draftEventId },
+      select: { orderId: true },
+    });
+
+    if (draft?.orderId === order.id) return; // The benign race: already ours.
+
+    // The real thing: paid, with nothing to deliver — the draft was deleted,
+    // or another order claimed it. Loud on purpose, because this is a refund,
+    // and a quiet line here is found weeks later by an angry customer.
+    logger.error("orders.activate.nothing_claimed", {
+      orderId: order.id,
+      draftEventId: order.draftEventId,
+      userId: order.userId,
+      claimedBy: draft?.orderId ?? null,
+    });
+  }
+}
+
+/**
+ * A free reference code. Generated OUTSIDE the activation update rather than
+ * retried around it: a collision is a 1-in-31^6 event, and retrying a write
+ * that has already charged a card is the wrong shape of risk.
+ */
+async function allocateReferenceCode(): Promise<string> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const code = generateReferenceCode();
+    const taken = await prisma.event.findUnique({ where: { referenceCode: code }, select: { id: true } });
+    if (!taken) return code;
+  }
+  // Five collisions in a row is not chance, but the invitation still has to
+  // activate — the reference code only opens the door scanner, which the host
+  // can be re-issued by support.
+  return generateReferenceCode();
 }
 
 export async function getOwnedOrder(orderId: string, userId: string) {
@@ -105,12 +221,20 @@ export async function confirmMockPayment(orderId: string, userId: string) {
 export async function paidOrderDestination(orderId: string, locale: string): Promise<string> {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
-    select: { kind: true, designRequest: { select: { eventId: true } } },
+    select: { kind: true, draftEventId: true, designRequest: { select: { eventId: true } } },
   });
   if (order?.kind === OrderKind.CUSTOM_DESIGN && order.designRequest) {
     return `/${locale}/events/${order.designRequest.eventId}`;
   }
-  return `/${locale}/events?purchased=1`;
+  // Her own invitation's "it worked" screen, naming what she bought.
+  //
+  // This replaces a redirect to `/events?purchased=1` whose parameter nothing
+  // ever read — so the biggest moment in the journey used to land on a list
+  // that looked exactly like any other visit.
+  if (order?.draftEventId) {
+    return `/${locale}/events/${order.draftEventId}/activated?order=${orderId}`;
+  }
+  return `/${locale}/events`;
 }
 
 /** Server-side verification after the Moyasar hosted-form redirect — never trust the redirect status alone. */
@@ -118,6 +242,14 @@ export async function confirmMoyasarPayment(orderId: string, userId: string, pay
   const order = await getOwnedOrder(orderId, userId);
   if (!order) throw new OrderError("Order not found");
   if (order.status === OrderStatus.PAID) return order;
+  // Only a PENDING order may become PAID.
+  //
+  // This used to check nothing but "is it already paid", so an order that had
+  // been superseded (she changed the guest count) or had already failed could
+  // still be settled later by a stray redirect, a back button, or a webhook
+  // arriving after a 3DS timeout. Since exactly one order can activate a
+  // draft, that charged a card for something that could never be delivered.
+  if (order.status !== OrderStatus.PENDING) throw new OrderError("Order is not payable");
 
   const payment = await fetchMoyasarPayment(paymentId);
   if (payment.metadata?.order_id !== order.id) throw new OrderError("Payment does not match order");
@@ -144,6 +276,12 @@ export async function applyMoyasarWebhookEvent(type: string, paymentId: string, 
   if (!orderId) return;
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order || order.status === OrderStatus.PAID) return;
+  // Same rule as the redirect path: a CANCELLED or FAILED order is not
+  // payable, and the webhook must not be the way around that.
+  if (order.status !== OrderStatus.PENDING) {
+    logger.warn("orders.webhook.not_payable", { orderId, status: order.status, type });
+    return;
+  }
 
   if (type === "payment_paid") {
     const payment = await fetchMoyasarPayment(paymentId);
@@ -158,7 +296,7 @@ export async function applyMoyasarWebhookEvent(type: string, paymentId: string, 
       });
       await fulfilPaidOrder(paid);
     }
-  } else if (type === "payment_failed" && order.status === OrderStatus.PENDING) {
+  } else if (type === "payment_failed") {
     await prisma.order.update({ where: { id: order.id }, data: { status: OrderStatus.FAILED } });
   }
 }

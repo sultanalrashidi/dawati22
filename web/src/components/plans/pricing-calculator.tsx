@@ -4,7 +4,6 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
-import { createPerInvitationOrderAction } from "@/lib/orders/actions";
 import { supportWhatsAppUrl } from "@/lib/support";
 import {
   DEFAULT_INVITATIONS,
@@ -23,9 +22,12 @@ import {
  * the same `totalSar()` the order action charges with — the number on the card
  * and the number on the invoice come out of one function on purpose.
  *
- * Each tier is its own <form> posting `count` + `tier`. Nothing about the price
- * is posted: the server re-reads the rate and recomputes the total, so the only
- * thing a tampered client can do is order a different quantity than it displayed.
+ * Choosing a tier does NOT start a payment. It carries the count and tier into
+ * the gallery, where the invitation gets designed and previewed first, and the
+ * order is only raised once there is something for it to activate. Nothing
+ * about the price travels: the server re-reads the rate when the order is
+ * finally created, so a tampered client can only ask for a different quantity
+ * than it displayed.
  */
 
 export interface TierOffer {
@@ -39,14 +41,11 @@ export function PricingCalculator({
   dict,
   withQr,
   noQr,
-  canOrder,
 }: {
   locale: Locale;
   dict: Dictionary;
   withQr: TierOffer;
   noQr: TierOffer;
-  /** A logged-in customer can buy; anyone else is sent to sign in first. */
-  canOrder: boolean;
 }) {
   const [count, setCount] = useState(DEFAULT_INVITATIONS);
   const p = dict.plans;
@@ -128,7 +127,7 @@ export function PricingCalculator({
           chooseLabel={p.chooseQr}
           intro={p.qrIncludes}
           features={p.featuresQr}
-          {...{ locale, dict, count, nf, canOrder }}
+          {...{ locale, dict, count, nf }}
         />
         <TierCard
           offer={noQr}
@@ -136,7 +135,7 @@ export function PricingCalculator({
           chooseLabel={p.chooseNoQr}
           features={p.featuresNoQr}
           footnote={p.noQrDoorNote}
-          {...{ locale, dict, count, nf, canOrder }}
+          {...{ locale, dict, count, nf }}
         />
       </div>
 
@@ -161,7 +160,6 @@ function TierCard({
   offer,
   count,
   nf,
-  canOrder,
   featured,
   name,
   chooseLabel,
@@ -174,7 +172,6 @@ function TierCard({
   offer: TierOffer;
   count: number;
   nf: Intl.NumberFormat;
-  canOrder: boolean;
   featured?: boolean;
   name: string;
   chooseLabel: string;
@@ -185,7 +182,6 @@ function TierCard({
 }) {
   const p = dict.plans;
   const total = Number(totalSar(count, offer.unitPrice));
-  const boundOrder = createPerInvitationOrderAction.bind(null, locale);
 
   return (
     <div
@@ -240,37 +236,21 @@ function TierCard({
 
       {footnote && <p className="text-xs leading-relaxed text-fg-muted">{footnote}</p>}
 
-      {canOrder ? (
-        <form action={boundOrder} className="mt-auto">
-          {/* The whole order: what tier, how many. Never a price. */}
-          <input type="hidden" name="tier" value={offer.tier} />
-          <input type="hidden" name="count" value={count} />
-          <button
-            type="submit"
-            className={`flex h-11 w-full items-center justify-center rounded-full text-sm font-medium transition-colors ${
-              featured
-                ? "bg-accent text-accent-fg hover:bg-accent-strong"
-                : "border border-accent text-accent hover:bg-accent hover:text-accent-fg"
-            }`}
-          >
-            {chooseLabel}
-          </button>
-        </form>
-      ) : (
-        // Signed out, the same button still means "I want this one". The choice
-        // rides the login URL so the customer is taken to payment afterwards
-        // instead of being dropped back here to pick a second time.
-        <Link
-          href={`/${locale}/login?next=order&tier=${offer.tier}&count=${count}`}
-          className={`mt-auto flex h-11 w-full items-center justify-center rounded-full text-sm font-medium transition-colors ${
-            featured
-              ? "bg-accent text-accent-fg hover:bg-accent-strong"
-              : "border border-accent text-accent hover:bg-accent hover:text-accent-fg"
-          }`}
-        >
-          {chooseLabel}
-        </Link>
-      )}
+      {/* Picking a package no longer starts a payment. It carries the choice
+          into the gallery, where she designs the invitation and sees it for
+          real before paying — and it means every order that ever gets created
+          has a finished invitation waiting behind it, by construction rather
+          than by convention. */}
+      <Link
+        href={`/${locale}/themes?tier=${offer.tier}&count=${count}`}
+        className={`mt-auto flex h-11 w-full items-center justify-center rounded-full text-sm font-medium transition-colors ${
+          featured
+            ? "bg-accent text-accent-fg hover:bg-accent-strong"
+            : "border border-accent text-accent hover:bg-accent hover:text-accent-fg"
+        }`}
+      >
+        {chooseLabel}
+      </Link>
     </div>
   );
 }

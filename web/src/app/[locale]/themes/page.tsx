@@ -17,6 +17,13 @@ import { legacyThemeThumbnail } from "@/lib/themes/thumbnail";
 
 type GalleryItem = {
   id: string;
+  /**
+   * The real database ids the draft is created against. `id` above is the
+   * gallery's own key — the Theme for a legacy design, the ThemeVariant for a
+   * builder one — so it cannot be used to write an Event on its own.
+   */
+  themeId: string;
+  themeVariantId: string | null;
   slug: string;
   name: string;
   category: string;
@@ -37,10 +44,24 @@ type GalleryItem = {
   thumbnailUrl?: string;
 };
 
-export default async function ThemesGalleryPage({ params }: PageProps<"/[locale]/themes">) {
+export default async function ThemesGalleryPage({
+  params,
+  searchParams,
+}: PageProps<"/[locale]/themes">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+  const search = await searchParams;
   const dict = await getDictionary(locale);
+
+  // Carried from the pricing page when she picked a package before a design.
+  // Read loosely on purpose — a mangled query should cost her the pre-filled
+  // number, not the page. The action validates both again before storing them.
+  const rawCount = Number(search.count);
+  const intent = {
+    tier: typeof search.tier === "string" ? search.tier : null,
+    count: Number.isFinite(rawCount) && rawCount > 0 ? rawCount : null,
+  };
+  const startError = typeof search.error === "string" ? search.error : null;
   const user = await getSessionUser();
   const themes = await listPublishedThemes(user?.id ?? null);
 
@@ -60,6 +81,10 @@ export default async function ThemesGalleryPage({ params }: PageProps<"/[locale]
       return [
         {
           id: theme.id,
+          themeId: theme.id,
+          // A legacy design's colours are separate Theme rows, so there is no
+          // variant to point at.
+          themeVariantId: null,
           slug: theme.slug,
           name: locale === "ar" ? theme.nameAr : theme.name,
           category: theme.category,
@@ -79,6 +104,8 @@ export default async function ThemesGalleryPage({ params }: PageProps<"/[locale]
       const builder = builderArt.get(theme.id)?.get(variant.id);
       return {
         id: variant.id,
+        themeId: theme.id,
+        themeVariantId: variant.id,
         // The family's representative card is the one whose slug matches the
         // family key — that's the default variant here.
         slug: variant.id === defaultVariant.id ? theme.slug : `${theme.slug}-${variant.slug}`,
@@ -110,7 +137,13 @@ export default async function ThemesGalleryPage({ params }: PageProps<"/[locale]
         <p className="mt-2 text-fg-muted">{dict.themesGallery.subheading}</p>
       </div>
 
-      <ThemeGalleryGrid themes={items} dict={dict} locale={locale} />
+      {startError && (
+        <p className="mx-auto mt-6 max-w-md rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-center text-sm text-fg">
+          {startError === "rate" ? dict.themesGallery.startRateLimited : dict.themesGallery.startError}
+        </p>
+      )}
+
+      <ThemeGalleryGrid themes={items} dict={dict} locale={locale} intent={intent} />
     </div>
   );
 }

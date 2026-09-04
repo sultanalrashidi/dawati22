@@ -40,7 +40,7 @@ export default async function AdminEventsPage({ params }: PageProps<"/[locale]/a
                 <div>
                   <p className="font-medium text-fg">{event.name}</p>
                   <p className="text-sm text-fg-muted">
-                    {dict.admin.owner}: {event.owner.name} · {dict.admin.plan}:{" "}
+                    {dict.admin.owner}: {event.owner?.name ?? dict.admin.ownerNone} · {dict.admin.plan}:{" "}
                     {orderSummaryLabel(event.order, locale, dict)}
                   </p>
                   <p className="text-sm text-fg-muted">

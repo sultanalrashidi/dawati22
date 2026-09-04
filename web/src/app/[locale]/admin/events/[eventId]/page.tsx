@@ -102,8 +102,8 @@ export default async function AdminEventEditPage({
 
       <h1 className="mt-3 text-2xl font-semibold text-fg">{a.eventEditTitle}</h1>
       <p className="mt-1 text-sm text-fg-muted">
-        {event.name} · {a.owner}: {event.owner.name}
-        {event.owner.phone ? ` · ${event.owner.phone}` : ""}
+        {event.name} · {a.owner}: {event.owner?.name ?? a.ownerNone}
+        {event.owner?.phone ? ` · ${event.owner.phone}` : ""}
       </p>
 
       <p className="mt-4 rounded-xl border border-warning/40 bg-warning/5 px-4 py-3 text-sm text-fg-muted">

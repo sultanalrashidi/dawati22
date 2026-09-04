@@ -21,6 +21,23 @@ import { extractYoutubeVideoId } from "@/lib/youtube";
 
 const EVENT_TYPES = new Set<string>(Object.values(EventType));
 
+/**
+ * Upper bounds on the free-text fields.
+ *
+ * These only existed implicitly before: a row could not be created without a
+ * paid order, so paying was the thing that made unbounded TEXT columns safe.
+ * Now anyone can create a draft, so the columns need their own limits. Every
+ * one of these is generous for a real Saudi name or venue and far below what
+ * would be worth posting for any other reason.
+ *
+ * Reject rather than truncate — a silently shortened name would be printed on
+ * every guest's invitation.
+ */
+const MAX_GIVEN_NAME = 60;
+const MAX_FAMILY_NAME = 60;
+const MAX_LOCATION = 120;
+const MAX_REGION = 60;
+
 /** A posted string is one of the allowed kinds, narrowed to that union. */
 function isOneOf<T extends string>(kinds: readonly T[], value: string): value is T {
   return (kinds as readonly string[]).includes(value);
@@ -62,6 +79,18 @@ export function readCouples(formData: FormData): CoupleInput[] | null {
     const brideNameAr = brideNamesAr[i] ?? "";
     const groomNameAr = groomNamesAr[i] ?? "";
     if (brideNameAr.length < 2 || groomNameAr.length < 2) return null;
+    // Upper bounds too, now that a draft can be created without paying — see
+    // MAX_GIVEN_NAME. Checked here because readCouples is the authority every
+    // path goes through, not just the new draft form.
+    if (brideNameAr.length > MAX_GIVEN_NAME || groomNameAr.length > MAX_GIVEN_NAME) return null;
+    if (
+      (brideFamiliesAr[i] ?? "").length > MAX_FAMILY_NAME ||
+      (groomFamiliesAr[i] ?? "").length > MAX_FAMILY_NAME ||
+      (brideNamesEn[i] ?? "").length > MAX_GIVEN_NAME ||
+      (groomNamesEn[i] ?? "").length > MAX_GIVEN_NAME
+    ) {
+      return null;
+    }
 
     couples.push({
       groomNameEn: groomNamesEn[i] ?? "",
@@ -80,6 +109,39 @@ export function readCouples(formData: FormData): CoupleInput[] | null {
  * columns (`InvitationTextFields`) are the same shape the renderer and the
  * share texts read, so what the form saves is exactly what prints.
  */
+/** The three things the free draft form asks for, and nothing else. */
+export interface EventEssentials {
+  couples: CoupleInput[];
+  eventDate: Date;
+  locationName: string;
+  regionName: string;
+}
+
+/**
+ * The basics form: names, date, venue. Everything else an invitation prints
+ * has a default good enough to render a complete-looking card, which is what
+ * lets the customer see her real invitation before she has filled anything
+ * else in.
+ *
+ * It reuses readCouples rather than parsing names again, so the two forms can
+ * never disagree about what a valid name is — including the length caps.
+ */
+export function readEventEssentials(formData: FormData): EventEssentials | null {
+  const text = (field: string) => String(formData.get(field) ?? "").trim();
+
+  const couples = readCouples(formData);
+  const locationName = text("locationName");
+  const regionName = text("regionName");
+  const eventDate = new Date(String(formData.get("eventDate") ?? ""));
+
+  if (couples === null || couples.length !== 1) return null;
+  if (Number.isNaN(eventDate.getTime())) return null;
+  if (locationName.length < 2 || locationName.length > MAX_LOCATION) return null;
+  if (regionName.length > MAX_REGION) return null;
+
+  return { couples, eventDate, locationName, regionName };
+}
+
 export interface EventFormValues extends InvitationTextFields {
   type: EventType;
   name: string;

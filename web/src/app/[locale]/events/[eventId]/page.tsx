@@ -151,7 +151,7 @@ export default async function EventDetailPage({
 
           <div className="mt-1 border-t border-bg/15 pt-4">
             <p className="flex items-baseline justify-between text-xs text-bg/70">
-              <span>{locale === "ar" ? event.order.plan?.nameAr : event.order.plan?.name}</span>
+              <span>{locale === "ar" ? event.order?.plan?.nameAr : event.order?.plan?.name}</span>
               <span className="font-bold tabular-nums text-bg">
                 {nf.format(occupiedSlots)} / {nf.format(capacity)}
               </span>

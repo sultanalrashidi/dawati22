@@ -48,6 +48,7 @@ import { ThemeDecor } from "@/components/guest/theme-decor";
 import { ShaderBackground } from "@/components/guest/shader-background";
 import { FloatingParticles } from "@/components/guest/floating-particles";
 import { SealedCard } from "@/components/guest/sealed-card";
+import { PreviewWatermark } from "@/components/guest/preview-watermark";
 import { RoseCandlelightBackground } from "@/components/guest/rose-candlelight-decor";
 import { BuilderPageBackground, pageBackgroundUrl } from "@/components/guest/builder-page-background";
 import { RoseCandlelightPass } from "@/components/guest/rose-candlelight-pass";
@@ -170,6 +171,12 @@ interface Props {
    * RSVP is simulated locally and never touches the server.
    */
   mode?: "live" | "preview";
+  /**
+   * Stamps the whole invitation as an unpaid trial copy. Set for a draft's
+   * preview and dropped the moment the invitation is activated — the customer
+   * asked for exactly that: protected before payment, clean after it.
+   */
+  watermark?: { primary: string; secondary: string };
 }
 
 /** Opening-transition length in ms — kept in sync with the CSS animation durations below. */
@@ -521,6 +528,12 @@ export function InvitationView(props: Props) {
         />
       )}
       <InvitationScreens {...props} music={music} />
+      {/* Above the screens, not inside them: the five screens are mutually
+          exclusive, so one mount here covers every one of them — including the
+          entry pass, which is the screen most worth stamping. */}
+      {props.watermark && (
+        <PreviewWatermark primary={props.watermark.primary} secondary={props.watermark.secondary} />
+      )}
     </>
   );
 }

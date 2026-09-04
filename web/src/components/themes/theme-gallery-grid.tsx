@@ -16,6 +16,9 @@ import {
 
 type ThemeItem = {
   id: string;
+  /** The real Theme / ThemeVariant ids a draft is written against. */
+  themeId: string;
+  themeVariantId: string | null;
   slug: string;
   name: string;
   category: string;
@@ -58,10 +61,13 @@ export function ThemeGalleryGrid({
   themes,
   dict,
   locale,
+  intent,
 }: {
   themes: ThemeItem[];
   dict: Dictionary;
   locale: Locale;
+  /** Count and tier chosen on the pricing page, if she arrived from there. */
+  intent?: { tier: string | null; count: number | null };
 }) {
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -207,6 +213,8 @@ export function ThemeGalleryGrid({
               colorCountLabel={colorCountLabel(family.members.length, dict, nf)}
               variants={family.members.map((m) => ({
                 id: m.id,
+                themeId: m.themeId,
+                themeVariantId: m.themeVariantId,
                 config: m.config,
                 thumbnailUrl: m.thumbnailUrl,
                 colorLabel: themeColorLabel(m.config.colorTag, dict.themesGallery),
@@ -215,6 +223,8 @@ export function ThemeGalleryGrid({
               onShow={(id) => setShownByFamily((prev) => ({ ...prev, [family.key]: id }))}
               onPreview={setPreviewId}
               dict={dict}
+              locale={locale}
+              intent={intent}
             />
           ))}
         </div>

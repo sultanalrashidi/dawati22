@@ -195,6 +195,15 @@ model Order {
   providerRef     String?         @unique
   idempotencyKey  String          @unique
   paidAt          DateTime?
+  /**
+   * INTENT: the draft this order was raised to activate. Deliberately NOT
+   * unique — a declined card followed by a retry may raise a second order
+   * against the same draft. SETTLEMENT is the other side of the pair,
+   * Event.orderId, which stays unique so only one order can ever activate it.
+   * Restrict, not SetNull: a draft with money in flight must not be deletable.
+   */
+  draftEventId    String?
+  draftEvent      Event?          @relation("OrderDraft", fields: [draftEventId], references: [id], onDelete: Restrict)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 
@@ -202,6 +211,7 @@ model Order {
   designRequest CustomDesignRequest?
 
   @@index([userId, status])
+  @@index([draftEventId])
 }
 
 // ---------------------------------------------------------------------------
@@ -466,10 +476,26 @@ enum CoupleFormat {
 
 model Event {
   id                    String                   @id @default(cuid())
-  ownerId               String
-  owner                 User                     @relation("EventOwner", fields: [ownerId], references: [id])
-  orderId               String                   @unique
-  order                 Order                    @relation(fields: [orderId], references: [id])
+  /**
+   * Null while this is an anonymous draft — someone designing an invitation
+   * before signing in. Set when she signs in (the draft is claimed onto her
+   * account) and never cleared afterwards. `onDelete: Restrict` is written out
+   * because making a relation optional would otherwise silently flip Prisma's
+   * default action to SetNull, quietly turning a paid customer's event into an
+   * ownerless row the moment anyone deleted the User.
+   */
+  ownerId               String?
+  owner                 User?                    @relation("EventOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  /**
+   * THE ACTIVATION PREDICATE. Null = an unpaid draft; set = paid and live.
+   * Deliberately not `status`, which has never been written in production and
+   * would need a backfill across every live wedding to mean anything.
+   * Still @unique: one paid order buys at most one event, and Postgres allows
+   * unlimited NULLs under a unique index, so drafts never collide.
+   * Set exactly once, inside the activation compare-and-set at payment.
+   */
+  orderId               String?                  @unique
+  order                 Order?                   @relation(fields: [orderId], references: [id], onDelete: Restrict)
   type                  EventType
   name                  String
   /// English names are OPTIONAL since the women's-invitation redesign; ""
@@ -560,6 +586,41 @@ model Event {
    */
   allowGuestPartySize   Boolean                  @default(true)
   status                EventStatus              @default(DRAFT)
+  /**
+   * sha256 of the raw `dawati_draft` cookie token — the capability handle that
+   * lets an anonymous visitor come back to her own draft. The URL itself
+   * carries no secret, so a copied /draft link opens nothing. Cleared when the
+   * draft is claimed by a signed-in user; always null on an activated event.
+   */
+  draftTokenHash        String?                  @unique
+  /**
+   * Opens the shareable watermarked preview ("show it to my mother before I
+   * pay"). Separate from the owner's own private preview and from any guest
+   * link: it is never passed as `linkToken`, so RSVP and the door scanner stay
+   * inert on it. Capped at PREVIEW_SHARE_VIEWER_LIMIT distinct viewers, counted
+   * in PreviewShareView.
+   */
+  previewShareToken     String?                  @unique
+  /**
+   * Opens the customer's own real invitation after payment ("إرسال دعوة
+   * تجريبية"). Backed by no Guest row on purpose, so it never consumes a paid
+   * slot; like previewShareToken it is never rendered as `linkToken`.
+   */
+  selfPreviewToken      String?                  @unique
+  /**
+   * Null = the names, date and venue are still editable by the customer. A
+   * timestamp = the first invitation actually reached a guest and the data is
+   * frozen for her. Support's admin writer deliberately ignores this — fixing a
+   * misspelt name after invitations went out is the whole point of that path.
+   */
+  detailsLockedAt       DateTime?
+  /**
+   * What she picked on /plans before she had a draft, carried forward so the
+   * pay step opens pre-filled. Pure UI intent with no authority: the numbers
+   * that are charged and enforced come from the Order alone.
+   */
+  intendedTier          InvitationTier?
+  intendedCount         Int?
   expiresAt             DateTime?
   createdAt             DateTime                 @default(now())
   updatedAt             DateTime                 @updatedAt
@@ -573,9 +634,51 @@ model Event {
   guestManagementRequest GuestManagementRequest?
   designRequest          CustomDesignRequest?
   gateAccessSessions     GateAccessSession[]
+  /// Orders raised to activate this draft — see Order.draftEventId for why this is a list.
+  pendingOrders          Order[]                 @relation("OrderDraft")
+  previewShareViews      PreviewShareView[]
 
   @@index([ownerId])
   @@index([status])
+}
+
+/// One attempt to start a free draft, kept only long enough to rate-limit.
+///
+/// Starting a draft is the product's first unauthenticated write to a core
+/// table, so it needs the throttle that every other anonymous entry point has.
+/// Counting rows in a window is the same shape requestOtp already uses.
+///
+/// Deliberately a separate table rather than an ipHash column on the draft
+/// itself: attempts must survive the draft being deleted (otherwise "create,
+/// delete, repeat" walks straight through the limit), and an abandoned
+/// invitation should not carry a visitor's network address around with it for
+/// thirty days.
+model DraftCreationAttempt {
+  id        String   @id @default(cuid())
+  /// sha256 of the client address — never the address itself.
+  ipHash    String
+  createdAt DateTime @default(now())
+
+  @@index([ipHash, createdAt])
+}
+
+/// One distinct viewer of an event's shareable watermarked preview.
+///
+/// `viewerKey` is a random id we set as a cookie on that viewer's browser the
+/// first time they open the link, so re-opening it costs nothing — the cap is
+/// three PEOPLE, not three page loads. It is a soft limit by nature (a cleared
+/// cookie is a new viewer), and it is not the thing preventing a free preview
+/// being used as a real invitation: the watermark, the absent RSVP and the
+/// absent QR are.
+model PreviewShareView {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  viewerKey String
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, viewerKey])
+  @@index([eventId])
 }
 
 /// One groom+bride pair announced by an event. A joint wedding carries several,
@@ -625,6 +728,9 @@ model Guest {
   allowedCount   Int      @default(1)
   checkedInCount Int      @default(0)
   isBlocked      Boolean  @default(false)
+  /// Groups one pasted/imported list, so a bad import is one undo rather than
+  /// three hundred taps, and a double-submitted import is detectable.
+  importBatchId  String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -632,6 +738,7 @@ model Guest {
   checkInLogs CheckInLog[]
 
   @@index([eventId])
+  @@index([eventId, importBatchId])
 }
 
 enum InvitationStatus {

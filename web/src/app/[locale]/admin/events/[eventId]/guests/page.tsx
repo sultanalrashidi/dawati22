@@ -80,8 +80,8 @@ export default async function AdminEventGuestsPage({
         <div>
           <h1 className="text-2xl font-semibold text-fg">{a.guestsPageTitle}</h1>
           <p className="mt-1 text-sm text-fg-muted">
-            {event.name} · {a.owner}: {event.owner.name}
-            {event.owner.phone ? ` · ${event.owner.phone}` : ""}
+            {event.name} · {a.owner}: {event.owner?.name ?? a.ownerNone}
+            {event.owner?.phone ? ` · ${event.owner.phone}` : ""}
           </p>
         </div>
         {teamManaged && (

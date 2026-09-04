@@ -5,7 +5,10 @@ import type { InvitationTier } from "@/generated/prisma/enums";
 
 export async function getDashboardMetrics() {
   const [events, invitations, accepted, checkedInAgg, orders, revenueAgg] = await Promise.all([
-    prisma.event.count(),
+    // Real events, not drafts: this number sits next to paid orders and
+    // revenue on the dashboard, and counting abandoned free drafts in it would
+    // quietly inflate the one metric that says how the business is doing.
+    prisma.event.count({ where: { orderId: { not: null } } }),
     prisma.invitation.count({ where: { status: { not: "DRAFT" } } }),
     prisma.invitation.count({
       where: { status: { in: ["ACCEPTED", "VALID", "PARTIALLY_USED", "FULLY_USED"] } },
@@ -35,6 +38,11 @@ export async function setUserBlocked(userId: string, blocked: boolean) {
 
 export async function listEventsAdmin() {
   return prisma.event.findMany({
+    // Activated events only. This is the operational list — real weddings with
+    // a paying customer behind them — and every row it renders reads the owner
+    // and the order. Unpaid drafts, most of which will be anonymous and
+    // abandoned, get their own screen rather than burying the real work.
+    where: { orderId: { not: null } },
     include: {
       owner: true,
       theme: true,
@@ -61,6 +69,9 @@ export async function listEventsAdmin() {
 export async function setGuestManagementDone(eventId: string, adminId: string, done: boolean) {
   const event = await prisma.event.findUnique({ where: { id: eventId }, select: { ownerId: true } });
   if (!event) throw new Error("Event not found");
+  // An unclaimed draft has nobody to record as the requester, and there is
+  // nothing to hand over to the team before it is paid for anyway.
+  if (!event.ownerId) throw new Error("Event has no owner yet");
 
   const resolution = done
     ? { status: GuestManagementRequestStatus.COMPLETED, resolvedById: adminId, resolvedAt: new Date() }

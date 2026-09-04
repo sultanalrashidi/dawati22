@@ -45,7 +45,24 @@ export interface OrderTerms {
   packageName: { ar: string; en: string } | null;
 }
 
-export function orderTerms(order: OrderTermsSource): OrderTerms {
+export function orderTerms(order: OrderTermsSource | null | undefined): OrderTerms {
+  // An unpaid draft has no order at all, and this branch MUST come before the
+  // legacy fallbacks below. Those exist to be generous to old rows — `tier ??
+  // WITH_QR` hands out the paid entry pass — and being generous to a draft
+  // would mean an invitation nobody paid for reporting hasQr true. Zero
+  // capacity and NO_QR is the only honest reading of "no order": it fails
+  // closed everywhere capacity or the QR feature is checked.
+  if (!order) {
+    return {
+      invitationCount: 0,
+      tier: InvitationTier.NO_QR,
+      hasQr: false,
+      total: 0,
+      currency: "SAR",
+      packageName: null,
+    };
+  }
+
   // Three sources, in order of how much they can be trusted:
   //
   //  1. The order's own snapshot — what the customer paid for.
@@ -82,10 +99,13 @@ export function orderTerms(order: OrderTermsSource): OrderTerms {
  * two old orders for the same count indistinguishable.
  */
 export function orderSummaryLabel(
-  order: OrderTermsSource,
+  order: OrderTermsSource | null | undefined,
   locale: Locale,
   dict: Dictionary,
 ): string {
+  // An unpaid draft. Falling through would print "٠ دعوة · بدون باركود", which
+  // reads like a real order for nothing rather than like a draft.
+  if (!order) return dict.plans.unpaidDraft;
   // A design fee buys no invitations at all, so every number below would read
   // as zero — "٠ دعوة · بدون باركود" on a 150 riyal checkout.
   if (order.kind === OrderKind.CUSTOM_DESIGN) return dict.designRequest.checkoutLabel;

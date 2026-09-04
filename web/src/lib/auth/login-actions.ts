@@ -9,6 +9,7 @@ import { normalizePhone } from "@/lib/security/phone";
 import { OtpPurpose, Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 import { createPerInvitationOrder, OrderError } from "@/lib/orders/service";
+import { claimDraft } from "@/lib/drafts/service";
 import { isValidInvitationCount, parseTier } from "@/lib/orders/pricing";
 
 /**
@@ -19,7 +20,12 @@ import { isValidInvitationCount, parseTier } from "@/lib/orders/pricing";
  * price — the rate is read from PricingRate when the order is written, exactly
  * as it is for a customer who was already signed in.
  */
-export type PendingOrder = { tier: string; count: number };
+/**
+ * What she chose before signing in. `eventId` names the invitation she already
+ * designed — without it there is nothing for the order to activate, which is
+ * why it is required rather than optional.
+ */
+export type PendingOrder = { tier: string; count: number; eventId: string };
 
 export type OtpRequestResult =
   | { ok: true; devCode?: string; phone: string }
@@ -91,14 +97,23 @@ async function resumePendingOrder(
   const count = Number(pending.count);
   if (!tier || !isValidInvitationCount(count)) return null;
 
+  // She designed this draft while signed out, so it is still ownerless and
+  // the browser is carrying its cookie. Claim it before raising the order:
+  // createPerInvitationOrder refuses a draft that is not hers, and rightly so.
+  await claimDraft(pending.eventId);
+
   try {
-    const order = await createPerInvitationOrder(userId, { tier, count });
+    const order = await createPerInvitationOrder(userId, {
+      tier,
+      count,
+      draftEventId: pending.eventId,
+    });
     return `/${locale}/checkout/${order.id}`;
   } catch (err) {
     // The account exists and the session is live either way; only the order
-    // failed, so send them back to pricing with the banner rather than losing
-    // the sign-in they just completed.
-    if (err instanceof OrderError) return `/${locale}/plans?error=1`;
+    // failed. Send her back to her own invitation rather than to pricing —
+    // the draft is the thing she was in the middle of, and it is still there.
+    if (err instanceof OrderError) return `/${locale}/draft/${pending.eventId}/activate?error=1`;
     throw err;
   }
 }

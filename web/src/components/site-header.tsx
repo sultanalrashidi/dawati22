@@ -129,8 +129,10 @@ export function SiteHeader({
                 <span className="hidden sm:inline">{n.login}</span>
               </Link>
             )}
+            {/* Goes to the designs, not to pricing: designing is free and is
+                where the journey now starts. */}
             <Link
-              href={`/${locale}/plans`}
+              href={`/${locale}/themes`}
               className="inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-fg px-3.5 text-sm font-bold text-bg transition-opacity hover:opacity-90 sm:px-5"
             >
               {n.designYours}

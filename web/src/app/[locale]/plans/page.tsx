@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { getSessionUser } from "@/lib/auth/session";
 import { listPricingRates } from "@/lib/orders/service";
 import { InvitationTier } from "@/generated/prisma/enums";
 import { PricingCalculator, type TierOffer } from "@/components/plans/pricing-calculator";
@@ -12,8 +11,7 @@ export default async function PlansPage({ params, searchParams }: PageProps<"/[l
   const search = await searchParams;
   const dict = await getDictionary(locale);
 
-  const [rates, user] = await Promise.all([listPricingRates(), getSessionUser()]);
-  const canOrder = user?.role === "CUSTOMER";
+  const rates = await listPricingRates();
 
   const offerFor = (tier: InvitationTier): TierOffer | null => {
     const rate = rates.find((r) => r.tier === tier);
@@ -47,7 +45,6 @@ export default async function PlansPage({ params, searchParams }: PageProps<"/[l
           dict={dict}
           withQr={withQr}
           noQr={noQr}
-          canOrder={canOrder}
         />
       ) : (
         <p className="mt-12 text-center text-fg-muted">{dict.common.empty}</p>

@@ -16,6 +16,15 @@ async function assertOwnedEvent(eventId: string, userId: string) {
     },
   });
   if (!event || event.ownerId !== userId) throw new GuestError("Event not found");
+  // THE PAYWALL. This function is the only place in the product that mints a
+  // linkToken or a qrToken, so "no guest ⇒ no shareable invitation URL exists"
+  // is what actually keeps an unpaid invitation unshareable — not the schema.
+  // It used to be enforced by `Event.orderId` being NOT NULL; that column is
+  // now nullable so a draft can exist before payment, and this is where the
+  // same guarantee moved to. Capacity below would refuse a draft anyway (an
+  // absent order reads as zero invitations), but only by accident of
+  // arithmetic — this says it on purpose, and says it in the customer's terms.
+  if (!event.orderId) throw new GuestError("Event is not activated yet");
   return event;
 }
 

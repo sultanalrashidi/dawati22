@@ -70,9 +70,17 @@ export function couplesFor(event: CouplesSource): CoupleInput[] {
 /** Shared by every query that has to render an invitation's names. */
 const COUPLES_INCLUDE = { orderBy: { sortOrder: "asc" } } as const;
 
+/**
+ * The customer's ACTIVATED events — the ones she has paid for.
+ *
+ * `orderId: { not: null }` is what keeps her unpaid drafts out of this list.
+ * Every card it renders reads capacity, tier and a package name off the order,
+ * so a draft would appear as an event with zero invitations and no plan name.
+ * Drafts are a different thing with a different card: see listOwnedDrafts.
+ */
 export async function listOwnedEvents(userId: string) {
   return prisma.event.findMany({
-    where: { ownerId: userId },
+    where: { ownerId: userId, orderId: { not: null } },
     include: {
       theme: true,
       order: { include: { plan: true } },
@@ -80,6 +88,23 @@ export async function listOwnedEvents(userId: string) {
       guests: { select: { id: true, invitation: { select: { status: true } } } },
     },
     orderBy: { createdAt: "desc" },
+  });
+}
+
+/**
+ * Her unpaid drafts — invitations she designed but never activated.
+ *
+ * A draft attached to a real account is work she can see here and delete
+ * herself, so nothing should ever remove it behind her back. Abandoned
+ * ANONYMOUS drafts are the ones that need sweeping — that sweep is not built
+ * yet, and until it is, ownerless drafts accumulate and are reachable only by
+ * the browser that holds their cookie.
+ */
+export async function listOwnedDrafts(userId: string) {
+  return prisma.event.findMany({
+    where: { ownerId: userId, orderId: null },
+    include: { theme: true, couples: COUPLES_INCLUDE },
+    orderBy: { updatedAt: "desc" },
   });
 }
 
@@ -211,7 +236,7 @@ export async function createEvent(userId: string, input: CreateEventInput) {
  * archived after it was created must still be saveable without support being
  * forced to move the invitation onto a different design first.
  */
-async function assertThemeSelectable(
+export async function assertThemeSelectable(
   themeId: string,
   themeVariantId: string | null,
   alsoAllowThemeId?: string,
@@ -236,7 +261,7 @@ function assertCoupleCount(couples: CoupleInput[]) {
 }
 
 /** The primary couple is mirrored onto Event's own columns — see CreateEventInput. */
-function primaryCoupleColumns(couples: CoupleInput[]) {
+export function primaryCoupleColumns(couples: CoupleInput[]) {
   const [primary] = couples;
   return {
     groomNameEn: primary.groomNameEn,
@@ -248,7 +273,7 @@ function primaryCoupleColumns(couples: CoupleInput[]) {
   };
 }
 
-function coupleRows(couples: CoupleInput[]) {
+export function coupleRows(couples: CoupleInput[]) {
   return couples.map((couple, index) => ({
     sortOrder: index,
     groomNameEn: couple.groomNameEn,
@@ -402,8 +427,12 @@ async function createEventWithUniqueReferenceCode(
 }
 
 export async function getOwnedEvent(eventId: string, userId: string) {
-  const event = await prisma.event.findUnique({
-    where: { id: eventId },
+  const event = await prisma.event.findFirst({
+    // `orderId: { not: null }` matters as much as the ownership check below:
+    // this is the paid host dashboard — capacity, the door PIN, guest adding —
+    // and an unpaid draft reaching it would show a wedding with zero
+    // invitations and a gate that cannot exist. Drafts have their own screens.
+    where: { id: eventId, orderId: { not: null } },
     include: {
       theme: true,
       order: { include: { plan: true } },

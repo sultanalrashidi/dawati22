@@ -298,21 +298,40 @@ export async function saveDraftBasics(eventId: string, essentials: EventEssentia
  * turn that into a charge with nothing to activate.
  */
 export async function deleteDraft(eventId: string): Promise<void> {
-  const blocking = await prisma.order.count({
-    where: {
-      draftEventId: eventId,
-      status: { in: [OrderStatus.PENDING, OrderStatus.PAID] },
-    },
-  });
-  if (blocking > 0) throw new DraftError("A payment is in progress for this draft");
-
   const [tokenHash, draft] = await Promise.all([
     readDraftTokenHash(),
     prisma.event.findUnique({ where: { id: eventId }, select: { draftTokenHash: true } }),
   ]);
 
-  const deleted = await prisma.event.deleteMany({ where: { id: eventId, orderId: null } });
-  if (deleted.count === 0) throw new EventError("Draft not found");
+  await prisma.$transaction(async (tx) => {
+    const blocking = await tx.order.count({
+      where: {
+        draftEventId: eventId,
+        status: { in: [OrderStatus.PENDING, OrderStatus.PAID] },
+      },
+    });
+    if (blocking > 0) throw new DraftError("A payment is in progress for this draft");
+
+    // A card that was declined leaves a CANCELLED or FAILED order still
+    // POINTING at this draft, and `Order.draftEventId` is onDelete: Restrict —
+    // so without this the database refuses the delete and she cannot remove
+    // her own invitation. Nothing is lost: the order keeps its own record of
+    // what was attempted, it just stops naming a row that is going away.
+    //
+    // Inside the transaction with the delete, so that if the draft turns out
+    // to have been activated in another tab the pointer-nulling rolls back
+    // with it rather than orphaning a live event's order.
+    await tx.order.updateMany({
+      where: {
+        draftEventId: eventId,
+        status: { notIn: [OrderStatus.PENDING, OrderStatus.PAID] },
+      },
+      data: { draftEventId: null },
+    });
+
+    const deleted = await tx.event.deleteMany({ where: { id: eventId, orderId: null } });
+    if (deleted.count === 0) throw new EventError("Draft not found");
+  });
 
   // Only when the cookie pointed at THIS draft. A signed-in customer deleting
   // one of several drafts must not lose the pointer to the one she is actually

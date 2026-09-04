@@ -54,6 +54,35 @@ export async function issueDraftToken(): Promise<string> {
 }
 
 /**
+ * Pushes this browser's existing cookie out another 30 days.
+ *
+ * The SAME token, deliberately — `issueDraftToken` mints a fresh one, and the
+ * Event's stored `draftTokenHash` would stop matching it, locking her out of
+ * her own draft. Only the expiry moves.
+ *
+ * It exists because the retention rule we publish is "30 days from the last
+ * edit", and the cookie is the ONLY way back to an ownerless draft. Set once
+ * at creation and never refreshed, it would expire on day 30 while the draft
+ * itself survived to day 55 — unreachable to its owner and still holding her
+ * names, her venue and her date. The two clocks have to be the same clock.
+ *
+ * Call only from an action or a route handler: cookies cannot be written
+ * during a page render.
+ */
+export async function refreshDraftToken(): Promise<void> {
+  const store = await cookies();
+  const token = store.get(DRAFT_COOKIE)?.value;
+  if (!token) return;
+  store.set(DRAFT_COOKIE, token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires: new Date(Date.now() + DRAFT_COOKIE_TTL_MS),
+  });
+}
+
+/**
  * Drops the cookie. Called when the draft it pointed at is claimed by a signed
  * -in customer or deleted — a token that no longer opens anything should not
  * keep riding along on every request.

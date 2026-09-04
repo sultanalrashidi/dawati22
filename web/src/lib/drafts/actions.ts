@@ -14,6 +14,7 @@ import {
   saveDraftBasics,
   startDraft,
 } from "@/lib/drafts/service";
+import { refreshDraftToken } from "@/lib/drafts/session";
 import { isLocale, type Locale } from "@/lib/i18n/locales";
 
 /** Only the two real tiers, and only when the count is one we actually sell. */
@@ -66,6 +67,12 @@ export async function saveDraftBasicsAction(
   // is signed in — a POST she made, not a URL she happened to open. A no-op
   // when there is no session or the draft already has an owner.
   await claimDraft(eventId);
+  // The published retention rule is "30 days from the last edit", and for an
+  // ownerless draft this cookie is the only way back to it. Refreshed here so
+  // the cookie's clock and the sweep's clock are the same clock — otherwise it
+  // would expire on day 30 while the draft lived to day 55, unreachable to the
+  // person whose names are in it.
+  await refreshDraftToken();
 
   try {
     await saveDraftBasics(eventId, essentials);
@@ -100,6 +107,12 @@ export async function saveDraftDetailsAction(
   if (!values) redirect(`/${locale}/draft/${eventId}/details?error=validation`);
 
   await claimDraft(eventId);
+  // The published retention rule is "30 days from the last edit", and for an
+  // ownerless draft this cookie is the only way back to it. Refreshed here so
+  // the cookie's clock and the sweep's clock are the same clock — otherwise it
+  // would expire on day 30 while the draft lived to day 55, unreachable to the
+  // person whose names are in it.
+  await refreshDraftToken();
 
   try {
     await updateEventDetails(eventId, values);

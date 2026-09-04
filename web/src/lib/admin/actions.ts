@@ -12,6 +12,7 @@ import {
 import { EventError, updateEventDetails } from "@/lib/events/service";
 import { markInvitationShared, markInvitationsShared } from "@/lib/guests/service";
 import { readEventForm } from "@/lib/events/form";
+import { sweepAbandonedDrafts } from "@/lib/drafts/sweep";
 import { Role, EventStatus } from "@/generated/prisma/client";
 import { parseTier } from "@/lib/orders/pricing";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
@@ -92,6 +93,19 @@ export async function setEventDetailsLockAction(eventId: string, locale: string,
   // The customer's dashboard and her edit screen both read this column.
   revalidatePath(`/${safeLocale}/events/${eventId}`);
   revalidatePath(`/${safeLocale}/events/${eventId}/details`);
+}
+
+/**
+ * Runs the retention sweep by hand.
+ *
+ * The same function the nightly cron calls — a second caller, never a second
+ * implementation, so what support triggers is exactly what runs at 2am.
+ */
+export async function sweepAbandonedDraftsAction(locale: string) {
+  await requireAdmin();
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  await sweepAbandonedDrafts();
+  revalidatePath(`/${safeLocale}/admin`);
 }
 
 export type EventEditState = { error?: string; saved?: boolean } | null;

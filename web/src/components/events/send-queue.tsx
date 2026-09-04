@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
@@ -74,17 +74,28 @@ export function SendQueue({
 
   // Tracked by ID, not by index: `router.refresh()` removes the rows just
   // marked, and an index cursor would skip whoever slides into the gap.
+  //
+  // Two buckets, deliberately. Skipping is "not this one, not now" — it must
+  // move the card WITHOUT counting as a send, or the progress bar reports
+  // invitations that were never handed to anybody and she reaches the end of
+  // the list believing everyone has one.
   const [doneIds, setDoneIds] = useState<string[]>([]);
+  const [skippedIds, setSkippedIds] = useState<string[]>([]);
   const [justSent, setJustSent] = useState<QueueGuest | null>(null);
   const [copied, setCopied] = useState(false);
+  const inFlight = useRef<Promise<void> | null>(null);
 
-  const remaining = guests.filter((g) => !doneIds.includes(g.id));
-  const current = remaining[0] ?? null;
-  const sent = total - remaining.length;
+  // What is left to look at this sitting — skipped guests come off the card
+  // but stay in the count of who has not been sent to.
+  const queue = guests.filter((g) => !doneIds.includes(g.id) && !skippedIds.includes(g.id));
+  const current = queue[0] ?? null;
+  const unsentLeft = guests.filter((g) => !doneIds.includes(g.id)).length;
+  const sent = total - unsentLeft;
 
   const flush = useCallback(async () => {
     const ids = readPending(eventId);
     if (ids.length === 0) return;
+    const run = (async () => {
     try {
       const res = await fetch(`/api/events/${eventId}/sent`, {
         method: "POST",
@@ -102,6 +113,13 @@ export function SendQueue({
     } catch {
       // Offline at the venue. The note survives; the next return flushes it.
     }
+    })();
+    // Held so `undo` can wait for it. A POST already handed to the network
+    // cannot be recalled by editing localStorage, so unmarking before it lands
+    // would be overwritten by it and the guest would silently go back to
+    // "sent" with the card already past her.
+    inFlight.current = run;
+    await run;
   }, [eventId, router]);
 
   // Anything left over from a previous sitting, or from a tab the phone
@@ -140,9 +158,9 @@ export function SendQueue({
     );
     setDoneIds((ids) => ids.filter((id) => id !== guest.id));
     setJustSent(null);
-    // The note may already have flushed, so the server is asked too. Safe
-    // either way: unmarking an invitation that was never marked matches
-    // nothing.
+    // Wait for any flush already in the air before retracting, or the two
+    // race and the flush wins.
+    await inFlight.current?.catch(() => {});
     await unmarkGuestSentAction(guest.id, eventId, locale);
     router.refresh();
   }
@@ -160,7 +178,7 @@ export function SendQueue({
       <div>
         <p className="flex items-baseline justify-between text-xs text-fg-muted">
           <span>{d.sendQueueProgress.replace("{sent}", nf.format(sent)).replace("{total}", nf.format(total))}</span>
-          <span className="tabular-nums">{nf.format(remaining.length)}</span>
+          <span className="tabular-nums">{nf.format(unsentLeft)}</span>
         </p>
         <div className="mt-2 h-2 overflow-hidden rounded-full bg-surface-2">
           <div
@@ -236,7 +254,7 @@ export function SendQueue({
             </button>
             <button
               type="button"
-              onClick={() => setDoneIds((ids) => [...ids, current.id])}
+              onClick={() => setSkippedIds((ids) => [...ids, current.id])}
               className="h-9 rounded-full px-4 text-xs font-medium text-fg-muted hover:underline"
             >
               {d.sendQueueSkip}
@@ -245,8 +263,23 @@ export function SendQueue({
         </section>
       ) : (
         <section className="rounded-2xl border border-border bg-surface p-8 text-center">
-          <p className="text-base font-bold text-fg">{d.sendQueueAllDone}</p>
-          <p className="mt-2 text-sm text-fg-muted">{d.sendQueueAllDoneHint}</p>
+          <p className="text-base font-bold text-fg">
+            {unsentLeft > 0 ? d.sendQueueSkippedTitle : d.sendQueueAllDone}
+          </p>
+          <p className="mt-2 text-sm text-fg-muted">
+            {unsentLeft > 0
+              ? d.sendQueueSkippedHint.replace("{count}", nf.format(unsentLeft))
+              : d.sendQueueAllDoneHint}
+          </p>
+          {unsentLeft > 0 && (
+            <button
+              type="button"
+              onClick={() => setSkippedIds([])}
+              className="mt-4 text-sm font-bold text-accent hover:underline"
+            >
+              {d.sendQueueReviewSkipped}
+            </button>
+          )}
           <Link
             href={`/${locale}/events/${eventId}`}
             className="mt-5 inline-flex h-11 items-center rounded-full bg-accent px-6 text-sm font-bold text-accent-fg"

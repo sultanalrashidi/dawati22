@@ -14,6 +14,7 @@ import {
   clientAddressHash,
   issueDraftToken,
   readDraftTokenHash,
+  refreshDraftToken,
 } from "@/lib/drafts/session";
 
 /**
@@ -121,7 +122,13 @@ export async function startDraft(input: StartDraftInput): Promise<string> {
       where: { id: existing.id, orderId: null },
       data: { ...design, ...(ownerId && existing.ownerId === null ? { ownerId } : {}) },
     });
-    if (repointed.count > 0) return existing.id;
+    if (repointed.count > 0) {
+      // The repoint stamps `updatedAt`, which is the clock the sweep reads —
+      // so it has to move the cookie's clock too, or a draft kept alive by
+      // gallery taps outlives the only key its browser has to it.
+      await refreshDraftToken();
+      return existing.id;
+    }
   }
 
   // Only anonymous starts are throttled — see DRAFT_RATE_LIMIT.

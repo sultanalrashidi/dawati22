@@ -192,7 +192,11 @@ export async function markInvitationsShared(
       data: { status: InvitationStatus.SENT, sentAt: now },
     });
     const stamped = await tx.invitation.updateMany({
-      where: { eventId, guestId: { in: ids }, sentAt: null },
+      // `status: SENT` and not merely `sentAt: null`: BLOCKED is also a status
+      // with no sentAt, and recording a blocked guest as delivered would both
+      // lie in the dashboard's count and freeze the event's details on the
+      // strength of an invitation nobody can open.
+      where: { eventId, guestId: { in: ids }, sentAt: null, status: InvitationStatus.SENT },
       data: { sentAt: now },
     });
 
@@ -258,34 +262,42 @@ export async function addGuestsBulk(
       return { created: 0, alreadyApplied: false, capacityShortBy: shortBy };
     }
 
-    // createMany cannot create the nested Invitation, and the Invitation is
-    // where the tokens live — so the guests go in as one statement and their
-    // invitations as a second, joined by the ids the first returns.
-    const created = await Promise.all(
-      clean.map((row) =>
-        tx.guest.create({
-          data: {
-            eventId,
-            importBatchId: batchId,
-            nameAr: row.nameAr,
-            phone: row.phone,
-            allowedCount: row.allowedCount,
-            invitation: {
-              create: {
-                eventId,
-                status: InvitationStatus.DRAFT,
-                linkToken: generateSecureToken(),
-                qrToken: generateSecureToken(),
-              },
-            },
-          },
-          select: { id: true },
-        }),
-      ),
-    );
+    // TWO statements, not two per guest. A nested create per row is three
+    // round trips each (guest, invitation, read-back), and an interactive
+    // transaction serializes every one of them onto a single connection: at
+    // the 800 invitations this product actually sells that is ~2,400 sequential
+    // round trips inside a transaction whose default budget is five seconds.
+    // It would fail exactly on the big lists this feature exists for, roll
+    // back everything, and hold the capacity lock the whole time.
+    const created = await tx.guest.createManyAndReturn({
+      data: clean.map((row) => ({
+        eventId,
+        importBatchId: batchId,
+        nameAr: row.nameAr,
+        phone: row.phone,
+        allowedCount: row.allowedCount,
+      })),
+      select: { id: true },
+    });
+    // Invitation.guestId is a plain unique FK, so the second insert only needs
+    // the ids the first returned. This is still the only place in the product
+    // that mints a linkToken, and it is still behind assertOwnedEvent.
+    await tx.invitation.createMany({
+      data: created.map((guest) => ({
+        guestId: guest.id,
+        eventId,
+        // DRAFT, exactly as addGuest: importing a list is not sending it.
+        status: InvitationStatus.DRAFT,
+        linkToken: generateSecureToken(),
+        qrToken: generateSecureToken(),
+      })),
+    });
 
     return { created: created.length, alreadyApplied: false, capacityShortBy: 0 };
-  });
+  },
+  // Belt and braces on top of the two-statement rewrite: a cold connection or
+  // a slow link must not turn a 500-name list into a total rollback.
+  { timeout: 20_000, maxWait: 5_000 });
 }
 
 /**
@@ -354,9 +366,29 @@ export async function unmarkInvitationShared(guestId: string, userId: string) {
   const invitation = guest.invitation;
   if (!invitation) throw new GuestError("Guest has no invitation");
 
-  await prisma.invitation.updateMany({
-    where: { id: invitation.id, eventId: guest.eventId, status: InvitationStatus.SENT },
-    data: { status: InvitationStatus.DRAFT, sentAt: null },
+  await prisma.$transaction(async (tx) => {
+    await tx.invitation.updateMany({
+      where: { id: invitation.id, eventId: guest.eventId, status: InvitationStatus.SENT },
+      data: { status: InvitationStatus.DRAFT, sentAt: null },
+    });
+
+    // Release the lock ONLY when this correction leaves nothing at all sent.
+    //
+    // The rule is unchanged — unmarking says "I did not send that one", not
+    // "nothing has ever gone out" — but if she mis-taps the very FIRST guest
+    // and undoes it a second later, then nothing HAS gone out, and leaving her
+    // details frozen forever on the strength of a tap she took back is the
+    // wrong answer. Asked of the database rather than assumed, so an
+    // invitation somebody else's tap sent keeps the event locked.
+    const stillSent = await tx.invitation.count({
+      where: { eventId: guest.eventId, sentAt: { not: null } },
+    });
+    if (stillSent === 0) {
+      await tx.event.updateMany({
+        where: { id: guest.eventId },
+        data: { detailsLockedAt: null },
+      });
+    }
   });
 }
 

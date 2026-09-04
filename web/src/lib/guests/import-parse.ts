@@ -69,12 +69,47 @@ const FIELD_SEPARATORS = /\t|[,،;؛|]|\s{2,}/;
  */
 const PHONE_RUN = /(?:\+|00)?\d[\d\s().\u2010-\u2015-]{6,}\d/g;
 
+/** Digit count in the E.164 range a real number can occupy. */
+function isPhoneLength(run: string): boolean {
+  const digits = run.replace(/\D/g, "").length;
+  return digits >= 9 && digits <= 15;
+}
+
 function peelPhone(field: string): { rest: string; phoneRaw: string | null } {
   for (const match of field.matchAll(PHONE_RUN)) {
-    const digits = match[0].replace(/\D/g, "");
-    if (digits.length < 9 || digits.length > 15) continue;
-    const rest = `${field.slice(0, match.index)} ${field.slice(match.index + match[0].length)}`;
-    return { rest: rest.trim(), phoneRaw: match[0] };
+    let run = match[0];
+    if (!isPhoneLength(run)) continue;
+
+    // The run is allowed to contain spaces so that «+966 50 111 2255» reads as
+    // one number — which means on a single-space line it also swallows the
+    // seat count: `أم فهد 0501234567 3` matches "0501234567 3", eleven digits,
+    // inside the window. Both the phone AND the seats would be lost silently,
+    // and a guest allowed five people would be created allowing one.
+    //
+    // So: if dropping a trailing 1-2 digit group leaves something that still
+    // looks like a number AND normalizes, prefer that reading. Only when it
+    // normalizes — an ambiguous short run is left alone rather than guessed at.
+    const split = /^(.*\d)\s+(\d{1,2})$/.exec(run);
+    if (split) {
+      const head = split[1];
+      const tail = Number(split[2]);
+      if (
+        isPhoneLength(head) &&
+        tail >= 1 &&
+        tail <= MAX_SEATS &&
+        normalizePhone(head, DEFAULT_PHONE_COUNTRY) !== null
+      ) {
+        run = head;
+      }
+    }
+
+    // `run.length`, not `match[0].length`: when the seat count was backed off
+    // above, it has to stay in `rest` for the caller to read.
+    const consumedTo = (match.index ?? 0) + run.length;
+    return {
+      rest: `${field.slice(0, match.index)} ${field.slice(consumedTo)}`.trim(),
+      phoneRaw: run,
+    };
   }
   return { rest: field, phoneRaw: null };
 }
@@ -166,6 +201,18 @@ export function parseGuestList(
       if (phone) seenPhones.add(phone);
       return row;
     });
+}
+
+/**
+ * Non-empty lines in what she pasted, BEFORE the parser truncates.
+ *
+ * `parseGuestList` slices to MAX_IMPORT_LINES so the review table stays
+ * bounded, which means the caller can never see that it happened — a 900-name
+ * paste would import 800 and report success. This is how the cap is actually
+ * enforced.
+ */
+export function countGuestLines(text: string): number {
+  return text.split(/\r?\n/).filter((line) => line.trim().length > 0).length;
 }
 
 /** Rows that can be written as they stand — a duplicate is a warning, not a refusal. */

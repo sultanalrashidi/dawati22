@@ -207,15 +207,17 @@ const ar: Record<LegalDocId, LegalDoc> = {
         ],
         bullets: [
           "مزوّد الدفع «ميسر» (Moyasar) لإتمام عمليات الدفع بأمان.",
+          "مزوّد رسائل التحقق (Authentica) الذي يستقبل رقم جوالك لإيصال رمز الدخول إليك.",
           "مزوّدي الاستضافة والبنية التقنية الذين نشغّل عليهم الخدمة.",
           "خدمة خطوط Google (Google Fonts) التي يُحمّل منها متصفّحك خطوط التصميم.",
+          "يوتيوب (YouTube) التابع لـGoogle، الذي يُحمّل منه متصفّحك مشغّل الموسيقى في الدعوة — وهو موجود في كل دعوة، بما فيها التي نضع لها المقطع الافتراضي.",
           "الجهات المختصة عند وجود التزام نظامي يقتضي ذلك.",
         ],
       },
       {
         heading: "٦. ملفات تعريف الارتباط (Cookies)",
         body: [
-          "نستخدم ملفات ارتباط أساسية لتشغيل الموقع فقط، ولا نستخدم ملفات إعلانية ولا أدوات تتبّع أو تحليلات: ملف يحفظ جلسة دخولك، وملف لتفضيلاتك (اللغة والمظهر)، وملف يحفظ الدعوة التي تصمّمها في هذا المتصفّح قبل التسجيل ومدته ٣٠ يومًا، وملفان يُوضعان في متصفّح من تشاركه رابط المعاينة — واحد ليُحتسب مرة واحدة، وواحد يحمل معرّف الدعوة التي سُمح له بفتحها. يمكنك التحكم في ملفات الارتباط من إعدادات متصفّحك، مع العلم أن حذفها يعني فقدان الوصول إلى دعوة بدأتها قبل التسجيل، لأن هذا الملف هو مفتاحها الوحيد.",
+          "نستخدم ملفات ارتباط أساسية لتشغيل الموقع فقط، ولا نستخدم ملفات إعلانية ولا أدوات تتبّع أو تحليلات: ملف يحفظ جلسة دخولك، وملف يتذكّر اختيارك للمظهر الفاتح أو الداكن، وملف يحفظ الدعوة التي تصمّمها في هذا المتصفّح قبل التسجيل ومدته ٣٠ يومًا، وملفان يُوضعان في متصفّح من تشاركه رابط المعاينة — واحد ليُحتسب مرة واحدة، وواحد يحمل معرّف الدعوة التي سُمح له بفتحها، وملف لجلسة منظّمات الدخول على جهاز المسح في ليلة المناسبة. يمكنك التحكم في ملفات الارتباط من إعدادات متصفّحك، مع العلم أن حذفها يعني فقدان الوصول إلى دعوة بدأتها قبل التسجيل، لأن هذا الملف هو مفتاحها الوحيد.",
         ],
       },
       {
@@ -458,15 +460,17 @@ const en: Record<LegalDocId, LegalDoc> = {
         ],
         bullets: [
           "The Moyasar payment provider, to complete payments securely.",
+          "Our SMS verification provider (Authentica), which receives your mobile number in order to deliver the one-time sign-in code to it.",
           "Hosting and infrastructure providers we run the service on.",
           "Google Fonts, from which your browser loads the design's typefaces.",
+          "YouTube, operated by Google, from which your browser loads the invitation's background music player. It is present on every invitation, including those where we supply the default track because you did not choose one.",
           "Competent authorities where a legal obligation requires it.",
         ],
       },
       {
         heading: "6. Cookies",
         body: [
-          "We use essential cookies only, to run the site — no advertising cookies and no analytics or tracking tools: one that keeps your sign-in session, one for your preferences (language and theme), one that holds the invitation you are designing in this browser before you register, for 30 days, and two placed in the browser of anyone you share your preview link with — one so that viewer is counted once, and one carrying the identifier of the invitation they were let into. You can control cookies from your browser settings, noting that clearing them means losing access to an invitation you started before registering, because that cookie is its only key.",
+          "We use essential cookies only, to run the site — no advertising cookies and no analytics or tracking tools: one that keeps your sign-in session, one that remembers your choice of light or dark appearance, one that holds the invitation you are designing in this browser before you register, for 30 days, two placed in the browser of anyone you share your preview link with — one so that viewer is counted once, and one carrying the identifier of the invitation they were let into — and one for the door staff's session on the scanning device on the night. You can control cookies from your browser settings, noting that clearing them means losing access to an invitation you started before registering, because that cookie is its only key.",
         ],
       },
       {

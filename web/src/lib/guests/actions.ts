@@ -12,7 +12,12 @@ import {
   deleteGuest,
   GuestError,
 } from "@/lib/guests/service";
-import { parseGuestList, isCommittable, MAX_IMPORT_LINES } from "@/lib/guests/import-parse";
+import {
+  parseGuestList,
+  isCommittable,
+  countGuestLines,
+  MAX_IMPORT_LINES,
+} from "@/lib/guests/import-parse";
 import { Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 
@@ -118,9 +123,12 @@ export async function importGuestsAction(
   const batchId = String(formData.get("batchId") ?? "");
   if (!batchId) return { error: "invalid_batch" };
 
+  // Counted on the raw text: parseGuestList truncates to MAX_IMPORT_LINES, so
+  // testing its output could never see an over-long paste.
+  if (countGuestLines(text) > MAX_IMPORT_LINES) return { error: "too_many" };
+
   const rows = parseGuestList(text).filter(isCommittable);
   if (rows.length === 0) return { error: "empty" };
-  if (rows.length > MAX_IMPORT_LINES) return { error: "too_many" };
 
   try {
     const result = await addGuestsBulk(
@@ -133,7 +141,11 @@ export async function importGuestsAction(
     return { ...result, batchId };
   } catch (err) {
     if (err instanceof GuestError) return { error: err.message };
-    throw err;
+    // Anything else — a transaction that ran out of budget, a lost connection
+    // — must come back as a message she can retry from. There is no error
+    // boundary on this route, so a rethrow here is a blank screen after she
+    // typed three hundred names.
+    return { error: "import_failed" };
   }
 }
 

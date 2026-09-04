@@ -13,6 +13,7 @@ import {
   type ParsedRow,
   type RowStatus,
 } from "@/lib/guests/import-parse";
+import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
 
 /**
  * Pasting a guest list.
@@ -93,8 +94,17 @@ export function ImportGuestsPanel({
     null,
   );
 
+  // Normalized on both sides. A guest added through the one-at-a-time form
+  // keeps whatever she typed — "0501234567" — while the parser produces
+  // "+966501234567", so comparing them raw means "already one of your guests"
+  // could never fire for the case it exists for.
   const existing = useMemo(
-    () => ({ names: new Set(existingNames), phones: new Set(existingPhones) }),
+    () => ({
+      names: new Set(existingNames),
+      phones: new Set(
+        existingPhones.map((phone) => normalizePhone(phone, DEFAULT_PHONE_COUNTRY) ?? phone),
+      ),
+    }),
     [existingNames, existingPhones],
   );
   const rows: ParsedRow[] = useMemo(
@@ -144,7 +154,12 @@ export function ImportGuestsPanel({
         </button>
       </div>
 
-      {state?.created && state.created > 0 ? (
+      {/* `state.batchId === batchId` and not just `state.created`: useActionState
+          keeps its last result forever, so without this the receipt for a
+          finished import reappears the next time the panel is opened and the
+          textarea is unreachable. Closing mints a new id, which is what makes
+          this the reset. */}
+      {state?.created && state.created > 0 && state.batchId === batchId ? (
         <div className="mt-4 rounded-xl bg-success/10 px-4 py-3">
           <p className="text-sm text-success">
             {d.importDone.replace("{count}", nf.format(state.created))}

@@ -75,6 +75,8 @@ export interface SweepResult {
   skipped: number;
   attemptsDeleted: number;
   budgetExhausted: boolean;
+  /** Dry run only: how many rows a real run would take. */
+  pending?: number;
 }
 
 /**
@@ -113,9 +115,12 @@ export async function sweepAbandonedDrafts({
     if (batch.length === 0) break;
 
     if (dryRun) {
-      // A rehearsal must not loop forever over rows it is not deleting.
-      skipped += batch.length;
-      break;
+      // Asked of the database, not counted from this page: a rehearsal that
+      // reports `take: BATCH_SIZE` would answer "100" for any backlog over a
+      // hundred, which is the one number the rehearsal exists to produce.
+      const pending = await countAbandonedDrafts(cutoff);
+      logger.info("drafts.sweep.dryRun", { pending, cutoff: cutoff.toISOString() });
+      return { deleted: 0, skipped: 0, attemptsDeleted: 0, budgetExhausted: false, pending };
     }
 
     for (const draft of batch) {

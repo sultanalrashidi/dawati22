@@ -1608,7 +1608,12 @@ function InvitationScreens({
             ) : (
               <p className="text-[var(--color-accent)]">{g.thanksAccept}</p>
             )}
-            {(builder || theme.card?.style === "rose-emboss" || isBridalFrame) &&
+            {/* `testCopy` first: the other three are style branches, and on a
+                plain legacy design none of them is true — which would mean the
+                one screen that has to say "this card is not a door pass" said
+                nothing at all, on exactly the designs where the pass renders
+                as a convincing card. */}
+            {(testCopy || builder || theme.card?.style === "rose-emboss" || isBridalFrame) &&
               (!hasQr || currentQr || mode === "preview") && (
                 <p className="mt-3 text-xs text-[var(--color-fg-muted)]">
                   {testCopy ? g.testPassNotice : hasQr ? g.passShowAtEntry : g.passShowCardAtEntry}

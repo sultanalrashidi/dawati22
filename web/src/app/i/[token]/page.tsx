@@ -56,7 +56,7 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
     return <GuestMessage title={dict.guest.expiredTitle} body={dict.guest.expiredBody} />;
   }
 
-  await markViewed(invitation.id, invitation.status);
+  await markViewed(invitation);
 
   // VALID/PARTIALLY_USED/FULLY_USED are entry-state refinements an admin may
   // set post-acceptance (see task 10) — they still display as "accepted" here.

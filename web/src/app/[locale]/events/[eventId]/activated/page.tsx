@@ -71,9 +71,18 @@ export default async function ActivatedPage({
       </dl>
 
       <div className="flex flex-col gap-3">
+        {/* Her step 8, and it belongs first: the details are open until the
+            first invitation actually goes out, and this is the moment she has
+            the appetite to finish them. */}
+        <Link
+          href={`/${locale}/events/${eventId}/details`}
+          className="flex h-12 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+        >
+          {d.activatedCompleteDetails}
+        </Link>
         <Link
           href={`/${locale}/events/${eventId}`}
-          className="flex h-12 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+          className="flex h-12 items-center justify-center rounded-full border border-border text-sm font-bold text-fg transition-colors hover:border-accent"
         >
           {d.activatedAddGuests}
         </Link>

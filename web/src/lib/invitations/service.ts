@@ -1,6 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
 import { InvitationStatus, RsvpStatus } from "@/generated/prisma/client";
+import { lockEventDetailsOp } from "@/lib/events/lock";
 
 export class InvitationError extends Error {}
 
@@ -34,20 +35,34 @@ export async function getInvitationByLinkToken(linkToken: string) {
 
 const VIEW_ELIGIBLE = new Set<InvitationStatus>([InvitationStatus.DRAFT, InvitationStatus.SENT]);
 
-export async function markViewed(invitationId: string, currentStatus: InvitationStatus) {
-  if (!VIEW_ELIGIBLE.has(currentStatus)) return;
-  await prisma.invitation.update({
-    where: { id: invitationId },
-    data: {
-      status: InvitationStatus.VIEWED,
-      viewedAt: new Date(),
-      // A DRAFT that a guest is looking at was evidently delivered, whatever
-      // route it took — the host may have shared the link outside the share
-      // buttons that normally record the send. A real SENT keeps its original
-      // sentAt untouched.
-      ...(currentStatus === InvitationStatus.DRAFT ? { sentAt: new Date() } : {}),
-    },
-  });
+export async function markViewed(invitation: {
+  id: string;
+  eventId: string;
+  status: InvitationStatus;
+  sentAt: Date | null;
+}) {
+  if (!VIEW_ELIGIBLE.has(invitation.status)) return;
+  const now = new Date();
+  // A guest is looking at it, so it was evidently delivered — whatever route
+  // it took. The host may have copied the link out of the page and pasted it
+  // into the family group, which touches none of the share buttons.
+  const firstDelivery = invitation.sentAt === null;
+
+  await prisma.$transaction([
+    prisma.invitation.update({
+      where: { id: invitation.id },
+      data: {
+        status: InvitationStatus.VIEWED,
+        viewedAt: now,
+        // A real SENT keeps its original sentAt untouched.
+        ...(firstDelivery ? { sentAt: now } : {}),
+      },
+    }),
+    // Same rule as the share buttons: the first invitation that actually
+    // reaches a guest freezes the event's details. This is the path that
+    // catches a host who never pressed a share button at all.
+    ...(firstDelivery ? [lockEventDetailsOp(invitation.eventId, now)] : []),
+  ]);
 }
 
 const RSVP_BLOCKED_STATUSES = new Set<InvitationStatus>([

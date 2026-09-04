@@ -103,6 +103,45 @@ export async function setEventStatus(eventId: string, status: EventStatus) {
   await prisma.event.update({ where: { id: eventId }, data: { status } });
 }
 
+/**
+ * Support reopening (or re-freezing) a customer's own edit form.
+ *
+ * It touches ONE column. Not `Invitation.sentAt`, not any invitation status —
+ * reopening is about the form, not about un-sending, and the dashboard's "sent"
+ * count must keep telling the truth. Not `orderId`, `status`, `hasQr`,
+ * `referenceCode` or any token either; in particular this is not a way to widen
+ * capacity, which is snapshotted on the order and lives nowhere near here.
+ *
+ * Support's own writer has always ignored the lock and still does — this only
+ * decides whether the CUSTOMER's screen will let her save.
+ */
+/** Invitations of this event that have actually gone out. */
+export async function countSentInvitations(eventId: string) {
+  return prisma.invitation.count({ where: { eventId, sentAt: { not: null } } });
+}
+
+export async function setEventDetailsLock(eventId: string, locked: boolean) {
+  if (!locked) {
+    // updateMany, not update: a stale id from a double-click must be a no-op,
+    // not a P2025 surfacing as a 500 on an admin button.
+    await prisma.event.updateMany({ where: { id: eventId }, data: { detailsLockedAt: null } });
+    return;
+  }
+  // Re-locking restores the moment the data actually froze rather than "now" —
+  // COALESCE(MIN(sentAt), now()), the same expression the backfill used. That
+  // keeps reopen/re-lock idempotent instead of ratcheting the timestamp
+  // forward every time support touches it, and keeps the date the customer's
+  // dashboard prints true.
+  const first = await prisma.invitation.aggregate({
+    where: { eventId, sentAt: { not: null } },
+    _min: { sentAt: true },
+  });
+  await prisma.event.updateMany({
+    where: { id: eventId },
+    data: { detailsLockedAt: first._min.sentAt ?? new Date() },
+  });
+}
+
 export async function listOrders() {
   return prisma.order.findMany({
     include: { user: true, plan: true, event: { select: { id: true, name: true } } },

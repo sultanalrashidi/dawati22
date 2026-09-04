@@ -3,7 +3,10 @@ import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getEventAdmin } from "@/lib/admin/service";
-import { toggleGuestMgmtDoneAction } from "@/lib/admin/actions";
+import {
+  toggleGuestMgmtDoneAction,
+  markAllInvitationsSharedAdminAction,
+} from "@/lib/admin/actions";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { guestInvitationUrl } from "@/lib/urls";
 import { invitationShareText } from "@/lib/events/share-text";
@@ -108,7 +111,20 @@ export default async function AdminEventGuestsPage({
             {a.guestsCount}: {rows.length}
           </span>
           {allLinksText && (
-            <CopyTextButton text={allLinksText} label={a.copyAllLinks} copiedLabel={a.copiedShort} />
+            <CopyTextButton
+              text={allLinksText}
+              label={a.copyAllLinks}
+              copiedLabel={a.copiedShort}
+              // Copying every link IS the send on a team-managed event, and it
+              // is the only gesture that ever happens there — so it has to be
+              // what records it.
+              onCopied={markAllInvitationsSharedAdminAction.bind(
+                null,
+                eventId,
+                rows.filter((r) => r.url).map((r) => r.guest.id),
+                locale,
+              )}
+            />
           )}
         </div>
 

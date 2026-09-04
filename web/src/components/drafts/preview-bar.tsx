@@ -15,10 +15,13 @@ export function PreviewBar({
   dict,
   eventId,
   activated,
+  locked,
 }: {
   dict: Dictionary;
   eventId: string;
   activated: boolean;
+  /** Her details froze when the first invitation went out — nothing left to edit. */
+  locked: boolean;
 }) {
   const d = dict.draft;
   // Starts closed: she came here to look at her invitation, not at a toolbar.
@@ -119,12 +122,19 @@ export function PreviewBar({
         )}
 
         <div className="flex flex-wrap gap-2">
-          <Link
-            href={`/ar/draft/${eventId}/basics`}
-            className="inline-flex h-9 items-center rounded-full border border-black/20 px-4 text-xs font-bold text-black"
-          >
-            {d.previewBarEdit}
-          </Link>
+          {/* Before payment the basics live on the draft screens; after it they
+              live on her own event, because resolveDraftAccess filters
+              `orderId: null` and the draft route would bounce a paid
+              invitation to the design gallery. Once the details are locked
+              there is nothing to send her to at all. */}
+          {(!activated || !locked) && (
+            <Link
+              href={activated ? `/ar/events/${eventId}/details` : `/ar/draft/${eventId}/basics`}
+              className="inline-flex h-9 items-center rounded-full border border-black/20 px-4 text-xs font-bold text-black"
+            >
+              {activated ? d.previewBarDetails : d.previewBarEdit}
+            </Link>
+          )}
           {!activated && (
             <>
               {/* The rest of the invitation — mothers, opening, programme,

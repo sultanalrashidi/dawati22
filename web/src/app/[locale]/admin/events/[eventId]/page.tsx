@@ -8,6 +8,8 @@ import { EventFields } from "@/components/events/event-fields";
 import { eventFieldDefaults } from "@/lib/events/field-defaults";
 import { EventTypeGate } from "@/components/events/event-type-gate";
 import { EventEditForm } from "@/components/admin/event-edit-form";
+import { EventLockControls } from "@/components/admin/event-lock-controls";
+import { countSentInvitations } from "@/lib/admin/service";
 
 export default async function AdminEventEditPage({
   params,
@@ -30,6 +32,10 @@ export default async function AdminEventEditPage({
   // Falling back to another colour OF THE SAME DESIGN keeps the artwork the
   const defaults = eventFieldDefaults(event, themeOptions);
 
+  // What support must see before reopening: how many invitations are already
+  // out there carrying the details they are about to let the customer rewrite.
+  const sentCount = await countSentInvitations(eventId);
+
   const a = dict.admin;
 
   return (
@@ -47,6 +53,14 @@ export default async function AdminEventEditPage({
       <p className="mt-4 rounded-xl border border-warning/40 bg-warning/5 px-4 py-3 text-sm text-fg-muted">
         {a.eventEditNote}
       </p>
+
+      <EventLockControls
+        eventId={event.id}
+        locale={locale}
+        dict={dict}
+        lockedAt={event.detailsLockedAt}
+        sentCount={sentCount}
+      />
 
       <EventEditForm eventId={event.id} locale={locale} dict={dict}>
         {/* `enabled={false}`: the "weddings only" gate is a sales rule for the

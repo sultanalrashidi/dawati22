@@ -214,9 +214,48 @@ export default async function EventDetailPage({
           </span>
         </div>
 
-        <p className="mt-3 rounded-xl border border-border bg-surface-2/60 px-4 py-3 text-xs leading-relaxed text-fg-muted">
-          {d.dataLockedNotice}
-        </p>
+        {/* ── EDIT LOCK ────────────────────────────────────────────────
+            Two states, decided by one column. Activation is orderId; this is
+            detailsLockedAt, stamped by the first invitation that actually
+            reaches a guest — not by paying, and not by adding guests. */}
+        {event.detailsLockedAt === null ? (
+          <section className="mt-3 rounded-2xl border border-accent/40 bg-accent-soft/15 px-5 py-4">
+            <h2 className="text-base font-bold text-fg">{d.editableTitle}</h2>
+            <p className="mt-1 text-sm leading-relaxed text-fg-muted">{d.editableBody}</p>
+            <Link
+              href={`/${locale}/events/${eventId}/details`}
+              className="mt-3 inline-block rounded-full bg-accent px-5 py-2 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong"
+            >
+              {d.editableCta}
+            </Link>
+          </section>
+        ) : (
+          <section className="mt-3 rounded-xl border border-border bg-surface-2/60 px-4 py-3">
+            <h2 className="text-xs font-bold text-fg">{d.lockedTitle}</h2>
+            <p className="mt-1 text-xs leading-relaxed text-fg-muted">
+              {d.lockedBody.replace(
+                "{date}",
+                new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
+                  day: "numeric",
+                  month: "long",
+                  year: "numeric",
+                }).format(event.detailsLockedAt),
+              )}
+            </p>
+            <a
+              href={supportWhatsAppUrl(
+                d.lockedWhatsappMessage
+                  .replace("{name}", event.name)
+                  .replace("{reference}", event.referenceCode ?? event.id.slice(-6)),
+              )}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 inline-block text-xs font-bold text-accent hover:underline"
+            >
+              {d.lockedSupportCta}
+            </a>
+          </section>
+        )}
 
         {/* ── STATS ────────────────────────────────────────────────────── */}
         <div className="mt-5 grid grid-cols-2 gap-3 xl:grid-cols-4">

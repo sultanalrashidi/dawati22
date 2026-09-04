@@ -16,6 +16,9 @@ import { designRequestCreateData, type DesignBrief } from "@/lib/design-requests
 
 export class EventError extends Error {}
 
+/** Her own save, refused because an invitation has already reached a guest. */
+export class EventLockedError extends EventError {}
+
 /** How many couples one event may announce — a joint wedding, not a directory. */
 export const MAX_COUPLES_PER_EVENT = 6;
 
@@ -316,9 +319,17 @@ function wordingColumns(input: UpdateEventDetailsInput) {
 export type UpdateEventDetailsInput = Omit<CreateEventInput, "orderId" | "designBrief">;
 
 /**
- * Rewrites an existing event's details. Only support reaches this: the customer
- * form is create-only, because the names are already printed on invitations
- * that have been sent by the time anyone wants them changed.
+ * Rewrites an existing event's details, ignoring the edit lock.
+ *
+ * TWO callers, and neither carries a predicate of its own: support's
+ * `updateEventDetailsAction`, and the customer's PRE-payment
+ * `saveDraftDetailsAction`. The second is safe because `resolveDraftAccess`
+ * has already filtered `orderId: null` and an unpaid draft can never be
+ * locked. Her PAID event goes through `updateOwnedEventDetails` below, which
+ * carries the lock guard in its own WHERE clause.
+ *
+ * Support keeps ignoring the lock deliberately: fixing a misspelt name after
+ * the invitations went out is the entire reason this path exists.
  *
  * The couple rows are replaced wholesale rather than diffed — they carry no
  * identity of their own (nothing references an EventCouple), and a delete +
@@ -339,33 +350,100 @@ export async function updateEventDetails(eventId: string, input: UpdateEventDeta
     prisma.eventCouple.deleteMany({ where: { eventId } }),
     prisma.event.update({
       where: { id: eventId },
-      data: {
-        type: input.type,
-        name: input.name,
-        ...primaryCoupleColumns(input.couples),
-        couples: { create: coupleRows(input.couples) },
-        ...wordingColumns(input),
-        invitationTextAr: input.invitationTextAr,
-        eventDate: input.eventDate,
-        locationName: input.locationName,
-        regionName: input.regionName || null,
-        mapUrl: input.mapUrl || null,
-        musicYoutubeId: input.musicYoutubeId || null,
-        musicAutoplay: input.musicYoutubeId ? Boolean(input.musicAutoplay) : false,
-        scheduleItems:
-          input.scheduleItems && input.scheduleItems.length > 0
-            ? (input.scheduleItems as unknown as Prisma.InputJsonValue)
-            : Prisma.JsonNull,
-        notesAr: input.notesAr || null,
-        themeId: input.themeId,
-        themeVariantId: input.themeVariantId ?? null,
-        guestManagementMode: input.guestManagementMode,
-        rsvpRequired: input.rsvpRequired,
-        allowGuestPartySize: input.allowGuestPartySize,
-      },
+      data: { ...eventDetailsColumns(input), couples: { create: coupleRows(input.couples) } },
     }),
   ]);
   return updated;
+}
+
+/**
+ * Every column the details form writes, minus the couple rows.
+ *
+ * Lifted out for the same reason `wordingColumns` was: there are now two
+ * writers of this set — support's, which ignores the edit lock on purpose, and
+ * the customer's, which is refused once her first invitation has gone out —
+ * and a field saved by one but silently dropped by the other is the failure
+ * this shape makes impossible.
+ */
+function eventDetailsColumns(input: UpdateEventDetailsInput) {
+  return {
+    type: input.type,
+    name: input.name,
+    ...primaryCoupleColumns(input.couples),
+    ...wordingColumns(input),
+    invitationTextAr: input.invitationTextAr,
+    eventDate: input.eventDate,
+    locationName: input.locationName,
+    regionName: input.regionName || null,
+    mapUrl: input.mapUrl || null,
+    musicYoutubeId: input.musicYoutubeId || null,
+    musicAutoplay: input.musicYoutubeId ? Boolean(input.musicAutoplay) : false,
+    scheduleItems:
+      input.scheduleItems && input.scheduleItems.length > 0
+        ? (input.scheduleItems as unknown as Prisma.InputJsonValue)
+        : Prisma.JsonNull,
+    notesAr: input.notesAr || null,
+    themeId: input.themeId,
+    themeVariantId: input.themeVariantId ?? null,
+    guestManagementMode: input.guestManagementMode,
+    rsvpRequired: input.rsvpRequired,
+    allowGuestPartySize: input.allowGuestPartySize,
+  };
+}
+
+/**
+ * The customer rewriting her own paid invitation, before any of it has gone
+ * out. Support's writer above deliberately ignores the lock — fixing a
+ * misspelt name after invitations have been sent is the whole reason that path
+ * exists — and this one is refused by it.
+ *
+ * The guard lives in the WHERE clause, not in a read before the write: the
+ * first invitation may go out between the render of her form and this submit,
+ * and only the database can settle that. Interactive rather than the array
+ * form for the same reason `saveDraftBasics` is — the guard has to be able to
+ * ABORT, and a count checked after an array transaction is checked too late,
+ * with the couple rows already replaced.
+ */
+export async function updateOwnedEventDetails(
+  eventId: string,
+  userId: string,
+  input: UpdateEventDetailsInput,
+) {
+  const event = await prisma.event.findFirst({
+    where: { id: eventId, ownerId: userId, orderId: { not: null } },
+    select: { id: true, themeId: true },
+  });
+  if (!event) throw new EventError("Event not found");
+
+  assertCoupleCount(input.couples);
+  // `alsoAllowThemeId`, exactly as the admin form passes it: a design archived
+  // after she paid must not make every later save impossible.
+  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null, event.themeId);
+
+  await prisma.$transaction(async (tx) => {
+    const updated = await tx.event.updateMany({
+      where: { id: eventId, ownerId: userId, orderId: { not: null }, detailsLockedAt: null },
+      data: eventDetailsColumns(input),
+    });
+    if (updated.count === 0) throw new EventLockedError("Invitations have gone out");
+
+    await tx.eventCouple.deleteMany({ where: { eventId } });
+    await tx.eventCouple.createMany({
+      data: coupleRows(input.couples).map((row) => ({ ...row, eventId })),
+    });
+  });
+}
+
+/**
+ * Her paid event, with what the details form needs to draw its current values.
+ * Without the guest list, for the reason `getEventForEdit` gives: several
+ * hundred guests is a lot of rows to render a text field.
+ */
+export async function getOwnedEventForEdit(eventId: string, userId: string) {
+  return prisma.event.findFirst({
+    where: { id: eventId, ownerId: userId, orderId: { not: null } },
+    include: { couples: COUPLES_INCLUDE },
+  });
 }
 
 /** referenceCode is unique app-wide; retries a few times on the (extremely rare) collision. */

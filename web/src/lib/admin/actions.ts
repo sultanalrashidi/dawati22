@@ -2,9 +2,15 @@
 
 import { revalidatePath } from "next/cache";
 import { requireUserOrThrow } from "@/lib/auth/guards";
-import { setUserBlocked, setEventStatus, setGuestManagementDone, updatePricingRate } from "@/lib/admin/service";
+import {
+  setUserBlocked,
+  setEventStatus,
+  setEventDetailsLock,
+  setGuestManagementDone,
+  updatePricingRate,
+} from "@/lib/admin/service";
 import { EventError, updateEventDetails } from "@/lib/events/service";
-import { markInvitationShared } from "@/lib/guests/service";
+import { markInvitationShared, markInvitationsShared } from "@/lib/guests/service";
 import { readEventForm } from "@/lib/events/form";
 import { Role, EventStatus } from "@/generated/prisma/client";
 import { parseTier } from "@/lib/orders/pricing";
@@ -40,6 +46,27 @@ export async function markInvitationSharedAdminAction(guestId: string, eventId: 
   revalidatePath(`/${safeLocale}/admin/events/${eventId}/guests`);
 }
 
+/**
+ * The team copied EVERY link for an event at once.
+ *
+ * Without this the team-managed flow — where the customer never presses a
+ * share button at all — would hand out three hundred invitations and leave
+ * `sentAt` null on every one of them, so her dashboard would report nothing
+ * sent and her details would stay editable while the invitations were already
+ * in her guests' phones.
+ */
+export async function markAllInvitationsSharedAdminAction(
+  eventId: string,
+  guestIds: string[],
+  locale: string,
+) {
+  await requireAdmin();
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  await markInvitationsShared(eventId, guestIds, null);
+  revalidatePath(`/${safeLocale}/admin/events/${eventId}/guests`);
+  revalidatePath(`/${safeLocale}/events/${eventId}`);
+}
+
 /** "The team sent this event's invitations" — and the undo for a misclick. */
 export async function toggleGuestMgmtDoneAction(eventId: string, locale: string, done: boolean) {
   const admin = await requireAdmin();
@@ -47,6 +74,24 @@ export async function toggleGuestMgmtDoneAction(eventId: string, locale: string,
   await setGuestManagementDone(eventId, admin.id, done);
   revalidatePath(`/${safeLocale}/admin/events`);
   revalidatePath(`/${safeLocale}/admin/events/${eventId}/guests`);
+}
+
+/**
+ * Reopen (or re-freeze) the customer's own edit form for one event.
+ *
+ * A POST, never a link: Next prefetches links, and a prefetch that reopens an
+ * event is not a control. `requireAdmin` here in the action itself rather than
+ * leaning on route matching, which can be refactored around.
+ */
+export async function setEventDetailsLockAction(eventId: string, locale: string, locked: boolean) {
+  await requireAdmin();
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  await setEventDetailsLock(eventId, locked);
+  revalidatePath(`/${safeLocale}/admin/events/${eventId}`);
+  revalidatePath(`/${safeLocale}/admin/events`);
+  // The customer's dashboard and her edit screen both read this column.
+  revalidatePath(`/${safeLocale}/events/${eventId}`);
+  revalidatePath(`/${safeLocale}/events/${eventId}/details`);
 }
 
 export type EventEditState = { error?: string; saved?: boolean } | null;

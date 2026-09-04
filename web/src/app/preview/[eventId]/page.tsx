@@ -75,7 +75,14 @@ export default async function DraftPreviewPage({
       />
       {/* Only the person who owns the draft gets the toolbar — a viewer she
           shared it with should see the invitation, not her controls. */}
-      {(isOwner || isBearer) && <PreviewBar dict={dict} eventId={eventId} activated={activated} />}
+      {(isOwner || isBearer) && (
+        <PreviewBar
+          dict={dict}
+          eventId={eventId}
+          activated={activated}
+          locked={event.detailsLockedAt !== null}
+        />
+      )}
     </>
   );
 }

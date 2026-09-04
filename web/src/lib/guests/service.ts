@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/client";
 import { generateSecureToken } from "@/lib/security/tokens";
 import { InvitationStatus } from "@/generated/prisma/client";
 import { orderTerms } from "@/lib/orders/terms";
+import { lockEventDetailsOp } from "@/lib/events/lock";
 
 export class GuestError extends Error {}
 
@@ -90,7 +91,7 @@ export async function markInvitationShared(guestId: string, userId: string | nul
     where: { id: guestId },
     select: {
       event: { select: { ownerId: true } },
-      invitation: { select: { id: true, status: true, sentAt: true } },
+      invitation: { select: { id: true, eventId: true, status: true, sentAt: true } },
     },
   });
   if (!guest || (userId !== null && guest.event.ownerId !== userId)) {
@@ -100,12 +101,78 @@ export async function markInvitationShared(guestId: string, userId: string | nul
   if (!invitation) return;
   if (invitation.status !== InvitationStatus.DRAFT && invitation.sentAt) return;
 
-  await prisma.invitation.update({
-    where: { id: invitation.id },
-    data: {
-      ...(invitation.status === InvitationStatus.DRAFT ? { status: InvitationStatus.SENT } : {}),
-      ...(invitation.sentAt ? {} : { sentAt: new Date() }),
-    },
+  const now = new Date();
+  const firstDelivery = invitation.sentAt === null;
+
+  await prisma.$transaction([
+    prisma.invitation.update({
+      where: { id: invitation.id },
+      data: {
+        ...(invitation.status === InvitationStatus.DRAFT ? { status: InvitationStatus.SENT } : {}),
+        ...(invitation.sentAt ? {} : { sentAt: now }),
+      },
+    }),
+    // The first invitation that actually goes out freezes the event's names,
+    // date and venue — they are printed on something a guest is now holding.
+    // Keyed on sentAt rather than on the status, because setGuestBlocked()
+    // writes SENT with no sentAt when it unblocks somebody: an invitation can
+    // sit at SENT having never been delivered, and that must not count.
+    ...(firstDelivery ? [lockEventDetailsOp(invitation.eventId, now)] : []),
+  ]);
+}
+
+/**
+ * Records a batch of invitations as sent — the admin's "copy all links", and
+ * the host's send queue, both of which hand out many links in one gesture.
+ *
+ * `userId` null means the admin flow, whose action has already checked the
+ * role; any other caller must own the event. Idempotent by construction: every
+ * filter carries `sentAt: null`, so an invitation that already went out keeps
+ * its original timestamp and is not counted again.
+ *
+ * Returns how many were newly recorded, so a caller can tell "I sent 40" from
+ * "those 40 were already sent".
+ */
+export async function markInvitationsShared(
+  eventId: string,
+  guestIds: string[],
+  userId: string | null,
+): Promise<number> {
+  // Never let an empty or undefined value reach a Prisma filter: Prisma DROPS
+  // an `undefined` field rather than matching nothing, which on an updateMany
+  // means a where clause that was meant to be narrow silently becomes
+  // "every row". Explicitly refusing the empty case is what makes that
+  // impossible here.
+  const ids = [...new Set(guestIds.filter((id) => typeof id === "string" && id.length > 0))];
+  if (ids.length === 0) return 0;
+
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { id: true, ownerId: true, orderId: true },
+  });
+  if (!event || (userId !== null && event.ownerId !== userId)) throw new GuestError("Event not found");
+  if (!event.orderId) throw new GuestError("Event is not activated yet");
+
+  const now = new Date();
+  return prisma.$transaction(async (tx) => {
+    // Two statements rather than one, because updateMany cannot set a column
+    // per row: a DRAFT becomes SENT, while an invitation left at SENT with no
+    // sentAt by setGuestBlocked's unblock only needs the timestamp. The DRAFT
+    // pass runs first, so the second no longer matches what it just wrote.
+    const promoted = await tx.invitation.updateMany({
+      where: { eventId, guestId: { in: ids }, sentAt: null, status: InvitationStatus.DRAFT },
+      data: { status: InvitationStatus.SENT, sentAt: now },
+    });
+    const stamped = await tx.invitation.updateMany({
+      where: { eventId, guestId: { in: ids }, sentAt: null },
+      data: { sentAt: now },
+    });
+
+    const delivered = promoted.count + stamped.count;
+    // Same rule as the single share: the first invitation that actually
+    // reaches a guest freezes the event's names, date and venue.
+    if (delivered > 0) await lockEventDetailsOp(eventId, now, tx);
+    return delivered;
   });
 }
 

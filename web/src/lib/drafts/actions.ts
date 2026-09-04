@@ -4,8 +4,8 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { InvitationTier } from "@/generated/prisma/client";
 import { isValidInvitationCount } from "@/lib/orders/pricing";
-import { readEventEssentials } from "@/lib/events/form";
-import { EventError } from "@/lib/events/service";
+import { readEventEssentials, readEventForm } from "@/lib/events/form";
+import { EventError, updateEventDetails } from "@/lib/events/service";
 import {
   DraftRateLimitError,
   claimDraft,
@@ -76,6 +76,41 @@ export async function saveDraftBasicsAction(
   revalidatePath(`/${locale}/draft/${eventId}/basics`);
   // The payoff of the whole free half of the journey: three answers, and she
   // is looking at her own invitation.
+  redirect(`/preview/${eventId}`);
+}
+
+/**
+ * The full details form — the opening, the mothers, the programme, the notes,
+ * the music, the design.
+ *
+ * Reachable BEFORE payment, which is the point: it means the watermarked
+ * preview shows the finished invitation rather than defaults standing in for
+ * everything she has not been asked for yet, so what she pays for is what she
+ * already saw.
+ */
+export async function saveDraftDetailsAction(
+  locale: Locale,
+  eventId: string,
+  formData: FormData,
+): Promise<void> {
+  const draft = await resolveDraftAccess(eventId);
+  if (!draft) redirect(`/${locale}/themes`);
+
+  const values = readEventForm(formData);
+  if (!values) redirect(`/${locale}/draft/${eventId}/details?error=validation`);
+
+  await claimDraft(eventId);
+
+  try {
+    await updateEventDetails(eventId, values);
+  } catch {
+    redirect(`/${locale}/draft/${eventId}/details?error=validation`);
+  }
+
+  revalidatePath(`/${locale}/draft/${eventId}/details`);
+  // Straight back to the preview: she just changed how the invitation reads,
+  // and the whole reason this form is reachable before payment is so she can
+  // see the result before deciding.
   redirect(`/preview/${eventId}`);
 }
 

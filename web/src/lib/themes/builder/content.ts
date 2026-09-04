@@ -96,6 +96,16 @@ export const CLOSING_PRESETS = ["بحضوركم تكتمل فرحتنا", "دع�
 export type ClosingPreset = (typeof CLOSING_PRESETS)[number];
 export const DEFAULT_CLOSING: ClosingPreset = CLOSING_PRESETS[0];
 
+/**
+ * The track every invitation opens with unless the customer picks her own.
+ *
+ * It starts on the guest's tap that opens the envelope — never on page load,
+ * which every mobile browser silently refuses (see background-music.tsx). That
+ * tap is a real user gesture, so the sound actually plays, and it begins with
+ * the reveal rather than over a closed envelope.
+ */
+export const DEFAULT_MUSIC_YOUTUBE_ID = "LDnUX_mwx2Q";
+
 export const NOTE_NO_PHOTOS = "نرجو عدم التصوير حفاظاً على خصوصية الحفل";
 export const NOTE_NO_CHILDREN = "يرجى عدم اصطحاب الأطفال";
 export const NOTE_SHOW_PASS = "الدعوة شخصية — يرجى إبراز رمز الدعوة عند الدخول";
@@ -249,7 +259,14 @@ export function composeHostLine(
     groomMother ? `${HOST_LINE_GROOM_MOTHER} ${groomMother}` : "",
     brideMother ? `${HOST_LINE_BRIDE_MOTHER} ${brideMother}` : "",
   ].filter(Boolean);
-  if (halves.length === 0) return "";
+  // Neither mother named yet — which is now the normal state of a draft, since
+  // the kunyas are no longer asked for before the invitation can be seen.
+  // Printing the ROLES alone still yields a complete, correct Arabic sentence
+  // ("تتشرف والدة العريس ووالدة العروس بدعوتكم…"), where returning "" would
+  // leave the invitation opening with a verb that has no subject.
+  if (halves.length === 0) {
+    return `${HOST_LINE_LEAD} ${HOST_LINE_GROOM_MOTHER} و${HOST_LINE_BRIDE_MOTHER}`;
+  }
   return `${HOST_LINE_LEAD} ${halves.join(" و")}`;
 }
 

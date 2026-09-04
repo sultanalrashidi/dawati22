@@ -920,6 +920,12 @@
     "receiptDate": "تاريخ الدفع",
     "receiptRef": "رقم العملية",
     "activatedAddGuests": "أضف المدعوين",
-    "activatedSeeInvitation": "شاهد دعوتك بدون علامة مائية"
+    "activatedSeeInvitation": "شاهد دعوتك بدون علامة مائية",
+    "detailsStep": "تفاصيل إضافية",
+    "detailsTitle": "أكمل تفاصيل دعوتك",
+    "detailsSubtitle": "كلها اختيارية — دعوتك جاهزة بدونها. أي شي تعبّيه هنا يظهر في المعاينة فوراً، قبل ما تدفع.",
+    "detailsBackToPreview": "← رجوع للمعاينة",
+    "detailsSubmit": "احفظ وشاهد دعوتك",
+    "previewBarDetails": "أكمل التفاصيل"
   }
 }

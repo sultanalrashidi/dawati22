@@ -920,6 +920,12 @@
     "receiptDate": "Payment date",
     "receiptRef": "Reference",
     "activatedAddGuests": "Add your guests",
-    "activatedSeeInvitation": "See your invitation without the watermark"
+    "activatedSeeInvitation": "See your invitation without the watermark",
+    "detailsStep": "More details",
+    "detailsTitle": "Complete your invitation",
+    "detailsSubtitle": "All optional — your invitation works without them. Anything you add here shows up in the preview straight away, before you pay.",
+    "detailsBackToPreview": "← Back to the preview",
+    "detailsSubmit": "Save and see your invitation",
+    "previewBarDetails": "Complete the details"
   }
 }

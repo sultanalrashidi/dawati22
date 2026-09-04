@@ -87,6 +87,16 @@ export function PreviewBar({
           </Link>
           {!activated && (
             <>
+              {/* The rest of the invitation — mothers, opening, programme,
+                  notes, music — all editable before paying, so the preview she
+                  is looking at becomes the finished thing rather than defaults
+                  standing in for questions nobody asked her yet. */}
+              <Link
+                href={`/ar/draft/${eventId}/details`}
+                className="inline-flex h-9 items-center rounded-full border border-black/20 px-4 text-xs font-bold text-black"
+              >
+                {d.previewBarDetails}
+              </Link>
               <button
                 type="button"
                 onClick={openShare}

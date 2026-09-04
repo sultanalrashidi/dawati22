@@ -192,8 +192,19 @@ function readHost(formData: FormData): HostValues | null {
   if (hostMode === "TEMPLATE") {
     const groomMotherAr = text("groomMotherAr");
     const brideMotherAr = text("brideMotherAr");
-    if (groomMotherAr.length < 2 || brideMotherAr.length < 2) return null;
-    return { hostMode, groomMotherAr, brideMotherAr, hostLineAr: null };
+    // Optional now. They used to be required because the form was only ever
+    // filled in once, at creation, by someone who had already paid — but the
+    // details form is now reachable before payment, and a bride on her phone
+    // at midnight may simply not know her mother-in-law's kunya yet.
+    // composeHostLine prints the roles alone until she does.
+    if (groomMotherAr.length > 0 && groomMotherAr.length < 2) return null;
+    if (brideMotherAr.length > 0 && brideMotherAr.length < 2) return null;
+    return {
+      hostMode,
+      groomMotherAr: groomMotherAr || null,
+      brideMotherAr: brideMotherAr || null,
+      hostLineAr: null,
+    };
   }
 
   const hostLineAr = text("hostLineAr");

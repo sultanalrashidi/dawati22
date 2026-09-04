@@ -22,6 +22,7 @@ import type { RsvpResponse, StageRsvp } from "@/components/themes/builder/layers
 import {
   closingText,
   composeHostLine,
+  DEFAULT_MUSIC_YOUTUBE_ID,
   coupleLineFor,
   INSHALLAH,
   INVITE_VERB,
@@ -511,14 +512,17 @@ function BuilderStage({
  * survives every screen change for the life of the page.
  */
 export function InvitationView(props: Props) {
-  const music = useBackgroundMusic(props.event.musicYoutubeId ?? null);
+  // Every invitation has a song. A customer who has not chosen one gets the
+  // house track rather than silence, because an envelope that opens without
+  // music is the single biggest difference between this and a printed card —
+  // and "she did not paste a YouTube link" is not a request for silence.
+  const videoId = props.event.musicYoutubeId ?? DEFAULT_MUSIC_YOUTUBE_ID;
+  const music = useBackgroundMusic(videoId);
   const g = props.dict.guest;
 
   return (
     <>
-      {music.enabled && props.event.musicYoutubeId && (
-        <MusicFrame videoId={props.event.musicYoutubeId} frameRef={music.frameRef} />
-      )}
+      {music.enabled && <MusicFrame videoId={videoId} frameRef={music.frameRef} />}
       {music.enabled && (
         <MusicToggle
           label={g.playMusic}
@@ -655,7 +659,11 @@ function InvitationScreens({
     // is the only moment a mobile browser will let unmuted audio start.
     // Deferring it — even into the timeout just below — loses the gesture and
     // the song stays silent on every phone.
-    if (event.musicAutoplay) music.start();
+    // The house track always starts with the reveal; a customer who chose her
+    // own song keeps her own autoplay preference. Called synchronously inside
+    // the tap — see background-music.tsx for why that is the only thing phones
+    // will let make a sound.
+    if (event.musicAutoplay || !event.musicYoutubeId) music.start();
 
     if (!animate) {
       setOpened(true);

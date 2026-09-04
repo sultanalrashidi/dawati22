@@ -62,6 +62,9 @@ export default async function DraftPreviewPage({
         watermark={
           activated ? undefined : { primary: dict.draft.watermarkPrimary, secondary: dict.draft.watermarkSecondary }
         }
+        // A real-looking kunya, not a descriptor: the whole point of this
+        // screen is that she sees her own invitation exactly as a guest
+        // will get it, and no guest is ever addressed as "our honoured guest".
         guest={{ nameAr: dict.draft.previewGuestName, allowedCount: 2 }}
         status={InvitationStatus.SENT}
         // The entry pass is a paid feature; before activation the invitation

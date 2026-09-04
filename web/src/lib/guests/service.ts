@@ -1,30 +1,28 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
 import { generateSecureToken } from "@/lib/security/tokens";
-import { InvitationStatus } from "@/generated/prisma/client";
+import { InvitationStatus, type Prisma } from "@/generated/prisma/client";
 import { orderTerms } from "@/lib/orders/terms";
 import { lockEventDetailsOp } from "@/lib/events/lock";
+import { MAX_SEATS, type ParsedRow } from "@/lib/guests/import-parse";
+import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
 
 export class GuestError extends Error {}
 
 async function assertOwnedEvent(eventId: string, userId: string) {
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    include: {
-      order: { include: { plan: true } },
-      // Only the status, to count who's still occupying a slot — see addGuest.
-      guests: { select: { invitation: { select: { status: true } } } },
-    },
+    include: { order: { include: { plan: true } } },
   });
   if (!event || event.ownerId !== userId) throw new GuestError("Event not found");
-  // THE PAYWALL. This function is the only place in the product that mints a
-  // linkToken or a qrToken, so "no guest ⇒ no shareable invitation URL exists"
-  // is what actually keeps an unpaid invitation unshareable — not the schema.
-  // It used to be enforced by `Event.orderId` being NOT NULL; that column is
-  // now nullable so a draft can exist before payment, and this is where the
-  // same guarantee moved to. Capacity below would refuse a draft anyway (an
-  // absent order reads as zero invitations), but only by accident of
-  // arithmetic — this says it on purpose, and says it in the customer's terms.
+  // THE PAYWALL. This function guards the only place in the product that mints
+  // a linkToken or a qrToken, so "no guest ⇒ no shareable invitation URL
+  // exists" is what actually keeps an unpaid invitation unshareable — not the
+  // schema. It used to be enforced by `Event.orderId` being NOT NULL; that
+  // column is now nullable so a draft can exist before payment, and this is
+  // where the same guarantee moved to. Capacity below would refuse a draft
+  // anyway (an absent order reads as zero invitations), but only by accident
+  // of arithmetic — this says it on purpose, and in the customer's terms.
   if (!event.orderId) throw new GuestError("Event is not activated yet");
   return event;
 }
@@ -35,45 +33,75 @@ export async function addGuest(
   input: { nameAr: string; phone?: string; allowedCount: number }
 ) {
   const event = await assertOwnedEvent(eventId, userId);
-  // The one place capacity is enforced in the whole product. It reads the count
-  // the customer PAID for, snapshotted on the order — not the plan row, which is
-  // editable settings: changing a package used to resize every live event on it.
-  //
-  // A declined guest gives their slot back — she said no, so the host may
-  // invite someone else in her place — which is also why removing a declined
-  // guest must never free a slot a second time: her slot was already given
-  // back the moment she declined, not when her row disappears.
-  const occupiedSlots = event.guests.filter(
-    (g) => g.invitation?.status !== InvitationStatus.DECLINED,
-  ).length;
-  if (occupiedSlots >= orderTerms(event.order).invitationCount) {
-    throw new GuestError("Guest limit reached for this event's plan");
-  }
-  if (input.allowedCount < 1 || input.allowedCount > 20) {
+  if (input.allowedCount < 1 || input.allowedCount > MAX_SEATS) {
     throw new GuestError("Invalid seat count");
   }
+  // The count the customer PAID for, snapshotted on the order — not the plan
+  // row, which is editable settings: changing a package used to resize every
+  // live event on it.
+  const capacity = orderTerms(event.order).invitationCount;
 
-  return prisma.guest.create({
-    data: {
-      eventId,
-      nameAr: input.nameAr,
-      phone: input.phone || null,
-      allowedCount: input.allowedCount,
-      invitation: {
-        create: {
-          eventId,
-          // DRAFT, not SENT: adding a guest only prepares the link. "Sent"
-          // is recorded when the host actually shares it (copy / WhatsApp —
-          // see markInvitationShared) or, failing that, when the guest opens
-          // it — so the event page's "sent" count stops flattering a list
-          // nobody has invited yet.
-          status: InvitationStatus.DRAFT,
-          linkToken: generateSecureToken(),
-          qrToken: generateSecureToken(),
+  return prisma.$transaction(async (tx) => {
+    // The check and the write on the same queue as the bulk import. Without
+    // the row lock the two paths simply do not see each other, and pasting a
+    // list on a laptop while adding one guest on a phone could take the event
+    // over the paid count.
+    await lockEventForCapacity(tx, eventId);
+    if ((await occupiedSlotCount(tx, eventId)) >= capacity) {
+      throw new GuestError("Guest limit reached for this event's plan");
+    }
+
+    return tx.guest.create({
+      data: {
+        eventId,
+        nameAr: input.nameAr,
+        phone: input.phone || null,
+        allowedCount: input.allowedCount,
+        invitation: {
+          create: {
+            eventId,
+            // DRAFT, not SENT: adding a guest only prepares the link. "Sent"
+            // is recorded when the host actually shares it (copy / WhatsApp —
+            // see markInvitationShared) or, failing that, when the guest opens
+            // it — so the event page's "sent" count stops flattering a list
+            // nobody has invited yet.
+            status: InvitationStatus.DRAFT,
+            linkToken: generateSecureToken(),
+            qrToken: generateSecureToken(),
+          },
         },
       },
-    },
-    include: { invitation: true },
+      include: { invitation: true },
+    });
+  });
+}
+
+/**
+ * Serializes every writer that has to respect the paid capacity onto one row.
+ *
+ * `FOR UPDATE` on the Event, not on the Guest rows, because the thing being
+ * protected is a COUNT — the rows a competing transaction is about to insert
+ * are not there to be locked. Both `addGuest` and `addGuestsBulk` take it
+ * before counting, so the second one waits for the first to commit and then
+ * counts what the first actually wrote.
+ */
+async function lockEventForCapacity(tx: Prisma.TransactionClient, eventId: string) {
+  await tx.$queryRaw`SELECT id FROM "Event" WHERE id = ${eventId} FOR UPDATE`;
+}
+
+/**
+ * Guests occupying a slot right now.
+ *
+ * A DECLINED guest gives her slot back — she said no, so the host may invite
+ * someone else in her place — which is also why removing a declined guest must
+ * never free a slot a second time: her slot was already given back the moment
+ * she declined, not when her row disappears. Counting everyone EXCEPT the
+ * declined is what makes that true, rather than counting the declined and
+ * subtracting them.
+ */
+async function occupiedSlotCount(tx: Prisma.TransactionClient, eventId: string) {
+  return tx.guest.count({
+    where: { eventId, NOT: { invitation: { is: { status: InvitationStatus.DECLINED } } } },
   });
 }
 
@@ -173,6 +201,131 @@ export async function markInvitationsShared(
     // reaches a guest freezes the event's names, date and venue.
     if (delivered > 0) await lockEventDetailsOp(eventId, now, tx);
     return delivered;
+  });
+}
+
+/**
+ * Writes a whole pasted list in one go.
+ *
+ * All-or-nothing on capacity. A partial import of a 300-name list would leave
+ * her guessing which of the three hundred made it, and the seats she is short
+ * by is a number she can act on — buy more, or cut the list — where "somewhere
+ * between 0 and 300 guests were added" is not.
+ *
+ * `importBatchId` is what makes the confirm idempotent: a phone that loses the
+ * response and retries finds its own batch already present and is told so,
+ * rather than adding everyone twice. It is also the undo.
+ */
+export async function addGuestsBulk(
+  eventId: string,
+  userId: string,
+  rows: Array<Pick<ParsedRow, "nameAr" | "phone" | "allowedCount">>,
+  batchId: string,
+): Promise<{ created: number; alreadyApplied: boolean; capacityShortBy: number }> {
+  const event = await assertOwnedEvent(eventId, userId);
+  if (!batchId) throw new GuestError("Missing batch id");
+  if (rows.length === 0) throw new GuestError("Nothing to import");
+
+  // The client array is untrusted input — it is whatever the browser posted,
+  // not whatever the review table displayed. Every field is re-checked here,
+  // and the phone is re-normalized rather than stored as the string it sent.
+  const clean = rows.map((row) => ({
+    nameAr: row.nameAr.trim(),
+    phone: row.phone ? normalizePhone(row.phone, DEFAULT_PHONE_COUNTRY) : null,
+    allowedCount: Number.isInteger(row.allowedCount) ? row.allowedCount : 1,
+  }));
+  if (clean.some((r) => r.nameAr.length < 2)) throw new GuestError("A guest has no name");
+  if (clean.some((r) => r.allowedCount < 1 || r.allowedCount > MAX_SEATS)) {
+    throw new GuestError("Invalid seat count");
+  }
+
+  const capacity = orderTerms(event.order).invitationCount;
+
+  return prisma.$transaction(async (tx) => {
+    // Already applied? Answered inside the lock, so a double submit that
+    // arrives while the first is still committing waits and then sees it.
+    await lockEventForCapacity(tx, eventId);
+    const existingBatch = await tx.guest.count({ where: { eventId, importBatchId: batchId } });
+    if (existingBatch > 0) {
+      return { created: 0, alreadyApplied: true, capacityShortBy: 0 };
+    }
+
+    const occupied = await occupiedSlotCount(tx, eventId);
+    const shortBy = occupied + clean.length - capacity;
+    if (shortBy > 0) {
+      // Not an exception: "you are 12 over" is something she can act on, and
+      // throwing would lose the number.
+      return { created: 0, alreadyApplied: false, capacityShortBy: shortBy };
+    }
+
+    // createMany cannot create the nested Invitation, and the Invitation is
+    // where the tokens live — so the guests go in as one statement and their
+    // invitations as a second, joined by the ids the first returns.
+    const created = await Promise.all(
+      clean.map((row) =>
+        tx.guest.create({
+          data: {
+            eventId,
+            importBatchId: batchId,
+            nameAr: row.nameAr,
+            phone: row.phone,
+            allowedCount: row.allowedCount,
+            invitation: {
+              create: {
+                eventId,
+                status: InvitationStatus.DRAFT,
+                linkToken: generateSecureToken(),
+                qrToken: generateSecureToken(),
+              },
+            },
+          },
+          select: { id: true },
+        }),
+      ),
+    );
+
+    return { created: created.length, alreadyApplied: false, capacityShortBy: 0 };
+  });
+}
+
+/**
+ * Undoes one import — but only the part of it that is still undoable.
+ *
+ * Stricter than `deleteGuest` on purpose. A batch of three hundred is one
+ * gesture to add and must be one gesture to remove, and that is exactly why it
+ * must not be able to remove a guest whose invitation has gone out, who has
+ * replied, or who has walked through the door: those are people, not rows, and
+ * one mis-tap should not be able to erase what they said.
+ *
+ * Every condition is re-asserted in the DELETE itself rather than checked
+ * against a snapshot — a guest who opens her link between a SELECT and a
+ * DELETE would otherwise be deleted anyway, taking her reply with her.
+ */
+export async function undoImport(
+  eventId: string,
+  userId: string,
+  batchId: string,
+): Promise<{ deleted: number; kept: number }> {
+  await assertOwnedEvent(eventId, userId);
+  if (!batchId) throw new GuestError("Missing batch id");
+
+  return prisma.$transaction(async (tx) => {
+    const before = await tx.guest.count({ where: { eventId, importBatchId: batchId } });
+    const deleted = await tx.guest.deleteMany({
+      where: {
+        eventId,
+        importBatchId: batchId,
+        checkedInCount: 0,
+        invitation: {
+          is: {
+            sentAt: null,
+            status: InvitationStatus.DRAFT,
+            rsvps: { none: {} },
+          },
+        },
+      },
+    });
+    return { deleted: deleted.count, kept: before - deleted.count };
   });
 }
 

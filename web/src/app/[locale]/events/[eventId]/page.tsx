@@ -14,6 +14,7 @@ import { invitationShareText } from "@/lib/events/share-text";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { Role, EventGuestManagementMode } from "@/generated/prisma/client";
 import { AddGuestForm } from "@/components/events/add-guest-form";
+import { ImportGuestsPanel } from "@/components/events/import-guests-panel";
 import { GuestRow } from "@/components/events/guest-row";
 import { GatePinForm } from "@/components/events/gate-pin-form";
 import { DesignRequestCard } from "@/components/events/design-request-card";
@@ -322,6 +323,18 @@ export default async function EventDetailPage({
         {/* ── ADD GUEST ────────────────────────────────────────────────── */}
         <div className="mt-4">
           <AddGuestForm eventId={event.id} locale={locale} dict={dict} />
+          {/* The existing names and numbers travel to the client so the review
+              table can flag "already one of your guests" as she reads, rather
+              than after she has committed three hundred rows. They are her own
+              guests on her own event — nothing here is another tenant's. */}
+          <ImportGuestsPanel
+            eventId={event.id}
+            locale={locale}
+            dict={dict}
+            seatsRemaining={Math.max(0, capacity - occupiedSlots)}
+            existingNames={event.guests.map((g) => g.nameAr)}
+            existingPhones={event.guests.map((g) => g.phone).filter((p): p is string => Boolean(p))}
+          />
         </div>
 
         {/* The customer asked the Dawati team to send the invitations. Say so

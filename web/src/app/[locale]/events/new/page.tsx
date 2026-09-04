@@ -11,6 +11,17 @@ import { EventFields } from "@/components/events/event-fields";
 import { EventTypeGate } from "@/components/events/event-type-gate";
 import { ConfirmSubmit } from "@/components/events/confirm-submit";
 
+/**
+ * The OLD pay-first creation form, kept only as a fulfilment path.
+ *
+ * It is no longer an entrance to anything: the journey now starts free in the
+ * gallery, and the route redirects anyone without an eligible order there.
+ * What it cannot be is deleted — `listEligibleOrders` finds orders that are
+ * PAID with no event, which is what a legacy pay-first purchase looks like and
+ * what a payment that landed on an already-claimed draft looks like. This form
+ * is the only thing that turns one of those into an invitation, so removing it
+ * would strand somebody who has already been charged.
+ */
 export default async function NewEventPage({
   params,
   searchParams,
@@ -26,7 +37,7 @@ export default async function NewEventPage({
     buildThemeOptions(locale, user.id),
   ]);
 
-  if (eligibleOrders.length === 0) redirect(`/${locale}/plans`);
+  if (eligibleOrders.length === 0) redirect(`/${locale}/themes`);
 
   const preselectedOrderId =
     typeof search?.orderId === "string" && eligibleOrders.some((o) => o.id === search.orderId)

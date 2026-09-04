@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
@@ -75,6 +76,17 @@ export default async function DraftPreviewPage({
       />
       {/* Only the person who owns the draft gets the toolbar — a viewer she
           shared it with should see the invitation, not her controls. */}
+      {/* The person she shared this with is given cookies by the share route
+          and has never seen the site — this segment has its own root layout
+          with no header or footer. One line, so the policy that describes
+          those cookies is at least reachable from the page that sets them. */}
+      <Link
+        href="/ar/privacy"
+        className="fixed inset-x-0 bottom-0 z-[60] block bg-black/45 py-1 text-center text-[10px] text-white/60 backdrop-blur-sm"
+      >
+        {dict.draft.previewPrivacyLink}
+      </Link>
+
       {(isOwner || isBearer) && (
         <PreviewBar
           dict={dict}

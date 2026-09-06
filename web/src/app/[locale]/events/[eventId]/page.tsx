@@ -8,7 +8,7 @@ import { getDesignRequestForEvent } from "@/lib/design-requests/service";
 import { THEME_CATEGORIES, THEME_COLORS } from "@/lib/themes/vocabulary";
 import { orderTerms } from "@/lib/orders/terms";
 import { classifyRsvp } from "@/lib/invitations/service";
-import { daysUntil, eventHasStarted, relativeTime } from "@/lib/events/activity";
+import { attendanceSnapshot, daysUntil, eventHasStarted, relativeTime } from "@/lib/events/activity";
 import { guestInvitationUrl, testInvitationUrl } from "@/lib/urls";
 import { invitationShareText } from "@/lib/events/share-text";
 import { supportWhatsAppUrl } from "@/lib/support";
@@ -22,6 +22,7 @@ import { StartDesignRequestCard } from "@/components/events/custom-design-reques
 import { TestInvitationCard } from "@/components/events/test-invitation-card";
 import { ensureSelfPreviewToken } from "@/lib/preview/self";
 import { riyadhDateFormat } from "@/lib/dates";
+import { LiveAttendance } from "@/components/events/live-attendance";
 
 /**
  * The host's dashboard for one event.
@@ -118,6 +119,16 @@ export default async function EventDetailPage({
   // just read as "look who hasn't arrived yet", which isn't the point.
   const attendedRows = rows.filter((r) => r.guest.checkedInCount > 0);
   const noShowRows = accepted.filter((r) => r.guest.checkedInCount === 0);
+  // PEOPLE, not envelopes. This card used to print `attendedRows.length` under
+  // the unit "ضيفاً" — the number of invitations that had been scanned at
+  // least once — directly below another card that counts people correctly. So
+  // the host read "118 attended" on a night 240 women walked in. One invitation
+  // can carry four of them, which is the whole point of the seat count.
+  const attendedPeople = attendedRows.reduce((sum, r) => sum + r.guest.checkedInCount, 0);
+
+  // The report refreshes itself while the night is actually happening, and
+  // stops once it plainly is not.
+  const report = attendanceSnapshot(event.eventDate);
 
   const messages = rows
     .filter((r) => r.reply?.messageAr)
@@ -338,8 +349,7 @@ export default async function EventDetailPage({
             locale={locale}
             dict={dict}
             seatsRemaining={Math.max(0, capacity - occupiedSlots)}
-            existingNames={event.guests.map((g) => g.nameAr)}
-            existingPhones={event.guests.map((g) => g.phone).filter((p): p is string => Boolean(p))}
+            existingGuests={event.guests.map((g) => ({ nameAr: g.nameAr, phone: g.phone }))}
           />
         </div>
 
@@ -467,10 +477,34 @@ export default async function EventDetailPage({
             ) : (
               <>
                 <p className="mt-1 text-sm leading-relaxed text-fg-muted">{d.attendanceHint}</p>
+                {report.live && (
+                  <>
+                    <LiveAttendance />
+                    <p className="mt-1 text-xs text-fg-muted">
+                      {d.attendanceUpdatedAt.replace(
+                        "{time}",
+                        riyadhDateFormat(locale === "ar" ? "ar-SA" : "en-US", {
+                          hour: "numeric",
+                          minute: "2-digit",
+                        }).format(report.at),
+                      )}
+                    </p>
+                  </>
+                )}
 
                 <div className="mt-4 grid grid-cols-2 gap-3">
-                  <StatCard label={d.attendedLabel} value={nf.format(attendedRows.length)} unit={d.statGuestUnit} tone="success" />
-                  <StatCard label={d.noShowLabel} value={nf.format(noShowRows.length)} unit={d.statGuestUnit} tone="danger" />
+                  <StatCard
+                    label={d.attendedLabel}
+                    value={nf.format(attendedPeople)}
+                    unit={d.attendedPeopleUnit.replace("{guests}", nf.format(attendedRows.length))}
+                    tone="success"
+                  />
+                  <StatCard
+                    label={d.noShowLabel}
+                    value={nf.format(noShowRows.length)}
+                    unit={d.noShowPeopleUnit}
+                    tone="danger"
+                  />
                 </div>
 
                 {attendedRows.length === 0 && noShowRows.length === 0 ? (
@@ -482,8 +516,18 @@ export default async function EventDetailPage({
                         <p className="text-xs font-bold text-fg-muted">{d.attendedListTitle}</p>
                         <ul className="mt-2 flex flex-col divide-y divide-border">
                           {attendedRows.map((r) => (
-                            <li key={r.guest.id} className="py-2 text-sm text-fg">
-                              {r.guest.nameAr}
+                            <li
+                              key={r.guest.id}
+                              className="flex items-baseline justify-between gap-3 py-2 text-sm text-fg"
+                            >
+                              <span>{r.guest.nameAr}</span>
+                              {/* "2 of 4" — a name alone cannot say that one
+                                  of her four seats is still outside. */}
+                              <span className="shrink-0 text-xs text-fg-muted">
+                                {d.attendedSeats
+                                  .replace("{used}", nf.format(r.guest.checkedInCount))
+                                  .replace("{allowed}", nf.format(r.guest.allowedCount))}
+                              </span>
                             </li>
                           ))}
                         </ul>

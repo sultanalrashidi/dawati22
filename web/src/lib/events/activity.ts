@@ -39,3 +39,26 @@ export function relativeTime(
   if (Math.abs(diff) < DAY) return rtf.format(Math.round(diff / HOUR), "hour");
   return rtf.format(Math.round(diff / DAY), "day");
 }
+
+/**
+ * How long after its start time the attendance report keeps refreshing itself.
+ * A wedding is one evening; an event from last spring is history, and history
+ * does not need polling.
+ */
+export const ATTENDANCE_LIVE_WINDOW_MS = 12 * 60 * 60 * 1000;
+
+/**
+ * The report's live state, resolved in one call: whether the night is
+ * happening now, and the instant the page was rendered.
+ *
+ * `Date.now()` lives here as a default argument rather than in the page, for
+ * the same reason `daysUntil` does — calling it during render is impure, and
+ * the React compiler is right to refuse it.
+ */
+export function attendanceSnapshot(
+  eventDate: Date,
+  now: number = Date.now(),
+): { live: boolean; at: Date } {
+  const since = now - eventDate.getTime();
+  return { live: since >= 0 && since < ATTENDANCE_LIVE_WINDOW_MS, at: new Date(now) };
+}

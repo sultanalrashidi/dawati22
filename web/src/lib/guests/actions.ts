@@ -10,11 +10,13 @@ import {
   unmarkInvitationShared,
   setGuestBlocked,
   deleteGuest,
+  listGuestKeysForEvent,
   GuestError,
 } from "@/lib/guests/service";
 import {
   parseGuestList,
   isCommittable,
+  existingGuestKeys,
   countGuestLines,
   MAX_IMPORT_LINES,
 } from "@/lib/guests/import-parse";
@@ -22,6 +24,21 @@ import { Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 
 export type GuestActionState = { error?: string } | null;
+
+/**
+ * A `GuestError` message turned into something a form can render.
+ *
+ * The add-guest form used to print "you have reached your limit" for every
+ * error it was handed, whatever had actually gone wrong — which was survivable
+ * while capacity was the only refusal, and stops being survivable the moment
+ * there is a second one.
+ */
+function guestErrorCode(err: GuestError): string {
+  if (err.message === "Name needs a phone") return "name_needs_phone";
+  if (err.message.startsWith("Guest limit")) return "capacity";
+  if (err.message === "Invalid seat count") return "invalid_seats";
+  return "failed";
+}
 
 export async function addGuestAction(
   eventId: string,
@@ -41,7 +58,7 @@ export async function addGuestAction(
   try {
     await addGuest(eventId, user.id, { nameAr, phone, allowedCount });
   } catch (err) {
-    if (err instanceof GuestError) return { error: err.message };
+    if (err instanceof GuestError) return { error: guestErrorCode(err) };
     throw err;
   }
 
@@ -127,7 +144,14 @@ export async function importGuestsAction(
   // testing its output could never see an over-long paste.
   if (countGuestLines(text) > MAX_IMPORT_LINES) return { error: "too_many" };
 
-  const rows = parseGuestList(text).filter(isCommittable);
+  // Re-parsed against the guests she ALREADY has, exactly as the review table
+  // does. Without this argument the action saw no duplicates at all, so every
+  // warning the browser drew was decorative and the write went through
+  // regardless — the preview agreeing with itself while the real output
+  // differed. `addGuestsBulk` re-checks the same rule at the row level; this
+  // is what makes the paste path see it in the first place.
+  const guests = await listGuestKeysForEvent(eventId, user.id);
+  const rows = parseGuestList(text, existingGuestKeys(guests)).filter(isCommittable);
   if (rows.length === 0) return { error: "empty" };
 
   try {

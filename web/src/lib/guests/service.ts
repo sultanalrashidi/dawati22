@@ -5,6 +5,7 @@ import { InvitationStatus, type Prisma } from "@/generated/prisma/client";
 import { orderTerms } from "@/lib/orders/terms";
 import { lockEventDetailsOp } from "@/lib/events/lock";
 import { MAX_SEATS, type ParsedRow } from "@/lib/guests/import-parse";
+import { normalizeArabic } from "@/lib/arabic";
 import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
 
 export class GuestError extends Error {}
@@ -49,6 +50,21 @@ export async function addGuest(
     await lockEventForCapacity(tx, eventId);
     if ((await occupiedSlotCount(tx, eventId)) >= capacity) {
       throw new GuestError("Guest limit reached for this event's plan");
+    }
+
+    // A repeated name needs a number. The paste path has warned about
+    // duplicates for a while; adding one guest at a time checked nothing at
+    // all, which is the easier way to end up with two women called «أم فهد»
+    // and a door that cannot say which is which. Inside the lock, so the two
+    // paths cannot each add the second «أم فهد» at the same moment.
+    if (!input.phone) {
+      const nameKey = normalizeArabic(input.nameAr);
+      const takenNames = new Set(
+        (await tx.guest.findMany({ where: { eventId }, select: { nameAr: true } })).map((guest) =>
+          normalizeArabic(guest.nameAr),
+        ),
+      );
+      if (takenNames.has(nameKey)) throw new GuestError("Name needs a phone");
     }
 
     return tx.guest.create({
@@ -239,6 +255,16 @@ export async function addGuestsBulk(
     allowedCount: Number.isInteger(row.allowedCount) ? row.allowedCount : 1,
   }));
   if (clean.some((r) => r.nameAr.length < 2)) throw new GuestError("A guest has no name");
+  // The posted array is not what the review table showed — it is whatever the
+  // browser sent — so the duplicate-name rule is re-applied here rather than
+  // trusted from the parse. Within the paste itself; against the guests she
+  // already has is checked inside the transaction, where the lock is held.
+  const seenNames = new Set<string>();
+  for (const row of clean) {
+    const key = normalizeArabic(row.nameAr);
+    if (!row.phone && seenNames.has(key)) throw new GuestError("Name needs a phone");
+    seenNames.add(key);
+  }
   if (clean.some((r) => r.allowedCount < 1 || r.allowedCount > MAX_SEATS)) {
     throw new GuestError("Invalid seat count");
   }
@@ -252,6 +278,15 @@ export async function addGuestsBulk(
     const existingBatch = await tx.guest.count({ where: { eventId, importBatchId: batchId } });
     if (existingBatch > 0) {
       return { created: 0, alreadyApplied: true, capacityShortBy: 0 };
+    }
+
+    const takenNames = new Set(
+      (await tx.guest.findMany({ where: { eventId }, select: { nameAr: true } })).map((guest) =>
+        normalizeArabic(guest.nameAr),
+      ),
+    );
+    if (clean.some((row) => !row.phone && takenNames.has(normalizeArabic(row.nameAr)))) {
+      throw new GuestError("Name needs a phone");
     }
 
     const occupied = await occupiedSlotCount(tx, eventId);
@@ -414,4 +449,13 @@ export async function deleteGuest(guestId: string, userId: string) {
   if (guest.checkedInCount > 0) throw new GuestError("Cannot delete a guest who already checked in");
 
   await prisma.guest.delete({ where: { id: guestId } });
+}
+
+/** Her current guests, in the shape the paste parser compares against. */
+export async function listGuestKeysForEvent(
+  eventId: string,
+  userId: string,
+): Promise<{ nameAr: string; phone: string | null }[]> {
+  await assertOwnedEvent(eventId, userId);
+  return prisma.guest.findMany({ where: { eventId }, select: { nameAr: true, phone: true } });
 }

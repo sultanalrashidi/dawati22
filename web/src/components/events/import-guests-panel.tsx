@@ -10,10 +10,10 @@ import {
 import {
   parseGuestList,
   isCommittable,
+  existingGuestKeys,
   type ParsedRow,
   type RowStatus,
 } from "@/lib/guests/import-parse";
-import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
 
 /**
  * Pasting a guest list.
@@ -37,6 +37,8 @@ const STATUS_TONE: Record<RowStatus, string> = {
   badPhone: "text-warning",
   dupInList: "text-warning",
   dupExisting: "text-warning",
+  // Blocking, not a warning: the row cannot be written as it stands.
+  nameNeedsPhone: "text-danger",
 };
 
 /**
@@ -59,15 +61,14 @@ export function ImportGuestsPanel({
   locale,
   dict,
   seatsRemaining,
-  existingNames,
-  existingPhones,
+  existingGuests,
 }: {
   eventId: string;
   locale: string;
   dict: Dictionary;
   seatsRemaining: number;
-  existingNames: string[];
-  existingPhones: string[];
+  /** One object per guest, not two parallel arrays: the phones list is sparse, so index-matching them silently pairs the wrong number with the wrong name. */
+  existingGuests: { nameAr: string; phone: string | null }[];
 }) {
   const d = dict.events.detail;
   const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
@@ -94,19 +95,7 @@ export function ImportGuestsPanel({
     null,
   );
 
-  // Normalized on both sides. A guest added through the one-at-a-time form
-  // keeps whatever she typed — "0501234567" — while the parser produces
-  // "+966501234567", so comparing them raw means "already one of your guests"
-  // could never fire for the case it exists for.
-  const existing = useMemo(
-    () => ({
-      names: new Set(existingNames),
-      phones: new Set(
-        existingPhones.map((phone) => normalizePhone(phone, DEFAULT_PHONE_COUNTRY) ?? phone),
-      ),
-    }),
-    [existingNames, existingPhones],
-  );
+  const existing = useMemo(() => existingGuestKeys(existingGuests), [existingGuests]);
   const rows: ParsedRow[] = useMemo(
     () => (reviewing ? parseGuestList(text, existing) : []),
     [reviewing, text, existing],

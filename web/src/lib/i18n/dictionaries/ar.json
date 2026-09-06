@@ -407,7 +407,8 @@
         "unreadableField": "فيه رقم ما فهمناه — عدد الأشخاص لازم يكون من ١ إلى ٢٠",
         "badPhone": "الرقم غير صحيح — بيضاف بدون رقم",
         "dupInList": "مكرر في نفس القائمة",
-        "dupExisting": "موجود عندك من قبل"
+        "dupExisting": "موجود عندك من قبل",
+        "nameNeedsPhone": "الاسم مكرر — أضيفي رقم جوالها"
       },
       "testInvitationTitle": "دعوة تجريبية",
       "testInvitationBody": "رابط يوريك دعوتك بالضبط كما تصل لضيوفك — تقدر تفتحه بنفسك أو ترسله لأمك أو أختك. ما ينقص من عدد دعواتك، وأي رد عليه ما ينحفظ.",
@@ -474,13 +475,19 @@
       "teamMgmtCta": "كلّمنا على واتساب",
       "teamMgmtWhatsappMessage": "مرحبًا، اخترت إدارة المدعوين من فريق دعوتي لمناسبة «{name}» — رقم المرجع: {reference}",
       "attendanceTitle": "تقرير الحضور",
-      "attendanceHint": "يعتمد على مسح الباركود عند الباب، ويتحدّث لحظياً أثناء المناسبة وبعدها.",
+      "attendanceHint": "يعتمد على مسح الباركود عند الباب، ويتحدّث تلقائياً طوال ليلة الحفل.",
       "attendanceNotStarted": "يتفعّل هذا التقرير تلقائياً عند بداية المناسبة.",
       "attendedLabel": "حضروا فعلياً",
       "noShowLabel": "لم يحضروا بعد",
       "attendedListTitle": "الحضور",
       "noShowListTitle": "لم يحضروا بعد",
-      "attendanceEmpty": "ما توفّرت بيانات حضور من البوابة لهذه المناسبة بعد."
+      "attendanceEmpty": "ما توفّرت بيانات حضور من البوابة لهذه المناسبة بعد.",
+      "addGuestErrorNameNeedsPhone": "عندك ضيفة بنفس الاسم — أضيفي رقم جوالها حتى تُعرف عند الباب.",
+      "addGuestErrorGeneric": "ما انحفظت الضيفة. حاولي مرة ثانية.",
+      "attendedPeopleUnit": "شخصاً · {guests} دعوة",
+      "noShowPeopleUnit": "دعوة لم تُستخدم",
+      "attendedSeats": "{used} من {allowed}",
+      "attendanceUpdatedAt": "آخر تحديث {time} بتوقيت الرياض · يتحدّث تلقائياً"
     }
   },
   "admin": {

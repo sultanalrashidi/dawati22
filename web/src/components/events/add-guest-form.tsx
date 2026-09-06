@@ -58,7 +58,15 @@ export function AddGuestForm({
       >
         {dict.events.detail.addGuest}
       </button>
-      {state?.error && <p className="text-sm text-danger sm:basis-full">{dict.events.detail.capacityReached}</p>}
+      {state?.error && (
+        <p className="text-sm text-danger sm:basis-full" role="alert">
+          {state.error === "name_needs_phone"
+            ? f.addGuestErrorNameNeedsPhone
+            : state.error === "capacity"
+              ? f.capacityReached
+              : f.addGuestErrorGeneric}
+        </p>
+      )}
     </form>
   );
 }

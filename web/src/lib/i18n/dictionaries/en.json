@@ -407,7 +407,8 @@
         "unreadableField": "A number we could not read — seats must be 1 to 20",
         "badPhone": "That number is not valid — added without a phone",
         "dupInList": "Repeated in this list",
-        "dupExisting": "Already one of your guests"
+        "dupExisting": "Already one of your guests",
+        "nameNeedsPhone": "Repeated name — add her phone number"
       },
       "testInvitationTitle": "Test invitation",
       "testInvitationBody": "A link that shows your invitation exactly as your guests receive it — open it yourself, or send it to your mother or sister. It uses none of your invitations, and any reply to it is not saved.",
@@ -474,13 +475,19 @@
       "teamMgmtCta": "Message us on WhatsApp",
       "teamMgmtWhatsappMessage": "Hello, I chose Dawati team guest management for my event “{name}” — reference: {reference}",
       "attendanceTitle": "Attendance report",
-      "attendanceHint": "Based on door barcode scans, and updates live during the event and afterward.",
+      "attendanceHint": "Built from door scans, and refreshes on its own through the night of the event.",
       "attendanceNotStarted": "This report activates automatically once the event begins.",
       "attendedLabel": "Attended",
       "noShowLabel": "Not yet arrived",
       "attendedListTitle": "Attended",
       "noShowListTitle": "Not yet arrived",
-      "attendanceEmpty": "No door-scan data recorded for this event yet."
+      "attendanceEmpty": "No door-scan data recorded for this event yet.",
+      "addGuestErrorNameNeedsPhone": "You already have a guest by that name — add her phone so the door can tell them apart.",
+      "addGuestErrorGeneric": "The guest was not saved. Try again.",
+      "attendedPeopleUnit": "people · {guests} invitations",
+      "noShowPeopleUnit": "invitations unused",
+      "attendedSeats": "{used} of {allowed}",
+      "attendanceUpdatedAt": "Updated {time} Riyadh time · refreshes on its own"
     }
   },
   "admin": {

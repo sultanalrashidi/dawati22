@@ -1,4 +1,5 @@
 import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
+import { normalizeArabic } from "@/lib/arabic";
 
 /**
  * Reading a pasted guest list.
@@ -25,7 +26,9 @@ export type RowStatus =
   | "unreadableField"
   | "badPhone"
   | "dupInList"
-  | "dupExisting";
+  | "dupExisting"
+  /** Her name is already on the list and this row carries no number — blocking. */
+  | "nameNeedsPhone";
 
 export interface ParsedRow {
   /** 1-based line number in what she pasted, so the review can point at it. */
@@ -181,6 +184,9 @@ export function parseGuestList(
       }
 
       const nameAr = nameParts.join(" ").trim();
+      // Folded for comparison only — «أم فهد» and «ام فهد» are one woman, and
+      // a duplicate that hinges on a hamza is not a duplicate anyone sees.
+      const nameKey = normalizeArabic(nameAr);
       const phone = phoneRaw ? normalizePhone(phoneRaw, DEFAULT_PHONE_COUNTRY) : null;
       const row: ParsedRow = { line, raw, nameAr, phone, allowedCount, status: "ok" };
 
@@ -190,14 +196,19 @@ export function parseGuestList(
       else if (phoneRaw && !phone) row.status = "badPhone";
       else if (phone && existing.phones.has(phone)) row.status = "dupExisting";
       else if (phone && seenPhones.has(phone)) row.status = "dupInList";
-      // With no phone the name is all there is to go on. Two «أم فهد» in one
-      // list are far more likely to be one person pasted twice than two
-      // guests — but it is HER list, so this is a warning she can keep, never
-      // a row the import silently drops.
-      else if (!phone && existing.names.has(nameAr)) row.status = "dupExisting";
-      else if (!phone && seenNames.has(nameAr)) row.status = "dupInList";
+      // A repeated name with no number is the one thing the import refuses.
+      //
+      // It used to pass as a warning she could keep, which read as tidy right
+      // up to the door: two women called «أم فهد» and a search that cannot
+      // say which is which, on the night, with a queue. A phone makes them
+      // two people; without one they are one row typed twice. So the second
+      // «أم فهد» has to carry a number — and the FIRST never does, because
+      // until she repeats there is nothing to tell apart.
+      else if (!phone && (existing.names.has(nameKey) || seenNames.has(nameKey))) {
+        row.status = "nameNeedsPhone";
+      }
 
-      if (nameAr) seenNames.add(nameAr);
+      if (nameKey) seenNames.add(nameKey);
       if (phone) seenPhones.add(phone);
       return row;
     });
@@ -215,7 +226,42 @@ export function countGuestLines(text: string): number {
   return text.split(/\r?\n/).filter((line) => line.trim().length > 0).length;
 }
 
-/** Rows that can be written as they stand — a duplicate is a warning, not a refusal. */
+/**
+ * Rows that can be written as they stand.
+ *
+ * A repeated PHONE is still only a warning — it is her list, and she may well
+ * mean it. A repeated NAME with no phone is not: see `nameNeedsPhone` above.
+ */
+/**
+ * Who is already a guest, in the shape `parseGuestList` compares against.
+ *
+ * Shared by the review table and the server action deliberately: the action
+ * used to re-parse with NO existing set at all, so every duplicate warning the
+ * browser showed was decorative and the write went through regardless. The
+ * preview agreed with itself while the real output differed.
+ */
+export function existingGuestKeys(
+  guests: { nameAr: string; phone: string | null }[],
+): { names: Set<string>; phones: Set<string> } {
+  return {
+    names: new Set(guests.map((guest) => normalizeArabic(guest.nameAr))),
+    // Normalized on both sides: a guest added one at a time keeps whatever was
+    // typed ("0501234567") while the parser produces "+966501234567", so
+    // comparing them raw means the duplicate rule could never fire.
+    phones: new Set(
+      guests
+        .map((guest) => guest.phone)
+        .filter((phone): phone is string => Boolean(phone))
+        .map((phone) => normalizePhone(phone, DEFAULT_PHONE_COUNTRY) ?? phone),
+    ),
+  };
+}
+
 export function isCommittable(row: ParsedRow): boolean {
-  return row.status !== "noName" && row.status !== "nameShort" && row.status !== "unreadableField";
+  return (
+    row.status !== "noName" &&
+    row.status !== "nameShort" &&
+    row.status !== "unreadableField" &&
+    row.status !== "nameNeedsPhone"
+  );
 }

@@ -12,5 +12,5 @@
  */
 export const BUSINESS = {
   /** وثيقة عمل حر — the licence the store trades under. */
-  licenceNumber: "288355247-FL",
+  licenceNumber: "FL-288355247",
 } as const;

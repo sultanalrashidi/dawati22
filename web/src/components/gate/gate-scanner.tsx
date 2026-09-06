@@ -31,6 +31,9 @@ declare global {
   }
 }
 
+/** Long enough for a slow hall connection, short enough that a queue notices nothing. */
+const SCAN_TIMEOUT_MS = 12_000;
+
 /** Why the camera isn't running — each one gets its own sentence, not one catch-all. */
 type CameraState = "starting" | "scanning" | "denied" | "noDevice" | "insecure" | "error";
 
@@ -50,20 +53,14 @@ type CameraState = "starting" | "scanning" | "denied" | "noDevice" | "insecure" 
  *    decodes the same frames everywhere else. A door scanner that only works
  *    on Android is not a door scanner.
  */
-export function GateScanner({
-  eventId,
-  dict,
-  scanAction,
-}: {
-  eventId: string;
-  dict: Dictionary;
-  scanAction: (eventId: string, token: string) => Promise<CheckInOutcome>;
-}) {
+export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictionary }) {
   const [manualToken, setManualToken] = useState("");
   const [outcome, setOutcome] = useState<CheckInOutcome | null>(null);
   const [isPending, startTransition] = useTransition();
   const [camera, setCamera] = useState<CameraState>("starting");
   const [attempt, setAttempt] = useState(0);
+  /** The last send never reached the server — a hall-wifi problem, not a code problem. */
+  const [sendFailed, setSendFailed] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -79,18 +76,51 @@ export function GateScanner({
     streamRef.current = null;
   }, []);
 
+  /**
+   * Send one code, and never strand the scanner.
+   *
+   * A plain fetch, not the server action this used to call: an action whose
+   * POST never lands does not reject the promise the caller awaited — it
+   * escapes as an uncaught window error, past every try/catch and past React
+   * error boundaries too. That left the camera stopped, `busyRef` stuck true,
+   * and every later scan and manual entry swallowed by the guard at the top,
+   * with the retry button hidden because the component still believed it was
+   * scanning. The only way out was a page reload, and nothing said so.
+   *
+   * The stream stops for the round trip so a second frame cannot submit the
+   * same code twice, which is exactly why a failure has to hand the camera
+   * back: she is standing at a door with a queue, and the next thing she does
+   * is scan again.
+   */
   const submit = useCallback(
     (token: string) => {
       if (busyRef.current) return;
       busyRef.current = true;
+      setSendFailed(false);
       stopStream();
       startTransition(async () => {
-        const result = await scanAction(eventId, token);
-        setOutcome(result);
-        busyRef.current = false;
+        try {
+          const response = await fetch("/api/gate/scan", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId, qrToken: token }),
+            // A door queue does not wait half a minute for a hung request.
+            signal: AbortSignal.timeout(SCAN_TIMEOUT_MS),
+          });
+          if (!response.ok) throw new Error(`scan failed: ${response.status}`);
+          const outcome = (await response.json()) as CheckInOutcome;
+          if (!outcome?.result) throw new Error("scan returned no result");
+          setOutcome(outcome);
+        } catch {
+          setSendFailed(true);
+          setCamera("starting");
+          setAttempt((n) => n + 1);
+        } finally {
+          busyRef.current = false;
+        }
       });
     },
-    [eventId, scanAction, stopStream],
+    [eventId, stopStream],
   );
 
   useEffect(() => {
@@ -204,6 +234,7 @@ export function GateScanner({
   function reset() {
     setOutcome(null);
     setManualToken("");
+    setSendFailed(false);
     setCamera("starting");
     setAttempt((n) => n + 1);
   }
@@ -243,6 +274,12 @@ export function GateScanner({
 
   return (
     <div className="mt-6 flex flex-col gap-4">
+      {sendFailed && (
+        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
+          {g.scanSendFailed}
+        </p>
+      )}
+
       {/* Always mounted — the stream needs this element to exist the moment
           getUserMedia resolves, not one render later. */}
       <div

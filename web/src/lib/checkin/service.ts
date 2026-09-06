@@ -56,14 +56,24 @@ export async function performCheckIn(
     });
 
     if (!invitation || invitation.eventId !== eventId) {
+      // A code from another wedding, or one that does not exist. There is no
+      // guest to point at — which is what `guestId` being nullable is for —
+      // but the door still saw a scan, and a record with a hole in it beats no
+      // record of the thing that actually happened.
+      await tx.checkInLog.create({
+        data: { eventId, guestId: null, gateStaffId, result: CheckInResult.DENIED_INVALID },
+      });
       return { result: CheckInResult.DENIED_INVALID };
     }
     const { guest, event } = invitation;
 
+    // Every outcome is logged, refusals included — a door with no record of
+    // who was turned away is a door nobody can answer questions about the
+    // morning after. `gateStaffId` is null for the shared-PIN door and for
+    // support scanning from the admin side; it used to be NOT NULL, which is
+    // the only reason the PIN door wrote nothing at all.
     const denyWith = async (result: CheckInResult) => {
-      if (gateStaffId) {
-        await tx.checkInLog.create({ data: { eventId, guestId: guest.id, gateStaffId, result } });
-      }
+      await tx.checkInLog.create({ data: { eventId, guestId: guest.id, gateStaffId, result } });
       return { result, guestName: guest.nameAr };
     };
 
@@ -119,18 +129,16 @@ export async function performCheckIn(
 
     await tx.invitation.update({ where: { id: invitation.id }, data: { status: newInvitationStatus } });
 
-    if (gateStaffId) {
-      await tx.checkInLog.create({
-        data: {
-          eventId,
-          guestId: guest.id,
-          gateStaffId,
-          seatsBefore: freshGuest.checkedInCount - 1,
-          seatsAfter: freshGuest.checkedInCount,
-          result: CheckInResult.SUCCESS,
-        },
-      });
-    }
+    await tx.checkInLog.create({
+      data: {
+        eventId,
+        guestId: guest.id,
+        gateStaffId,
+        seatsBefore: freshGuest.checkedInCount - 1,
+        seatsAfter: freshGuest.checkedInCount,
+        result: CheckInResult.SUCCESS,
+      },
+    });
 
     return {
       result: CheckInResult.SUCCESS,

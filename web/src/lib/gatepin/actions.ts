@@ -1,10 +1,9 @@
 "use server";
 
 import { requireUserOrThrow } from "@/lib/auth/guards";
-import { performCheckIn, type CheckInOutcome } from "@/lib/checkin/service";
 import { setGatePin, clearGatePin, verifyGatePin, GatePinError, GatePinLockedError } from "@/lib/gatepin/service";
-import { createGateSession, destroyGateSession, getGateSessionEventId } from "@/lib/gatepin/session";
-import { CheckInResult, Role } from "@/generated/prisma/client";
+import { createGateSession, destroyGateSession } from "@/lib/gatepin/session";
+import { Role } from "@/generated/prisma/client";
 
 export async function setGatePinAction(
   eventId: string,
@@ -49,13 +48,4 @@ export async function verifyGatePinAction(referenceCode: string, pin: string): P
 
 export async function exitGateAccessAction(): Promise<void> {
   await destroyGateSession();
-}
-
-/** Scan action for the no-login /gate-access scanner — authorizes via the signed gate session, not a user account. */
-export async function scanQrPinAction(eventId: string, qrToken: string): Promise<CheckInOutcome> {
-  const sessionEventId = await getGateSessionEventId();
-  if (!sessionEventId || sessionEventId !== eventId) {
-    return { result: CheckInResult.DENIED_INVALID };
-  }
-  return performCheckIn(qrToken.trim(), eventId, null);
 }

@@ -724,7 +724,8 @@
     "cameraError": "The camera could not be started. Try again, or use manual entry.",
     "cameraRetry": "Try again",
     "cameraStart": "Open the camera",
-    "cameraInsecure": "Scanning needs a secure (https) connection — use manual entry."
+    "cameraInsecure": "Scanning needs a secure (https) connection — use manual entry.",
+    "scanSendFailed": "The scan could not be sent — check the connection, then scan again."
   },
   "gateAccess": {
     "title": "Scan invitations",

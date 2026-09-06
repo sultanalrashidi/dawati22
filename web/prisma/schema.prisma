@@ -849,8 +849,13 @@ model CheckInLog {
   event       Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   guestId     String?
   guest       Guest?        @relation(fields: [guestId], references: [id], onDelete: Cascade)
-  gateStaffId String
-  gateStaff   GateStaff     @relation(fields: [gateStaffId], references: [id])
+  /// Null when the door was opened without a staff account: the shared gate
+  /// PIN the customer gives her own organisers, or support scanning from the
+  /// admin side. It was NOT NULL until now, and that is the whole reason the
+  /// PIN door wrote no log at all — a PIN session has no GateStaff row to
+  /// point at, so the write had to be skipped rather than attributed.
+  gateStaffId String?
+  gateStaff   GateStaff?    @relation(fields: [gateStaffId], references: [id])
   seatsBefore Int?
   seatsAfter  Int?
   result      CheckInResult

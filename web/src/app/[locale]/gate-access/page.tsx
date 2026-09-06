@@ -3,7 +3,7 @@ import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { prisma } from "@/lib/db/client";
 import { getGateSessionEventId } from "@/lib/gatepin/session";
-import { exitGateAccessAction, scanQrPinAction } from "@/lib/gatepin/actions";
+import { exitGateAccessAction } from "@/lib/gatepin/actions";
 import { GateScanner } from "@/components/gate/gate-scanner";
 import { GateAccessForm } from "@/components/gate/gate-access-form";
 
@@ -27,7 +27,7 @@ export default async function GateAccessPage({ params }: PageProps<"/[locale]/ga
             </button>
           </form>
         </div>
-        <GateScanner eventId={eventId!} dict={dict} scanAction={scanQrPinAction} />
+        <GateScanner eventId={eventId!} dict={dict} />
       </div>
     );
   }

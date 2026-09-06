@@ -392,7 +392,7 @@
       "importBack": "Back to the text",
       "importConfirm": "Add {count} guests",
       "importSummary": "Ready to add: {count} · {blocked} lines need a fix",
-      "importOverCapacity": "The list is {over} over what is left. You have {remaining} seats — trim the list or buy more invitations.",
+      "importOverCapacity": "The list is {over} over what is left. You have {remaining} seats — trim the list, or message us to add more.",
       "importDone": "Added {count} guests.",
       "importAlreadyDone": "This list was already added.",
       "importFailed": "We could not add the list. Please try again.",
@@ -487,7 +487,9 @@
       "attendedPeopleUnit": "people · {guests} invitations",
       "noShowPeopleUnit": "invitations unused",
       "attendedSeats": "{used} of {allowed}",
-      "attendanceUpdatedAt": "Updated {time} Riyadh time · refreshes on its own"
+      "attendanceUpdatedAt": "Updated {time} Riyadh time · refreshes on its own",
+      "importOverCapacityContact": "Message us on WhatsApp",
+      "importOverCapacityMessage": "Hello, I would like to add more invitations to my event."
     }
   },
   "admin": {

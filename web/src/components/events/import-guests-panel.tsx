@@ -7,6 +7,7 @@ import {
   undoImportAction,
   type ImportActionState,
 } from "@/lib/guests/actions";
+import { supportWhatsAppUrl } from "@/lib/support";
 import {
   parseGuestList,
   isCommittable,
@@ -233,19 +234,13 @@ export function ImportGuestsPanel({
                   .replace("{blocked}", nf.format(blocked))}
               </p>
 
-              {overBy > 0 && (
-                <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {d.importOverCapacity
-                    .replace("{over}", nf.format(overBy))
-                    .replace("{remaining}", nf.format(seatsRemaining))}
-                </p>
-              )}
+              {overBy > 0 && <OverCapacity d={d} over={nf.format(overBy)} remaining={nf.format(seatsRemaining)} />}
               {state?.capacityShortBy ? (
-                <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
-                  {d.importOverCapacity
-                    .replace("{over}", nf.format(state.capacityShortBy))
-                    .replace("{remaining}", nf.format(seatsRemaining))}
-                </p>
+                <OverCapacity
+                  d={d}
+                  over={nf.format(state.capacityShortBy)}
+                  remaining={nf.format(seatsRemaining)}
+                />
               ) : null}
               {state?.alreadyApplied && (
                 <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-fg-muted">
@@ -281,5 +276,39 @@ export function ImportGuestsPanel({
         </form>
       )}
     </section>
+  );
+}
+
+/**
+ * "You are twelve over your seats."
+ *
+ * The sentence used to end "…or increase your invitations" — an instruction
+ * with no button behind it anywhere in the product, because topping up is a
+ * decision the owner makes by hand. Telling her to press something that does
+ * not exist is worse than telling her nothing: she goes looking, and the
+ * looking is what makes the product feel broken. So it points at the channel
+ * that genuinely works, with the message already written.
+ */
+function OverCapacity({
+  d,
+  over,
+  remaining,
+}: {
+  d: Dictionary["events"]["detail"];
+  over: string;
+  remaining: string;
+}) {
+  return (
+    <div className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
+      <p>{d.importOverCapacity.replace("{over}", over).replace("{remaining}", remaining)}</p>
+      <a
+        href={supportWhatsAppUrl(d.importOverCapacityMessage)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 inline-block font-bold underline underline-offset-4"
+      >
+        {d.importOverCapacityContact}
+      </a>
+    </div>
   );
 }

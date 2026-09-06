@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n/locales";
+import { BUSINESS } from "@/lib/business";
 
 /**
  * The site's legal pages — terms, privacy, and refunds — live here rather than
@@ -56,7 +57,7 @@ export type LegalDocId = "terms" | "privacy" | "refunds";
  * page shows when its wording was fixed, not today's date. Bump it by hand when
  * the wording changes.
  */
-const UPDATED = { ar: "٤ سبتمبر ٢٠٢٦", en: "September 4, 2026" };
+const UPDATED = { ar: "٦ سبتمبر ٢٠٢٦", en: "September 6, 2026" };
 
 const ar: Record<LegalDocId, LegalDoc> = {
   terms: {
@@ -64,7 +65,7 @@ const ar: Record<LegalDocId, LegalDoc> = {
     updated: UPDATED.ar,
     intro: [
       "مرحبًا بك في «دعوتي». تحدّد هذه الشروط والأحكام قواعد استخدامك لمنصة دعوتي المتاحة عبر الموقع www.dawati.store وما يرتبط بها من خدمات لإنشاء الدعوات الرقمية وإدارتها. باستخدامك للمنصة أو إتمامك لأي عملية دفع فإنك تُقرّ بأنك قرأت هذه الشروط ووافقت عليها.",
-      "تُقدَّم خدمات دعوتي داخل المملكة العربية السعودية، وجميع الأسعار بالريال السعودي (SAR).",
+      `تُشغَّل منصة دعوتي وتُقدَّم خدماتها داخل المملكة العربية السعودية بموجب وثيقة عمل حر رقم ${BUSINESS.licenceNumber}، وهي الجهة التي تتعاقد معها عند إتمام الدفع. جميع الأسعار بالريال السعودي (SAR).`,
     ],
     sections: [
       {
@@ -317,7 +318,7 @@ const en: Record<LegalDocId, LegalDoc> = {
     updated: UPDATED.en,
     intro: [
       "Welcome to Dawati. These Terms & Conditions govern your use of the Dawati platform at www.dawati.store and its related services for creating and managing digital invitations. By using the platform or completing any payment, you confirm that you have read and agreed to these terms.",
-      "Dawati's services are offered within the Kingdom of Saudi Arabia, and all prices are in Saudi Riyals (SAR).",
+      `Dawati is operated and its services are offered within the Kingdom of Saudi Arabia under freelance licence no. ${BUSINESS.licenceNumber}, and that is the party you contract with when you pay. All prices are in Saudi Riyals (SAR).`,
     ],
     sections: [
       {

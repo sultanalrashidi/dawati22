@@ -141,6 +141,7 @@
     "footerAccount": "Account",
     "footerContact": "Contact",
     "footerRights": "All rights reserved",
+    "footerLicence": "Freelance licence",
     "faqKicker": "FAQ",
     "faqTitle": "Before you choose…",
     "faqNote": "Didn’t find your answer? Message us on WhatsApp and we’ll get back to you quickly.",
@@ -938,6 +939,21 @@
     "contactWhatsapp": "WhatsApp",
     "contactEmail": "email",
     "contactWhatsappMessage": "Hello, I have a question about Dawati"
+  },
+  "contact": {
+    "title": "Contact us",
+    "metaDescription": "How to reach Dawati, and the licence the store trades under.",
+    "intro": "Any question about your invitation, an order you paid for, or a refund — write to us and we'll answer.",
+    "hours": "We usually reply within one working day. WhatsApp is the fastest channel.",
+    "whatsappLabel": "WhatsApp",
+    "emailLabel": "Email",
+    "phoneLabel": "Phone",
+    "businessHeading": "Business details",
+    "licenceLabel": "Freelance licence no.",
+    "countryLabel": "Based in",
+    "country": "Saudi Arabia",
+    "currencyNote": "All prices are in Saudi riyals, and the service is entirely digital — we ship no physical goods.",
+    "legalNote": "For the terms, the privacy policy and the refund policy, use the “Legal” links in the footer."
   },
   "draft": {
     "stepLabel": "Step one",

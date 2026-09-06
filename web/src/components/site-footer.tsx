@@ -1,20 +1,35 @@
 import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
-import { supportWhatsAppUrl } from "@/lib/support";
+import { BUSINESS } from "@/lib/business";
+import {
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE_DISPLAY,
+  SUPPORT_PHONE_E164,
+  supportWhatsAppUrl,
+} from "@/lib/support";
 
 /**
  * The site footer. Every link here points at a route that exists. The legal
  * pages (terms, privacy, refunds) are required for the payment provider and now
  * ship, so they get their own column instead of being left out.
+ *
+ * The identity block under the brand — licence number, email, phone — is a
+ * regulatory requirement, not a design flourish: a Saudi online store has to
+ * show the licence it trades under where a visitor can find it, and the Saudi
+ * Business Center looks for it before issuing the authentication certificate.
+ * Because the footer renders on every page it also satisfies "on the home
+ * page". Keep it visible; do not fold it into a link.
  */
 export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const h = dict.home;
+  const c = dict.contact;
 
   const site = [
     { href: `/${locale}/themes`, label: dict.nav.themes },
     { href: `/${locale}/plans`, label: dict.nav.plans },
     { href: `/${locale}/gate-access`, label: dict.nav.scan },
+    { href: `/${locale}/contact`, label: dict.nav.contact },
   ];
   const account = [
     { href: `/${locale}/login`, label: dict.nav.login },
@@ -32,6 +47,25 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
         <div className="lg:col-span-2">
           <p className="font-display text-2xl text-fg">{dict.brand.name}</p>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-fg-muted">{h.footerTagline}</p>
+
+          <dl className="mt-6 grid gap-1.5 text-xs leading-relaxed text-fg-muted">
+            <IdentityRow label={h.footerLicence}>
+              <span dir="ltr" className="font-mono">
+                {BUSINESS.licenceNumber}
+              </span>
+            </IdentityRow>
+            <IdentityRow label={c.emailLabel}>
+              <a href={`mailto:${SUPPORT_EMAIL}`} dir="ltr" className="transition-colors hover:text-fg">
+                {SUPPORT_EMAIL}
+              </a>
+            </IdentityRow>
+            <IdentityRow label={c.phoneLabel}>
+              <a href={`tel:${SUPPORT_PHONE_E164}`} dir="ltr" className="transition-colors hover:text-fg">
+                {SUPPORT_PHONE_DISPLAY}
+              </a>
+            </IdentityRow>
+            <IdentityRow label={c.countryLabel}>{c.country}</IdentityRow>
+          </dl>
         </div>
 
         <FooterColumn title={h.footerSite} links={site} />
@@ -55,6 +89,16 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
         </div>
       </div>
     </footer>
+  );
+}
+
+/** One label/value pair in the identity block. */
+function IdentityRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-baseline gap-x-2">
+      <dt className="font-bold text-fg">{label}</dt>
+      <dd>{children}</dd>
+    </div>
   );
 }
 

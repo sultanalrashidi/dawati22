@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import jsQR from "jsqr";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
-import type { CheckInOutcome } from "@/lib/checkin/service";
+import type { CheckInOutcome, DoorSearchResult } from "@/lib/checkin/service";
 
 const RESULT_STYLE: Record<string, { bg: string; fg: string }> = {
   SUCCESS: { bg: "bg-success/10", fg: "text-success" },
@@ -54,8 +54,11 @@ type CameraState = "starting" | "scanning" | "denied" | "noDevice" | "insecure" 
  *    on Android is not a door scanner.
  */
 export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictionary }) {
-  const [manualToken, setManualToken] = useState("");
   const [outcome, setOutcome] = useState<CheckInOutcome | null>(null);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<DoorSearchResult[] | null>(null);
+  const [searchState, setSearchState] = useState<"idle" | "searching" | "failed">("idle");
+  const [partyState, setPartyState] = useState<"idle" | "saving" | "failed">("idle");
   const [isPending, startTransition] = useTransition();
   const [camera, setCamera] = useState<CameraState>("starting");
   const [attempt, setAttempt] = useState(0);
@@ -117,6 +120,71 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
           setAttempt((n) => n + 1);
         } finally {
           busyRef.current = false;
+        }
+      });
+    },
+    [eventId, stopStream],
+  );
+
+  /**
+   * Find her without her code.
+   *
+   * Every phone at a wedding is a code that might not open: a screen that will
+   * not brighten, a screenshot that will not focus, a message forwarded to a
+   * sister. The box this replaced asked for a 43-character random string that
+   * no screen in the product ever shows, so it answered none of that.
+   */
+  const runSearch = useCallback(async () => {
+    const term = query.trim();
+    if (term.length < 2) {
+      setResults([]);
+      setSearchState("idle");
+      return;
+    }
+    setSearchState("searching");
+    try {
+      const response = await fetch("/api/gate/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId, query: term }),
+        signal: AbortSignal.timeout(SCAN_TIMEOUT_MS),
+      });
+      if (!response.ok) throw new Error(`search failed: ${response.status}`);
+      const data = (await response.json()) as { guests?: DoorSearchResult[] };
+      setResults(data.guests ?? []);
+      setSearchState("idle");
+    } catch {
+      setResults(null);
+      setSearchState("failed");
+    }
+  }, [eventId, query]);
+
+  /**
+   * How many of her seats are used — set outright, never nudged by one.
+   *
+   * The same call lets in a guest found by search (from zero) and corrects a
+   * scan that admitted the wrong number. Absolute, so a tap that lands twice
+   * on a bad connection cannot admit two more women.
+   */
+  const admit = useCallback(
+    (guestId: string, seats: number) => {
+      setPartyState("saving");
+      stopStream();
+      startTransition(async () => {
+        try {
+          const response = await fetch("/api/gate/admit", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ eventId, guestId, seats }),
+            signal: AbortSignal.timeout(SCAN_TIMEOUT_MS),
+          });
+          if (!response.ok) throw new Error(`admit failed: ${response.status}`);
+          const next = (await response.json()) as CheckInOutcome;
+          if (!next?.result) throw new Error("admit returned no result");
+          setOutcome(next);
+          setPartyState("idle");
+        } catch {
+          setPartyState("failed");
         }
       });
     },
@@ -233,7 +301,10 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
 
   function reset() {
     setOutcome(null);
-    setManualToken("");
+    setQuery("");
+    setResults(null);
+    setSearchState("idle");
+    setPartyState("idle");
     setSendFailed(false);
     setCamera("starting");
     setAttempt((n) => n + 1);
@@ -241,21 +312,72 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
 
   if (outcome) {
     const style = RESULT_STYLE[outcome.result] ?? { bg: "bg-danger/10", fg: "text-danger" };
+    const canSetParty =
+      outcome.guestId !== undefined &&
+      typeof outcome.seatsAllowed === "number" &&
+      outcome.result === "SUCCESS";
+
     return (
-      <div className={`mt-6 flex flex-col items-center gap-3 rounded-2xl p-8 text-center ${style.bg}`}>
-        <p className={`text-xl font-semibold ${style.fg}`}>
-          {g[RESULT_LABEL_KEY[outcome.result] as keyof typeof g]}
-        </p>
-        {outcome.guestName && <p className="text-fg">{outcome.guestName}</p>}
-        {typeof outcome.seatsRemaining === "number" && (
-          <p className="text-sm text-fg-muted">
-            {g.seatsRemaining.replace("{count}", String(outcome.seatsRemaining))}
+      <div className="mt-6 flex flex-col gap-4">
+        <div className={`flex flex-col items-center gap-2 rounded-2xl p-8 text-center ${style.bg}`}>
+          <p className={`text-xl font-semibold ${style.fg}`}>
+            {g[RESULT_LABEL_KEY[outcome.result] as keyof typeof g]}
           </p>
+          {outcome.guestName && <p className="text-lg text-fg">{outcome.guestName}</p>}
+          {typeof outcome.seatsAllowed === "number" && typeof outcome.seatsUsed === "number" && (
+            <p className="text-sm text-fg-muted">
+              {g.searchSeats
+                .replace("{used}", String(outcome.seatsUsed))
+                .replace("{allowed}", String(outcome.seatsAllowed))}
+            </p>
+          )}
+        </div>
+
+        {/* "How many came in?" — one tap per woman, and never past her seats.
+            A guest who arrives alone must not have her invitation closed
+            behind her while the rest are still parking, which is why the
+            numbers below her total stay live after a successful scan. */}
+        {canSetParty && (
+          <div className="rounded-2xl border border-border bg-surface p-5">
+            <p className="text-sm font-semibold text-fg">{g.partyQuestion}</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {Array.from({ length: outcome.seatsAllowed! }, (_, i) => i + 1).map((n) => {
+                const active = outcome.seatsUsed === n;
+                return (
+                  <button
+                    key={n}
+                    type="button"
+                    disabled={partyState === "saving"}
+                    onClick={() => admit(outcome.guestId!, n)}
+                    aria-pressed={active}
+                    className={`h-12 min-w-12 rounded-xl border px-4 text-base font-semibold transition-colors disabled:opacity-50 ${
+                      active
+                        ? "border-accent bg-accent text-accent-fg"
+                        : "border-border bg-bg text-fg hover:border-accent-soft"
+                    }`}
+                  >
+                    {n}
+                  </button>
+                );
+              })}
+              <span className="self-center text-xs text-fg-muted">
+                {g.partyOf.replace("{allowed}", String(outcome.seatsAllowed))}
+              </span>
+            </div>
+            <p className="mt-3 text-xs leading-relaxed text-fg-muted">{g.partyHint}</p>
+            {partyState === "saving" && <p className="mt-2 text-xs text-fg-muted">{g.partySaving}</p>}
+            {partyState === "failed" && (
+              <p className="mt-2 text-xs text-danger" role="alert">
+                {g.partyFailed}
+              </p>
+            )}
+          </div>
         )}
+
         <button
           type="button"
           onClick={reset}
-          className="mt-4 h-11 rounded-full bg-accent px-6 text-sm font-medium text-accent-fg hover:bg-accent-strong"
+          className="h-12 rounded-full bg-accent px-6 text-sm font-medium text-accent-fg hover:bg-accent-strong"
         >
           {g.scanAnother}
         </button>
@@ -310,31 +432,93 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
         </div>
       )}
 
+      {/* Search, where a 43-character token box used to be.
+          That box asked for `qrToken` — a random string no screen in the
+          product ever displays — so the one interface meant for "the code
+          will not scan" could not be used by anyone. */}
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (manualToken.trim()) submit(manualToken.trim());
+          void runSearch();
         }}
         className="flex flex-col gap-2"
       >
         <label className="flex flex-col gap-1.5 text-sm">
-          <span className="text-fg-muted">{g.manualEntryLabel}</span>
+          <span className="text-fg-muted">{g.searchLabel}</span>
           <input
-            value={manualToken}
-            onChange={(e) => setManualToken(e.target.value)}
-            dir="ltr"
-            placeholder={g.manualEntryPlaceholder}
-            className="h-11 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setSearchState("idle");
+            }}
+            enterKeyHint="search"
+            placeholder={g.searchPlaceholder}
+            className="h-12 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
           />
         </label>
         <button
           type="submit"
-          disabled={isPending || !manualToken.trim()}
-          className="h-11 rounded-full bg-accent text-sm font-medium text-accent-fg hover:bg-accent-strong disabled:opacity-50"
+          disabled={searchState === "searching" || isPending || query.trim().length < 2}
+          className="h-12 rounded-full bg-accent text-sm font-medium text-accent-fg hover:bg-accent-strong disabled:opacity-50"
         >
-          {g.scanButton}
+          {g.searchButton}
         </button>
       </form>
+
+      {searchState === "failed" && (
+        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
+          {g.searchFailed}
+        </p>
+      )}
+
+      {results !== null && results.length === 0 && searchState === "idle" && (
+        <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-fg-muted">
+          {query.trim().length < 2 ? g.searchTooShort : g.searchNoResults}
+        </p>
+      )}
+
+      {results !== null && results.length > 0 && (
+        <ul className="flex flex-col gap-2">
+          {results.map((guest) => {
+            const full = guest.checkedInCount >= guest.allowedCount;
+            return (
+              <li key={guest.id} className="rounded-xl border border-border bg-surface p-4">
+                <p className="text-base font-semibold text-fg">{guest.nameAr}</p>
+                {/* The number in full, and on purpose: two women called أم فهد
+                    are told apart by nothing else, and the organiser is
+                    reading it off the guest's own phone. */}
+                <p dir="ltr" className="mt-0.5 text-start text-sm text-fg-muted">
+                  {guest.phone ?? g.searchNoPhone}
+                </p>
+                <p className="mt-1 text-xs text-fg-muted">
+                  {g.searchSeats
+                    .replace("{used}", String(guest.checkedInCount))
+                    .replace("{allowed}", String(guest.allowedCount))}
+                  {" · "}
+                  {guest.rsvp === "ACCEPTED" ? g.searchRsvpAccepted : g.searchRsvpNone}
+                  {guest.partySize !== null && ` · ${g.searchPartySize.replace("{count}", String(guest.partySize))}`}
+                </p>
+                <button
+                  type="button"
+                  disabled={full || partyState === "saving"}
+                  onClick={() =>
+                    admit(
+                      guest.id,
+                      // What she declared, else one more than are already in —
+                      // never her whole allowance, which would close the
+                      // invitation on the ones still parking.
+                      Math.min(guest.allowedCount, guest.partySize ?? guest.checkedInCount + 1),
+                    )
+                  }
+                  className="mt-3 h-11 w-full rounded-full bg-accent text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong disabled:opacity-50"
+                >
+                  {full ? g.searchFull : g.searchAdmit}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
   );
 }

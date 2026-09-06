@@ -10,6 +10,7 @@ import { Role } from "@/generated/prisma/client";
 import { EventFields } from "@/components/events/event-fields";
 import { EventTypeGate } from "@/components/events/event-type-gate";
 import { ConfirmSubmit } from "@/components/events/confirm-submit";
+import { riyadhDateFormat } from "@/lib/dates";
 
 /**
  * The OLD pay-first creation form, kept only as a fulfilment path.
@@ -78,7 +79,7 @@ export default async function NewEventPage({
                 // blind, and the wrong pick is not undoable.
                 <option key={order.id} value={order.id}>
                   {orderSummaryLabel(order, locale, dict)} —{" "}
-                  {new Date(order.createdAt).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US")}
+                  {riyadhDateFormat(locale === "ar" ? "ar-SA" : "en-US").format(new Date(order.createdAt))}
                 </option>
               ))}
             </select>

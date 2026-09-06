@@ -6,6 +6,7 @@ import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { Role } from "@/generated/prisma/client";
 import { getOwnedEvent } from "@/lib/events/service";
 import { orderTerms } from "@/lib/orders/terms";
+import { riyadhDateFormat } from "@/lib/dates";
 
 /**
  * «تم الدفع وتفعيل دعوتك» — the customer's own words for step seven.
@@ -60,7 +61,7 @@ export default async function ActivatedPage({
         {paidAt && (
           <Row
             label={d.receiptDate}
-            value={new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
+            value={riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
               day: "numeric",
               month: "long",
               year: "numeric",

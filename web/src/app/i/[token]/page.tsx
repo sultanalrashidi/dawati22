@@ -12,6 +12,7 @@ import { noteLines } from "@/lib/themes/builder/content";
 import { builderFontStylesheetHref } from "@/lib/themes/builder/fonts-server";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ScheduleItem } from "@/lib/events/types";
+import { riyadhDateFormat } from "@/lib/dates";
 
 // Powers the WhatsApp/social link-preview card (title + description; the
 // image itself comes from the sibling opengraph-image.tsx) — this is what
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: PageProps<"/i/[token]">): Pro
   const invitation = await getInvitationByLinkToken(token);
   if (!invitation) return {};
 
-  const dual = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", { day: "numeric", month: "long", year: "numeric" }).format(
+  const dual = riyadhDateFormat("ar-SA-u-ca-gregory", { day: "numeric", month: "long", year: "numeric" }).format(
     invitation.event.eventDate,
   );
   // A joint wedding still gets one preview line: the primary couple, same as

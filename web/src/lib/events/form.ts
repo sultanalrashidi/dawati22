@@ -11,6 +11,7 @@ import {
 import type { ScheduleItem } from "@/lib/events/types";
 import type { DesignBrief } from "@/lib/design-requests/service";
 import { extractYoutubeVideoId } from "@/lib/youtube";
+import { riyadhDateTimeLocalToDate } from "@/lib/dates";
 
 /**
  * One reader for the one event form. The customer fills it in once at creation
@@ -132,10 +133,10 @@ export function readEventEssentials(formData: FormData): EventEssentials | null 
   const couples = readCouples(formData);
   const locationName = text("locationName");
   const regionName = text("regionName");
-  const eventDate = new Date(String(formData.get("eventDate") ?? ""));
+  const eventDate = riyadhDateTimeLocalToDate(String(formData.get("eventDate") ?? ""));
 
   if (couples === null || couples.length !== 1) return null;
-  if (Number.isNaN(eventDate.getTime())) return null;
+  if (eventDate === null) return null;
   if (locationName.length < 2 || locationName.length > MAX_LOCATION) return null;
   if (regionName.length > MAX_REGION) return null;
 
@@ -244,7 +245,7 @@ export function readEventForm(formData: FormData): EventFormValues | null {
   const themeId = text("themeId");
   const musicUrlRaw = text("musicUrl");
   const musicYoutubeId = musicUrlRaw ? extractYoutubeVideoId(musicUrlRaw) : null;
-  const eventDate = new Date(String(formData.get("eventDate") ?? ""));
+  const eventDate = riyadhDateTimeLocalToDate(String(formData.get("eventDate") ?? ""));
 
   const isValid =
     EVENT_TYPES.has(type) &&
@@ -254,7 +255,7 @@ export function readEventForm(formData: FormData): EventFormValues | null {
     couples !== null &&
     couples.length >= 1 &&
     isOneOf(COUPLE_FORMAT_KINDS, coupleFormat) &&
-    !Number.isNaN(eventDate.getTime()) &&
+    eventDate !== null &&
     locationName.length >= 2 &&
     Boolean(themeId) &&
     // A link that is not a YouTube video is a typo, not "no music": dropping it
@@ -265,6 +266,7 @@ export function readEventForm(formData: FormData): EventFormValues | null {
     !isValid ||
     host === null ||
     couples === null ||
+    eventDate === null ||
     !isOneOf(INVITATION_OPENING_KINDS, openingKind) ||
     !isOneOf(COUPLE_FORMAT_KINDS, coupleFormat)
   ) {

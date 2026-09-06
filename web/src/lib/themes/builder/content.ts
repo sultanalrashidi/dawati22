@@ -12,6 +12,7 @@
  */
 
 import type { ContentField } from "@/lib/themes/builder/types";
+import { riyadhDateFormat } from "@/lib/dates";
 
 /**
  * One groom+bride pair. An event carries an ordered list of these — a joint
@@ -162,20 +163,20 @@ export type ResolvedContent = Record<ContentField, string> & {
 // "الموافق…" string, so each line stays no wider than the old single-line date
 // and existing layouts don't overflow sideways; text layers render `\n` as a
 // line break, the same way `coupleNames` grows down the card.
-const HIJRI_DATE_FORMATTER = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
+const HIJRI_DATE_FORMATTER = riyadhDateFormat("ar-SA-u-ca-islamic-umalqura", {
   weekday: "long",
   day: "numeric",
   month: "long",
   year: "numeric",
 });
 
-const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
+const SHORT_DATE_FORMATTER = riyadhDateFormat("ar-SA-u-ca-gregory", {
   day: "numeric",
   month: "long",
   year: "numeric",
 });
 
-const TIME_FORMATTER = new Intl.DateTimeFormat("ar-SA", {
+const TIME_FORMATTER = riyadhDateFormat("ar-SA", {
   hour: "numeric",
   minute: "2-digit",
 });

@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { getInvitationByLinkToken } from "@/lib/invitations/service";
 import { couplesFor } from "@/lib/events/service";
 import type { ThemeConfig } from "@/lib/themes/types";
+import { riyadhDateFormat } from "@/lib/dates";
 
 export const alt = "دعوة رقمية خاصة";
 export const size = { width: 1200, height: 630 };
@@ -71,7 +72,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
   const primaryCouple = invitation ? couplesFor(invitation.event)[0] : null;
   const names = primaryCouple ? previewNames(primaryCouple) : { text: "دعوتي", script: "arabic" as const };
   const dateLabel = invitation
-    ? new Intl.DateTimeFormat("en-US", { day: "numeric", month: "long", year: "numeric" }).format(invitation.event.eventDate)
+    ? riyadhDateFormat("en-US", { day: "numeric", month: "long", year: "numeric" }).format(invitation.event.eventDate)
     : "";
 
   // Must cover every glyph actually drawn in the Latin face (Latin names +

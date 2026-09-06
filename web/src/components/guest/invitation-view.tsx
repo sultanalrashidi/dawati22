@@ -654,8 +654,14 @@ function InvitationScreens({
   // The hand-coded pass cards print the couple's names themselves, right under
   // this line, so it stops at the verb: repeating the names inside the text
   // would print them twice in a band with room for one.
-  const passInviteText =
-    extraText || [hostLine, INVITE_VERB].filter(Boolean).join(" ").replace(/\s+/g, " ");
+  //
+  // And it is ALWAYS this line, never the host's free text: that band is a
+  // fixed slot in the printed card art at 9px, with the names positioned
+  // under it, so it holds exactly one line — appending would push the names
+  // into the artwork, and substituting used to delete both mothers from the
+  // pass the moment she typed a word of her own. Her extra text still prints
+  // on the invitation itself and in the WhatsApp message.
+  const passInviteText = [hostLine, INVITE_VERB].filter(Boolean).join(" ").replace(/\s+/g, " ");
 
   /**
    * The one way the invitation opens. Every cover routes through here — the

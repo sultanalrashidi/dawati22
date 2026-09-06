@@ -3,6 +3,7 @@ import { couplesFor, type CouplesSource } from "@/lib/events/service";
 import { themeOptionKey } from "@/lib/events/theme-options";
 import type { ThemeOption } from "@/components/events/theme-picker";
 import type { ScheduleItem } from "@/lib/events/types";
+import { toRiyadhDateTimeLocal } from "@/lib/dates";
 import type {
   CoupleFormat,
   EventGuestManagementMode,
@@ -98,21 +99,12 @@ export function eventFieldDefaults(
 }
 
 /**
- * `datetime-local` in the same clock the server reads it back with.
- *
- * Formatting the stored instant through its LOCAL components — rather than
- * through toISOString() — is what makes the value round-trip: `new
- * Date("…T20:00")` on the server parses as local time, so the field has to be
- * written in local time too, or every save would shift the ceremony by the
- * host's UTC offset.
+ * `datetime-local`, written in Riyadh's clock — the same clock
+ * `readEventForm` reads it back with. Both directions live in `@/lib/dates`;
+ * re-exported here because this is where the field block looks for its
+ * defaults.
  */
-export function toDateTimeLocal(date: Date): string {
-  const pad = (value: number) => String(value).padStart(2, "0");
-  return (
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}` +
-    `T${pad(date.getHours())}:${pad(date.getMinutes())}`
-  );
-}
+export const toDateTimeLocal = toRiyadhDateTimeLocal;
 
 /** Back to the one-item-per-line `label|time` shape the textarea edits. */
 export function toScheduleText(raw: unknown): string {

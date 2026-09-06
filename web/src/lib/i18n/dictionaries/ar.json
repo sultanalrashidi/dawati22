@@ -209,7 +209,18 @@
     "payUnavailable": "تعذّر تحميل نموذج الدفع. حدّث الصفحة أو حاول بعد قليل.",
     "error": "تعذّر إتمام العملية، حاول مرة أخرى",
     "comingSoonMada": "مدى — قريبًا",
-    "comingSoonApplePay": "Apple Pay — قريبًا"
+    "comingSoonApplePay": "Apple Pay — قريبًا",
+    "closedFailedTitle": "لم تتم عملية الدفع",
+    "closedFailedBody": "ما تم خصم مبلغ هذا الطلب. وإن ظهر لك حجز مؤقت في كشف الحساب فهو يُرفع تلقائيًا من البنك خلال أيام. للمتابعة، ابدئي طلبًا جديدًا من صفحة دعوتك — هذا الطلب ما عاد يقبل الدفع.",
+    "closedCancelledTitle": "هذا الطلب لم يعد صالحًا",
+    "closedCancelledBody": "أُلغي هذا الطلب حين غيّرتِ عدد الدعوات، وحلّ محله طلب أحدث. ادفعي الطلب الجديد من صفحة دعوتك — الدفع هنا لن يُفعّل الدعوة.",
+    "closedRefundedTitle": "طلب مُسترجَع",
+    "closedRefundedBody": "أُعيد مبلغ هذا الطلب إلى بطاقتك. إذا احتجتِ تفصيلًا أو أردتِ طلبًا جديدًا، تواصلي معنا.",
+    "closedReference": "رقم الطلب",
+    "closedBackToDraft": "ارجعي إلى دعوتك",
+    "closedBackToEvents": "مناسباتي",
+    "closedContact": "تواصلي معنا",
+    "closedContactMessage": "السلام عليكم، عندي استفسار عن طلب رقم "
   },
   "events": {
     "title": "مناسباتي",

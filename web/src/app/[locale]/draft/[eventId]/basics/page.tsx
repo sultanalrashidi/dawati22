@@ -7,6 +7,7 @@ import { resolveDraftAccess } from "@/lib/drafts/service";
 import { saveDraftBasicsAction, deleteDraftAction } from "@/lib/drafts/actions";
 import { DraftBasicsFields } from "@/components/drafts/draft-basics-fields";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
+import { toRiyadhDateTimeLocal } from "@/lib/dates";
 
 /**
  * Step three of the customer's own journey: names, date, venue — and nothing
@@ -78,7 +79,7 @@ export default async function DraftBasicsPage({
             // Only pre-filled once she has actually set a date: the placeholder
             // the draft was created with is not a date she chose, and showing
             // it would invite her to accept a wedding day at random.
-            eventDateLocal: draft.locationName ? toLocalInput(draft.eventDate) : "",
+            eventDateLocal: draft.locationName ? toRiyadhDateTimeLocal(draft.eventDate) : "",
             locationName: draft.locationName,
             regionName: draft.regionName ?? "",
           }}
@@ -102,8 +103,3 @@ export default async function DraftBasicsPage({
   );
 }
 
-/** `YYYY-MM-DDTHH:mm` in the server's clock — what datetime-local expects. */
-function toLocalInput(date: Date): string {
-  const pad = (n: number) => String(n).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}

@@ -21,6 +21,7 @@ import { DesignRequestCard } from "@/components/events/design-request-card";
 import { StartDesignRequestCard } from "@/components/events/custom-design-request-fields";
 import { TestInvitationCard } from "@/components/events/test-invitation-card";
 import { ensureSelfPreviewToken } from "@/lib/preview/self";
+import { riyadhDateFormat } from "@/lib/dates";
 
 /**
  * The host's dashboard for one event.
@@ -248,7 +249,7 @@ export default async function EventDetailPage({
             <p className="mt-1 text-xs leading-relaxed text-fg-muted">
               {d.lockedBody.replace(
                 "{date}",
-                new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
+                riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
                   day: "numeric",
                   month: "long",
                   year: "numeric",

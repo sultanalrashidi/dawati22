@@ -7,6 +7,7 @@ import { listOwnedEvents, listOwnedDrafts, listEligibleOrders } from "@/lib/even
 import { classifyRsvp } from "@/lib/invitations/service";
 import { orderTerms } from "@/lib/orders/terms";
 import { Role } from "@/generated/prisma/client";
+import { riyadhDateFormat } from "@/lib/dates";
 
 const STATUS_LABEL_KEY = {
   DRAFT: "statusDraft",
@@ -104,7 +105,7 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
                 </span>
               </div>
               <p className="text-sm text-fg-muted">
-                {new Date(event.eventDate).toLocaleDateString(locale === "ar" ? "ar-SA" : "en-US")}
+                {riyadhDateFormat(locale === "ar" ? "ar-SA" : "en-US").format(new Date(event.eventDate))}
               </p>
               <p className="text-sm text-fg-muted">
                 {dict.events.guestsCount.replace("{count}", String(event.guests.length))}

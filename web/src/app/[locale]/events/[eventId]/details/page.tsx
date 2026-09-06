@@ -10,6 +10,7 @@ import { eventFieldDefaults } from "@/lib/events/field-defaults";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { EventFields } from "@/components/events/event-fields";
 import { SelfEditForm } from "@/components/events/self-edit-form";
+import { riyadhDateFormat } from "@/lib/dates";
 
 /**
  * Editing a PAID invitation — everything, until the first one actually goes out.
@@ -45,7 +46,7 @@ export default async function OwnedEventDetailsPage({
     // Deliberately a panel, not a redirect: she followed a link here on
     // purpose, and being bounced back to the dashboard with no explanation
     // reads as a fault rather than as an answer.
-    const lockedOn = new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
+    const lockedOn = riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
       day: "numeric",
       month: "long",
       year: "numeric",

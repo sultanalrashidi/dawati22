@@ -3,6 +3,7 @@
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { setEventDetailsLockAction } from "@/lib/admin/actions";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
+import { riyadhDateFormat } from "@/lib/dates";
 
 /**
  * Reopening the CUSTOMER's edit form after her first invitation went out.
@@ -41,7 +42,7 @@ export function EventLockControls({
         {locked
           ? a.editLockStateLocked.replace(
               "{date}",
-              new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
+              riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
                 day: "numeric",
                 month: "long",
                 year: "numeric",

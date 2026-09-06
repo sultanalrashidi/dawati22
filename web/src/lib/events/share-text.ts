@@ -83,10 +83,17 @@ export function composedShareLine(event: ShareTextSource): string {
 }
 
 /**
- * What to say for this event in plain text: the host's own extra text when
- * she wrote one, otherwise the composed invitation sentence.
+ * What to say for this event in plain text: the composed invitation sentence,
+ * and under it the host's own extra text when she wrote one.
+ *
+ * The field is labelled "نص إضافي" — *additional* text — and the invitation
+ * card prints it that way, under the composed line. This used to REPLACE the
+ * sentence rather than follow it, so the moment a host typed a few words of
+ * her own, every WhatsApp message and every calendar entry went out carrying
+ * neither mother's name nor the couple's — from a number most guests have not
+ * saved.
  */
 export function invitationShareText(event: ShareTextSource): string {
   const own = event.invitationTextAr?.trim();
-  return own ? own : composedShareLine(event);
+  return [composedShareLine(event), own].filter(Boolean).join("\n");
 }

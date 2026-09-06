@@ -8,6 +8,7 @@ import { listPricingRates } from "@/lib/orders/service";
 import { couplesFor } from "@/lib/events/service";
 import { resolveDraftAccess } from "@/lib/drafts/service";
 import { ActivatePicker } from "@/components/drafts/activate-picker";
+import { riyadhDateFormat } from "@/lib/dates";
 
 /**
  * Steps five and six of the customer's journey: how many invitations and
@@ -40,7 +41,7 @@ export default async function ActivateDraftPage({
   if (!withQr || !noQr) redirect(`/${locale}/plans`);
 
   const [couple] = couplesFor(draft);
-  const dateText = new Intl.DateTimeFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
+  const dateText = riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
     day: "numeric",
     month: "long",
     year: "numeric",

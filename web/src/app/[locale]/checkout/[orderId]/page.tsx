@@ -1,13 +1,29 @@
 import { notFound } from "next/navigation";
-import { isLocale } from "@/lib/i18n/locales";
-import { getDictionary } from "@/lib/i18n/get-dictionary";
+import Link from "next/link";
+import { isLocale, type Locale } from "@/lib/i18n/locales";
+import { getDictionary, type Dictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { getOwnedOrder } from "@/lib/orders/service";
 import { orderSummaryLabel } from "@/lib/orders/terms";
 import { isMoyasarConfigured, moyasarFormConfig } from "@/lib/payments/moyasar";
 import { confirmMockPaymentAction } from "@/lib/orders/actions";
 import { MoyasarForm } from "@/components/checkout/moyasar-form";
-import { Role } from "@/generated/prisma/client";
+import { OrderStatus, Role } from "@/generated/prisma/client";
+import { supportWhatsAppUrl } from "@/lib/support";
+
+/**
+ * Only a PENDING order may be paid.
+ *
+ * `confirmMoyasarPayment` enforces the same rule server-side, but by the time
+ * it runs Moyasar has already taken the card: a page that offers a live card
+ * form for a FAILED or superseded order is a page that charges a customer for
+ * something that can never be activated. So the form is gated on the one
+ * status that can still settle, and every other status gets told where its
+ * money is and where to go next.
+ */
+function isPayable(status: OrderStatus): boolean {
+  return status === OrderStatus.PENDING;
+}
 
 export default async function CheckoutPage({
   params,
@@ -48,8 +64,10 @@ export default async function CheckoutPage({
 
       {hasError && <p className="mt-4 text-sm text-danger">{dict.checkout.error}</p>}
 
-      {order.status === "PAID" ? (
+      {order.status === OrderStatus.PAID ? (
         <p className="mt-6 rounded-xl bg-success/10 px-4 py-3 text-sm text-success">{dict.common.success}</p>
+      ) : !isPayable(order.status) ? (
+        <ClosedOrder locale={locale} order={order} dict={dict} />
       ) : isMoyasarConfigured() ? (
         <div className="mt-6 space-y-4">
           <h2 className="text-sm font-medium text-fg-muted">{dict.checkout.payMoyasar}</h2>
@@ -88,6 +106,65 @@ export default async function CheckoutPage({
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * A terminal order, explained. Three things it must always say: that this
+ * order cannot be paid, where the money stands, and the one link that leads
+ * somewhere useful — her draft when the order was raised against one, her
+ * events list otherwise.
+ */
+function ClosedOrder({
+  locale,
+  order,
+  dict,
+}: {
+  locale: Locale;
+  order: { id: string; status: OrderStatus; draftEventId: string | null };
+  dict: Dictionary;
+}) {
+  const c = dict.checkout;
+  const copy =
+    order.status === OrderStatus.CANCELLED
+      ? { title: c.closedCancelledTitle, body: c.closedCancelledBody }
+      : order.status === OrderStatus.REFUNDED
+        ? { title: c.closedRefundedTitle, body: c.closedRefundedBody }
+        : { title: c.closedFailedTitle, body: c.closedFailedBody };
+
+  const onward = order.draftEventId
+    ? { href: `/${locale}/draft/${order.draftEventId}/activate`, label: c.closedBackToDraft }
+    : { href: `/${locale}/events`, label: c.closedBackToEvents };
+
+  return (
+    <div className="mt-6 rounded-2xl border border-border bg-surface-2 p-6">
+      <h2 className="text-base font-semibold text-fg">{copy.title}</h2>
+      <p className="mt-2 text-sm leading-relaxed text-fg-muted">{copy.body}</p>
+
+      <p className="mt-4 text-xs text-fg-muted">
+        {c.closedReference}:{" "}
+        <span dir="ltr" className="font-mono">
+          {order.id}
+        </span>
+      </p>
+
+      <div className="mt-5 flex flex-wrap gap-3">
+        <Link
+          href={onward.href}
+          className="flex h-11 items-center rounded-full bg-accent px-5 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong"
+        >
+          {onward.label}
+        </Link>
+        <a
+          href={supportWhatsAppUrl(`${c.closedContactMessage}${order.id}`)}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex h-11 items-center rounded-full border border-border px-5 text-sm font-medium text-fg transition-colors hover:border-accent-soft"
+        >
+          {c.closedContact}
+        </a>
+      </div>
     </div>
   );
 }

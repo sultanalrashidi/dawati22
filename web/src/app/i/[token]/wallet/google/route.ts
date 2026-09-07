@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { getInvitationByLinkToken } from "@/lib/invitations/service";
 import { googleWalletSaveUrl } from "@/lib/wallet/google";
-import { InvitationStatus } from "@/generated/prisma/client";
+import { InvitationStatus, ThemeEngine } from "@/generated/prisma/client";
+import { loadBuilderTheme } from "@/lib/themes/builder/guest";
+import type { ThemeConfig } from "@/lib/themes/types";
+import type { WalletPalette } from "@/lib/wallet/google";
 
 /**
  * The states in which a guest is holding a real ticket. They are the same
@@ -37,6 +40,15 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
     return new NextResponse("Not found", { status: 404 });
   }
 
+  // Where the pass gets its colour. A BUILDER theme keeps its palette in the
+  // database under the variant the host chose; a LEGACY one keeps it in the
+  // hand-written config. Same six roles either way, so one branch resolves
+  // both and neither engine gets a special case downstream.
+  const palette: WalletPalette | null =
+    invitation.event.theme.engine === ThemeEngine.BUILDER
+      ? ((await loadBuilderTheme(invitation.event.theme.id, invitation.event.themeVariantId))?.palette ?? null)
+      : ((invitation.event.theme.config as unknown as ThemeConfig | null)?.palette ?? null);
+
   const saveUrl = await googleWalletSaveUrl(
     {
       id: invitation.event.id,
@@ -45,6 +57,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
       locationName: invitation.event.locationName,
       regionName: invitation.event.regionName,
       mapUrl: invitation.event.mapUrl,
+      palette,
     },
     {
       id: invitation.id,

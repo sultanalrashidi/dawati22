@@ -19,8 +19,62 @@ const WALLET_API = "https://walletobjects.googleapis.com/walletobjects/v1";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const ISSUER_SCOPE = "https://www.googleapis.com/auth/wallet_object.issuer";
 
-/** The card's ink — the rose-emboss pass art this ticket stands in for. */
-const PASS_BACKGROUND = "#5b3a22";
+/** Used when a theme exposes no palette colour dark enough to print on. */
+const FALLBACK_BACKGROUND = "#5b3a22";
+
+/**
+ * Google prints the pass text in white over whatever colour it is given, so
+ * the background has to be dark enough to read against. 0.18 is where that
+ * stops being true: white on a colour of relative luminance L has a contrast
+ * ratio of 1.05 / (L + 0.05), and WCAG AA wants 4.5 — which bottoms out at
+ * L = 0.183. A pale gold accent sits near 0.46 and would come out at 1.9:1.
+ */
+const MAX_BACKGROUND_LUMINANCE = 0.18;
+
+/**
+ * The six colour roles every theme exposes, BUILDER and LEGACY alike —
+ * `ThemeConfig.palette` and `VariantPalette` are the same shape.
+ */
+export type WalletPalette = {
+  bg: string;
+  surface: string;
+  fg: string;
+  fgMuted: string;
+  accent: string;
+  accentFg: string;
+};
+
+/** Relative luminance, sRGB, per WCAG — 0 is black, 1 is white. */
+function luminance(hex: string): number | null {
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!m) return null;
+  const channel = (v: number) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const n = parseInt(m[1], 16);
+  return 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
+}
+
+/**
+ * The pass takes the event's own theme colour — the first of the theme's own
+ * roles that white text can actually be read on.
+ *
+ * `accent` leads because it is the colour the customer picked and the one the
+ * gallery swatch shows. `bg` follows, which is what carries a dark design like
+ * Royal Palace, whose gold accent is far too pale to print white over. `fg`
+ * comes last: on a light design it is the dark ink already used for body text.
+ * Every candidate is a real colour from that theme, never a synthetic
+ * darkening, so the pass can only ever look like the design it came from.
+ */
+export function passBackgroundColor(palette: WalletPalette | null): string {
+  if (!palette) return FALLBACK_BACKGROUND;
+  for (const candidate of [palette.accent, palette.bg, palette.fg]) {
+    const l = luminance(candidate);
+    if (l !== null && l <= MAX_BACKGROUND_LUMINANCE) return candidate;
+  }
+  return FALLBACK_BACKGROUND;
+}
 
 type WalletConfig = {
   issuerId: string;
@@ -214,6 +268,8 @@ export type WalletEvent = {
   locationName: string;
   regionName: string | null;
   mapUrl: string | null;
+  /** The event's theme palette; null for a theme that exposes none. */
+  palette: WalletPalette | null;
 };
 
 export type WalletGuest = {
@@ -247,7 +303,7 @@ export async function googleWalletSaveUrl(event: WalletEvent, guest: WalletGuest
       id: classId,
       issuerName: "دعوتي",
       reviewStatus: "UNDER_REVIEW",
-      hexBackgroundColor: PASS_BACKGROUND,
+      hexBackgroundColor: passBackgroundColor(event.palette),
       eventName: { defaultValue: { language: "ar", value: event.name } },
       venue: {
         name: { defaultValue: { language: "ar", value: event.locationName } },

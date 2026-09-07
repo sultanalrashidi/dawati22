@@ -25,6 +25,7 @@ import { ButtonContent } from "./layers/button-layer";
 import { NotesContent } from "./layers/notes-layer";
 import { ScheduleContent } from "./layers/schedule-layer";
 import { RsvpContent, type StageRsvp } from "./layers/rsvp-layer";
+import { FittedText } from "./layers/fitted-text";
 
 /**
  * The one renderer for builder themes.
@@ -341,7 +342,7 @@ function LayerContent({
       );
     }
     case "text":
-      return <TextContent layer={layer} content={content} typography={typography} breakpoint={breakpoint} />;
+      return <TextContent layer={layer} content={content} typography={typography} breakpoint={breakpoint} editing={editing} />;
     case "seal":
       return <SealContent layer={layer} content={content} typography={typography} breakpoint={breakpoint} />;
     case "qr":
@@ -425,30 +426,25 @@ function TextContent({
   content,
   typography,
   breakpoint,
+  editing,
 }: {
   layer: TextLayer;
   content: ResolvedContent;
   typography: TypographyDoc;
   breakpoint: Breakpoint;
+  editing: boolean;
 }) {
   const style = resolveTextStyle(layer, breakpoint);
   const lines =
     layer.source === "content"
       ? contentLines(layer.fields, content)
       : interpolate(layer.text, content).split("\n");
-
   return (
-    <div
-      dir="rtl"
-      className="flex h-full w-full flex-col"
+    <FittedText
+      lines={lines}
+      editing={editing}
       style={{ ...textStyleToCss(style, typography), justifyContent: justifyFor(style.align) }}
-    >
-      {lines.map((line, index) => (
-        <span key={index} className="block whitespace-pre-wrap break-words">
-          {line}
-        </span>
-      ))}
-    </div>
+    />
   );
 }
 

@@ -10,6 +10,7 @@ import { ScenesPanel } from "@/components/admin/builder/scenes-panel";
 import { VariantsPanel, type VariantRow } from "@/components/admin/builder/variants-panel";
 import { SettingsPanel } from "@/components/admin/builder/settings-panel";
 import { GhostButton } from "@/components/admin/builder/builder-ui";
+import { RibbonGreetingPreset } from "@/components/admin/builder/ribbon-greeting-preset";
 import { createLayer } from "@/components/admin/builder/layer-factory";
 import {
   arabicNumber,
@@ -20,8 +21,8 @@ import {
 import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
 import { CORE_SLOTS } from "@/lib/themes/builder/slots";
 import { buildAssetMap } from "@/lib/themes/builder/resolve";
-import { resolveContent, SAMPLE_CONTENT_INPUT } from "@/lib/themes/builder/content";
-import { parseLayoutDoc } from "@/lib/themes/builder/schema";
+import { resolveContent, SAMPLE_CONTENT_INPUT, type InvitationContentInput } from "@/lib/themes/builder/content";
+import { assertLayoutDoc, assertLayoutOverrides, parseLayoutDoc } from "@/lib/themes/builder/schema";
 import {
   DEFAULT_PALETTE,
   DEVICE_PRESETS,
@@ -123,6 +124,7 @@ const SIDE_TABS: { id: SidePanel; label: string }[] = [
 
 export function ThemeBuilder({
   themeId,
+  themeSlug = "",
   themeStatus,
   locale,
   initialLayout,
@@ -131,8 +133,10 @@ export function ThemeBuilder({
   assets,
   fonts,
   blobEnabled,
+  localPreview,
 }: {
   themeId: string;
+  themeSlug?: string;
   themeStatus: string;
   locale: string;
   initialLayout: LayoutDoc;
@@ -141,12 +145,16 @@ export function ThemeBuilder({
   assets: AssetRow[];
   fonts: FontOption[];
   blobEnabled: boolean;
+  /** Snapshot-only QA: never mount server-writing panels or invoke actions. */
+  localPreview?: { width: number; height: number; content: InvitationContentInput };
 }) {
   const router = useRouter();
   const initialVariant = variants.find((v) => v.isDefault) ?? variants[0];
-  const state = useBuilderState(initialLayout, paintOf(initialVariant), geometryOf(initialVariant));
+  const state = useBuilderState(initialLayout, paintOf(initialVariant), geometryOf(initialVariant), localPreview ? "greeting" : undefined);
   const [side, setSide] = useState<SidePanel>("design");
-  const [showGuides, setShowGuides] = useState(true);
+  const [showGuides, setShowGuides] = useState(!localPreview);
+  const [previewOverrides, setPreviewOverrides] = useState<Record<string, LayoutOverrides>>({});
+  const [previewSaved, setPreviewSaved] = useState<string | null>(null);
   const [activeVariantId, setActiveVariantId] = useState(
     () => (variants.find((v) => v.isDefault) ?? variants[0])?.id ?? "",
   );
@@ -183,6 +191,17 @@ export function ThemeBuilder({
       // write the old colours over the new ones. Wait for the refresh.
       if (saving || id === activeVariantId) return;
       const next = variants.find((v) => v.id === id);
+      if (localPreview) {
+        // Keep test edits only in memory, including colour switches. Never
+        // reach the production editor's autosave branch from this fixture.
+        if (activeVariant) setPreviewOverrides((current) => ({ ...current,
+          [activeVariant.id]: mergeOverrides(activeVariant.overrides, paint, variantGeometry) }));
+        const stored = next && { ...next, overrides: previewOverrides[id] ?? next.overrides };
+        setActiveVariantId(id);
+        replacePaint(paintOf(stored));
+        replaceVariantGeometry(geometryOf(stored));
+        return;
+      }
       const switchTo = () => {
         setActiveVariantId(id);
         replacePaint(paintOf(next));
@@ -214,7 +233,7 @@ export function ThemeBuilder({
         switchTo();
       });
     },
-    [saving, activeVariantId, activeVariant, variants, replacePaint, replaceVariantGeometry, paintDirty, paint, variantGeometry, markPaintSaved, router],
+    [saving, activeVariantId, activeVariant, variants, replacePaint, replaceVariantGeometry, paintDirty, paint, variantGeometry, markPaintSaved, router, localPreview, previewOverrides],
   );
   /**
    * A colour edit does not touch the layout document, so the document's own
@@ -232,12 +251,26 @@ export function ThemeBuilder({
     () => buildAssetMap(assets, activeVariant?.id ?? null),
     [assets, activeVariant?.id],
   );
-  const content = useMemo(() => resolveContent(SAMPLE_CONTENT_INPUT), []);
+  const content = useMemo(() => resolveContent(localPreview?.content ?? SAMPLE_CONTENT_INPUT), [localPreview?.content]);
 
   const save = useCallback(() => {
     if (saving) return;
     setSaveError(null);
     const snapshot = { doc: state.doc, paint: state.paint, variantGeometry: state.variantGeometry };
+    if (localPreview) {
+      // Exercise the same document validation/serialization as saveLayoutDoc,
+      // but deliberately do not call it or any database-backed action.
+      const layout = assertLayoutDoc(JSON.parse(JSON.stringify(snapshot.doc)));
+      const overrides = { ...previewOverrides, ...(activeVariant ? {
+        [activeVariant.id]: mergeOverrides(activeVariant.overrides, snapshot.paint, snapshot.variantGeometry),
+      } : {}) };
+      for (const value of Object.values(overrides)) assertLayoutOverrides(value);
+      setPreviewSaved(JSON.stringify({ layout, overrides }));
+      setPreviewOverrides(overrides);
+      state.markSaved(layout);
+      state.markPaintSaved();
+      return;
+    }
     startSaving(async () => {
       const result = await saveLayoutAction(themeId, snapshot.doc);
       if (result?.error) {
@@ -262,7 +295,7 @@ export function ThemeBuilder({
       if (latest.current.doc === snapshot.doc) state.markSaved(snapshot.doc);
       router.refresh();
     });
-  }, [saving, themeId, state, router, activeVariant]);
+  }, [saving, themeId, state, router, activeVariant, localPreview, previewOverrides]);
 
   // Ctrl/Cmd+S saves, Ctrl/Cmd+Z undoes — muscle memory in a canvas editor.
   useEffect(() => {
@@ -286,13 +319,13 @@ export function ThemeBuilder({
   // Leaving with unsaved layout changes loses real work — the document only
   // lives in this component's state until an explicit save.
   useEffect(() => {
-    if (!unsaved) return;
+    if (!unsaved || localPreview) return;
     function warn(event: BeforeUnloadEvent) {
       event.preventDefault();
     }
     window.addEventListener("beforeunload", warn);
     return () => window.removeEventListener("beforeunload", warn);
-  }, [unsaved]);
+  }, [unsaved, localPreview]);
 
   function addLayer(type: LayerType, slot?: string) {
     state.addLayer(createLayer(type, state.scene, state.nextZ(state.scene), slot));
@@ -307,6 +340,7 @@ export function ThemeBuilder({
    * shows on an empty canvas.
    */
   function applyStarterLayout() {
+    if (localPreview) return;
     setSaveError(null);
     startSaving(async () => {
       const result = await applyStarterLayoutAction(themeId, locale);
@@ -326,6 +360,30 @@ export function ThemeBuilder({
 
   return (
     <div className="flex flex-col gap-3">
+      {localPreview && <div className="rounded-xl border border-border p-3 text-sm">
+        <p>محرر محلي ببيانات توضيحية — الحفظ والتبديل هنا في الذاكرة فقط، ولا يصلان إلى قاعدة البيانات.</p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {variants.map((variant) => <button key={variant.id} type="button" aria-pressed={activeVariantId === variant.id}
+            className="rounded-full border px-3 py-2" onClick={() => selectVariant(variant.id)}>{variant.nameAr}</button>)}
+          <button type="button" className="rounded-full border px-3 py-2" onClick={save}>حفظ نسخة محلية</button>
+          <button type="button" className="rounded-full border px-3 py-2 disabled:opacity-40" disabled={!previewSaved}
+            onClick={() => {
+              if (!previewSaved) return;
+              const saved = JSON.parse(previewSaved) as { layout: LayoutDoc; overrides: Record<string, LayoutOverrides> };
+              for (const value of Object.values(saved.overrides)) assertLayoutOverrides(value);
+              state.markSaved(parseLayoutDoc(assertLayoutDoc(saved.layout)));
+              setPreviewOverrides(saved.overrides);
+              const stored = activeVariant && { ...activeVariant, overrides: saved.overrides[activeVariantId] ?? activeVariant.overrides };
+              replacePaint(paintOf(stored)); replaceVariantGeometry(geometryOf(stored));
+            }}>إعادة تحميل النسخة المحلية</button>
+        </div>
+        {previewSaved && <p role="status">تم حفظ نسخة في الذاكرة والتحقق من مخططها، وليست في قاعدة البيانات.</p>}
+        <output hidden data-preview-layout>{JSON.stringify(state.doc)}</output>
+      </div>}
+      {state.scene === "greeting" && <RibbonGreetingPreset themeSlug={themeSlug} layout={state.doc}
+        overrides={[...variants.map((variant) => localPreview ? previewOverrides[variant.id] ?? variant.overrides : variant.overrides), state.variantOverrides]}
+        published={!localPreview && themeStatus === "PUBLISHED"} disabled={saving}
+        onApply={(layout) => { state.applyDocument(layout); state.setTransformScope("all"); state.setSelectedId(null); }} />}
       {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border bg-surface p-2">
         {/* Scene tabs, in the order the guest scrolls through them. */}
@@ -378,7 +436,7 @@ export function ThemeBuilder({
           ))}
           <AddImageMenu onAdd={(slot) => addLayer("asset", slot)} />
           <AddMenu label="+ مكوّن" items={ADD_BLOCKS} onAdd={(type) => addLayer(type)} />
-          {state.doc.layers.length === 0 && (
+          {!localPreview && state.doc.layers.length === 0 && (
             <GhostButton
               title="يضيف الظرف والبطاقة والنصوص الأساسية في أماكنها"
               disabled={saving}
@@ -432,7 +490,7 @@ export function ThemeBuilder({
           )}
         </div>
 
-        <div className="ms-auto flex items-center gap-2">
+        {!localPreview && <div className="ms-auto flex items-center gap-2">
           {unsaved && <span className="text-xs text-warning">تغييرات غير محفوظة</span>}
           <a
             href={`/theme-preview/${themeId}`}
@@ -454,6 +512,7 @@ export function ThemeBuilder({
             type="button"
             onClick={() =>
               startSaving(async () => {
+                if (localPreview) return;
                 const found = await checkBuilderThemeAction(themeId);
                 setIssues(found);
                 if (found.some((i) => i.level === "error")) return;
@@ -467,7 +526,7 @@ export function ThemeBuilder({
           >
             {themeStatus === "PUBLISHED" ? "إعادة الفحص" : "نشر"}
           </button>
-        </div>
+        </div>}
       </div>
 
       {saveError && <p className="rounded-lg bg-danger/10 p-2 text-xs whitespace-pre-line text-danger">{saveError}</p>}
@@ -498,7 +557,7 @@ export function ThemeBuilder({
       )}
 
       <div className="grid gap-3 lg:grid-cols-[1fr_360px]">
-        <div className="overflow-auto rounded-xl border border-border bg-surface-2 p-4">
+        <div data-builder-preview className="overflow-auto rounded-xl border border-border bg-surface-2 p-4">
           {activeVariant ? (
             <BuilderCanvas
               // The variant's own colours merged in, so the stage shows the
@@ -516,8 +575,8 @@ export function ThemeBuilder({
               breakpoint={state.breakpoint}
               selectedId={state.selectedId}
               showGuides={showGuides}
-              deviceWidth={DEVICE_PRESETS[state.breakpoint].width}
-              deviceHeight={DEVICE_PRESETS[state.breakpoint].height}
+              deviceWidth={state.breakpoint === "base" && localPreview ? localPreview.width : DEVICE_PRESETS[state.breakpoint].width}
+              deviceHeight={state.breakpoint === "base" && localPreview ? localPreview.height : DEVICE_PRESETS[state.breakpoint].height}
               onSelect={state.setSelectedId}
               onBeginInteraction={state.beginInteraction}
               onTransform={(id, patch) => state.patchTransform(id, patch, { history: false })}
@@ -529,7 +588,7 @@ export function ThemeBuilder({
 
         <div className="flex flex-col gap-3">
           <div className="flex rounded-lg border border-border p-0.5">
-            {SIDE_TABS.map((tab) => (
+            {SIDE_TABS.filter((tab) => !localPreview || (tab.id !== "assets" && tab.id !== "colors")).map((tab) => (
               <button
                 key={tab.id}
                 type="button"
@@ -586,7 +645,7 @@ export function ThemeBuilder({
             />
           )}
 
-          {side === "assets" && activeVariant && (
+          {!localPreview && side === "assets" && activeVariant && (
             <AssetsPanel
               themeId={themeId}
               variantId={activeVariant.id}
@@ -598,7 +657,7 @@ export function ThemeBuilder({
             />
           )}
 
-          {side === "colors" && (
+          {!localPreview && side === "colors" && (
             <VariantsPanel
               switching={saving}
               themeId={themeId}

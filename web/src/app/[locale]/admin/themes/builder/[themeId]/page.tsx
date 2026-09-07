@@ -59,6 +59,20 @@ export default async function ThemeBuilderPage({ params }: PageProps<"/[locale]/
             {builder.theme._count.events > 0 && ` · ${builder.theme._count.events} events`}
           </p>
         </div>
+
+        {/* The backup, one click from the editor that overwrites the live
+            template. A plain <a>, not a Link: it downloads a file, and Next
+            would prefetch a route that reads the whole theme. */}
+        <div className="text-end">
+          <a
+            href={`/api/admin/themes/${builder.theme.id}/raw-export`}
+            download
+            className="inline-block h-9 rounded-full border border-accent px-4 text-xs font-medium leading-9 text-accent transition-colors hover:bg-accent hover:text-accent-fg"
+          >
+            {dict.admin.rawExport}
+          </a>
+          <p className="mt-1 max-w-64 text-[11px] leading-relaxed text-fg-muted">{dict.admin.rawExportHint}</p>
+        </div>
       </header>
 
       {/* A theme imported from the hand-coded engine keeps its original
@@ -77,6 +91,7 @@ export default async function ThemeBuilderPage({ params }: PageProps<"/[locale]/
 
       <ThemeBuilder
         themeId={builder.theme.id}
+        themeSlug={builder.theme.slug}
         themeStatus={builder.theme.status}
         locale={locale}
         initialLayout={builder.layout}

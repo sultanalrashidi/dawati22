@@ -704,7 +704,9 @@
     "noInvitationYet": "بدون دعوة",
     "markGuestsDone": "علِّمها: تم إرسال الدعوات",
     "markGuestsPending": "إرجاعها قيد التنفيذ",
-    "sentMark": "أُرسلت"
+    "sentMark": "أُرسلت",
+    "rawExport": "تنزيل نسخة RAW",
+    "rawExportHint": "نسخة احتياطية من الصف كما هو في القاعدة، مع revision — خذها قبل أي حفظ على قالب منشور."
   },
   "gate": {
     "title": "بوابة الدخول",

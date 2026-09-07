@@ -704,7 +704,9 @@
     "noInvitationYet": "No invitation",
     "markGuestsDone": "Mark: invitations sent",
     "markGuestsPending": "Back to pending",
-    "sentMark": "Sent"
+    "sentMark": "Sent",
+    "rawExport": "Download RAW backup",
+    "rawExportHint": "The row exactly as the database holds it, with its revision — take one before saving a published theme."
   },
   "gate": {
     "title": "Gate Check-in",

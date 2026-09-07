@@ -271,6 +271,7 @@ export function useBuilderState(
   initial: LayoutDoc,
   initialPaint: VariantPaint = {},
   initialGeometry: VariantGeometry = {},
+  initialScene?: SceneId,
 ) {
   const [doc, setDoc] = useState<LayoutDoc>(initial);
   /**
@@ -287,7 +288,7 @@ export function useBuilderState(
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Scenes are user-defined now, so "cover" is a likely id rather than a
   // guaranteed one — a theme whose cover was renamed must still open.
-  const [scene, setScene] = useState<SceneId>(() => firstScene(initial));
+  const [scene, setScene] = useState<SceneId>(() => initialScene ?? firstScene(initial));
   const [breakpoint, setBreakpoint] = useState<Breakpoint>("base");
   const [dirty, setDirty] = useState(false);
 
@@ -317,30 +318,23 @@ export function useBuilderState(
   );
 
   const undo = useCallback(() => {
-    setPast((stack) => {
-      if (stack.length === 0) return stack;
-      const previous = stack[stack.length - 1];
-      setDoc((current) => {
-        setFuture((forward) => [current, ...forward.slice(0, HISTORY_LIMIT - 1)]);
-        return previous;
-      });
-      setDirty(true);
-      return stack.slice(0, -1);
-    });
-  }, []);
+    if (past.length === 0) return;
+    // State updaters must be pure: Strict Mode may invoke them twice. The old
+    // nested setters duplicated future entries and made Redo restore the
+    // pre-edit document instead of the proposal the admin just undid.
+    setDoc(past[past.length - 1]);
+    setPast(past.slice(0, -1));
+    setFuture((forward) => [doc, ...forward.slice(0, HISTORY_LIMIT - 1)]);
+    setDirty(true);
+  }, [doc, past]);
 
   const redo = useCallback(() => {
-    setFuture((forward) => {
-      if (forward.length === 0) return forward;
-      const next = forward[0];
-      setDoc((current) => {
-        setPast((stack) => [...stack, current]);
-        return next;
-      });
-      setDirty(true);
-      return forward.slice(1);
-    });
-  }, []);
+    if (future.length === 0) return;
+    setDoc(future[0]);
+    setPast((stack) => [...stack.slice(-(HISTORY_LIMIT - 1)), doc]);
+    setFuture(future.slice(1));
+    setDirty(true);
+  }, [doc, future]);
 
   // ---- layer operations -------------------------------------------------
 
@@ -820,6 +814,8 @@ export function useBuilderState(
   return {
     doc,
     setDoc,
+    // Explicit presets are one normal, undoable shared-document edit.
+    applyDocument: (next: LayoutDoc) => mutate(() => next),
     dirty,
     markSaved,
     paint,

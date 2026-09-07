@@ -160,6 +160,13 @@ interface Props {
   hasQr?: boolean;
   qrDataUrl: string | null;
   /**
+   * Whether the Google Wallet issuer credentials are live. Off by default, so
+   * every existing caller — previews, tests, the theme gallery — renders
+   * exactly as before, and the button appears only once the issuer account is
+   * approved and configured in the environment.
+   */
+  walletEnabled?: boolean;
+  /**
    * Set for BUILDER themes only. The whole invitation then comes from the
    * admin's own document: the cover, every post-open screen in the order the
    * scene list gives them, and the entry pass. LEGACY themes never pass it and
@@ -562,6 +569,7 @@ function InvitationScreens({
   status,
   hasQr = true,
   qrDataUrl,
+  walletEnabled = false,
   mode = "live",
   testCopy = false,
   builder,
@@ -1613,6 +1621,18 @@ function InvitationScreens({
               )
             ) : (
               <p className="text-[var(--color-accent)]">{g.thanksAccept}</p>
+            )}
+            {/* Offered only on a real, accepted, QR-bearing invitation. A test
+                invitation is deliberately excluded: its code opens no door, and
+                a ticket sitting in the host's own wallet would look like one
+                that does. */}
+            {walletEnabled && hasQr && currentQr && linkToken && !testCopy && mode !== "preview" && (
+              <a
+                href={`/i/${linkToken}/wallet/google`}
+                className="mt-4 inline-flex h-11 items-center rounded-full border border-[var(--color-fg-muted)]/40 px-6 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              >
+                {g.addToGoogleWallet}
+              </a>
             )}
             {/* `testCopy` first: the other three are style branches, and on a
                 plain legacy design none of them is true — which would mean the

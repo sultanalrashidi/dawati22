@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getInvitationByLinkToken, markViewed } from "@/lib/invitations/service";
 import { renderQrDataUrl } from "@/lib/qr";
+import { googleWalletConfigured } from "@/lib/wallet/google";
 import { InvitationStatus, ThemeEngine } from "@/generated/prisma/client";
 import { InvitationView } from "@/components/guest/invitation-view";
 import { GuestMessage } from "@/components/guest/guest-message";
@@ -140,6 +141,7 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
         status={displayStatus}
         hasQr={invitation.event.hasQr}
         qrDataUrl={qrDataUrl}
+        walletEnabled={googleWalletConfigured()}
       />
     </>
   );

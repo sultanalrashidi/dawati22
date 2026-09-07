@@ -6,7 +6,6 @@ import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { getOwnedEvent, listPublishedThemes } from "@/lib/events/service";
 import { getDesignRequestForEvent } from "@/lib/design-requests/service";
 import { THEME_CATEGORIES, THEME_COLORS } from "@/lib/themes/vocabulary";
-import { orderTerms } from "@/lib/orders/terms";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { attendanceSnapshot, daysUntil, eventHasStarted, relativeTime } from "@/lib/events/activity";
 import { guestInvitationUrl, testInvitationUrl } from "@/lib/urls";
@@ -22,6 +21,7 @@ import { StartDesignRequestCard } from "@/components/events/custom-design-reques
 import { TestInvitationCard } from "@/components/events/test-invitation-card";
 import { ensureSelfPreviewToken } from "@/lib/preview/self";
 import { riyadhDateFormat } from "@/lib/dates";
+import { eventCapacity } from "@/lib/events/capacity";
 import { LiveAttendance } from "@/components/events/live-attendance";
 
 /**
@@ -72,7 +72,9 @@ export default async function EventDetailPage({
   const testToken = await ensureSelfPreviewToken(eventId, user.id);
 
   const d = dict.events.detail;
-  const capacity = orderTerms(event.order).invitationCount;
+  // What she may USE: bought plus granted. The receipt screen deliberately
+  // shows a different number — see `@/lib/events/capacity`.
+  const capacity = eventCapacity(event);
   const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
   // The line above the link in the WhatsApp message a host sends each guest:
   // her extra text if she wrote one, else the composed invitation sentence.

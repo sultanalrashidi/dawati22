@@ -8,6 +8,8 @@ import {
   setEventDetailsLock,
   setGuestManagementDone,
   updatePricingRate,
+  grantExtraInvitations,
+  AdminGrantError,
 } from "@/lib/admin/service";
 import { EventError, updateEventDetails } from "@/lib/events/service";
 import { markInvitationShared, markInvitationsShared } from "@/lib/guests/service";
@@ -16,6 +18,7 @@ import { sweepAbandonedDrafts } from "@/lib/drafts/sweep";
 import { Role, EventStatus } from "@/generated/prisma/client";
 import { parseTier } from "@/lib/orders/pricing";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
+import { logger } from "@/lib/logger";
 
 async function requireAdmin() {
   return requireUserOrThrow([Role.ADMIN]);
@@ -176,4 +179,55 @@ export async function updatePricingRateAction(
   // The public price list reads these rows on every render.
   revalidatePath(`/${safeLocale}/plans`);
   return { saved: true };
+}
+
+export type GrantActionState = { error?: string; saved?: { total: number; granted: number } } | null;
+
+/**
+ * Hand an event more invitations than were paid for.
+ *
+ * The reason is required and stored: a grant is capacity with no money behind
+ * it, so "why" is the only thing that makes the audit row worth reading later.
+ * Every refusal comes back as a code the form renders — an admin who is told
+ * "something went wrong" while trying to fix a customer's night will simply
+ * press it again.
+ */
+export async function grantExtraInvitationsAction(
+  eventId: string,
+  locale: string,
+  _prev: GrantActionState,
+  formData: FormData,
+): Promise<GrantActionState> {
+  const admin = await requireAdmin();
+  const safeLocale = isLocale(locale) ? locale : defaultLocale;
+
+  const extra = Number(formData.get("extraInvitationCount"));
+  const reason = String(formData.get("reason") ?? "");
+  // What the panel was showing when it was submitted. The service refuses the
+  // write if the column has moved since — see `grantExtraInvitations`.
+  const expectedBefore = Number(formData.get("expectedBefore"));
+
+  try {
+    const result = await grantExtraInvitations(
+      eventId,
+      { id: admin.id, name: admin.name, role: admin.role },
+      extra,
+      reason,
+      Number.isInteger(expectedBefore) ? expectedBefore : -1,
+    );
+    // Both sides: the admin screen he is looking at, and the customer's own
+    // dashboard, which is where the new capacity actually has to appear.
+    revalidatePath(`/${safeLocale}/admin/events/${eventId}`);
+    revalidatePath(`/${safeLocale}/events/${eventId}`);
+    revalidatePath(`/${safeLocale}/events`);
+    return { saved: { total: result.total, granted: result.granted } };
+  } catch (err) {
+    if (err instanceof AdminGrantError) return { error: err.message };
+    // Anything else — a lock wait that outran the budget, a dropped connection
+    // — has to come back as something the panel can render. A thrown server
+    // action escapes as an uncaught window error, which leaves an admin
+    // staring at a dead button with no idea whether the grant landed.
+    logger.error("admin.grant_failed", { eventId, err: String(err) });
+    return { error: "generic" };
+  }
 }

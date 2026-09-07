@@ -5,9 +5,9 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { listOwnedEvents, listOwnedDrafts, listEligibleOrders } from "@/lib/events/service";
 import { classifyRsvp } from "@/lib/invitations/service";
-import { orderTerms } from "@/lib/orders/terms";
 import { Role } from "@/generated/prisma/client";
 import { riyadhDateFormat } from "@/lib/dates";
+import { eventCapacity } from "@/lib/events/capacity";
 
 const STATUS_LABEL_KEY = {
   DRAFT: "statusDraft",
@@ -116,7 +116,7 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
                 // A declined guest gives her slot back — see guests/service.ts
                 // addGuest() for the actual enforcement this mirrors.
                 const occupiedSlots = event.guests.length - declined;
-                const remaining = Math.max(0, orderTerms(event.order).invitationCount - occupiedSlots);
+                const remaining = Math.max(0, eventCapacity(event) - occupiedSlots);
                 return (
                   <p className="text-xs text-fg-muted">
                     {dict.events.detail.statsRemaining} {remaining} · {dict.events.detail.rsvpAccepted} {accepted} · {dict.events.detail.rsvpDeclined} {declined}

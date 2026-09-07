@@ -2,10 +2,10 @@ import "server-only";
 import { prisma } from "@/lib/db/client";
 import { generateSecureToken } from "@/lib/security/tokens";
 import { InvitationStatus, type Prisma } from "@/generated/prisma/client";
-import { orderTerms } from "@/lib/orders/terms";
 import { lockEventDetailsOp } from "@/lib/events/lock";
 import { MAX_SEATS, type ParsedRow } from "@/lib/guests/import-parse";
 import { normalizeArabic } from "@/lib/arabic";
+import { eventCapacity } from "@/lib/events/capacity";
 import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
 
 export class GuestError extends Error {}
@@ -37,17 +37,17 @@ export async function addGuest(
   if (input.allowedCount < 1 || input.allowedCount > MAX_SEATS) {
     throw new GuestError("Invalid seat count");
   }
-  // The count the customer PAID for, snapshotted on the order — not the plan
-  // row, which is editable settings: changing a package used to resize every
-  // live event on it.
-  const capacity = orderTerms(event.order).invitationCount;
-
   return prisma.$transaction(async (tx) => {
     // The check and the write on the same queue as the bulk import. Without
     // the row lock the two paths simply do not see each other, and pasting a
     // list on a laptop while adding one guest on a phone could take the event
-    // over the paid count.
-    await lockEventForCapacity(tx, eventId);
+    // over the count.
+    //
+    // Capacity is what she PAID FOR plus what the owner GRANTED, and the
+    // granted half comes from the locked read so a grant changing underneath
+    // cannot be missed.
+    const { extraInvitationCount } = await lockEventForCapacity(tx, eventId);
+    const capacity = eventCapacity({ ...event, extraInvitationCount });
     if ((await occupiedSlotCount(tx, eventId)) >= capacity) {
       throw new GuestError("Guest limit reached for this event's plan");
     }
@@ -93,16 +93,31 @@ export async function addGuest(
 }
 
 /**
- * Serializes every writer that has to respect the paid capacity onto one row.
+ * Serializes every writer that has to respect the capacity onto one row, and
+ * hands back the half of that capacity which can change.
  *
  * `FOR UPDATE` on the Event, not on the Guest rows, because the thing being
  * protected is a COUNT — the rows a competing transaction is about to insert
  * are not there to be locked. Both `addGuest` and `addGuestsBulk` take it
  * before counting, so the second one waits for the first to commit and then
  * counts what the first actually wrote.
+ *
+ * It RETURNS `extraInvitationCount` for a reason. Capacity used to be read
+ * before the transaction opened, which was safe only while it came from the
+ * order snapshot — a column that never changes. The hand-granted half does
+ * change, and reading it outside the lock puts a window between the read and
+ * the count: the owner reduces a grant he issued by mistake, and an import
+ * already in flight commits against a capacity that no longer exists. So the
+ * mutable half is read here, under the lock, and nowhere else.
  */
-async function lockEventForCapacity(tx: Prisma.TransactionClient, eventId: string) {
-  await tx.$queryRaw`SELECT id FROM "Event" WHERE id = ${eventId} FOR UPDATE`;
+async function lockEventForCapacity(
+  tx: Prisma.TransactionClient,
+  eventId: string,
+): Promise<{ extraInvitationCount: number }> {
+  const [row] = await tx.$queryRaw<{ extraInvitationCount: number }[]>`
+    SELECT "extraInvitationCount" FROM "Event" WHERE id = ${eventId} FOR UPDATE
+  `;
+  return { extraInvitationCount: row?.extraInvitationCount ?? 0 };
 }
 
 /**
@@ -269,12 +284,12 @@ export async function addGuestsBulk(
     throw new GuestError("Invalid seat count");
   }
 
-  const capacity = orderTerms(event.order).invitationCount;
-
   return prisma.$transaction(async (tx) => {
     // Already applied? Answered inside the lock, so a double submit that
     // arrives while the first is still committing waits and then sees it.
-    await lockEventForCapacity(tx, eventId);
+    // The lock also yields the granted half of the capacity — see its comment.
+    const { extraInvitationCount } = await lockEventForCapacity(tx, eventId);
+    const capacity = eventCapacity({ ...event, extraInvitationCount });
     const existingBatch = await tx.guest.count({ where: { eventId, importBatchId: batchId } });
     if (existingBatch > 0) {
       return { created: 0, alreadyApplied: true, capacityShortBy: 0 };

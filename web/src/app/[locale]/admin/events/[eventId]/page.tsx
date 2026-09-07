@@ -9,7 +9,10 @@ import { eventFieldDefaults } from "@/lib/events/field-defaults";
 import { EventTypeGate } from "@/components/events/event-type-gate";
 import { EventEditForm } from "@/components/admin/event-edit-form";
 import { EventLockControls } from "@/components/admin/event-lock-controls";
-import { countSentInvitations } from "@/lib/admin/service";
+import { countSentInvitations, getGrantContext, MAX_EXTRA_INVITATIONS } from "@/lib/admin/service";
+import { GrantInvitationsPanel } from "@/components/admin/grant-invitations-panel";
+import { requireUserOrRedirect } from "@/lib/auth/guards";
+import { Role } from "@/generated/prisma/client";
 
 export default async function AdminEventEditPage({
   params,
@@ -17,6 +20,10 @@ export default async function AdminEventEditPage({
   const { locale, eventId } = await params;
   if (!isLocale(locale)) notFound();
   const dict = await getDictionary(locale);
+  // Its own guard, not only the layout's. This page can now hand out capacity
+  // nobody paid for; a route that does that must not depend on a parent
+  // component staying in place.
+  await requireUserOrRedirect(locale, [Role.ADMIN]);
 
   const event = await getEventForEdit(eventId);
   if (!event) notFound();
@@ -35,6 +42,9 @@ export default async function AdminEventEditPage({
   // What support must see before reopening: how many invitations are already
   // out there carrying the details they are about to let the customer rewrite.
   const sentCount = await countSentInvitations(eventId);
+
+  // Paid, granted, in use — and the history of every grant before this one.
+  const grant = await getGrantContext(eventId);
 
   const a = dict.admin;
 
@@ -61,6 +71,22 @@ export default async function AdminEventEditPage({
         lockedAt={event.detailsLockedAt}
         sentCount={sentCount}
       />
+
+      {/* Only on an activated event: a grant on a draft would survive
+          activation and hand her capacity her order never mentions. */}
+      {grant && event.orderId && (
+        <GrantInvitationsPanel
+          eventId={event.id}
+          locale={locale}
+          dict={dict}
+          paid={grant.paid}
+          granted={grant.granted}
+          occupied={grant.occupied}
+          hasQr={grant.hasQr}
+          maxExtra={MAX_EXTRA_INVITATIONS}
+          history={grant.history}
+        />
+      )}
 
       <EventEditForm eventId={event.id} locale={locale} dict={dict}>
         {/* `enabled={false}`: the "weddings only" gate is a sales rule for the

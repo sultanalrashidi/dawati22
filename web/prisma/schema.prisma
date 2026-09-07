@@ -496,6 +496,21 @@ model Event {
    */
   orderId               String?                  @unique
   order                 Order?                   @relation(fields: [orderId], references: [id], onDelete: Restrict)
+  /**
+   * Invitations granted by hand, on top of what the order bought.
+   *
+   * Capacity is `Order.invitationCount + this`. It is a separate column and
+   * not an edit to the order for one reason: `Order.invitationCount` is the
+   * figure Moyasar payments are reconciled against, so raising it would make
+   * the order lie about the amount that was actually charged. And it cannot
+   * be a second order either — `orderId` above is @unique, so an event can
+   * never hold one.
+   *
+   * Keeping them apart also keeps the two facts readable side by side: what
+   * she paid for, and what the owner gave her. Every change here is written to
+   * AuditLog, because it is capacity with no money against it.
+   */
+  extraInvitationCount  Int                      @default(0)
   type                  EventType
   name                  String
   /// English names are OPTIONAL since the women's-invitation redesign; ""

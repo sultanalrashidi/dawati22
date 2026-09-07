@@ -9,7 +9,7 @@ import {
 } from "@/lib/guests/actions";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 
-type RsvpBadge = "accepted" | "declined" | "pending";
+export type RsvpBadge = "accepted" | "declined" | "pending";
 
 const RSVP_BADGE_STYLE: Record<RsvpBadge, string> = {
   accepted: "bg-success/10 text-success",

@@ -489,7 +489,17 @@
       "attendedSeats": "{used} من {allowed}",
       "attendanceUpdatedAt": "آخر تحديث {time} بتوقيت الرياض · يتحدّث تلقائياً",
       "importOverCapacityContact": "راسلينا على واتساب",
-      "importOverCapacityMessage": "السلام عليكم، أبي أزيد عدد الدعوات في مناسبتي."
+      "importOverCapacityMessage": "السلام عليكم، أبي أزيد عدد الدعوات في مناسبتي.",
+      "guestSearchLabel": "ابحثي عن مدعوة",
+      "guestSearchPlaceholder": "بالاسم أو رقم الجوال",
+      "guestFilterAll": "الكل",
+      "guestFilterAccepted": "أكّدن",
+      "guestFilterDeclined": "اعتذرن",
+      "guestFilterPending": "ما ردّين",
+      "guestFilterUnsent": "ما أُرسلت",
+      "guestNoMatch": "ما فيه مدعوة بهذا الاسم أو الرقم.",
+      "guestShowMore": "أظهري {count} أكثر",
+      "guestShowingCount": "{shown} من {total}"
     }
   },
   "admin": {

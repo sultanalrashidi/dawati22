@@ -489,7 +489,17 @@
       "attendedSeats": "{used} of {allowed}",
       "attendanceUpdatedAt": "Updated {time} Riyadh time · refreshes on its own",
       "importOverCapacityContact": "Message us on WhatsApp",
-      "importOverCapacityMessage": "Hello, I would like to add more invitations to my event."
+      "importOverCapacityMessage": "Hello, I would like to add more invitations to my event.",
+      "guestSearchLabel": "Find a guest",
+      "guestSearchPlaceholder": "By name or phone",
+      "guestFilterAll": "All",
+      "guestFilterAccepted": "Accepted",
+      "guestFilterDeclined": "Declined",
+      "guestFilterPending": "No reply",
+      "guestFilterUnsent": "Not sent",
+      "guestNoMatch": "No guest by that name or number.",
+      "guestShowMore": "Show {count} more",
+      "guestShowingCount": "{shown} of {total}"
     }
   },
   "admin": {

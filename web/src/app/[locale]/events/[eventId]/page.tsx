@@ -14,7 +14,7 @@ import { supportWhatsAppUrl } from "@/lib/support";
 import { Role, EventGuestManagementMode } from "@/generated/prisma/client";
 import { AddGuestForm } from "@/components/events/add-guest-form";
 import { ImportGuestsPanel } from "@/components/events/import-guests-panel";
-import { GuestRow } from "@/components/events/guest-row";
+import { GuestList } from "@/components/events/guest-list";
 import { GatePinForm } from "@/components/events/gate-pin-form";
 import { DesignRequestCard } from "@/components/events/design-request-card";
 import { StartDesignRequestCard } from "@/components/events/custom-design-request-fields";
@@ -418,47 +418,39 @@ export default async function EventDetailPage({
           {rows.length === 0 ? (
             <p className="px-4 py-10 text-center text-sm text-fg-muted">{d.noGuestsYet}</p>
           ) : (
-            <>
-              <div className="hidden grid-cols-[minmax(0,1.4fr)_auto_auto_minmax(0,1fr)_auto] gap-4 border-b border-border px-4 py-2.5 text-[11px] font-bold text-fg-muted sm:grid">
-                <span>{d.colGuest}</span>
-                <span className="text-center">{d.colCompanions}</span>
-                <span>{d.colStatus}</span>
-                <span>{d.colActivity}</span>
-                <span />
-              </div>
-              {rows.map(({ guest, invitation, reply, rsvp, lastActivityAt }) => (
-                <GuestRow
-                  key={guest.id}
-                  eventId={event.id}
-                  locale={locale}
-                  dict={dict}
-                  guest={{
-                    id: guest.id,
-                    nameAr: guest.nameAr,
-                    phone: guest.phone,
-                    allowedCount: guest.allowedCount,
-                    checkedInCount: guest.checkedInCount,
-                    isBlocked: guest.isBlocked,
-                  }}
-                  companions={rsvp === "accepted" ? (reply?.partySize ?? guest.allowedCount) : null}
-                  activity={
-                    invitation?.respondedAt || invitation?.viewedAt
-                      ? `${invitation.respondedAt ? "" : `${d.openedNoReply} · `}${
-                          relativeTime(lastActivityAt, locale) ?? ""
-                        }`
-                      : // Unshared and unopened are different kinds of
-                        // silence: one asks the host to act, the other to
-                        // wait. sentAt distinguishes them.
-                        invitation?.sentAt
-                        ? d.notOpenedYet
-                        : d.notSentYet
-                  }
-                  invitationUrl={invitation ? guestInvitationUrl(invitation.linkToken) : ""}
-                  waMessage={invitation ? `${shareText}\n${guestInvitationUrl(invitation.linkToken)}` : ""}
-                  rsvp={rsvp}
-                />
-              ))}
-            </>
+            /* Search, filter and a page size live in the list itself: three
+               hundred names with none of the three is a screen you scroll
+               until you give up. The rows were already client components, so
+               moving the loop inside costs nothing. */
+            <GuestList
+              eventId={event.id}
+              locale={locale}
+              dict={dict}
+              entries={rows.map(({ guest, invitation, reply, rsvp, lastActivityAt }) => ({
+                id: guest.id,
+                nameAr: guest.nameAr,
+                phone: guest.phone,
+                allowedCount: guest.allowedCount,
+                checkedInCount: guest.checkedInCount,
+                isBlocked: guest.isBlocked,
+                companions: rsvp === "accepted" ? (reply?.partySize ?? guest.allowedCount) : null,
+                activity:
+                  invitation?.respondedAt || invitation?.viewedAt
+                    ? `${invitation.respondedAt ? "" : `${d.openedNoReply} · `}${
+                        relativeTime(lastActivityAt, locale) ?? ""
+                      }`
+                    : // Unshared and unopened are different kinds of silence:
+                      // one asks the host to act, the other to wait. sentAt
+                      // distinguishes them.
+                      invitation?.sentAt
+                      ? d.notOpenedYet
+                      : d.notSentYet,
+                invitationUrl: invitation ? guestInvitationUrl(invitation.linkToken) : "",
+                waMessage: invitation ? `${shareText}\n${guestInvitationUrl(invitation.linkToken)}` : "",
+                rsvp,
+                sent: Boolean(invitation?.sentAt),
+              }))}
+            />
           )}
         </section>
 

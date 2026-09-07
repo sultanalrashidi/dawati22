@@ -95,6 +95,7 @@ export default async function ThemeBuilderPage({ params }: PageProps<"/[locale]/
         themeStatus={builder.theme.status}
         locale={locale}
         initialLayout={builder.layout}
+        layoutRevision={builder.layoutUpdatedAt?.toISOString() ?? null}
         typography={builder.typography}
         variants={builder.variants}
         assets={builder.assets}

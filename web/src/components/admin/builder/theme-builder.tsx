@@ -128,6 +128,7 @@ export function ThemeBuilder({
   themeStatus,
   locale,
   initialLayout,
+  layoutRevision,
   typography,
   variants,
   assets,
@@ -140,6 +141,8 @@ export function ThemeBuilder({
   themeStatus: string;
   locale: string;
   initialLayout: LayoutDoc;
+  /** `ThemeLayout.updatedAt` as this editor loaded it — the save refuses if it has moved. */
+  layoutRevision: string | null;
   typography: TypographyDoc;
   variants: VariantRow[];
   assets: AssetRow[];
@@ -272,7 +275,7 @@ export function ThemeBuilder({
       return;
     }
     startSaving(async () => {
-      const result = await saveLayoutAction(themeId, snapshot.doc);
+      const result = await saveLayoutAction(themeId, snapshot.doc, layoutRevision);
       if (result?.error) {
         setSaveError(result.error);
         return;
@@ -295,7 +298,7 @@ export function ThemeBuilder({
       if (latest.current.doc === snapshot.doc) state.markSaved(snapshot.doc);
       router.refresh();
     });
-  }, [saving, themeId, state, router, activeVariant, localPreview, previewOverrides]);
+  }, [saving, themeId, state, router, activeVariant, localPreview, previewOverrides, layoutRevision]);
 
   // Ctrl/Cmd+S saves, Ctrl/Cmd+Z undoes — muscle memory in a canvas editor.
   useEffect(() => {

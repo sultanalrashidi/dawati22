@@ -54,6 +54,14 @@ export type BuilderThemeRow = Prisma.ThemeGetPayload<{ include: typeof builderIn
 export interface BuilderTheme {
   theme: BuilderThemeRow;
   layout: LayoutDoc;
+  /**
+   * `ThemeLayout.updatedAt` as it stands AFTER hydration, which is the revision
+   * a conditional save must match. Read fresh rather than taken from the row
+   * loaded above, because `ensureInkRoles` may rewrite the document during this
+   * very call — handing the editor the pre-upgrade stamp would make its first
+   * save fail against a change it caused itself.
+   */
+  layoutUpdatedAt: Date | null;
   typography: TypographyDoc;
   variants: {
     id: string;
@@ -83,9 +91,14 @@ async function hydrate(row: BuilderThemeRow): Promise<BuilderTheme> {
   }));
   // The editor must open the same document a guest sees — see ink-roles.ts.
   const ink = await ensureInkRoles(row.id, row.layout?.doc, parseLayoutDoc(row.layout?.doc), variants);
+  const current = await prisma.themeLayout.findUnique({
+    where: { themeId: row.id },
+    select: { updatedAt: true },
+  });
   return {
     theme: row,
     layout: ink.layout,
+    layoutUpdatedAt: current?.updatedAt ?? null,
     typography: parseTypographyDoc(row.typography?.doc),
     variants: variants.map((v) => ({ ...v, overrides: ink.overrides.get(v.id) ?? v.overrides })),
     assets: row.assets.map((a) => ({
@@ -204,8 +217,51 @@ export async function updateBuilderThemeMeta(actorId: string, themeId: string, i
   });
 }
 
-export async function saveLayoutDoc(actorId: string, themeId: string, raw: unknown) {
+/**
+ * Write the shared layout — optionally only if nobody else has since you read it.
+ *
+ * A PUBLISHED theme has no draft layout: this row is what every live
+ * invitation renders from, and the editor of one admin knows nothing about the
+ * editor of another. Unconditional, this is last-write-wins on data that
+ * hundreds of guests are reading — a colleague's half hour of work disappears
+ * with nothing to show it ever existed.
+ *
+ * So a caller that read the document may pass the `updatedAt` it read, and the
+ * write happens only if the row still carries it. `expectedUpdatedAt` is
+ * optional because the starter-layout path and the importer both write rows
+ * they have just created, where there is nothing to race.
+ *
+ * A refusal is not a failure to retry: it means the document on screen is no
+ * longer the document in the database, and the right move is to reload and
+ * look before deciding.
+ */
+export async function saveLayoutDoc(
+  actorId: string,
+  themeId: string,
+  raw: unknown,
+  expectedUpdatedAt?: Date | string | null,
+) {
   const doc = assertLayoutDoc(raw);
+
+  if (expectedUpdatedAt) {
+    const expected = new Date(expectedUpdatedAt);
+    if (Number.isNaN(expected.getTime())) throw new ThemeAdminError("طابع المراجعة غير صالح");
+
+    await prisma.$transaction(async (tx) => {
+      const applied = await tx.themeLayout.updateMany({
+        where: { themeId, updatedAt: expected },
+        data: { doc: json(doc) },
+      });
+      if (applied.count === 0) {
+        throw new ThemeAdminError(
+          "تغيّر التصميم من جهة ثانية بعد ما فتحت المحرر. حدّث الصفحة وراجع الفرق قبل الحفظ — ما كتبنا شيئًا.",
+        );
+      }
+      await tx.theme.update({ where: { id: themeId }, data: { updatedById: actorId } });
+    });
+    return doc;
+  }
+
   await prisma.$transaction([
     prisma.themeLayout.upsert({
       where: { themeId },

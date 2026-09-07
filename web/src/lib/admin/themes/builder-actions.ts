@@ -132,10 +132,15 @@ export async function updateBuilderThemeMetaAction(
  * canvas holds the authoritative state while editing, and a partial save is
  * how a layers list ends up half-applied.
  */
-export async function saveLayoutAction(themeId: string, doc: unknown): Promise<BuilderFormState> {
+export async function saveLayoutAction(
+  themeId: string,
+  doc: unknown,
+  /** The layout revision the editor loaded. Omitted, the save is unconditional. */
+  expectedUpdatedAt?: string | null,
+): Promise<BuilderFormState> {
   const user = await requireAdmin();
   try {
-    await saveLayoutDoc(user.id, themeId, doc);
+    await saveLayoutDoc(user.id, themeId, doc, expectedUpdatedAt);
   } catch (error) {
     return toState(error);
   }

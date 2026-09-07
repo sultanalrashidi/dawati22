@@ -8,13 +8,35 @@
  * one place.
  */
 
+import { toRiyadhDateTimeLocal } from "@/lib/dates";
+
 const MINUTE = 60_000;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
 
-/** Whole days from now until `date` — negative once it has passed. */
+/**
+ * Calendar days between today and the wedding, counted in Riyadh.
+ *
+ * It used to be `Math.ceil` of a millisecond difference, which is not the
+ * question anyone is asking. On the morning of her own wedding the dashboard
+ * read «باقي يوم واحد», and kept saying it four hours before the ceremony —
+ * because 08:00 to 22:00 rounds up to one whole day. «اليوم» only appeared
+ * once the party had already started, which is the one moment nobody is
+ * looking. It also read three days on the Wednesday before a Friday, when
+ * anyone counting sleeps says two.
+ *
+ * So it compares DATES, in the only clock that matters here. Zero means today
+ * whatever the hour; `eventHasStarted` is the separate question of whether the
+ * moment itself has passed.
+ */
 export function daysUntil(date: Date, now: number = Date.now()): number {
-  return Math.ceil((date.getTime() - now) / DAY);
+  return riyadhDayNumber(date) - riyadhDayNumber(new Date(now));
+}
+
+/** Which Riyadh calendar day an instant falls on, as a comparable integer. */
+function riyadhDayNumber(instant: Date): number {
+  const [year, month, day] = toRiyadhDateTimeLocal(instant).slice(0, 10).split("-").map(Number);
+  return Math.floor(Date.UTC(year, month - 1, day) / DAY);
 }
 
 /** Whether `eventDate`'s own start time has arrived — day-granular `daysUntil` says "today" for hours before it actually starts. */

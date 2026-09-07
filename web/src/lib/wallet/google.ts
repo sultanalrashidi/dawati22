@@ -29,13 +29,19 @@ const FALLBACK_BACKGROUND = "#5b3a22";
  * contrast of 1.05 / (L + 0.05), so WCAG AA's 4.5 runs out at L = 0.183. 0.16
  * keeps a little margin (5.0:1) rather than sitting on the line.
  *
- * The floor keeps a card from reading as flat black, which is wrong on a
- * wedding pass whatever the design. It is deliberately low: a true black is
- * already excluded for having no hue, so this only has to catch a colour that
- * is saturated and yet still essentially unlit. A deep burgundy at 0.036 is a
- * colour, not a black, and is left exactly as the designer chose it.
+ *
+ * The floor is about what the card feels like, not whether it is readable.
+ * A navy at 0.03 is legible and correct and still reads as corporate — the
+ * colour of a conference badge, not a wedding. Lifting the floor to 0.09 puts
+ * every card in the range where its hue is unmistakably a colour rather than
+ * a near-black, which is the whole point of taking the theme's colour at all.
+ * 0.12 was tried and rejected: burgundy turns vivid and loses its poise.
+ *
+ * The two bounds are close together on purpose. Passes end up within one
+ * narrow band of lightness and differ by hue, which is what makes a burgundy
+ * wedding and a navy one look like the same product in different colours.
  */
-const MIN_LUMINANCE = 0.03;
+const MIN_LUMINANCE = 0.09;
 const MAX_LUMINANCE = 0.16;
 
 /**

@@ -21,7 +21,7 @@ import {
   parsePalette,
   parseTypographyDoc,
 } from "@/lib/themes/builder/schema";
-import { starterLayoutDoc } from "@/lib/themes/builder/starter-layout";
+import { newDesignLayout } from "@/lib/themes/builder/collection-standard";
 import {
   DEFAULT_LAYOUT_DOC,
   DEFAULT_PALETTE,
@@ -180,7 +180,10 @@ export async function createBuilderTheme(actorId: string, input: CreateBuilderTh
       visibility: ThemeVisibility.PUBLIC,
       config: json({ engine: "builder" }),
       createdById: actorId,
-      layout: { create: { doc: json(starterLayoutDoc()) } },
+      // The collection's own hierarchy and spacing, not the bare starter, so a
+      // new design opens already speaking the same typographic language as the
+      // twelve rather than being standardised after the fact.
+      layout: { create: { doc: json(newDesignLayout()) } },
       // The house typeface, so a new design starts consistent instead of
       // starting from a default and being corrected afterwards.
       typography: { create: { doc: json(presetToTypographyDoc(await getTypographyPreset())) } },
@@ -289,7 +292,7 @@ export async function applyStarterLayout(actorId: string, themeId: string) {
   if (current.layers.length > 0) {
     throw new ThemeAdminError("التصميم فيه عناصر بالفعل — احذفها أولاً إذا تبي تبدأ من جديد");
   }
-  return saveLayoutDoc(actorId, themeId, { ...current, layers: starterLayoutDoc().layers });
+  return saveLayoutDoc(actorId, themeId, { ...current, layers: newDesignLayout().layers });
 }
 
 export async function saveTypographyDoc(actorId: string, themeId: string, raw: unknown) {

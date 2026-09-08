@@ -614,13 +614,23 @@ export interface VariantPalette {
   swatch?: string;
 }
 
+/**
+ * The ground every new design and every new colour starts from.
+ *
+ * `fgMuted` and `accentFg` are not the hues they look like they should be:
+ * the obvious #8A7860 and white read at 3.82:1 and 3.09:1 on their own
+ * backgrounds, so a design would open below the contrast floor the whole
+ * collection was brought up to and be corrected afterwards. These are those
+ * two colours walked to 4.5:1 by `readableInk`, and `collection-standard`'s
+ * test re-derives them so they cannot drift back.
+ */
 export const DEFAULT_PALETTE: VariantPalette = {
   bg: "#F7F2EA",
   surface: "#FCF8F0",
   fg: "#4A3B2A",
-  fgMuted: "#8A7860",
+  fgMuted: "#7c6c56",
   accent: "#B08D57",
-  accentFg: "#FFFFFF",
+  accentFg: "#2b2b2b",
 };
 
 // ---------------------------------------------------------------------------

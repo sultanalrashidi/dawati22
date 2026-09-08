@@ -1,4 +1,5 @@
 import { defaultFlowLayers, defaultSceneList } from './default-flow';
+import { starterLayoutDoc } from './starter-layout';
 import { proposeRibbonGreeting, RIBBON_THEME_SLUG } from './ribbon-greeting';
 import { proposeRibbonFlow } from './ribbon-flow';
 import { DEFAULT_TYPOGRAPHY_DOC, type LayoutDoc, type Layer, type TextLayer, type TextStyle, type VariantPalette } from './types';
@@ -183,4 +184,16 @@ export function standardizeOverrides(overrides: LayoutOverrides, family = "", pa
     }
   }
   return copy;
+}
+
+/**
+ * The document a brand-new design opens with.
+ *
+ * One place, so "the baseline" is a thing the code can be asked for rather
+ * than a call every new design has to remember to make. `standardizeLayout`
+ * is idempotent, so a design that also runs the standard over its own
+ * starting point — Dove Velvet does — lands in exactly the same place.
+ */
+export function newDesignLayout(): LayoutDoc {
+  return standardizeLayout(starterLayoutDoc());
 }

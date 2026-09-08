@@ -5,6 +5,7 @@ import { getInvitationByLinkToken, markViewed } from "@/lib/invitations/service"
 import { renderQrDataUrl } from "@/lib/qr";
 import { headers } from "next/headers";
 import { googleWalletConfigured } from "@/lib/wallet/google";
+import { appleWalletConfigured } from "@/lib/wallet/apple";
 import { walletTargetsFor } from "@/lib/wallet/platform";
 import { InvitationStatus, ThemeEngine } from "@/generated/prisma/client";
 import { InvitationView } from "@/components/guest/invitation-view";
@@ -98,10 +99,10 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
   const effectiveNotes = noteLines(invitation.event, invitation.event.notesAr).join("\n") || null;
 
   // One wallet per phone: Google has no iOS app, Apple exists nowhere else.
-  // `apple` is false until the Pass Type certificate is in place — the day it
-  // lands, every iPhone switches over with no change here.
+  // Both are read from the environment, so a wallet whose credentials are
+  // missing simply is not offered rather than failing when it is tapped.
   const walletTargets = walletTargetsFor((await headers()).get("user-agent"), {
-    apple: false,
+    apple: appleWalletConfigured(),
     google: googleWalletConfigured(),
   });
 

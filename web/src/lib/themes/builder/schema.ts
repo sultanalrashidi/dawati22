@@ -166,6 +166,7 @@ const buttonLayerSchema = z.object({
 const rsvpLayerSchema = z.object({
   ...layerCommon,
   type: z.literal("rsvp"),
+  overflow: z.literal("scroll").optional(),
   title: z.string().max(120),
   titleStyle: textStyleSchema,
   fieldStyle: textStyleSchema,
@@ -179,6 +180,7 @@ const rsvpLayerSchema = z.object({
 const scheduleLayerSchema = z.object({
   ...layerCommon,
   type: z.literal("schedule"),
+  overflow: z.literal("scroll").optional(),
   title: z.string().max(120),
   titleStyle: textStyleSchema,
   timeStyle: textStyleSchema,
@@ -189,6 +191,7 @@ const scheduleLayerSchema = z.object({
 const notesLayerSchema = z.object({
   ...layerCommon,
   type: z.literal("notes"),
+  overflow: z.literal("scroll").optional(),
   title: z.string().max(120),
   titleStyle: textStyleSchema,
   itemStyle: textStyleSchema,

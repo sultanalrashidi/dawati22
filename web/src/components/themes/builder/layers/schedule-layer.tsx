@@ -39,6 +39,7 @@ export function ScheduleContent({
   const titleCss = textStyleToCss(layer.titleStyle, typography);
   const timeCss = textStyleToCss(layer.timeStyle, typography);
   const labelCss = textStyleToCss(layer.labelStyle, typography);
+  const scrollable = layer.overflow === "scroll";
 
   // The gap is authored as a share of the layer's own height, so it has to be
   // converted into the stage-relative unit the rest of the block is measured
@@ -50,18 +51,20 @@ export function ScheduleContent({
   return (
     <div
       dir="rtl"
-      className="flex h-full w-full flex-col"
-      style={{ gap: `${gap}cqw`, justifyContent: justifyFor(layer.titleStyle.align) }}
+      className={scrollable ? "flex min-h-full w-full flex-col [&>*]:shrink-0" : "flex h-full w-full flex-col"}
+      style={{ gap: `${gap}cqw`, justifyContent: scrollable ? "flex-start" : justifyFor(layer.titleStyle.align) }}
     >
-      {layer.title && <div style={titleCss}>{layer.title}</div>}
+      {layer.title && <div className={scrollable ? "break-words" : undefined} style={titleCss}>{layer.title}</div>}
       {items.map((item, index) => (
         <div
           key={`${item.time}-${index}`}
           className="flex w-full items-baseline justify-between"
           style={{ gap: scaled(10) }}
         >
-          <span style={{ ...labelCss, textAlign: "start" }}>{item.labelAr}</span>
-          <span style={{ ...timeCss, textAlign: "end" }}>{item.time}</span>
+          <span className={scrollable ? "min-w-0 flex-1 whitespace-pre-wrap break-words" : undefined}
+            style={{ ...labelCss, textAlign: "start" }}>{item.labelAr}</span>
+          <span className={scrollable ? "shrink-0 whitespace-nowrap" : undefined}
+            style={{ ...timeCss, textAlign: "end" }}>{item.time}</span>
         </div>
       ))}
     </div>

@@ -11,6 +11,9 @@ import { VariantsPanel, type VariantRow } from "@/components/admin/builder/varia
 import { SettingsPanel } from "@/components/admin/builder/settings-panel";
 import { GhostButton } from "@/components/admin/builder/builder-ui";
 import { RibbonGreetingPreset } from "@/components/admin/builder/ribbon-greeting-preset";
+import { RibbonFlowPreset } from "@/components/admin/builder/ribbon-flow-preset";
+import { RibbonPassPreset } from "@/components/admin/builder/ribbon-pass-preset";
+import { RIBBON_FLOW_SCENES } from "@/lib/themes/builder/ribbon-flow";
 import { createLayer } from "@/components/admin/builder/layer-factory";
 import {
   arabicNumber,
@@ -149,11 +152,11 @@ export function ThemeBuilder({
   fonts: FontOption[];
   blobEnabled: boolean;
   /** Snapshot-only QA: never mount server-writing panels or invoke actions. */
-  localPreview?: { width: number; height: number; content: InvitationContentInput };
+  localPreview?: { width: number; height: number; content: InvitationContentInput; initialScene?: string };
 }) {
   const router = useRouter();
   const initialVariant = variants.find((v) => v.isDefault) ?? variants[0];
-  const state = useBuilderState(initialLayout, paintOf(initialVariant), geometryOf(initialVariant), localPreview ? "greeting" : undefined);
+  const state = useBuilderState(initialLayout, paintOf(initialVariant), geometryOf(initialVariant), localPreview ? localPreview.initialScene ?? "greeting" : undefined);
   const [side, setSide] = useState<SidePanel>("design");
   const [showGuides, setShowGuides] = useState(!localPreview);
   const [previewOverrides, setPreviewOverrides] = useState<Record<string, LayoutOverrides>>({});
@@ -384,6 +387,14 @@ export function ThemeBuilder({
         <output hidden data-preview-layout>{JSON.stringify(state.doc)}</output>
       </div>}
       {state.scene === "greeting" && <RibbonGreetingPreset themeSlug={themeSlug} layout={state.doc}
+        overrides={[...variants.map((variant) => localPreview ? previewOverrides[variant.id] ?? variant.overrides : variant.overrides), state.variantOverrides]}
+        published={!localPreview && themeStatus === "PUBLISHED"} disabled={saving}
+        onApply={(layout) => { state.applyDocument(layout); state.setTransformScope("all"); state.setSelectedId(null); }} />}
+      {(RIBBON_FLOW_SCENES as readonly string[]).includes(state.scene) && <RibbonFlowPreset themeSlug={themeSlug} layout={state.doc}
+        overrides={[...variants.map((variant) => localPreview ? previewOverrides[variant.id] ?? variant.overrides : variant.overrides), state.variantOverrides]}
+        published={!localPreview && themeStatus === "PUBLISHED"} disabled={saving}
+        onApply={(layout) => { state.applyDocument(layout); state.setTransformScope("all"); state.setSelectedId(null); }} />}
+      {state.scene === "pass" && <RibbonPassPreset themeSlug={themeSlug} layout={state.doc}
         overrides={[...variants.map((variant) => localPreview ? previewOverrides[variant.id] ?? variant.overrides : variant.overrides), state.variantOverrides]}
         published={!localPreview && themeStatus === "PUBLISHED"} disabled={saving}
         onApply={(layout) => { state.applyDocument(layout); state.setTransformScope("all"); state.setSelectedId(null); }} />}

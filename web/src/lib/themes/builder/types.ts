@@ -241,6 +241,7 @@ export const DEFAULT_TYPOGRAPHY_DOC: TypographyDoc = {
  */
 export const CONTENT_FIELDS = [
   "guestName",
+  "allowedCount",
   "groomName",
   "brideName",
   "coupleNames",
@@ -270,6 +271,7 @@ export type ContentField = (typeof CONTENT_FIELDS)[number];
 
 export const CONTENT_FIELD_LABELS_AR: Record<ContentField, string> = {
   guestName: "اسم المدعو",
+  allowedCount: "عدد المقاعد المسموح بها",
   groomName: "اسم العريس",
   brideName: "اسم العروس",
   coupleNames: "اسما العروسين",
@@ -434,6 +436,8 @@ export interface ButtonLayer extends LayerCommon {
  */
 export interface RsvpLayer extends LayerCommon {
   type: "rsvp";
+  /** Opt-in scrolling inside the authored box; absent keeps existing layouts. */
+  overflow?: "scroll";
   title: string;
   titleStyle: TextStyle;
   fieldStyle: TextStyle;
@@ -448,6 +452,8 @@ export interface RsvpLayer extends LayerCommon {
 /** The event-day timeline. One block; rows come from the event's own schedule. */
 export interface ScheduleLayer extends LayerCommon {
   type: "schedule";
+  /** Opt-in scrolling inside the authored box; absent keeps existing layouts. */
+  overflow?: "scroll";
   title: string;
   titleStyle: TextStyle;
   timeStyle: TextStyle;
@@ -459,6 +465,8 @@ export interface ScheduleLayer extends LayerCommon {
 /** Free-text notes the organiser set, one per line. */
 export interface NotesLayer extends LayerCommon {
   type: "notes";
+  /** Opt-in scrolling inside the authored box; absent keeps existing layouts. */
+  overflow?: "scroll";
   title: string;
   titleStyle: TextStyle;
   itemStyle: TextStyle;

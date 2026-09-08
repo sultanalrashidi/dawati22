@@ -390,6 +390,25 @@ function AllSizesNote() {
   );
 }
 
+/** This remains a shared document setting and round-trips with the layer. */
+function BlockOverflowControl({ layer, onPatch }: {
+  layer: Extract<Layer, { type: "rsvp" | "schedule" | "notes" }>;
+  onPatch: (patch: Partial<Layer>) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-1">
+      <ToggleField
+        label="تمرير المحتوى الطويل داخل المساحة"
+        checked={layer.overflow === "scroll"}
+        onChange={(enabled) => onPatch({ overflow: enabled ? "scroll" : undefined })}
+      />
+      <p className="text-[11px] text-fg-muted">
+        يتيح للمدعو تمرير المحتوى إذا تجاوز ارتفاع المكوّن، دون تصغير الحقول أو إخفاء الأسطر. يطبّق على كل المقاسات والألوان.
+      </p>
+    </div>
+  );
+}
+
 function CountdownSection({
   layer,
   fontOptions,
@@ -625,6 +644,7 @@ function RsvpSection({
           يسجّل الحضور فعلًا.
         </p>
         <div className="flex flex-col gap-2">
+          <BlockOverflowControl layer={layer} onPatch={onPatch} />
           <TextField
             label="العنوان"
             dir="rtl"
@@ -721,6 +741,7 @@ function ScheduleSection({
           الأسطر تجي من برنامج المناسبة نفسها، فتختلف من دعوة لدعوة — أنت تحدد شكلها ومكانها فقط.
         </p>
         <div className="flex flex-col gap-2">
+          <BlockOverflowControl layer={layer} onPatch={onPatch} />
           <TextField
             label="العنوان"
             dir="rtl"
@@ -793,6 +814,7 @@ function NotesSection({
           الملاحظات تجي من بيانات المناسبة، كل ملاحظة في سطر.
         </p>
         <div className="flex flex-col gap-2">
+          <BlockOverflowControl layer={layer} onPatch={onPatch} />
           <TextField
             label="العنوان"
             dir="rtl"

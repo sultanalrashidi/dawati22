@@ -117,6 +117,8 @@ export interface InvitationContentInput extends Partial<InvitationTextFields> {
   couples: CoupleInput[];
   /** Legacy — no longer written by the form. Still printed by the `greeting` field. */
   familiesGreetingAr: string | null;
+  /** This guest's invitation capacity, not the party size chosen in the RSVP. */
+  allowedCount?: number;
   /** Optional extra text under the composed invitation line. */
   invitationTextAr: string;
   /** ISO string — formatted here so server and client agree. */
@@ -364,6 +366,10 @@ export function resolveContent(input: InvitationContentInput): ResolvedContent {
   return {
     perCouple,
     guestName: input.guestName,
+    // A missing/invalid capacity must never become an invented seat count.
+    allowedCount: typeof input.allowedCount === "number" && Number.isSafeInteger(input.allowedCount) && input.allowedCount > 0
+      ? String(input.allowedCount)
+      : "",
     groomName: groom,
     brideName: bride,
     // One pair per line, groom first, so a text layer holding this field grows
@@ -455,6 +461,7 @@ export function initialsFor(
 export const SAMPLE_CONTENT_INPUT: InvitationContentInput = {
   // Not one of the sample mothers below: the host must not be seen inviting herself.
   guestName: "أم فهد",
+  allowedCount: 2,
   couples: [
     {
       groomNameEn: "Faisal",

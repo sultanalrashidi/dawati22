@@ -334,6 +334,8 @@ export interface AssetLayer extends LayerCommon {
   slot: string;
   /** object-fit for the image inside its box. */
   fit: "contain" | "cover";
+  /** Optional silhouette in percentages of the image box. */
+  clipPolygon?: { x: number; y: number }[];
 }
 
 /** A text box — either fixed copy (a blessing) or invitation data. */

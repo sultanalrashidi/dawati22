@@ -314,6 +314,7 @@ function LayerContent({
       const noQrCard = !hasQr && layer.slot === "card" ? assets.cardNoQr : undefined;
       const url = noQrCard ?? assets[layer.slot];
       if (!url) return <MissingAsset slot={layer.slot} />;
+      const clipPath = layer.clipPolygon?.length ? `polygon(${layer.clipPolygon.map(p => `${p.x}% ${p.y}%`).join(",")})` : undefined;
       // In the editor the admin is judging the artwork itself, so it is served
       // exactly as uploaded — untouched, unresized, un-re-encoded. A guest gets
       // it cut to their own screen instead, which is the difference between a
@@ -326,7 +327,7 @@ function LayerContent({
             alt=""
             draggable={false}
             className="block h-full w-full select-none"
-            style={{ objectFit: layer.fit }}
+            style={{ objectFit: layer.fit, clipPath }}
           />
         );
       }
@@ -349,7 +350,7 @@ function LayerContent({
           // rather than guessed from the file.
           sizes={`${Math.min(100, Math.ceil(transform.width))}vw`}
           className="block h-full w-full select-none"
-          style={{ objectFit: layer.fit }}
+          style={{ objectFit: layer.fit, clipPath }}
         />
       );
     }

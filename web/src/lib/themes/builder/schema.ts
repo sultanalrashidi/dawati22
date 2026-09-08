@@ -96,6 +96,7 @@ const assetLayerSchema = z.object({
   type: z.literal("asset"),
   slot: z.string().min(1).max(40),
   fit: z.enum(["contain", "cover"]),
+  clipPolygon: z.array(z.object({ x: z.number().min(0).max(100), y: z.number().min(0).max(100) })).min(3).max(64).optional(),
 });
 
 const textLayerSchema = z.object({

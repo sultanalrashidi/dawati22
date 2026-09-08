@@ -10,12 +10,12 @@ type Variant = { slug: string; name: string; palette: VariantPalette; originalPa
 type Design = { family: string; name: string; layout: LayoutDoc; original: LayoutDoc; typography: TypographyDoc; originalTypography: TypographyDoc; variants: Variant[] };
 const SCENES = [['cover', 'الظرف'], ['open', 'فتح الدعوة'], ['greeting', 'الترحيب والأسماء'], ['countdown', 'العد التنازلي'], ['details', 'التفاصيل'], ['schedule', 'البرنامج'], ['notes', 'الملاحظات'], ['rsvp', 'تأكيد الحضور'], ['pass', 'بطاقة الدخول']];
 
-export function CollectionReview({ designs, qrDataUrl }: { designs: Design[]; qrDataUrl: string }) {
-  const [scene, setScene] = useState('greeting');
+export function CollectionReview({ designs, qrDataUrl, title = "خط واحد، ولكل دعوة شخصيتها", initialScene = "greeting", newDesign = false }: { designs: Design[]; qrDataUrl: string; title?: string; initialScene?: string; newDesign?: boolean }) {
+  const [scene, setScene] = useState(initialScene);
   const [before, setBefore] = useState(false);
   const [long, setLong] = useState(false);
   const [small, setSmall] = useState(false);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState(designs.length === 1 ? designs[0].family : 'all');
   const [responses, setResponses] = useState<Record<string, 'ACCEPTED' | 'DECLINED'>>({});
   const [colours, setColours] = useState<Record<string, number>>({});
   const eventDate = '2026-11-20T18:00:00.000Z';
@@ -27,19 +27,20 @@ export function CollectionReview({ designs, qrDataUrl }: { designs: Design[]; qr
   return <main dir="rtl" className="min-h-screen bg-[#f6f2ec] px-4 py-8 text-[#342e26] sm:px-8">
     <header className="mx-auto mb-7 max-w-[1500px]">
       <p className="mb-2 text-xs tracking-wide text-[#786b5a]">دعوتي · مجموعة التصاميم</p>
-      <h1 className="mb-3 text-3xl">خط واحد، ولكل دعوة شخصيتها</h1>
-      <p className="mb-5 text-sm leading-7 text-[#786b5a]">١٢ تصميمًا · ٩٢ نسخة لونية · تنسيق مستوحى من فيونكة الورد. معاينة محلية ببيانات توضيحية.</p>
+      <h1 className="mb-3 text-3xl">{title}</h1>
+      <p className="mb-5 text-sm leading-7 text-[#786b5a]">{designs.length.toLocaleString("ar-SA")} تصميم · {designs.reduce((sum, design) => sum + design.variants.length, 0).toLocaleString("ar-SA")} نسخة لونية · معاينة محلية ببيانات توضيحية.</p>
       <nav aria-label="صفحات الدعوة" className="mb-4 flex flex-wrap gap-2">
         {SCENES.map(([id, label]) => <button key={id} className={control} aria-pressed={scene === id} onClick={() => setScene(id)}>{label}</button>)}
       </nav>
       <div className="flex flex-wrap items-center gap-2">
-        <button className={control} aria-pressed={before} onClick={() => setBefore(!before)}>{before ? 'عرض النتيجة' : 'مقارنة: قبل التعديل'}</button>
+        {!newDesign && <button className={control} aria-pressed={before} onClick={() => setBefore(!before)}>{before ? 'عرض النتيجة' : 'مقارنة: قبل التعديل'}</button>}
         <button className={control} aria-pressed={long} onClick={() => setLong(!long)}>أسماء ونصوص طويلة</button>
         <button className={control} aria-pressed={small} onClick={() => setSmall(!small)}>جوال صغير ٣٢٠</button>
         <label className="mr-auto text-sm">التصميم <select aria-label="اختيار التصميم" value={filter} onChange={e => setFilter(e.target.value)} className="mr-2 rounded-lg border border-[#d6cbbd] bg-white px-3 py-2">
           <option value="all">كل التصاميم</option>{designs.map(d => <option key={d.family} value={d.family}>{d.name}</option>)}
         </select></label>
       </div>
+      {newDesign && <button className={`${control} mt-4`} onClick={() => setScene(SCENES[(SCENES.findIndex(([id]) => id === scene) + 1) % SCENES.length][0])}>{scene === 'cover' ? 'افتح الدعوة' : scene === 'pass' ? 'العودة للظرف' : 'الصفحة التالية ←'}</button>}
       <p role="status" className="mt-4 text-sm">{before ? 'قبل التعديل' : 'النتيجة بعد التعديل'} · {SCENES.find(([id]) => id === scene)?.[1]}</p>
     </header>
     <div className={`mx-auto grid max-w-[1500px] grid-cols-1 items-start justify-items-center gap-x-6 gap-y-10 ${filter === "all" ? "md:grid-cols-2 xl:grid-cols-3" : ""}`}>

@@ -3,7 +3,9 @@ import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getInvitationByLinkToken, markViewed } from "@/lib/invitations/service";
 import { renderQrDataUrl } from "@/lib/qr";
+import { headers } from "next/headers";
 import { googleWalletConfigured } from "@/lib/wallet/google";
+import { walletTargetsFor } from "@/lib/wallet/platform";
 import { InvitationStatus, ThemeEngine } from "@/generated/prisma/client";
 import { InvitationView } from "@/components/guest/invitation-view";
 import { GuestMessage } from "@/components/guest/guest-message";
@@ -95,6 +97,14 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
   // here so the view — and the builder's notes layer — see one plain list.
   const effectiveNotes = noteLines(invitation.event, invitation.event.notesAr).join("\n") || null;
 
+  // One wallet per phone: Google has no iOS app, Apple exists nowhere else.
+  // `apple` is false until the Pass Type certificate is in place — the day it
+  // lands, every iPhone switches over with no change here.
+  const walletTargets = walletTargetsFor((await headers()).get("user-agent"), {
+    apple: false,
+    google: googleWalletConfigured(),
+  });
+
   return (
     <>
       {fontsHref && <link rel="stylesheet" href={fontsHref} />}
@@ -141,7 +151,7 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
         status={displayStatus}
         hasQr={invitation.event.hasQr}
         qrDataUrl={qrDataUrl}
-        walletEnabled={googleWalletConfigured()}
+        walletTargets={walletTargets}
       />
     </>
   );

@@ -55,6 +55,7 @@ import { BuilderPageBackground, pageBackgroundUrl } from "@/components/guest/bui
 import { RoseCandlelightPass } from "@/components/guest/rose-candlelight-pass";
 import { BridalFramePass } from "@/components/guest/bridal-frame-pass";
 import { formatDualDate } from "@/lib/dates";
+import type { WalletTarget } from "@/lib/wallet/platform";
 
 /**
  * Is a layer actually reachable by a guest?
@@ -160,12 +161,12 @@ interface Props {
   hasQr?: boolean;
   qrDataUrl: string | null;
   /**
-   * Whether the Google Wallet issuer credentials are live. Off by default, so
-   * every existing caller — previews, tests, the theme gallery — renders
-   * exactly as before, and the button appears only once the issuer account is
-   * approved and configured in the environment.
+   * Which wallet buttons this guest's device should be offered, already
+   * resolved server-side against both her platform and what the environment
+   * can actually issue. Empty by default, so every existing caller — previews,
+   * tests, the theme gallery — renders exactly as before.
    */
-  walletEnabled?: boolean;
+  walletTargets?: WalletTarget[];
   /**
    * Set for BUILDER themes only. The whole invitation then comes from the
    * admin's own document: the cover, every post-open screen in the order the
@@ -569,7 +570,7 @@ function InvitationScreens({
   status,
   hasQr = true,
   qrDataUrl,
-  walletEnabled = false,
+  walletTargets = [],
   mode = "live",
   testCopy = false,
   builder,
@@ -1626,13 +1627,18 @@ function InvitationScreens({
                 invitation is deliberately excluded: its code opens no door, and
                 a ticket sitting in the host's own wallet would look like one
                 that does. */}
-            {walletEnabled && hasQr && currentQr && linkToken && !testCopy && mode !== "preview" && (
-              <a
-                href={`/i/${linkToken}/wallet/google`}
-                className="mt-4 inline-flex h-11 items-center rounded-full border border-[var(--color-fg-muted)]/40 px-6 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
-              >
-                {g.addToGoogleWallet}
-              </a>
+            {walletTargets.length > 0 && hasQr && currentQr && linkToken && !testCopy && mode !== "preview" && (
+              <div className="mt-4 flex flex-wrap justify-center gap-3">
+                {walletTargets.map((target) => (
+                  <a
+                    key={target}
+                    href={`/i/${linkToken}/wallet/${target}`}
+                    className="inline-flex h-11 items-center rounded-full border border-[var(--color-fg-muted)]/40 px-6 text-sm font-medium text-[var(--color-fg-muted)] transition-colors hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+                  >
+                    {target === "apple" ? g.addToAppleWallet : g.addToGoogleWallet}
+                  </a>
+                ))}
+              </div>
             )}
             {/* `testCopy` first: the other three are style branches, and on a
                 plain legacy design none of them is true — which would mean the

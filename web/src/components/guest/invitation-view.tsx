@@ -637,6 +637,7 @@ function InvitationScreens({
       builder
         ? resolveContent({
             guestName: guest.nameAr,
+            allowedCount: guest.allowedCount,
             couples,
             openingKind: event.openingKind,
             hostMode: event.hostMode,

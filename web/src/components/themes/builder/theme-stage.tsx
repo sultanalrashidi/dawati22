@@ -224,11 +224,23 @@ function LayerBox({
   editing: boolean;
   children: ReactNode;
 }) {
-  const interactive = editing || INTERACTIVE_LAYERS.has(resolved.layer.type);
+  const { layer } = resolved;
+  const scrollable = (layer.type === "rsvp" || layer.type === "schedule" || layer.type === "notes") &&
+    layer.overflow === "scroll";
+  const interactive = editing || scrollable || INTERACTIVE_LAYERS.has(layer.type);
   return (
     <div
-      data-layer-id={resolved.layer.id}
-      style={{ ...boxStyle(resolved.transform), pointerEvents: interactive ? "auto" : "none" }}
+      data-layer-id={layer.id}
+      data-layer-overflow={scrollable ? "scroll" : undefined}
+      role={scrollable && !editing ? "region" : undefined}
+      aria-label={scrollable && !editing ? `${layer.name} — قابل للتمرير` : undefined}
+      tabIndex={scrollable && !editing ? 0 : undefined}
+      className={scrollable ? "focus-visible:outline-2 focus-visible:outline-offset-2" : undefined}
+      style={{
+        ...boxStyle(resolved.transform),
+        pointerEvents: interactive ? "auto" : "none",
+        ...(scrollable ? { overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" } as const : {}),
+      }}
     >
       {children}
     </div>

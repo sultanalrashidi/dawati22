@@ -34,14 +34,15 @@ export function NotesContent({
   const titleCss = textStyleToCss(layer.titleStyle, typography);
   const itemCss = textStyleToCss(layer.itemStyle, typography);
   const bullet = layer.bullet.trim();
+  const scrollable = layer.overflow === "scroll";
 
   return (
     <div
       dir="rtl"
-      className="flex h-full w-full flex-col"
-      style={{ gap: scaled(6), justifyContent: justifyFor(layer.titleStyle.align) }}
+      className={scrollable ? "flex min-h-full w-full flex-col [&>*]:shrink-0" : "flex h-full w-full flex-col"}
+      style={{ gap: scaled(6), justifyContent: scrollable ? "flex-start" : justifyFor(layer.titleStyle.align) }}
     >
-      {layer.title && <div style={titleCss}>{layer.title}</div>}
+      {layer.title && <div className={scrollable ? "break-words" : undefined} style={titleCss}>{layer.title}</div>}
       {items.map((note, index) => (
         <div key={index} className="flex w-full items-baseline" style={{ ...itemCss, gap: scaled(6) }}>
           {bullet && (

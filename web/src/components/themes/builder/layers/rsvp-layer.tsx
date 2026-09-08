@@ -94,6 +94,8 @@ export interface StageRsvp {
 
 export interface RsvpFormProps extends StageRsvp {
   tokens: RsvpFormTokens;
+  /** A scrolling builder layer must grow with its fields, never shrink them. */
+  naturalHeight?: boolean;
   /** Required to submit for real; without one the form can only simulate. */
   linkToken?: string | null;
   /** The invitation's stored answer, so a returning guest sees the thank-you. */
@@ -110,6 +112,7 @@ export function RsvpForm({
   onResponded,
   labels,
   alreadyAnswered,
+  naturalHeight = false,
 }: RsvpFormProps) {
   const copy = labels ? { ...DEFAULT_RSVP_LABELS, ...labels } : DEFAULT_RSVP_LABELS;
 
@@ -134,6 +137,7 @@ export function RsvpForm({
   const controlStyle: CSSProperties = {
     ...tokens.field,
     height: tokens.controlHeight,
+    ...(naturalHeight ? { minHeight: tokens.controlHeight } : {}),
     paddingInline: tokens.padding,
     backgroundColor: tokens.fieldBackground,
     border: `1px solid ${tokens.borderColor}`,
@@ -178,7 +182,11 @@ export function RsvpForm({
 
   if (answered) {
     return (
-      <div dir="rtl" className="flex h-full w-full items-center justify-center" style={tokens.field}>
+      <div
+        dir="rtl"
+        className={naturalHeight ? "flex w-full items-start justify-center break-words" : "flex h-full w-full items-center justify-center"}
+        style={tokens.field}
+      >
         <span style={{ textAlign: "center" }}>
           {answered === "ACCEPTED" ? copy.thanksAccept : copy.thanksDecline}
         </span>
@@ -187,7 +195,12 @@ export function RsvpForm({
   }
 
   return (
-    <form dir="rtl" onSubmit={submit} className="flex h-full w-full flex-col text-start" style={{ gap: tokens.gap }}>
+    <form
+      dir="rtl"
+      onSubmit={submit}
+      className={naturalHeight ? "flex w-full flex-col text-start [&>*]:shrink-0" : "flex h-full w-full flex-col text-start"}
+      style={{ gap: tokens.gap }}
+    >
       <Field label={copy.name} tokens={tokens}>
         <input value={name} onChange={(event) => setName(event.target.value)} required style={controlStyle} />
       </Field>
@@ -209,6 +222,7 @@ export function RsvpForm({
           color={tokens.accent}
           selectedFg={tokens.accentFg}
           tokens={tokens}
+          naturalHeight={naturalHeight}
           onClick={() => setAttending(true)}
         />
         <ChoiceButton
@@ -217,6 +231,7 @@ export function RsvpForm({
           color={tokens.muted}
           selectedFg={tokens.accentFg}
           tokens={tokens}
+          naturalHeight={naturalHeight}
           onClick={() => setAttending(false)}
         />
       </div>
@@ -255,7 +270,8 @@ export function RsvpForm({
           ...tokens.field,
           color: tokens.accentFg,
           textAlign: "center",
-          height: tokens.controlHeight,
+          height: naturalHeight ? "auto" : tokens.controlHeight,
+          ...(naturalHeight ? { minHeight: tokens.controlHeight, overflowWrap: "anywhere" } as const : {}),
           backgroundColor: tokens.accent,
           borderRadius: tokens.borderRadius,
         }}
@@ -275,6 +291,7 @@ function ChoiceButton({
   selectedFg,
   tokens,
   onClick,
+  naturalHeight = false,
 }: {
   label: string;
   selected: boolean;
@@ -282,17 +299,19 @@ function ChoiceButton({
   selectedFg: string;
   tokens: RsvpFormTokens;
   onClick: () => void;
+  naturalHeight?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className="flex-1"
+      className={naturalHeight ? "min-w-0 flex-1" : "flex-1"}
       style={{
         ...tokens.field,
         textAlign: "center",
-        height: tokens.controlHeight,
+        height: naturalHeight ? "auto" : tokens.controlHeight,
+        ...(naturalHeight ? { minHeight: tokens.controlHeight, overflowWrap: "anywhere" } as const : {}),
         borderRadius: tokens.borderRadius,
         border: `1px solid ${color}`,
         backgroundColor: selected ? color : "transparent",
@@ -351,6 +370,7 @@ export function RsvpContent({
   /** The invitation's stored answer, if the guest already responded. */
   alreadyAnswered?: RsvpResponse | null;
 }) {
+  const scrollable = layer.overflow === "scroll";
   // 16px is the threshold below which iOS zooms the page when an input takes
   // focus — which on an invitation reads as the page "jumping" mid-booking.
   const field = {
@@ -379,17 +399,22 @@ export function RsvpContent({
   };
 
   return (
-    <div dir="rtl" className="flex h-full w-full flex-col" style={{ gap: scaled(10) }}>
-      {layer.title && <div style={textStyleToCss(layer.titleStyle, typography)}>{layer.title}</div>}
+    <div
+      dir="rtl"
+      className={scrollable ? "flex min-h-full w-full flex-col [&>*]:shrink-0" : "flex h-full w-full flex-col"}
+      style={{ gap: scaled(10) }}
+    >
+      {layer.title && <div className={scrollable ? "break-words" : undefined} style={textStyleToCss(layer.titleStyle, typography)}>{layer.title}</div>}
       <RsvpForm
         tokens={tokens}
+        naturalHeight={scrollable}
         guestName={rsvp?.guestName ?? defaultGuestName}
         // Two seats and an open picker make the editor show the party-size row,
         // which is the field an admin most needs to see while sizing the block.
         allowedCount={rsvp?.allowedCount ?? 2}
         allowGuestPartySize={rsvp?.allowGuestPartySize ?? true}
         linkToken={linkToken}
-      alreadyAnswered={alreadyAnswered}
+        alreadyAnswered={alreadyAnswered}
         simulate={rsvp?.simulate}
         onResponded={rsvp?.onResponded}
         labels={rsvp?.labels}

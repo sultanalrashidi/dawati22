@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { BUSINESS } from "@/lib/business";
+import { BUSINESS, isAuthenticationValid } from "@/lib/business";
 import {
   SUPPORT_EMAIL,
   SUPPORT_PHONE_DISPLAY,
@@ -18,6 +18,9 @@ import {
  * where a reviewer (or a customer who is about to enter her card) can read them
  * without hunting. Every value comes from `support.ts` / `business.ts` so the
  * page can never disagree with the footer or the legal documents.
+ *
+ * The authentication number links to the public register rather than to the
+ * store's own page there: that page's URL carries an expiring lookup token.
  */
 export async function generateMetadata({ params }: PageProps<"/[locale]/contact">): Promise<Metadata> {
   const { locale } = await params;
@@ -57,6 +60,20 @@ export default async function ContactPage({ params }: PageProps<"/[locale]/conta
               {BUSINESS.licenceNumber}
             </span>
           </Detail>
+          {isAuthenticationValid() ? (
+            <Detail label={c.authenticationLabel}>
+              <a
+                href={BUSINESS.authentication.inquiryUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={dict.verified.verifyHint}
+                className="font-mono text-accent underline-offset-4 hover:underline"
+                dir="ltr"
+              >
+                {BUSINESS.authentication.number}
+              </a>
+            </Detail>
+          ) : null}
           <Detail label={c.countryLabel}>{c.country}</Detail>
         </dl>
         <p className="mt-4 text-sm leading-relaxed text-fg-muted">{c.currencyNote}</p>

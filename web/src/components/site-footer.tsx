@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
 import { BUSINESS } from "@/lib/business";
+import { VerifiedBadge } from "@/components/verified-badge";
 import {
   SUPPORT_EMAIL,
   SUPPORT_PHONE_DISPLAY,
@@ -20,6 +21,10 @@ import {
  * Business Center looks for it before issuing the authentication certificate.
  * Because the footer renders on every page it also satisfies "on the home
  * page". Keep it visible; do not fold it into a link.
+ *
+ * The authentication badge sits directly under it, because the licence number
+ * is what the regulator looks for and the certificate number is what a
+ * customer can check for herself.
  */
 export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const h = dict.home;
@@ -66,6 +71,10 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
             </IdentityRow>
             <IdentityRow label={c.countryLabel}>{c.country}</IdentityRow>
           </dl>
+
+          <div className="mt-6">
+            <VerifiedBadge dict={dict} />
+          </div>
         </div>
 
         <FooterColumn title={h.footerSite} links={site} />

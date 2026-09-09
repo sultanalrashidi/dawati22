@@ -1041,7 +1041,8 @@
     "countryLabel": "Based in",
     "country": "Saudi Arabia",
     "currencyNote": "All prices are in Saudi riyals, and the service is entirely digital — we ship no physical goods.",
-    "legalNote": "For the terms, the privacy policy and the refund policy, use the “Legal” links in the footer."
+    "legalNote": "For the terms, the privacy policy and the refund policy, use the “Legal” links in the footer.",
+    "authenticationLabel": "Authentication certificate no."
   },
   "draft": {
     "stepLabel": "Step one",
@@ -1111,5 +1112,12 @@
     "detailsBackToPreview": "← Back to the preview",
     "detailsSubmit": "Save and see your invitation",
     "previewBarDetails": "Complete the details"
+  },
+  "verified": {
+    "title": "Authenticated online store",
+    "issuer": "Saudi Business Center",
+    "numberLabel": "Authentication certificate no.",
+    "verifyHint": "Verify this certificate in the official register",
+    "verifyLink": "Verify this certificate"
   }
 }

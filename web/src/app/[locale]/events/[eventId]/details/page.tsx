@@ -36,9 +36,11 @@ export default async function OwnedEventDetailsPage({
   const event = await getOwnedEventForEdit(eventId, user.id);
   if (!event) notFound();
 
-  const backToDashboard = (
+  // The same words in the same place on every screen that hangs off her
+  // event page, so "how do I get back" never needs asking.
+  const backToEvent = (
     <Link href={`/${locale}/events/${eventId}`} className="text-sm font-bold text-accent hover:underline">
-      {d.editBackToDashboard}
+      {d.backToEvent}
     </Link>
   );
 
@@ -55,7 +57,8 @@ export default async function OwnedEventDetailsPage({
     return (
       <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12 sm:px-8">
         <div>
-          <h1 className="text-2xl font-bold text-fg">{d.lockedTitle}</h1>
+          {backToEvent}
+          <h1 className="mt-3 text-2xl font-bold text-fg">{d.lockedTitle}</h1>
           <p className="mt-2 text-sm leading-relaxed text-fg-muted">
             {d.lockedBody.replace("{date}", lockedOn)}
           </p>
@@ -72,7 +75,6 @@ export default async function OwnedEventDetailsPage({
         >
           {d.lockedSupportCta}
         </a>
-        {backToDashboard}
       </div>
     );
   }
@@ -85,11 +87,10 @@ export default async function OwnedEventDetailsPage({
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12 sm:px-8">
       <div>
-        <h1 className="text-2xl font-bold text-fg">{d.editTitle}</h1>
+        {backToEvent}
+        <h1 className="mt-3 text-2xl font-bold text-fg">{d.editTitle}</h1>
         <p className="mt-2 text-sm leading-relaxed text-fg-muted">{d.editSubtitle}</p>
       </div>
-
-      {backToDashboard}
 
       <SelfEditForm eventId={event.id} locale={locale} dict={dict}>
         {/* `EventFields` leaves the type select out — it decides whether the

@@ -7,16 +7,18 @@ import { InvitationTier } from "@/generated/prisma/enums";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { EnvelopeHero } from "@/components/home/envelope-hero";
 import { ScanIcon } from "@/components/icons/scan-icon";
+import { walletPassesConfigured } from "@/lib/wallet/availability";
 
 /**
  * The landing page.
  *
  * Every claim on it is a feature that actually ships — the envelope, the
- * music, the countdown, the map button, RSVP with a party size, the agenda.
- * Two lines from the design were deliberately not carried over: wallet passes
- * (not built) and "design free, pay only when you send" (the product requires
- * a paid order before an event exists). Marketing copy that the product cannot
- * honour is a support ticket, not a headline.
+ * music, the countdown, the map button, RSVP with a party size, the agenda,
+ * and the free-first journey (design, preview, then pay). The one claim that
+ * depends on the environment — a guest saving her entry pass to Apple or
+ * Google Wallet — is asked of the server first and left out wherever no pass
+ * can be issued. Marketing copy that the product cannot honour is a support
+ * ticket, not a headline.
  */
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
@@ -57,6 +59,10 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     { q: h.faq4Q, a: h.faq4A },
   ];
 
+  // The wallet card is the one feature the copy may not promise on its own:
+  // a pass exists only where the signing material does, so the server is
+  // asked before the landing page claims it — see lib/wallet/availability.ts.
+  const walletPasses = walletPassesConfigured();
   const features = [
     { title: h.f1Title, body: h.f1Body },
     { title: h.f2Title, body: h.f2Body },
@@ -64,6 +70,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     { title: h.f4Title, body: h.f4Body },
     { title: h.f5Title, body: h.f5Body },
     { title: h.f6Title, body: h.f6Body },
+    ...(walletPasses ? [{ title: h.f7Title, body: h.f7Body }] : []),
   ];
 
   return (
@@ -72,29 +79,30 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       <section className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 py-16 sm:px-8 sm:py-24 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
         <div className="flex flex-col items-start gap-6">
           <Kicker>{h.heroKicker}</Kicker>
-          <h1 className="font-display text-balance text-4xl leading-[1.25] text-fg sm:text-5xl lg:text-6xl">
+          <h1 className="text-balance text-4xl font-extrabold leading-[1.25] text-fg sm:text-5xl lg:text-6xl">
             {h.heroTitle}
           </h1>
           <p className="max-w-xl text-base leading-relaxed text-fg-muted sm:text-lg">{h.heroSubtitle}</p>
 
           {/* Starting is free and needs no account, so the hero says that
-              plainly and goes straight to the designs. Pricing is still one tap
-              away for someone who wants the number before the pretty part. */}
-          <div className="mt-1 flex flex-wrap items-center gap-3">
+              plainly and goes straight to the designs — one button, so there
+              is only one thing to press. Pricing stays one tap away as a plain
+              link for someone who wants the number before the pretty part. */}
+          <div className="mt-1 flex flex-col items-start gap-3">
             <Link
               href={`/${locale}/themes`}
               className="inline-flex h-12 items-center rounded-full bg-accent px-7 text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
             >
               {h.ctaStartFree}
             </Link>
+            <p className="text-xs text-fg-muted">{h.ctaStartFreeNote}</p>
             <Link
               href={`/${locale}/plans`}
-              className="inline-flex h-12 items-center rounded-full border border-border bg-surface px-7 text-sm font-bold text-fg transition-colors hover:border-accent"
+              className="text-sm font-bold text-accent underline-offset-4 hover:underline"
             >
-              {h.ctaPlans}
+              {h.ctaPlans} ←
             </Link>
           </div>
-          <p className="text-xs text-fg-muted">{h.ctaStartFreeNote}</p>
 
           <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
             {[h.heroPoint1, h.heroPoint2, h.heroPoint3].map((point) => (
@@ -118,7 +126,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               key={step.n}
               className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-7"
             >
-              <span className="font-display text-3xl text-accent-soft">{step.n}</span>
+              <span className="text-3xl font-extrabold tabular-nums text-accent-soft">{step.n}</span>
               <h3 className="text-lg font-bold text-fg">{step.title}</h3>
               <p className="text-sm leading-relaxed text-fg-muted">{step.body}</p>
             </div>
@@ -132,7 +140,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               <ScanIcon className="h-6 w-6" />
             </span>
             <div>
-              <h3 className="font-display text-2xl leading-snug text-fg">{h.doorTitle}</h3>
+              <h3 className="text-2xl font-extrabold leading-snug text-fg">{h.doorTitle}</h3>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fg-muted">{h.doorSubtitle}</p>
             </div>
           </div>
@@ -252,7 +260,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
       {/* ── CTA ────────────────────────────────────────────────────────── */}
       <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-8">
         <div className="flex flex-col items-center gap-6 rounded-3xl border border-accent-soft/50 bg-surface px-6 py-14 text-center">
-          <h2 className="font-display text-balance text-3xl leading-snug text-fg sm:text-4xl">
+          <h2 className="text-balance text-3xl font-extrabold leading-snug text-fg sm:text-4xl">
             {h.ctaTitle}
           </h2>
           <p className="max-w-xl text-base text-fg-muted">{h.ctaBody}</p>
@@ -308,7 +316,7 @@ function SectionHead({
   return (
     <div className="flex flex-col items-center gap-4 text-center">
       <Kicker>{kicker}</Kicker>
-      <h2 className="font-display text-balance text-3xl leading-snug text-fg sm:text-4xl">{title}</h2>
+      <h2 className="text-balance text-3xl font-extrabold leading-snug text-fg sm:text-4xl">{title}</h2>
       {subtitle && <p className="max-w-2xl text-base leading-relaxed text-fg-muted">{subtitle}</p>}
     </div>
   );
@@ -342,7 +350,7 @@ function PriceCard({
       )}
       <h3 className="text-lg font-bold text-fg">{name}</h3>
       <p className="flex items-baseline gap-2">
-        <span className="font-display text-4xl text-fg tabular-nums">{price}</span>
+        <span className="text-4xl font-extrabold tabular-nums text-fg">{price}</span>
         <span className="text-sm text-fg-muted">{unit}</span>
       </p>
     </div>

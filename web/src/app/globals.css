@@ -67,7 +67,9 @@
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --font-body: var(--font-body);
-  /* Aliased to the theme engine's Aref Ruqaa — see [locale]/layout.tsx. */
+  /* Aliased to the theme engine's Aref Ruqaa — see [locale]/layout.tsx.
+     Reserved for the «دعوتي» wordmark in the header and footer; every other
+     heading and number sets in the body face (Almarai) at bold/extrabold. */
   --font-display: var(--font-aref-ruqaa);
 }
 

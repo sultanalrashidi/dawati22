@@ -1,5 +1,5 @@
 import type { Locale } from "@/lib/i18n/locales";
-import { BUSINESS } from "@/lib/business";
+import { BUSINESS, isAuthenticationValid } from "@/lib/business";
 
 /**
  * The site's legal pages — terms, privacy, and refunds — live here rather than
@@ -57,7 +57,7 @@ export type LegalDocId = "terms" | "privacy" | "refunds";
  * page shows when its wording was fixed, not today's date. Bump it by hand when
  * the wording changes.
  */
-const UPDATED = { ar: "٦ سبتمبر ٢٠٢٦", en: "September 6, 2026" };
+const UPDATED = { ar: "٩ سبتمبر ٢٠٢٦", en: "September 9, 2026" };
 
 const ar: Record<LegalDocId, LegalDoc> = {
   terms: {
@@ -65,7 +65,6 @@ const ar: Record<LegalDocId, LegalDoc> = {
     updated: UPDATED.ar,
     intro: [
       "مرحبًا بك في «دعوتي». تحدّد هذه الشروط والأحكام قواعد استخدامك لمنصة دعوتي المتاحة عبر الموقع www.dawati.store وما يرتبط بها من خدمات لإنشاء الدعوات الرقمية وإدارتها. باستخدامك للمنصة أو إتمامك لأي عملية دفع فإنك تُقرّ بأنك قرأت هذه الشروط ووافقت عليها.",
-      `تُشغَّل منصة دعوتي وتُقدَّم خدماتها داخل المملكة العربية السعودية بموجب وثيقة عمل حر رقم ${BUSINESS.licenceNumber}، وهي الجهة التي تتعاقد معها عند إتمام الدفع. جميع الأسعار بالريال السعودي (SAR).`,
     ],
     sections: [
       {
@@ -318,7 +317,6 @@ const en: Record<LegalDocId, LegalDoc> = {
     updated: UPDATED.en,
     intro: [
       "Welcome to Dawati. These Terms & Conditions govern your use of the Dawati platform at www.dawati.store and its related services for creating and managing digital invitations. By using the platform or completing any payment, you confirm that you have read and agreed to these terms.",
-      `Dawati is operated and its services are offered within the Kingdom of Saudi Arabia under freelance licence no. ${BUSINESS.licenceNumber}, and that is the party you contract with when you pay. All prices are in Saudi Riyals (SAR).`,
     ],
     sections: [
       {
@@ -565,8 +563,31 @@ const en: Record<LegalDocId, LegalDoc> = {
   },
 };
 
+/**
+ * Who the customer contracts with — the terms' second opening paragraph.
+ *
+ * It cites the e-commerce authentication certificate while that is in force
+ * and falls back to the plain store identity once it lapses: a legal page must
+ * not go on quoting an authentication that has expired (see `business.ts`).
+ * Built from `getLegalDoc` so the check runs per request, not once at import.
+ */
+function operatorParagraph(locale: Locale): string {
+  const number = BUSINESS.authentication.number;
+  if (locale === "ar") {
+    return isAuthenticationValid()
+      ? `تُشغَّل منصة دعوتي وتُقدَّم خدماتها داخل المملكة العربية السعودية عبر «متجر دعوتي»، وهو متجر إلكتروني موثّق لدى المركز السعودي للأعمال بشهادة توثيق التجارة الإلكترونية رقم ${number}، ويمكن التحقق منها في سجل المتاجر الموثّقة. متجر دعوتي هو الجهة التي تتعاقد معها عند إتمام الدفع. جميع الأسعار بالريال السعودي (SAR).`
+      : "تُشغَّل منصة دعوتي وتُقدَّم خدماتها داخل المملكة العربية السعودية عبر «متجر دعوتي»، وهو الجهة التي تتعاقد معها عند إتمام الدفع. جميع الأسعار بالريال السعودي (SAR).";
+  }
+  return isAuthenticationValid()
+    ? `Dawati is operated and its services are offered within the Kingdom of Saudi Arabia by the Dawati store, an online store authenticated by the Saudi Business Center under e-commerce authentication certificate no. ${number}, which you can verify in the public register of authenticated stores. The Dawati store is the party you contract with when you pay. All prices are in Saudi Riyals (SAR).`
+    : "Dawati is operated and its services are offered within the Kingdom of Saudi Arabia by the Dawati store, which is the party you contract with when you pay. All prices are in Saudi Riyals (SAR).";
+}
+
 const documents: Record<Locale, Record<LegalDocId, LegalDoc>> = { ar, en };
 
 export function getLegalDoc(locale: Locale, id: LegalDocId): LegalDoc {
-  return documents[locale][id];
+  const doc = documents[locale][id];
+  // The terms open with who the customer contracts with; that paragraph is
+  // built per request so it stops citing the certificate the day it lapses.
+  return id === "terms" ? { ...doc, intro: [...doc.intro, operatorParagraph(locale)] } : doc;
 }

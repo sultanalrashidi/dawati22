@@ -87,28 +87,37 @@ export function EventFields({
   dict,
   themeOptions,
   defaults,
+  hideName = false,
 }: {
   locale: Locale;
   dict: Dictionary;
   themeOptions: ThemeOption[];
   /** Absent on the create form, where the sample texts are the starting point. */
   defaults?: EventFieldDefaults;
+  /**
+   * Leaves the event-name input out. The draft page composes the name from the
+   * couple server-side (readEventForm's `composeName`), so asking would only
+   * be a field she has to keep in sync with the names.
+   */
+  hideName?: boolean;
 }) {
   const f = dict.events.form;
 
   return (
     <>
-      <label className="flex flex-col gap-1.5 text-sm">
-        <span className="text-fg-muted">{f.nameLabel}</span>
-        <input
-          name="name"
-          required
-          minLength={2}
-          placeholder={f.namePlaceholder}
-          defaultValue={defaults?.name ?? ""}
-          className={FIELD}
-        />
-      </label>
+      {!hideName && (
+        <label className="flex flex-col gap-1.5 text-sm">
+          <span className="text-fg-muted">{f.nameLabel}</span>
+          <input
+            name="name"
+            required
+            minLength={2}
+            placeholder={f.namePlaceholder}
+            defaultValue={defaults?.name ?? ""}
+            className={FIELD}
+          />
+        </label>
+      )}
 
       <label className="flex flex-col gap-1.5 text-sm">
         <span className="text-fg-muted">{f.openingLabel}</span>

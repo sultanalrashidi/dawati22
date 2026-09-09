@@ -13,11 +13,13 @@ import {
 /**
  * A plain contact page.
  *
- * Saudi e-commerce rules want a reachable contact channel and the licence the
- * store trades under; the footer carries both on every page, and this page is
- * where a reviewer (or a customer who is about to enter her card) can read them
- * without hunting. Every value comes from `support.ts` / `business.ts` so the
- * page can never disagree with the footer or the legal documents.
+ * Saudi e-commerce rules want a reachable contact channel and a way to tell
+ * who the store is; the footer carries both on every page, and this page is
+ * where a reviewer (or a customer who is about to enter her card) can read
+ * them without hunting. The store's public reference is its e-commerce
+ * authentication certificate, and every value comes from `support.ts` /
+ * `business.ts` so the page can never disagree with the footer or the legal
+ * documents.
  *
  * The authentication number links to the public register rather than to the
  * store's own page there: that page's URL carries an expiring lookup token.
@@ -55,11 +57,6 @@ export default async function ContactPage({ params }: PageProps<"/[locale]/conta
       <section className="mt-12">
         <h2 className="text-lg font-semibold text-fg">{c.businessHeading}</h2>
         <dl className="mt-4 divide-y divide-border border-y border-border text-sm">
-          <Detail label={c.licenceLabel}>
-            <span dir="ltr" className="font-mono">
-              {BUSINESS.licenceNumber}
-            </span>
-          </Detail>
           {isAuthenticationValid() ? (
             <Detail label={c.authenticationLabel}>
               <a

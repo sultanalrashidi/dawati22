@@ -1,14 +1,33 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
-import { EventType, InvitationTier, OrderStatus, Role } from "@/generated/prisma/client";
+import {
+  CoupleFormat,
+  EventType,
+  HostMode,
+  InvitationOpening,
+  InvitationTier,
+  OrderStatus,
+  Prisma,
+  Role,
+} from "@/generated/prisma/client";
 import {
   EventError,
   assertThemeSelectable,
   coupleRows,
   primaryCoupleColumns,
 } from "@/lib/events/service";
-import type { EventEssentials } from "@/lib/events/form";
 import { getSessionUser } from "@/lib/auth/session";
+import { DEFAULT_MUSIC_YOUTUBE_ID } from "@/lib/themes/builder/content";
+import {
+  SAMPLE_BRIDE_MOTHER,
+  SAMPLE_COUPLE,
+  SAMPLE_EVENT_NAME,
+  SAMPLE_GROOM_MOTHER,
+  SAMPLE_REGION,
+  SAMPLE_SCHEDULE,
+  SAMPLE_VENUE,
+  sampleEventDate,
+} from "@/lib/drafts/sample";
 import {
   clearDraftToken,
   clientAddressHash,
@@ -47,28 +66,8 @@ import {
 const DRAFT_RATE_LIMIT = 20;
 const DRAFT_RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
-/**
- * Placeholders for the columns the database requires but the gallery cannot
- * know yet. They live for the few seconds between picking a design and saving
- * the basics; the preview is not reachable until the basics are in.
- */
-const DRAFT_PLACEHOLDER_NAME = "دعوة جديدة";
-const DRAFT_PLACEHOLDER_DAYS_AHEAD = 60;
-
 export class DraftError extends Error {}
 export class DraftRateLimitError extends DraftError {}
-
-function placeholderDate() {
-  return new Date(Date.now() + DRAFT_PLACEHOLDER_DAYS_AHEAD * 24 * 60 * 60 * 1000);
-}
-
-/** The event's own name, composed from the couple — groom first, as everywhere. */
-function composeEventName(essentials: EventEssentials): string {
-  const [couple] = essentials.couples;
-  const groom = couple.groomNameAr?.trim() || couple.groomNameEn.trim();
-  const bride = couple.brideNameAr?.trim() || couple.brideNameEn.trim();
-  return groom && bride ? `حفل زفاف ${groom} و ${bride}` : DRAFT_PLACEHOLDER_NAME;
-}
 
 async function assertUnderRateLimit() {
   const ipHash = await clientAddressHash();
@@ -146,9 +145,41 @@ export async function startDraft(input: StartDraftInput): Promise<string> {
       orderId: null,
       draftTokenHash,
       type: EventType.WEDDING,
-      name: DRAFT_PLACEHOLDER_NAME,
-      eventDate: placeholderDate(),
-      locationName: "",
+      // Born complete — see lib/drafts/sample.ts. Every column the details
+      // form edits is written here so the first preview shows every screen
+      // the finished invitation will have, and the edit page opens with
+      // nothing blank.
+      name: SAMPLE_EVENT_NAME,
+      ...primaryCoupleColumns([SAMPLE_COUPLE]),
+      couples: { create: coupleRows([SAMPLE_COUPLE]) },
+      openingKind: InvitationOpening.VERSE,
+      hostMode: HostMode.TEMPLATE,
+      groomMotherAr: SAMPLE_GROOM_MOTHER,
+      brideMotherAr: SAMPLE_BRIDE_MOTHER,
+      hostLineAr: null,
+      coupleFormat: CoupleFormat.ALA,
+      // Null means "the default preset" — the renderer resolves it, and the
+      // closing field shows it, so the row does not store a copy that would
+      // go stale if the preset changed.
+      closingAr: null,
+      invitationTextAr: "",
+      eventDate: sampleEventDate(),
+      locationName: SAMPLE_VENUE,
+      regionName: SAMPLE_REGION,
+      mapUrl: null,
+      // Written explicitly rather than left to the renderer's fallback, so
+      // the music field opens prefilled and clearing it is her own choice.
+      musicYoutubeId: DEFAULT_MUSIC_YOUTUBE_ID,
+      musicAutoplay: false,
+      scheduleItems: SAMPLE_SCHEDULE as unknown as Prisma.InputJsonValue,
+      // One standard note on, so the notes screen exists in the preview.
+      // Not the entry-pass note: a NO_QR draft has no code to show.
+      noteNoPhotos: true,
+      noteNoChildren: false,
+      noteShowPass: false,
+      notesAr: null,
+      rsvpRequired: true,
+      allowGuestPartySize: true,
       // Explicit, not defaulted: hasQr defaults to true for the benefit of
       // legacy rows, and a draft that inherited that default would be handing
       // out the paid entry pass. It is set for real from the order at payment.
@@ -248,52 +279,6 @@ export async function claimDraft(eventId: string): Promise<void> {
   await prisma.event.updateMany({
     where: { id: eventId, ownerId: null, orderId: null, draftTokenHash: tokenHash },
     data: { ownerId: user.id },
-  });
-}
-
-/** Whether the basics have been filled in — what the preview waits for. */
-export function draftHasBasics(draft: { locationName: string; couples: { groomNameAr: string | null }[] }): boolean {
-  return draft.locationName.trim().length > 0 && draft.couples.length > 0;
-}
-
-/**
- * Saves the three things the free form asks for.
- *
- * Only ever touches a draft: an activated event goes through
- * updateEventDetails, which enforces the edit lock. Callers get the draft from
- * resolveDraftAccess, so permission is already settled by the time we get here
- * — but the `orderId: null` in the update's own filter means a draft that was
- * activated in between (she paid in another tab) cannot be written by this
- * path anyway.
- */
-export async function saveDraftBasics(eventId: string, essentials: EventEssentials): Promise<void> {
-  // One transaction for all three writes. The Event's own columns mirror the
-  // primary couple, so committing them without the EventCouple rows would
-  // leave the invitation printing one set of names from its columns and
-  // another from its rows.
-  // Interactive rather than the array form: the guard has to be able to ABORT
-  // the transaction. Checking the count after an array transaction would be
-  // too late — the couple rows would already have been replaced on a draft
-  // that turned out to be activated or locked.
-  await prisma.$transaction(async (tx) => {
-    const updated = await tx.event.updateMany({
-      where: { id: eventId, orderId: null, detailsLockedAt: null },
-      data: {
-        name: composeEventName(essentials),
-        eventDate: essentials.eventDate,
-        locationName: essentials.locationName,
-        regionName: essentials.regionName || null,
-        ...primaryCoupleColumns(essentials.couples),
-      },
-    });
-    if (updated.count === 0) throw new EventError("Draft is no longer editable");
-
-    // Replaced wholesale rather than diffed — the same thing updateEventDetails
-    // does, and the only way a removed couple actually disappears.
-    await tx.eventCouple.deleteMany({ where: { eventId } });
-    await tx.eventCouple.createMany({
-      data: coupleRows(essentials.couples).map((row) => ({ ...row, eventId })),
-    });
   });
 }
 

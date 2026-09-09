@@ -161,7 +161,7 @@ export default async function EventDetailPage({
         <div className="flex flex-col gap-4 rounded-2xl bg-fg p-5 text-bg">
           <div>
             <p className="text-[11px] tracking-wide text-bg/55">{d.currentEvent}</p>
-            <p className="mt-1 font-display text-lg leading-snug">{event.name}</p>
+            <p className="mt-1 text-lg font-bold leading-snug">{event.name}</p>
           </div>
 
           <nav className="flex gap-1.5 overflow-x-auto lg:flex-col lg:overflow-visible">
@@ -235,7 +235,7 @@ export default async function EventDetailPage({
 
         {/* ── OVERVIEW ─────────────────────────────────────────────────── */}
         <div id="overview" className={`flex flex-wrap items-center justify-between gap-3 ${event.hasQr ? "mt-6" : ""}`}>
-          <h1 className="font-display text-3xl text-fg">{d.overview}</h1>
+          <h1 className="text-2xl font-bold text-fg sm:text-3xl">{d.overview}</h1>
           <span className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-xs font-medium text-fg-muted">
             {countdown}
           </span>
@@ -340,7 +340,7 @@ export default async function EventDetailPage({
         )}
 
         {/* ── ADD GUEST ────────────────────────────────────────────────── */}
-        <div className="mt-4">
+        <div id="add-guests" className="mt-4 scroll-mt-24">
           <AddGuestForm eventId={event.id} locale={locale} dict={dict} />
           {/* The existing names and numbers travel to the client so the review
               table can flag "already one of your guests" as she reads, rather

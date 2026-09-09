@@ -168,8 +168,8 @@ export function SendQueue({
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-md flex-col gap-5 px-4 py-8">
       <div>
-        <Link href={`/${locale}/events/${eventId}`} className="text-sm text-fg-muted hover:text-fg">
-          {d.editBackToDashboard}
+        <Link href={`/${locale}/events/${eventId}`} className="text-sm font-bold text-accent hover:underline">
+          {d.backToEvent}
         </Link>
         <h1 className="mt-3 text-2xl font-bold text-fg">{d.sendQueueTitle}</h1>
         <p className="mt-1 text-sm leading-relaxed text-fg-muted">{d.sendQueueHint}</p>
@@ -284,7 +284,7 @@ export function SendQueue({
             href={`/${locale}/events/${eventId}`}
             className="mt-5 inline-flex h-11 items-center rounded-full bg-accent px-6 text-sm font-bold text-accent-fg"
           >
-            {d.editBackToDashboard}
+            {d.sendQueueBackToEvent}
           </Link>
         </section>
       )}

@@ -10,31 +10,75 @@ import type { Dictionary } from "@/lib/i18n/get-dictionary";
  *
  * Fixed to the bottom rather than the top, because the invitation's own first
  * screen is the envelope and covering it would hide the thing she came to see.
+ *
+ * Always open, and small. It used to collapse to a pill because any fixed bar
+ * sits over the bottom of every scroll-snapped screen — on a phone, over the
+ * RSVP form. That is solved on the invitation's side now: the page hands
+ * `InvitationView` this bar's height as `bottomInset` and every screen keeps
+ * that much clear, so the three things she can do stay one tap away, at equal
+ * weight, the whole time.
  */
+
+/** Height the page reserves under the invitation for the full bar (caption + one row of buttons). */
+export const PREVIEW_BAR_INSET = "6rem";
+/** The same for the caption-only pill a shared viewer gets. */
+export const PREVIEW_CAPTION_INSET = "3rem";
+
+// The draft's one edit page. The basics and the details used to be two
+// screens; the old /basics route redirects here.
+function draftEditHref(eventId: string) {
+  return `/ar/draft/${eventId}/details`;
+}
+
+// Equal cells in a grid, so the row is three (or two) buttons of one size on a
+// 360px phone; `leading-tight` lets a label wrap to two lines inside h-10
+// rather than overflow.
+const BUTTON =
+  "flex h-10 min-w-0 items-center justify-center rounded-full px-2 text-center text-xs font-bold leading-tight";
+const PRIMARY = `${BUTTON} bg-black text-white`;
+const SECONDARY = `${BUTTON} border border-black/20 bg-white text-black`;
+
 export function PreviewBar({
   dict,
   eventId,
   activated,
   locked,
+  controls,
 }: {
   dict: Dictionary;
   eventId: string;
   activated: boolean;
   /** Her details froze when the first invitation went out — nothing left to edit. */
   locked: boolean;
+  /**
+   * False for someone she shared the preview with: they get the caption and
+   * the privacy link (this page set cookies on them) and none of her controls.
+   */
+  controls: boolean;
 }) {
   const d = dict.draft;
-  // Starts closed: she came here to look at her invitation, not at a toolbar.
-  const [open, setOpen] = useState(false);
+  const [shareOpen, setShareOpen] = useState(false);
   const [share, setShare] = useState<{ url: string; remaining: number } | null>(null);
+  const [shareError, setShareError] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  async function openShare() {
+  async function toggleShare() {
+    if (shareOpen) {
+      setShareOpen(false);
+      return;
+    }
+    setShareOpen(true);
+    // Minted once per page: the route is a POST that creates the token.
+    if (share) return;
     setSharing(true);
+    setShareError(false);
     try {
       const res = await fetch(`/api/drafts/${eventId}/share`, { method: "POST" });
       if (res.ok) setShare(await res.json());
+      else setShareError(true);
+    } catch {
+      setShareError(true);
     } finally {
       setSharing(false);
     }
@@ -50,122 +94,92 @@ export function PreviewBar({
     }
   }
 
-  return (
-    <div
-      dir="rtl"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[70] flex flex-col items-center gap-2 p-3"
-    >
-      {/* Collapsed by default, and small.
-          The invitation is laid out as full-height scroll-snapped screens, so
-          ANY fixed bar sits on top of the bottom of every one of them — which
-          on a phone meant covering the RSVP form she was trying to look at.
-          The toolbar's job is to be reachable, not to be read: one pill wide
-          enough to say what this is and get on with it, and everything else
-          one tap away. */}
-      {!open ? (
-        <div className="pointer-events-auto flex max-w-full items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setOpen(true)}
-            aria-expanded={false}
-            className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-black/10 bg-white/95 px-4 text-xs font-bold text-black shadow-lg backdrop-blur"
-          >
-            {activated ? d.previewBarActivated : d.watermarkPrimary}
-            <span aria-hidden="true" className="text-black/40">⌃</span>
-          </button>
-          {!activated && (
-            <Link
-              href={`/ar/draft/${eventId}/activate`}
-              className="flex h-10 shrink-0 items-center rounded-full bg-black px-5 text-xs font-bold text-white shadow-lg"
-            >
-              {d.previewBarActivate}
-            </Link>
-          )}
-        </div>
-      ) : (
-      <div className="pointer-events-auto mx-auto flex w-full max-w-2xl flex-col gap-2 rounded-2xl border border-black/10 bg-white/95 p-4 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] backdrop-blur">
-        <div className="flex items-start justify-between gap-3">
-          <p className="text-xs font-bold text-black">
-            {activated ? d.previewBarActivated : d.previewBarTitle}
-          </p>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            aria-label={dict.common.close}
-            className="-m-1 shrink-0 p-1 text-black/40"
-          >
-            ✕
-          </button>
-        </div>
-        <p className="text-[11px] leading-relaxed text-black/60">
-          {activated ? d.previewBarActivatedHint : d.previewBarHint}
-        </p>
+  const caption = !controls
+    ? d.watermarkPrimary
+    : activated
+      ? d.previewBarActivated
+      : d.previewBarCaption;
 
-        {share && (
-          <div className="flex flex-col gap-1 rounded-lg bg-black/5 px-3 py-2">
-            <p className="text-[11px] text-black/70">
-              {d.shareRemaining.replace("{n}", String(share.remaining))}
-            </p>
-            <div className="flex items-center gap-2">
-              <code className="min-w-0 flex-1 truncate text-[11px] text-black/80" dir="ltr">
-                {share.url}
-              </code>
-              <button
-                type="button"
-                onClick={() => copy(share.url)}
-                className="shrink-0 rounded-full bg-black px-3 py-1 text-[11px] font-bold text-white"
-              >
-                {copied ? d.copied : d.copyLink}
-              </button>
-            </div>
+  return (
+    <div dir="rtl" className="pointer-events-none fixed inset-x-0 bottom-0 z-[70] flex justify-center p-2">
+      <div className="pointer-events-auto flex w-full max-w-2xl flex-col gap-1 rounded-2xl border border-black/10 bg-white/95 p-2 shadow-[0_-4px_20px_rgba(0,0,0,0.12)] backdrop-blur">
+        {/* One line: what this is, and the policy behind the cookies this page
+            sets on whoever opens it. A shared viewer has never seen the site,
+            and this segment has no header or footer to carry that link. */}
+        <div className="flex items-center justify-between gap-2 px-1 text-[11px] leading-4">
+          <p className="min-w-0 truncate font-bold text-black/70">{caption}</p>
+          <Link href="/ar/privacy" className="shrink-0 text-black/50 underline underline-offset-2">
+            {d.previewPrivacyLink}
+          </Link>
+        </div>
+
+        {controls && (
+          <div className={`grid gap-2 ${activated ? (locked ? "grid-cols-1" : "grid-cols-2") : "grid-cols-3"}`}>
+            {activated ? (
+              <>
+                <Link href={`/ar/events/${eventId}#add-guests`} className={PRIMARY}>
+                  {d.activatedAddGuests}
+                </Link>
+                {/* After payment the details live on her own event, because
+                    resolveDraftAccess filters `orderId: null` and the draft
+                    route would bounce a paid invitation to the gallery. Once
+                    they are locked there is nothing to send her to at all. */}
+                {!locked && (
+                  <Link href={`/ar/events/${eventId}/details`} className={SECONDARY}>
+                    {d.previewBarEditActivated}
+                  </Link>
+                )}
+              </>
+            ) : (
+              <>
+                <Link href={draftEditHref(eventId)} className={SECONDARY}>
+                  {d.previewBarEdit}
+                </Link>
+                <button
+                  type="button"
+                  onClick={toggleShare}
+                  disabled={sharing}
+                  aria-expanded={shareOpen}
+                  className={`${SECONDARY} disabled:opacity-50`}
+                >
+                  {d.previewBarShare}
+                </button>
+                <Link href={`/ar/draft/${eventId}/activate`} className={PRIMARY}>
+                  {d.previewBarActivate}
+                </Link>
+              </>
+            )}
           </div>
         )}
 
-        <div className="flex flex-wrap gap-2">
-          {/* Before payment the basics live on the draft screens; after it they
-              live on her own event, because resolveDraftAccess filters
-              `orderId: null` and the draft route would bounce a paid
-              invitation to the design gallery. Once the details are locked
-              there is nothing to send her to at all. */}
-          {(!activated || !locked) && (
-            <Link
-              href={activated ? `/ar/events/${eventId}/details` : `/ar/draft/${eventId}/basics`}
-              className="inline-flex h-9 items-center rounded-full border border-black/20 px-4 text-xs font-bold text-black"
-            >
-              {activated ? d.previewBarDetails : d.previewBarEdit}
-            </Link>
-          )}
-          {!activated && (
-            <>
-              {/* The rest of the invitation — mothers, opening, programme,
-                  notes, music — all editable before paying, so the preview she
-                  is looking at becomes the finished thing rather than defaults
-                  standing in for questions nobody asked her yet. */}
-              <Link
-                href={`/ar/draft/${eventId}/details`}
-                className="inline-flex h-9 items-center rounded-full border border-black/20 px-4 text-xs font-bold text-black"
-              >
-                {d.previewBarDetails}
-              </Link>
-              <button
-                type="button"
-                onClick={openShare}
-                disabled={sharing}
-                className="inline-flex h-9 items-center rounded-full border border-black/20 px-4 text-xs font-bold text-black disabled:opacity-50"
-              >
-                {d.previewBarShare}
-              </button>
-              <Link
-                href={`/ar/draft/${eventId}/activate`}
-                className="inline-flex h-9 flex-1 items-center justify-center rounded-full bg-black px-5 text-xs font-bold text-white"
-              >
-                {d.previewBarActivate}
-              </Link>
-            </>
-          )}
-        </div>
+        {controls && !activated && shareOpen && (
+          <div className="flex flex-col gap-1 rounded-lg bg-black/5 px-3 py-2">
+            {shareError ? (
+              <p className="text-[11px] text-danger">{d.shareError}</p>
+            ) : share ? (
+              <>
+                <p className="text-[11px] text-black/70">
+                  {d.shareRemaining.replace("{n}", String(share.remaining))}
+                </p>
+                <div className="flex items-center gap-2">
+                  <code className="min-w-0 flex-1 truncate text-[11px] text-black/80" dir="ltr">
+                    {share.url}
+                  </code>
+                  <button
+                    type="button"
+                    onClick={() => copy(share.url)}
+                    className="shrink-0 rounded-full bg-black px-3 py-1 text-[11px] font-bold text-white"
+                  >
+                    {copied ? d.copied : d.copyLink}
+                  </button>
+                </div>
+              </>
+            ) : (
+              <p className="text-[11px] text-black/50">{dict.common.loading}</p>
+            )}
+          </div>
+        )}
       </div>
-      )}
     </div>
   );
 }

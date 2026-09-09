@@ -15,11 +15,11 @@ const bodyFont = Almarai({
   weight: ["300", "400", "700", "800"],
 });
 
-// `--font-display` sits on Arabic headings and the wordmark, so it has to be a
-// face with Arabic glyphs — it used to be Inter with `subsets: ["latin"]`,
-// which meant every one of those rendered in an unstyled browser fallback.
-// Aref Ruqaa is already loaded for the theme engine and already on <html> via
-// THEME_FONT_CLASS, so pointing at its variable costs no extra download.
+// `--font-display` is the «دعوتي» wordmark's face — the header and footer are
+// its only users; headings and numbers set in Almarai at bold/extrabold. It
+// has to be a face with Arabic glyphs, and Aref Ruqaa is already loaded for
+// the theme engine and already on <html> via THEME_FONT_CLASS, so pointing at
+// its variable costs no extra download.
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));

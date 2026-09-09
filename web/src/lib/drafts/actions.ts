@@ -4,14 +4,13 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { InvitationTier } from "@/generated/prisma/client";
 import { isValidInvitationCount } from "@/lib/orders/pricing";
-import { readEventEssentials, readEventForm } from "@/lib/events/form";
+import { readEventForm } from "@/lib/events/form";
 import { EventError, updateEventDetails } from "@/lib/events/service";
 import {
   DraftRateLimitError,
   claimDraft,
   deleteDraft,
   resolveDraftAccess,
-  saveDraftBasics,
   startDraft,
 } from "@/lib/drafts/service";
 import { refreshDraftToken } from "@/lib/drafts/session";
@@ -29,7 +28,8 @@ function readIntent(formData: FormData) {
 
 /**
  * The gallery's "start with this design" button. No account, no payment — this
- * is the first step of the journey and the first row it writes.
+ * is the first step of the journey and the first row it writes. It lands on the
+ * one edit page, already filled in with the sample invitation.
  */
 export async function startDraftAction(formData: FormData): Promise<void> {
   // Everything comes off the form so the gallery's client components can post
@@ -48,52 +48,15 @@ export async function startDraftAction(formData: FormData): Promise<void> {
     throw err;
   }
 
-  redirect(`/${locale}/draft/${draftId}/basics`);
-}
-
-/** The three-field form: names, date, venue. */
-export async function saveDraftBasicsAction(
-  locale: Locale,
-  eventId: string,
-  formData: FormData,
-): Promise<void> {
-  const draft = await resolveDraftAccess(eventId);
-  if (!draft) redirect(`/${locale}/themes`);
-
-  const essentials = readEventEssentials(formData);
-  if (!essentials) redirect(`/${locale}/draft/${eventId}/basics?error=validation`);
-
-  // Saving is the deliberate act that attaches an anonymous draft to whoever
-  // is signed in — a POST she made, not a URL she happened to open. A no-op
-  // when there is no session or the draft already has an owner.
-  await claimDraft(eventId);
-  // The published retention rule is "30 days from the last edit", and for an
-  // ownerless draft this cookie is the only way back to it. Refreshed here so
-  // the cookie's clock and the sweep's clock are the same clock — otherwise it
-  // would expire on day 30 while the draft lived to day 55, unreachable to the
-  // person whose names are in it.
-  await refreshDraftToken();
-
-  try {
-    await saveDraftBasics(eventId, essentials);
-  } catch {
-    redirect(`/${locale}/draft/${eventId}/basics?error=validation`);
-  }
-
-  revalidatePath(`/${locale}/draft/${eventId}/basics`);
-  // The payoff of the whole free half of the journey: three answers, and she
-  // is looking at her own invitation.
-  redirect(`/preview/${eventId}`);
+  redirect(`/${locale}/draft/${draftId}/details`);
 }
 
 /**
- * The full details form — the opening, the mothers, the programme, the notes,
- * the music, the design.
+ * The one draft edit page — names, date, venue, the opening, the mothers, the
+ * programme, the notes, the music, the design.
  *
- * Reachable BEFORE payment, which is the point: it means the watermarked
- * preview shows the finished invitation rather than defaults standing in for
- * everything she has not been asked for yet, so what she pays for is what she
- * already saw.
+ * Reachable BEFORE payment, which is the point: the watermarked preview shows
+ * the finished invitation, so what she pays for is what she already saw.
  */
 export async function saveDraftDetailsAction(
   locale: Locale,
@@ -103,7 +66,9 @@ export async function saveDraftDetailsAction(
   const draft = await resolveDraftAccess(eventId);
   if (!draft) redirect(`/${locale}/themes`);
 
-  const values = readEventForm(formData);
+  // The draft page has no event-name field; the name is composed from the
+  // couple ("حفل زفاف فهد و نورة") so it follows every rename automatically.
+  const values = readEventForm(formData, { composeName: true });
   if (!values) redirect(`/${locale}/draft/${eventId}/details?error=validation`);
 
   await claimDraft(eventId);
@@ -135,7 +100,7 @@ export async function deleteDraftAction(locale: Locale, eventId: string): Promis
   try {
     await deleteDraft(eventId);
   } catch {
-    redirect(`/${locale}/draft/${eventId}/basics?error=delete`);
+    redirect(`/${locale}/draft/${eventId}/details?error=delete`);
   }
 
   redirect(`/${locale}/themes`);

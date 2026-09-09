@@ -15,8 +15,8 @@ export default async function LocaleNotFound() {
 
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center gap-5 px-4 py-28 text-center sm:px-8">
-      <span className="font-display text-6xl text-accent-soft">٤٠٤</span>
-      <h1 className="font-display text-3xl text-fg">{dict.common.notFoundTitle}</h1>
+      <span className="text-6xl font-extrabold tabular-nums text-accent-soft">٤٠٤</span>
+      <h1 className="text-3xl font-extrabold text-fg">{dict.common.notFoundTitle}</h1>
       <p className="text-base leading-relaxed text-fg-muted">{dict.common.notFoundBody}</p>
       <Link
         href={`/${defaultLocale}`}

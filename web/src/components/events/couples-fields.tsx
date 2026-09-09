@@ -29,8 +29,8 @@ interface Row {
 }
 
 /**
- * The repeatable bride+groom block — bride first, because she is the star of
- * a women's-section invitation and the card prints her name first. Every pair
+ * The repeatable groom+bride block — groom first, matching the order the
+ * invitation prints the two names. Every pair
  * posts under the same six `couple*` names, so the server reads them with
  * `formData.getAll(...)` and the Nth value of each array is the Nth couple —
  * which is why the inputs stay uncontrolled and are keyed by a stable id:
@@ -76,39 +76,6 @@ export function CouplesFields({
           </legend>
 
           <div className="flex flex-col gap-2">
-            <span className="text-sm font-medium text-fg">{f.brideHeading}</span>
-            <div className="grid grid-cols-2 gap-4">
-              <label className="flex flex-col gap-1.5 text-sm">
-                <span className="text-fg-muted">{f.brideNameArLabel}</span>
-                <input
-                  name="coupleBrideNameAr"
-                  required
-                  minLength={2}
-                  defaultValue={row.values?.brideNameAr ?? ""}
-                  className={FIELD}
-                />
-              </label>
-              <label className="flex flex-col gap-1.5 text-sm">
-                <span className="text-fg-muted">{f.brideFamilyArLabel}</span>
-                <input
-                  name="coupleBrideFamilyAr"
-                  defaultValue={row.values?.brideFamilyAr ?? ""}
-                  className={FIELD}
-                />
-              </label>
-              <label className="col-span-2 flex flex-col gap-1.5 text-sm">
-                <span className="text-fg-muted">{f.brideNameLabel}</span>
-                <input
-                  name="coupleBrideNameEn"
-                  dir="ltr"
-                  defaultValue={row.values?.brideNameEn ?? ""}
-                  className={FIELD}
-                />
-              </label>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
             <span className="text-sm font-medium text-fg">{f.groomHeading}</span>
             <div className="grid grid-cols-2 gap-4">
               <label className="flex flex-col gap-1.5 text-sm">
@@ -135,6 +102,39 @@ export function CouplesFields({
                   name="coupleGroomNameEn"
                   dir="ltr"
                   defaultValue={row.values?.groomNameEn ?? ""}
+                  className={FIELD}
+                />
+              </label>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-fg">{f.brideHeading}</span>
+            <div className="grid grid-cols-2 gap-4">
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="text-fg-muted">{f.brideNameArLabel}</span>
+                <input
+                  name="coupleBrideNameAr"
+                  required
+                  minLength={2}
+                  defaultValue={row.values?.brideNameAr ?? ""}
+                  className={FIELD}
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-sm">
+                <span className="text-fg-muted">{f.brideFamilyArLabel}</span>
+                <input
+                  name="coupleBrideFamilyAr"
+                  defaultValue={row.values?.brideFamilyAr ?? ""}
+                  className={FIELD}
+                />
+              </label>
+              <label className="col-span-2 flex flex-col gap-1.5 text-sm">
+                <span className="text-fg-muted">{f.brideNameLabel}</span>
+                <input
+                  name="coupleBrideNameEn"
+                  dir="ltr"
+                  defaultValue={row.values?.brideNameEn ?? ""}
                   className={FIELD}
                 />
               </label>

@@ -1,19 +1,18 @@
 /**
  * Who the store legally is.
  *
- * Saudi e-commerce rules require an online store to show its registration or
- * licence number where a visitor can find it, and the Saudi Business Center
- * checks for exactly that before issuing the شهادة توثيق التجارة الإلكترونية
- * that Moyasar asks merchants to produce. So this is not decoration: the
- * footer, the contact page and the terms all read from here, and the number
- * must stay character-for-character as it appears on the وثيقة عمل حر.
+ * The store's public reference is the شهادة توثيق التجارة الإلكترونية the Saudi
+ * Business Center granted it: the footer badge, the contact page and the terms
+ * all cite that certificate and read its number from here, so they can never
+ * disagree with each other. Contact channels live in `support.ts`; this file
+ * is identity only.
  *
- * Contact channels live in `support.ts`; this file is identity only.
+ * The certificate was issued against the store's وثيقة عمل حر (FL-288355247).
+ * That licence is deliberately NOT printed anywhere on the site any more: the
+ * public register already shows which licence the certificate is linked to,
+ * and the certificate is the thing a customer can check for herself.
  */
 export const BUSINESS = {
-  /** وثيقة عمل حر — the licence the store trades under. */
-  licenceNumber: "FL-288355247",
-
   /**
    * The e-commerce authentication the Saudi Business Center granted on
    * 2026-09-08 to «متجر دعوتي / Dawati Store».

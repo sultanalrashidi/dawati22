@@ -13,14 +13,25 @@ import { ScanIcon } from "@/components/icons/scan-icon";
 
 /**
  * The site header: the wordmark and a menu button at the start, and at the end
- * the three things someone actually arrives here to do — open the door
- * scanner, sign in (only when signed out), and start a design.
+ * the two things someone actually arrives here to do — open the door scanner,
+ * and either sign in (signed out) or get back to her invitations (a signed-in
+ * customer). Admins and gate staff get only the scanner here; their panels are
+ * in the menu.
  *
  * The scanner sits in the strip rather than in the panel because it is the one
  * link used under pressure: a door team standing at the entrance with a queue
- * behind them should not have to find it inside a menu. It always carries a
- * label — the full wording on a wide screen, a shorter one on a phone — so
- * nobody has to guess what a bare icon means.
+ * behind them should not have to find it inside a menu. It always carries its
+ * full label — "منظّمات الدخول" is what the home page tells them to look for,
+ * and a one-word short form ("ماسح") was not that word. The strip fits a 360px
+ * phone with the full label, and below 360px it tightens its gaps and drops one
+ * font size instead of overflowing.
+ *
+ * There is deliberately no "design yours" button here any more: designing
+ * starts from the home hero and the themes page, and the black pill competed
+ * with the scanner for the little room a phone has.
+ *
+ * `font-display` (Aref Ruqaa) is reserved for the wordmark — here and in the
+ * panel — and nothing else in the header may use it.
  *
  * Everything else lives in the slide-in panel, including the language switch —
  * it was a permanent word in the strip for something most visitors never touch.
@@ -78,8 +89,8 @@ export function SiteHeader({
 
   // Kept from the old header — these were icon buttons in the top strip and
   // would otherwise have disappeared with it. The scanner is repeated here on
-  // purpose: the strip only ever has room for its short label, and this is
-  // where a first-time door team reads the full wording.
+  // purpose: the panel is the complete map of the site, and a door team that
+  // opened the menu first should find it without closing the menu.
   const accountLinks = [
     ...(user?.role === "CUSTOMER" ? [{ href: `/${locale}/events`, label: n.myEvents }] : []),
     ...(user?.role === "ADMIN" ? [{ href: `/${locale}/admin`, label: n.admin }] : []),
@@ -90,8 +101,10 @@ export function SiteHeader({
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-border bg-bg/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 sm:gap-3 sm:px-8">
-          <div className="flex items-center gap-2">
+        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-3 max-[359px]:gap-1.5 max-[359px]:px-2.5 sm:gap-3 sm:px-8">
+          <div className="flex items-center gap-2 max-[359px]:gap-1">
+            {/* The wordmark is the one place in the header that uses the
+                display face. */}
             <Link href={`/${locale}`} className="font-display text-xl text-fg">
               {dict.brand.name}
             </Link>
@@ -109,34 +122,35 @@ export function SiteHeader({
           </div>
 
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Full label on every width — the visible text is the accessible
+                name, so no aria-label; `title` keeps the longer explanation
+                as a tooltip for anyone who hovers. */}
             <Link
               href={`/${locale}/gate-access`}
               title={n.scanFull}
-              aria-label={n.scanFull}
-              className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-accent-soft/60 bg-accent-soft/15 px-2 text-sm font-bold text-accent transition-colors hover:border-accent hover:bg-accent-soft/30 sm:gap-2 sm:px-3.5"
+              className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-accent-soft/60 bg-accent-soft/15 px-2 text-sm font-bold text-accent transition-colors hover:border-accent hover:bg-accent-soft/30 max-[359px]:gap-1 max-[359px]:text-[13px] sm:gap-2 sm:px-3.5"
             >
               <ScanIcon className="h-[18px] w-[18px]" />
-              <span className="hidden min-[360px]:inline sm:hidden">{n.scanShort}</span>
-              <span className="hidden sm:inline">{n.scan}</span>
+              <span>{n.scan}</span>
             </Link>
             {!user && (
               <Link
                 href={`/${locale}/login`}
-                aria-label={n.login}
-                className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full px-2 text-sm font-bold text-fg transition-colors hover:text-accent sm:px-3"
+                className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full px-2 text-sm font-bold text-fg transition-colors hover:text-accent max-[359px]:text-[13px] sm:px-3"
               >
-                <span className="sm:hidden">{n.loginShort}</span>
-                <span className="hidden sm:inline">{n.login}</span>
+                {n.loginShort}
               </Link>
             )}
-            {/* Goes to the designs, not to pricing: designing is free and is
-                where the journey now starts. */}
-            <Link
-              href={`/${locale}/themes`}
-              className="inline-flex h-10 shrink-0 items-center whitespace-nowrap rounded-full bg-fg px-3.5 text-sm font-bold text-bg transition-opacity hover:opacity-90 sm:px-5"
-            >
-              {n.designYours}
-            </Link>
+            {/* A customer's way back to what she paid for. Bordered so it reads
+                as a destination next to the scanner pill, not as loose text. */}
+            {user?.role === "CUSTOMER" && (
+              <Link
+                href={`/${locale}/events`}
+                className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-border px-3 text-sm font-bold text-fg transition-colors hover:border-accent hover:text-accent max-[359px]:text-[13px]"
+              >
+                {n.myEvents}
+              </Link>
+            )}
           </div>
         </div>
       </header>

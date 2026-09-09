@@ -1,7 +1,6 @@
 import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
-import { BUSINESS } from "@/lib/business";
 import { VerifiedBadge } from "@/components/verified-badge";
 import {
   SUPPORT_EMAIL,
@@ -15,16 +14,17 @@ import {
  * pages (terms, privacy, refunds) are required for the payment provider and now
  * ship, so they get their own column instead of being left out.
  *
- * The identity block under the brand — licence number, email, phone — is a
- * regulatory requirement, not a design flourish: a Saudi online store has to
- * show the licence it trades under where a visitor can find it, and the Saudi
- * Business Center looks for it before issuing the authentication certificate.
- * Because the footer renders on every page it also satisfies "on the home
- * page". Keep it visible; do not fold it into a link.
+ * The identity block under the brand — email, phone, country — and the
+ * authentication badge directly beneath it are a regulatory requirement, not a
+ * design flourish: a Saudi online store has to show who it is and how to reach
+ * it where a visitor can find it, and the Saudi Business Center's e-commerce
+ * authentication (the badge: certificate number plus a link to the public
+ * register) is the reference the store trades under in public. Because the
+ * footer renders on every page it also satisfies "on the home page". Keep it
+ * visible; do not fold it into a link.
  *
- * The authentication badge sits directly under it, because the licence number
- * is what the regulator looks for and the certificate number is what a
- * customer can check for herself.
+ * The wordmark is the one place outside the header that keeps `font-display`
+ * (Aref Ruqaa) — it is the brand's face, not a heading style.
  */
 export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const h = dict.home;
@@ -54,11 +54,6 @@ export function SiteFooter({ locale, dict }: { locale: Locale; dict: Dictionary 
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-fg-muted">{h.footerTagline}</p>
 
           <dl className="mt-6 grid gap-1.5 text-xs leading-relaxed text-fg-muted">
-            <IdentityRow label={h.footerLicence}>
-              <span dir="ltr" className="font-mono">
-                {BUSINESS.licenceNumber}
-              </span>
-            </IdentityRow>
             <IdentityRow label={c.emailLabel}>
               <a href={`mailto:${SUPPORT_EMAIL}`} dir="ltr" className="transition-colors hover:text-fg">
                 {SUPPORT_EMAIL}

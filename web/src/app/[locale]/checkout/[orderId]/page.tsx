@@ -1,9 +1,9 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { isLocale, type Locale } from "@/lib/i18n/locales";
 import { getDictionary, type Dictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
-import { getOwnedOrder } from "@/lib/orders/service";
+import { getOwnedOrder, paidOrderDestination } from "@/lib/orders/service";
 import { orderSummaryLabel } from "@/lib/orders/terms";
 import { isMoyasarConfigured, moyasarFormConfig } from "@/lib/payments/moyasar";
 import { confirmMockPaymentAction } from "@/lib/orders/actions";
@@ -37,6 +37,11 @@ export default async function CheckoutPage({
 
   const order = await getOwnedOrder(orderId, user.id);
   if (!order) notFound();
+  // Reopening a paid checkout should resume the invitation, including when
+  // the payment webhook finished before the customer returned here.
+  if (order.status === OrderStatus.PAID) {
+    redirect(await paidOrderDestination(order.id, locale));
+  }
 
   const planName = orderSummaryLabel(order, locale, dict);
   const boundConfirmMock = confirmMockPaymentAction.bind(null, order.id, locale);
@@ -64,9 +69,7 @@ export default async function CheckoutPage({
 
       {hasError && <p className="mt-4 text-sm text-danger">{dict.checkout.error}</p>}
 
-      {order.status === OrderStatus.PAID ? (
-        <p className="mt-6 rounded-xl bg-success/10 px-4 py-3 text-sm text-success">{dict.common.success}</p>
-      ) : !isPayable(order.status) ? (
+      {!isPayable(order.status) ? (
         <ClosedOrder locale={locale} order={order} dict={dict} />
       ) : isMoyasarConfigured() ? (
         <div className="mt-6 space-y-4">

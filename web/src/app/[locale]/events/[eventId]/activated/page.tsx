@@ -11,10 +11,11 @@ import { riyadhDateFormat } from "@/lib/dates";
 /**
  * «تم الدفع وتفعيل دعوتك» — the customer's own words for step seven.
  *
- * It exists because the moment she pays is the moment the whole free half of
- * the journey pays off, and it used to land on a list that looked identical to
- * any other visit. This says what she bought, confirms the watermark is gone,
- * and offers the only two things worth doing next.
+ * Confirm the purchase and make the next action visible before the receipt,
+ * especially on a phone where the receipt can fill the first screen. The
+ * order is fixed: adding guests first, because it is the one step between
+ * paying and sending that cannot be skipped; editing second, and only while
+ * `detailsLockedAt` is null; the watermark-free preview last, as a link.
  */
 export default async function ActivatedPage({
   params,
@@ -38,7 +39,16 @@ export default async function ActivatedPage({
   const paidAt = event.order?.paidAt ?? null;
 
   return (
-    <div className="mx-auto flex max-w-lg flex-col gap-6 px-4 py-16 sm:px-8">
+    <div className="mx-auto flex max-w-lg flex-col gap-6 px-4 py-8 sm:px-8 sm:py-12">
+      {/* The same words in the same place on every screen that hangs off her
+          event page, so "how do I get back" never needs asking. */}
+      <Link
+        href={`/${locale}/events/${eventId}`}
+        className="self-start text-sm font-bold text-accent hover:underline"
+      >
+        {dict.events.detail.backToEvent}
+      </Link>
+
       <div className="text-center">
         <span
           aria-hidden="true"
@@ -48,6 +58,33 @@ export default async function ActivatedPage({
         </span>
         <h1 className="mt-4 text-2xl font-bold text-fg">{d.activatedTitle}</h1>
         <p className="mt-2 text-sm leading-relaxed text-fg-muted">{d.activatedSubtitle}</p>
+      </div>
+
+      <div className="flex flex-col gap-3">
+        <p className="text-center text-sm leading-relaxed text-fg-muted">{d.activatedNextHint}</p>
+        <Link
+          href={`/${locale}/events/${eventId}#add-guests`}
+          className="flex h-12 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+        >
+          {d.activatedAddGuests}
+        </Link>
+        {/* The details stay open until the first invitation actually goes
+            out — detailsLockedAt, not payment, is the freeze. Once locked the
+            button goes, rather than leading to a panel that says no. */}
+        {event.detailsLockedAt === null && (
+          <Link
+            href={`/${locale}/events/${eventId}/details`}
+            className="flex h-12 items-center justify-center rounded-full border border-border text-sm font-bold text-fg transition-colors hover:border-accent"
+          >
+            {d.activatedEditInvitation}
+          </Link>
+        )}
+        <Link
+          href={`/preview/${eventId}`}
+          className="flex min-h-11 items-center justify-center text-sm font-bold text-accent hover:underline"
+        >
+          {d.activatedSeeInvitation}
+        </Link>
       </div>
 
       <dl className="flex flex-col divide-y divide-border rounded-2xl border border-border bg-surface px-5">
@@ -71,29 +108,6 @@ export default async function ActivatedPage({
         {typeof search.order === "string" && <Row label={d.receiptRef} value={search.order} mono />}
       </dl>
 
-      <div className="flex flex-col gap-3">
-        {/* Her step 8, and it belongs first: the details are open until the
-            first invitation actually goes out, and this is the moment she has
-            the appetite to finish them. */}
-        <Link
-          href={`/${locale}/events/${eventId}/details`}
-          className="flex h-12 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
-        >
-          {d.activatedCompleteDetails}
-        </Link>
-        <Link
-          href={`/${locale}/events/${eventId}`}
-          className="flex h-12 items-center justify-center rounded-full border border-border text-sm font-bold text-fg transition-colors hover:border-accent"
-        >
-          {d.activatedAddGuests}
-        </Link>
-        <Link
-          href={`/preview/${eventId}`}
-          className="flex h-12 items-center justify-center rounded-full border border-border text-sm font-bold text-fg transition-colors hover:border-accent"
-        >
-          {d.activatedSeeInvitation}
-        </Link>
-      </div>
     </div>
   );
 }

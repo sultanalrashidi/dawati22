@@ -12,6 +12,7 @@ import type { ScheduleItem } from "@/lib/events/types";
 import type { DesignBrief } from "@/lib/design-requests/service";
 import { extractYoutubeVideoId } from "@/lib/youtube";
 import { riyadhDateTimeLocalToDate } from "@/lib/dates";
+import { composeWeddingName } from "@/lib/events/event-name";
 
 /**
  * One reader for the one event form. The customer fills it in once at creation
@@ -36,8 +37,6 @@ const EVENT_TYPES = new Set<string>(Object.values(EventType));
  */
 const MAX_GIVEN_NAME = 60;
 const MAX_FAMILY_NAME = 60;
-const MAX_LOCATION = 120;
-const MAX_REGION = 60;
 
 /** A posted string is one of the allowed kinds, narrowed to that union. */
 function isOneOf<T extends string>(kinds: readonly T[], value: string): value is T {
@@ -110,39 +109,6 @@ export function readCouples(formData: FormData): CoupleInput[] | null {
  * columns (`InvitationTextFields`) are the same shape the renderer and the
  * share texts read, so what the form saves is exactly what prints.
  */
-/** The three things the free draft form asks for, and nothing else. */
-export interface EventEssentials {
-  couples: CoupleInput[];
-  eventDate: Date;
-  locationName: string;
-  regionName: string;
-}
-
-/**
- * The basics form: names, date, venue. Everything else an invitation prints
- * has a default good enough to render a complete-looking card, which is what
- * lets the customer see her real invitation before she has filled anything
- * else in.
- *
- * It reuses readCouples rather than parsing names again, so the two forms can
- * never disagree about what a valid name is — including the length caps.
- */
-export function readEventEssentials(formData: FormData): EventEssentials | null {
-  const text = (field: string) => String(formData.get(field) ?? "").trim();
-
-  const couples = readCouples(formData);
-  const locationName = text("locationName");
-  const regionName = text("regionName");
-  const eventDate = riyadhDateTimeLocalToDate(String(formData.get("eventDate") ?? ""));
-
-  if (couples === null || couples.length !== 1) return null;
-  if (eventDate === null) return null;
-  if (locationName.length < 2 || locationName.length > MAX_LOCATION) return null;
-  if (regionName.length > MAX_REGION) return null;
-
-  return { couples, eventDate, locationName, regionName };
-}
-
 export interface EventFormValues extends InvitationTextFields {
   type: EventType;
   name: string;
@@ -231,15 +197,31 @@ function readDesignBrief(formData: FormData): DesignBrief | null {
 }
 
 /** Returns null when the submission is not usable; the caller decides how to say so. */
-export function readEventForm(formData: FormData): EventFormValues | null {
+export interface ReadEventFormOptions {
+  /**
+   * Compose `name` from the primary couple instead of reading a `name` field.
+   * The draft page does not ask for an event name — see composeWeddingName.
+   */
+  composeName?: boolean;
+}
+
+export function readEventForm(
+  formData: FormData,
+  options: ReadEventFormOptions = {},
+): EventFormValues | null {
   const text = (field: string) => String(formData.get(field) ?? "").trim();
   const checked = (field: string) => formData.get(field) === "on";
 
   const type = text("type");
-  const name = text("name");
   const openingKind = text("openingKind");
   const host = readHost(formData);
   const couples = readCouples(formData);
+  // The draft page has no name field: its event is named after the couple, so
+  // a rename there follows the names instead of drifting away from them.
+  const name =
+    options.composeName && couples && couples.length > 0
+      ? composeWeddingName(couples)
+      : text("name");
   const coupleFormat = text("coupleFormat");
   const locationName = text("locationName");
   const themeId = text("themeId");

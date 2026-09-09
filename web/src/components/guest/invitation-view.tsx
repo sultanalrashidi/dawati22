@@ -196,6 +196,14 @@ interface Props {
    * exactly as a guest receives it, which is the point of the link.
    */
   testCopy?: boolean;
+  /**
+   * A CSS length the page keeps fixed over the bottom of the viewport — the
+   * owner's preview bar. Every screen pads by it, the covers pad by it and the
+   * builder stages size against the space left, so nothing she must tap (the
+   * RSVP submit, the cover's open button) ends up underneath. Absent → "0px",
+   * and a guest's invitation renders exactly as before.
+   */
+  bottomInset?: string;
 }
 
 /** Opening-transition length in ms — kept in sync with the CSS animation durations below. */
@@ -353,13 +361,45 @@ function useInView<T extends HTMLElement>(threshold = 0.05) {
 }
 
 /** One full-height, scroll-snapped beat of the post-open guest experience. */
-function Scene({ children, showHint = false }: { children: ReactNode; showHint?: boolean }) {
+function Scene({
+  children,
+  showHint = false,
+  hintLabel,
+}: {
+  children: ReactNode;
+  showHint?: boolean;
+  /** Words over the chevron — only the first screen after the cover says them. */
+  hintLabel?: string;
+}) {
   const [ref, inView] = useInView<HTMLElement>();
   return (
-    <section ref={ref} className={`dawati-scene${inView ? " dawati-scene-in-view" : ""}`}>
+    <section
+      ref={ref}
+      className={`dawati-scene${inView ? " dawati-scene-in-view" : ""}`}
+      // Keeps the bottom of every screen clear of whatever the page fixes
+      // there — the owner's preview bar. 0px on a guest's invitation, where the
+      // stylesheet's own 4rem is all there is.
+      style={{ paddingBottom: "calc(4rem + var(--dawati-bottom-inset, 0px))" }}
+    >
       {children}
       {showHint && (
-        <span className="dawati-scroll-hint" aria-hidden="true">
+        <span
+          className="dawati-scroll-hint flex flex-col items-center gap-0.5"
+          aria-hidden="true"
+          style={{ bottom: "calc(1.5rem + var(--dawati-bottom-inset, 0px))" }}
+        >
+          {/* A chevron alone reads as decoration on a card, and the guest never
+              learns the invitation continues. Accent ink, the body face, and
+              the span's own half opacity, so it sits inside the design rather
+              than on top of it. */}
+          {hintLabel && (
+            <span
+              className="text-[10px] tracking-[0.08em]"
+              style={{ color: "var(--color-accent)", fontFamily: "var(--font-ar-body)" }}
+            >
+              {hintLabel}
+            </span>
+          )}
           <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="var(--color-accent)" strokeWidth="1.5">
             <path d="M6 9l6 6 6-6" />
           </svg>
@@ -415,7 +455,9 @@ function useStageBreakpoint(enabled: boolean): Breakpoint {
  * without touching the layout document's own proportions.
  */
 function stageMaxWidth(canvas: SceneCanvas, reserve: string) {
-  return `min(26rem, calc((100dvh - ${reserve}) * ${canvas.aspectW} / ${canvas.aspectH}))`;
+  // The page's fixed bottom chrome (see `bottomInset`) is space the stage
+  // cannot use either.
+  return `min(26rem, calc((100dvh - ${reserve} - var(--dawati-bottom-inset, 0px)) * ${canvas.aspectW} / ${canvas.aspectH}))`;
 }
 
 /**
@@ -469,6 +511,7 @@ function BuilderStage({
   breakpoint,
   qrDataUrl,
   hasQr = true,
+  sampleQr = false,
   data,
 }: {
   builder: BuilderTheme;
@@ -478,6 +521,8 @@ function BuilderStage({
   qrDataUrl?: string | null;
   /** False drops the scene's `qr` layers — see ThemeStage for why. */
   hasQr?: boolean;
+  /** Draw the stand-in code when there is no real one — see ThemeStage. */
+  sampleQr?: boolean;
   data: StageData;
 }) {
   // `<ThemeStage>` paints `palette.bg` on the stage box. That is right for a
@@ -499,6 +544,7 @@ function BuilderStage({
       breakpoint={breakpoint}
       qrDataUrl={qrDataUrl}
       hasQr={hasQr}
+      sampleQr={sampleQr}
       eventDateIso={data.eventDateIso}
       linkToken={data.linkToken}
       mapUrl={data.mapUrl}
@@ -573,6 +619,7 @@ function InvitationScreens({
   walletTargets = [],
   mode = "live",
   testCopy = false,
+  bottomInset,
   builder,
   music,
 }: Props & { music: BackgroundMusic }) {
@@ -715,6 +762,8 @@ function InvitationScreens({
     "--color-fg-muted": palette.fgMuted,
     "--color-accent": palette.accent,
     "--color-accent-fg": palette.accentFg,
+    // Read by every scene, cover and stage — see the `bottomInset` prop.
+    "--dawati-bottom-inset": bottomInset ?? "0px",
     "--font-ar-display": builderRoles
       ? fontStackFor(builderRoles.display.family)
       : fontVarFor(theme.fonts.arabicDisplay),
@@ -859,7 +908,7 @@ function InvitationScreens({
     return (
       <div
         style={vars}
-        className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
+        className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 pb-[var(--dawati-bottom-inset)] text-center text-[var(--color-fg)]"
       >
         <BuilderPageBackground page={builder.layout.page} assets={builder.assets} />
         {/*
@@ -930,7 +979,7 @@ function InvitationScreens({
     return (
       <div
         style={vars}
-        className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
+        className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 pb-[var(--dawati-bottom-inset)] text-center text-[var(--color-fg)]"
       >
         {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
         {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
@@ -959,7 +1008,7 @@ function InvitationScreens({
     return (
       <div
         style={vars}
-        className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[var(--color-bg)] text-[var(--color-fg)]"
+        className="relative flex min-h-dvh items-center justify-center overflow-hidden bg-[var(--color-bg)] pb-[var(--dawati-bottom-inset)] text-[var(--color-fg)]"
       >
         {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
         {hasParticles && <FloatingParticles accent={theme.palette.accent} />}
@@ -1009,8 +1058,8 @@ function InvitationScreens({
         style={vars}
         className={
           isSplit
-            ? "relative flex min-h-dvh flex-row-reverse text-[var(--color-fg)]"
-            : "relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 text-center text-[var(--color-fg)]"
+            ? "relative flex min-h-dvh flex-row-reverse pb-[var(--dawati-bottom-inset)] text-[var(--color-fg)]"
+            : "relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 pb-[var(--dawati-bottom-inset)] text-center text-[var(--color-fg)]"
         }
       >
         {hasShaderBg && <ShaderBackground deep={theme.palette.bg} mid={theme.palette.surface} highlight={theme.palette.accent} />}
@@ -1110,6 +1159,11 @@ function InvitationScreens({
   const hasNotes = notesList.length > 0;
   const hasResponded = currentStatus === "ACCEPTED" || currentStatus === "DECLINED";
   const hasRsvpForm = !hasResponded && event.rsvpRequired;
+  // The stand-in code on a builder pass. Only in a preview mode — the trial,
+  // the test link, the gallery walk-through — and only once the RSVP was
+  // answered, which is the moment a real guest's code would appear; before
+  // that a designed `qr` layer stays as empty as it is for a guest.
+  const sampleQr = mode === "preview" && currentStatus === "ACCEPTED";
 
   // ---- Builder themes: the post-open flow is the theme's own scene list ----
   //
@@ -1232,7 +1286,11 @@ function InvitationScreens({
              wrapper as the hand-coded screens below, so scroll-snap, the
              in-view reveal and the scroll hint behave identically. */
           flowScenes.map((scene, index) => (
-            <Scene key={scene.id} showHint={index < flowScenes.length - 1 || somethingFollowsFlow}>
+            <Scene
+              key={scene.id}
+              showHint={index < flowScenes.length - 1 || somethingFollowsFlow}
+              hintLabel={index === 0 ? g.scrollHint : undefined}
+            >
               <div className="w-full" style={{ maxWidth: stageMaxWidth(scene.canvas, "10rem") }}>
                 <BuilderStage
                   builder={builder}
@@ -1241,6 +1299,7 @@ function InvitationScreens({
                   breakpoint={breakpoint}
                   qrDataUrl={currentQr}
                   hasQr={hasQr}
+                  sampleQr={sampleQr}
                   data={stageData}
                 />
               </div>
@@ -1251,7 +1310,7 @@ function InvitationScreens({
             {/* Scene 1: the guest's own named card — same shared background as
                 every other scene; the rose-emboss theme shows its opened-envelope
                 card photo with the same text written across its blank paper. */}
-            <Scene showHint>
+            <Scene showHint hintLabel={g.scrollHint}>
               {isBridalFrame ? (
                 <div className="relative w-[320px]">
                   {/* The box is a fixed 320px and the height follows the file's
@@ -1569,6 +1628,7 @@ function InvitationScreens({
                     breakpoint={breakpoint}
                     qrDataUrl={currentQr}
                     hasQr={hasQr}
+                    sampleQr={sampleQr}
                     data={stageData}
                   />
                 </div>

@@ -65,7 +65,7 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
                   </span>
                 </span>
                 <Link
-                  href={`/${locale}/draft/${draft.id}/basics`}
+                  href={`/${locale}/draft/${draft.id}/details`}
                   className="inline-flex h-9 shrink-0 items-center rounded-full border border-accent px-4 text-sm font-bold text-accent transition-colors hover:bg-accent hover:text-accent-fg"
                 >
                   {dict.draft.continueDraft}

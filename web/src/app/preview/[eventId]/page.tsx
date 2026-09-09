@@ -1,14 +1,17 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getSessionUser } from "@/lib/auth/session";
 import { InvitationView } from "@/components/guest/invitation-view";
-import { InvitationStatus } from "@/generated/prisma/client";
+import { InvitationStatus, InvitationTier } from "@/generated/prisma/client";
 import { readDraftTokenHash } from "@/lib/drafts/session";
 import { hasPreviewGrant } from "@/lib/drafts/grant";
 import { buildPreviewProps, loadPreviewEvent } from "@/lib/drafts/preview";
-import { PreviewBar } from "@/components/drafts/preview-bar";
+import {
+  PREVIEW_BAR_INSET,
+  PREVIEW_CAPTION_INSET,
+  PreviewBar,
+} from "@/components/drafts/preview-bar";
 
 /**
  * Her own invitation, for real, before she has paid for it.
@@ -52,6 +55,15 @@ export default async function DraftPreviewPage({
 
   // Paid invitations lose the watermark — "بعد الدفع ماتكون محمية".
   const activated = event.orderId !== null;
+  // Only she (signed in, or holding the draft cookie) gets the controls; the
+  // person she shared it with gets the caption and the privacy link.
+  const controls = isOwner || isBearer;
+  // Before payment the pass follows the tier she is heading for: a trial that
+  // hid the code was the one place the preview lied about the product. NO_QR
+  // is the only choice that drops it; undecided means WITH_QR, which is also
+  // what the activation picker opens on. After payment the order's snapshot
+  // on the event rules, exactly as on /i/[token].
+  const hasQr = activated ? event.hasQr : event.intendedTier !== InvitationTier.NO_QR;
 
   return (
     <>
@@ -68,33 +80,25 @@ export default async function DraftPreviewPage({
         // will get it, and no guest is ever addressed as "our honoured guest".
         guest={{ nameAr: dict.draft.previewGuestName, allowedCount: 2 }}
         status={InvitationStatus.SENT}
-        // The entry pass is a paid feature; before activation the invitation
-        // shows the stand-in code `mode="preview"` already draws, never a real
-        // scannable one.
-        hasQr={activated && event.hasQr}
+        // No real code exists before activation: `mode="preview"` draws the
+        // stand-in, and `hasQr` decides whether there is a code slot at all.
+        hasQr={hasQr}
         qrDataUrl={null}
+        // What the bar below covers, so no screen puts the RSVP submit or the
+        // cover's open button underneath it.
+        bottomInset={controls ? PREVIEW_BAR_INSET : PREVIEW_CAPTION_INSET}
       />
-      {/* Only the person who owns the draft gets the toolbar — a viewer she
-          shared it with should see the invitation, not her controls. */}
-      {/* The person she shared this with is given cookies by the share route
-          and has never seen the site — this segment has its own root layout
-          with no header or footer. One line, so the policy that describes
-          those cookies is at least reachable from the page that sets them. */}
-      <Link
-        href="/ar/privacy"
-        className="fixed inset-x-0 bottom-0 z-[60] block bg-black/45 py-1 text-center text-[10px] text-white/60 backdrop-blur-sm"
-      >
-        {dict.draft.previewPrivacyLink}
-      </Link>
-
-      {(isOwner || isBearer) && (
-        <PreviewBar
-          dict={dict}
-          eventId={eventId}
-          activated={activated}
-          locked={event.detailsLockedAt !== null}
-        />
-      )}
+      {/* One bar for everyone the page admits. Hers carries the controls; a
+          shared viewer's is the caption and the privacy policy — the share
+          route set cookies on them, and this segment has no header or footer
+          to make that policy reachable. */}
+      <PreviewBar
+        dict={dict}
+        eventId={eventId}
+        activated={activated}
+        locked={event.detailsLockedAt !== null}
+        controls={controls}
+      />
     </>
   );
 }

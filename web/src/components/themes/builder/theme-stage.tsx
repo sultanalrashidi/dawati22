@@ -102,6 +102,13 @@ export interface ThemeStageProps {
    */
   editing?: boolean;
   /**
+   * Draw the stand-in code when there is no real one. The editor already does
+   * (via `editing`); this is for the preview modes — the customer's trial, her
+   * test link, the gallery walk-through — where the pass has to look like a
+   * pass and no real code can exist yet. Never set for a real guest.
+   */
+  sampleQr?: boolean;
+  /**
    * The guest already answered, so an `rsvp` layer shows its thank-you state
    * instead of the form — in place, without removing the screen it sits on.
    */
@@ -137,6 +144,7 @@ export function ThemeStage({
   notesAr,
   rsvp,
   editing = false,
+  sampleQr = false,
   rsvpResponded = null,
   renderLayerOverlay,
   children,
@@ -193,6 +201,7 @@ export function ThemeStage({
             notesAr={notesAr}
             rsvp={rsvp}
             editing={editing}
+            sampleQr={sampleQr}
             rsvpResponded={rsvpResponded}
           />
           {renderLayerOverlay?.(entry)}
@@ -280,6 +289,7 @@ function LayerContent({
   notesAr,
   rsvp,
   editing,
+  sampleQr,
   rsvpResponded,
 }: {
   resolved: ResolvedLayer;
@@ -301,6 +311,7 @@ function LayerContent({
   notesAr?: string | null;
   rsvp?: StageRsvp | null;
   editing: boolean;
+  sampleQr: boolean;
   rsvpResponded: "ACCEPTED" | "DECLINED" | null;
 }) {
   const { layer, transform } = resolved;
@@ -366,6 +377,7 @@ function LayerContent({
           palette={palette}
           transform={transform}
           editing={editing}
+          sampleQr={sampleQr}
         />
       );
     case "countdown":
@@ -495,12 +507,14 @@ function QrContent({
   palette,
   transform,
   editing,
+  sampleQr,
 }: {
   layer: QrLayer;
   qrDataUrl?: string | null;
   palette: VariantPalette;
   transform: Transform;
   editing: boolean;
+  sampleQr: boolean;
 }) {
   // Padding is a share of the layer's own width; the layer's width is a share
   // of the stage, so one multiplication keeps it in stage-relative cqw.
@@ -517,10 +531,11 @@ function QrContent({
       }}
     >
       {/*
-        The sample pattern is EDITOR ONLY. It is deliberately convincing, so
-        showing it to a guest who has no real code yet would hand them
-        something that looks like a working entry pass and fails at the door.
-        With no code and no editor, the box simply stays empty.
+        The sample pattern is for the editor and the preview modes only (see
+        `sampleQr`). It is deliberately convincing, so showing it to a guest who
+        has no real code yet would hand them something that looks like a working
+        entry pass and fails at the door. With no code and neither flag, the box
+        simply stays empty.
 
         An event sold without a code never reaches here at all — ThemeStage
         drops its `qr` layers. See the note there for why that is the right move
@@ -529,7 +544,7 @@ function QrContent({
       {qrDataUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={qrDataUrl} alt="" className="block h-full w-full object-contain" />
-      ) : editing ? (
+      ) : editing || sampleQr ? (
         <SampleQr fg={layer.fgColor || palette.fg} />
       ) : null}
     </div>

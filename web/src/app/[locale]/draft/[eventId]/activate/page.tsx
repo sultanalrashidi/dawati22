@@ -8,6 +8,8 @@ import { listPricingRates } from "@/lib/orders/service";
 import { couplesFor } from "@/lib/events/service";
 import { resolveDraftAccess } from "@/lib/drafts/service";
 import { ActivatePicker } from "@/components/drafts/activate-picker";
+import { DraftSteps } from "@/components/drafts/draft-steps";
+import { SAMPLE_BRIDE_GIVEN, SAMPLE_GROOM_GIVEN, usesSampleNames } from "@/lib/drafts/sample";
 import { riyadhDateFormat } from "@/lib/dates";
 
 /**
@@ -40,7 +42,13 @@ export default async function ActivateDraftPage({
   const noQr = rates.find((r) => r.tier === InvitationTier.NO_QR);
   if (!withQr || !noQr) redirect(`/${locale}/plans`);
 
-  const [couple] = couplesFor(draft);
+  const couples = couplesFor(draft);
+  const [couple] = couples;
+  // The draft was born with sample names so the preview looked finished.
+  // Nothing that leads to a charge is offered while they stand — the pay
+  // button is replaced by the way back to the edit page, and
+  // createPerInvitationOrder refuses a submit that goes around this.
+  const sampleNames = usesSampleNames(couples);
   const dateText = riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
     day: "numeric",
     month: "long",
@@ -49,9 +57,10 @@ export default async function ActivateDraftPage({
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12 sm:px-8">
+      <DraftSteps locale={locale} dict={dict} eventId={eventId} current="activate" />
+
       <div>
-        <p className="text-sm font-bold text-accent">{d.activateStep}</p>
-        <h1 className="mt-1 text-2xl font-bold text-fg">{d.activateTitle}</h1>
+        <h1 className="text-2xl font-bold text-fg">{d.activateTitle}</h1>
         <p className="mt-2 text-sm leading-relaxed text-fg-muted">{d.activateSubtitle}</p>
       </div>
 
@@ -72,28 +81,46 @@ export default async function ActivateDraftPage({
         </Link>
       </div>
 
-      {search.error === "1" && (
+      {search.error === "1" && !sampleNames && (
         <p className="rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-fg">
           {d.activateError}
         </p>
       )}
 
-      <ActivatePicker
-        locale={locale}
-        dict={dict}
-        eventId={eventId}
-        signedIn={user?.role === Role.CUSTOMER}
-        rates={{
-          withQr: { tier: "WITH_QR", unitPrice: Number(withQr.unitPrice) },
-          noQr: { tier: "NO_QR", unitPrice: Number(noQr.unitPrice) },
-        }}
-        // Pre-filled with what she picked on the pricing page, when she came
-        // that way — the whole reason that choice was carried this far.
-        initialTier={draft.intendedTier === InvitationTier.NO_QR ? "NO_QR" : "WITH_QR"}
-        initialCount={draft.intendedCount ?? 0}
-      />
-
-      <p className="text-xs leading-relaxed text-fg-muted">{d.activateWatermarkNote}</p>
+      {sampleNames ? (
+        <div className="rounded-2xl border border-warning/40 bg-warning/5 p-5">
+          <p className="text-base font-bold text-fg">{d.activateSampleTitle}</p>
+          <p className="mt-1 text-sm leading-relaxed text-fg-muted">
+            {d.activateSampleBody
+              .replace("{groom}", SAMPLE_GROOM_GIVEN)
+              .replace("{bride}", SAMPLE_BRIDE_GIVEN)}
+          </p>
+          <Link
+            href={`/${locale}/draft/${eventId}/details`}
+            className="mt-4 flex h-12 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+          >
+            {d.activateSampleCta}
+          </Link>
+        </div>
+      ) : (
+        <>
+          <ActivatePicker
+            locale={locale}
+            dict={dict}
+            eventId={eventId}
+            signedIn={user?.role === Role.CUSTOMER}
+            rates={{
+              withQr: { tier: "WITH_QR", unitPrice: Number(withQr.unitPrice) },
+              noQr: { tier: "NO_QR", unitPrice: Number(noQr.unitPrice) },
+            }}
+            // Pre-filled with what she picked on the pricing page, when she came
+            // that way — the whole reason that choice was carried this far.
+            initialTier={draft.intendedTier === InvitationTier.NO_QR ? "NO_QR" : "WITH_QR"}
+            initialCount={draft.intendedCount ?? 0}
+          />
+          <p className="text-xs leading-relaxed text-fg-muted">{d.activateWatermarkNote}</p>
+        </>
+      )}
     </div>
   );
 }

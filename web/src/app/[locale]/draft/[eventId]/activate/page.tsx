@@ -9,7 +9,12 @@ import { couplesFor } from "@/lib/events/service";
 import { resolveDraftAccess } from "@/lib/drafts/service";
 import { ActivatePicker } from "@/components/drafts/activate-picker";
 import { DraftSteps } from "@/components/drafts/draft-steps";
-import { SAMPLE_BRIDE_GIVEN, SAMPLE_GROOM_GIVEN, usesSampleNames } from "@/lib/drafts/sample";
+import {
+  SAMPLE_BRIDE_GIVEN,
+  SAMPLE_GROOM_GIVEN,
+  isUntouchedSample,
+  usesSampleNames,
+} from "@/lib/drafts/sample";
 import { riyadhDateFormat } from "@/lib/dates";
 
 /**
@@ -44,11 +49,13 @@ export default async function ActivateDraftPage({
 
   const couples = couplesFor(draft);
   const [couple] = couples;
-  // The draft was born with sample names so the preview looked finished.
-  // Nothing that leads to a charge is offered while they stand — the pay
-  // button is replaced by the way back to the edit page, and
-  // createPerInvitationOrder refuses a submit that goes around this.
+  // Two different questions. `sampleNames` only warns — فهد and نورة are
+  // common enough that a real couple could carry them. `untouched` is the one
+  // that refuses a charge, and it takes the families and the venue too, so it
+  // can only mean "nobody has opened the form". createPerInvitationOrder makes
+  // the same test for a submit that goes around this page.
   const sampleNames = usesSampleNames(couples);
+  const untouched = isUntouchedSample(couples, draft.locationName);
   const dateText = riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
     day: "numeric",
     month: "long",
@@ -81,13 +88,13 @@ export default async function ActivateDraftPage({
         </Link>
       </div>
 
-      {search.error === "1" && !sampleNames && (
+      {search.error === "1" && !untouched && (
         <p className="rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-fg">
           {d.activateError}
         </p>
       )}
 
-      {sampleNames ? (
+      {untouched ? (
         <div className="rounded-2xl border border-warning/40 bg-warning/5 p-5">
           <p className="text-base font-bold text-fg">{d.activateSampleTitle}</p>
           <p className="mt-1 text-sm leading-relaxed text-fg-muted">
@@ -104,6 +111,16 @@ export default async function ActivateDraftPage({
         </div>
       ) : (
         <>
+          {/* She changed something, but the couple is still فهد و نورة. Said
+              once more here, where the next tap costs money — and never in the
+              way of it, in case those really are their names. */}
+          {sampleNames && (
+            <p className="rounded-xl border border-warning/40 bg-warning/5 px-4 py-3 text-sm text-fg">
+              {d.sampleNamesNotice
+                .replace("{groom}", SAMPLE_GROOM_GIVEN)
+                .replace("{bride}", SAMPLE_BRIDE_GIVEN)}
+            </p>
+          )}
           <ActivatePicker
             locale={locale}
             dict={dict}

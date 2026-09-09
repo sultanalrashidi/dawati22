@@ -10,6 +10,8 @@ import {
   SAMPLE_EVENT_NAME,
   SAMPLE_GROOM_MOTHER,
   SAMPLE_SCHEDULE,
+  SAMPLE_VENUE,
+  isUntouchedSample,
   sampleEventDate,
   usesSampleNames,
 } from "../src/lib/drafts/sample";
@@ -65,4 +67,21 @@ test("the programme survives the label|time textarea format", () => {
     assert.ok(item.labelAr && item.time);
     assert.ok(!item.labelAr.includes("|") && !item.time.includes("|"));
   }
+});
+
+test("only a wholly untouched draft is refused a payment", () => {
+  // The case the guard exists for: she never opened the form.
+  assert.equal(isUntouchedSample([SAMPLE_COUPLE], SAMPLE_VENUE), true);
+
+  // A real couple who happen to be called فهد and نورة. They warned her, but
+  // by the time she reaches payment she has a hall of her own, so she pays.
+  assert.equal(
+    isUntouchedSample([{ ...SAMPLE_COUPLE, groomFamilyAr: "العتيبي" }], SAMPLE_VENUE),
+    false,
+    "own family name",
+  );
+  assert.equal(isUntouchedSample([SAMPLE_COUPLE], "قاعة الماسة"), false, "own venue");
+  assert.equal(usesSampleNames([SAMPLE_COUPLE]), true, "she is still warned in both cases");
+
+  assert.equal(isUntouchedSample([], SAMPLE_VENUE), false);
 });

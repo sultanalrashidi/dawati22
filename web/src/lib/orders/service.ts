@@ -1,7 +1,7 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db/client";
-import { usesSampleNames } from "@/lib/drafts/sample";
+import { isUntouchedSample } from "@/lib/drafts/sample";
 import { logger } from "@/lib/logger";
 import { isMoyasarConfigured, fetchMoyasarPayment, sarToHalalas } from "@/lib/payments/moyasar";
 import { EventStatus, OrderKind, OrderStatus, PaymentProvider } from "@/generated/prisma/client";
@@ -66,16 +66,27 @@ export async function createPerInvitationOrder(
   // route raised the order.
   const draft = await prisma.event.findUnique({
     where: { id: input.draftEventId },
-    select: { ownerId: true, orderId: true, groomNameAr: true, brideNameAr: true },
+    select: {
+      ownerId: true,
+      orderId: true,
+      groomNameAr: true,
+      groomFamilyAr: true,
+      brideNameAr: true,
+      brideFamilyAr: true,
+      locationName: true,
+    },
   });
   if (!draft || draft.ownerId !== userId) throw new OrderError("Draft not found");
   if (draft.orderId !== null) throw new OrderError("Draft is already activated");
-  // The draft was born with sample names so its preview looked finished.
-  // Charging a card while they stand would print "فهد على نورة" on every
-  // guest's pass. The activate page hides the pay button on the same test;
-  // this is the rule for a submit that went around it. The Event's own
+  // The draft was born holding a whole sample wedding so its preview looked
+  // finished. Charging a card for one nobody has edited would print a
+  // stranger's family on every guest's pass. Only a WHOLLY untouched draft is
+  // refused — a real couple called فهد and نورة has a hall of her own by now.
+  // The activate page hides the pay button on the same test. The Event's own
   // columns mirror the primary couple, so no join is needed.
-  if (usesSampleNames([draft])) throw new OrderError("Draft still carries the sample names");
+  if (isUntouchedSample([draft], draft.locationName)) {
+    throw new OrderError("Draft is still the untouched sample invitation");
+  }
 
   const rate = await prisma.pricingRate.findUnique({ where: { tier: input.tier } });
   if (!rate) throw new OrderError("Pricing not available");

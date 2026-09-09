@@ -86,20 +86,57 @@ export function sampleEventDate(now: Date = new Date()): Date {
   return at ?? ahead;
 }
 
+const same = (value: string | null | undefined, sample: string) => (value ?? "").trim() === sample;
+
 /**
- * Whether any couple on the row is still the sample pair — the check the
- * activate page and `createPerInvitationOrder` make before money moves.
+ * Whether any couple on the row still carries the sample GIVEN names — what
+ * the two warnings ask before they speak up.
  *
- * Given names only, trimmed: changing the family name alone still leaves
+ * Given names only, because changing the family name alone still leaves
  * "فهد على نورة" printed on every pass. Accepts the Event row's mirrored
  * columns as well as EventCouple rows, since both carry these two fields.
+ *
+ * Deliberately NOT the rule for refusing a payment. فهد and نورة are among the
+ * commonest names in the country, and a real couple who happen to be called
+ * that would be told to "replace the sample names" with their own — see
+ * `isUntouchedSample`.
  */
 export function usesSampleNames(
   couples: readonly { groomNameAr: string | null; brideNameAr: string | null }[],
 ): boolean {
   return couples.some(
+    (couple) => same(couple.groomNameAr, SAMPLE_GROOM_GIVEN) && same(couple.brideNameAr, SAMPLE_BRIDE_GIVEN),
+  );
+}
+
+/**
+ * Whether the invitation is still, whole, the one the gallery handed her — the
+ * check that actually refuses a charge.
+ *
+ * Both given names AND both family names AND the venue, all untouched. A real
+ * فهد marrying a real نورة will have typed at least a hall of her own by the
+ * time she reaches payment, so this cannot mistake her for someone who never
+ * opened the form; and someone who genuinely never opened it is stopped before
+ * her guests are handed a card with a stranger's family on it.
+ *
+ * The softer `usesSampleNames` still warns her twice on the way here, so
+ * forgetting only the names is loudly flagged without ever blocking a sale.
+ */
+export function isUntouchedSample(
+  couples: readonly {
+    groomNameAr: string | null;
+    groomFamilyAr?: string | null;
+    brideNameAr: string | null;
+    brideFamilyAr?: string | null;
+  }[],
+  locationName: string,
+): boolean {
+  if (!same(locationName, SAMPLE_VENUE)) return false;
+  return couples.some(
     (couple) =>
-      (couple.groomNameAr ?? "").trim() === SAMPLE_GROOM_GIVEN &&
-      (couple.brideNameAr ?? "").trim() === SAMPLE_BRIDE_GIVEN,
+      same(couple.groomNameAr, SAMPLE_GROOM_GIVEN) &&
+      same(couple.groomFamilyAr, SAMPLE_GROOM_FAMILY) &&
+      same(couple.brideNameAr, SAMPLE_BRIDE_GIVEN) &&
+      same(couple.brideFamilyAr, SAMPLE_BRIDE_FAMILY),
   );
 }

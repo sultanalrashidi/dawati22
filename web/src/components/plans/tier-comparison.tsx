@@ -15,7 +15,7 @@ export function TierComparison({
   walletAvailable,
 }: {
   dict: Dictionary;
-  /** `appleWalletConfigured() || googleWalletConfigured()`, read on the server. */
+  /** `walletPassesConfigured()`, read on the server. */
   walletAvailable: boolean;
 }) {
   const p = dict.plans;
@@ -27,12 +27,14 @@ export function TierComparison({
     { key: "door", title: c.groupDoor },
   ] as const;
 
-  // The wallet pass is a door feature: it carries the same QR the scanner
-  // reads, so it belongs with the code, not with the invitation itself.
+  // The wallet pass is listed with the invitation, straight after the calendar
+  // row that closes that group in the dictionary: both are things a guest saves
+  // to the phone from the invitation. It stays barcode-only (the pass carries
+  // the QR the door scanner reads), hence the dash under «بدون باركود».
   const rows = [
     ...c.rows,
     ...(walletAvailable
-      ? [{ group: "door", label: c.walletLabel, hint: c.walletHint, qr: true, noQr: false }]
+      ? [{ group: "invitation", label: c.walletLabel, hint: c.walletHint, qr: true, noQr: false }]
       : []),
   ];
 

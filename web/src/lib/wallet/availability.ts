@@ -13,5 +13,10 @@ import { googleWalletConfigured } from "@/lib/wallet/google";
  * `walletTargetsFor`; this is only the yes/no the sales copy needs.
  */
 export function walletPassesConfigured(): boolean {
+  // `next dev` never has the signing material, and it is where the owner
+  // reviews this copy. No customer sees a dev server, so the claim shows there
+  // as production renders it. The guest page asks the per-wallet checks, not
+  // this, so no button appears in dev that cannot issue a pass.
+  if (process.env.NODE_ENV === "development") return true;
   return appleWalletConfigured() || googleWalletConfigured();
 }

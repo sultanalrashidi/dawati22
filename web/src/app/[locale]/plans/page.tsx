@@ -4,8 +4,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { listPricingRates } from "@/lib/orders/service";
 import { InvitationTier } from "@/generated/prisma/enums";
 import { supportWhatsAppUrl } from "@/lib/support";
-import { appleWalletConfigured } from "@/lib/wallet/apple";
-import { googleWalletConfigured } from "@/lib/wallet/google";
+import { walletPassesConfigured } from "@/lib/wallet/availability";
 import { InvitationPicker } from "@/components/plans/invitation-picker";
 import { TierComparison } from "@/components/plans/tier-comparison";
 
@@ -40,10 +39,10 @@ export default async function PlansPage({ params, searchParams }: PageProps<"/[l
   const initialTier = search.tier === "NO_QR" ? "NO_QR" : "WITH_QR";
   const initialCount = typeof search.count === "string" ? Number(search.count) : 0;
 
-  // The wallet line is the one feature the environment decides. Both checks
-  // are server-only; only the boolean travels, so the page never advertises a
-  // pass no wallet here can issue.
-  const walletAvailable = appleWalletConfigured() || googleWalletConfigured();
+  // The wallet line is the one feature the environment decides — the same
+  // server-only check the landing page's wallet card asks. Only the boolean
+  // travels, so the page never advertises a pass no wallet here can issue.
+  const walletAvailable = walletPassesConfigured();
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col gap-6 px-4 py-12 sm:px-8">

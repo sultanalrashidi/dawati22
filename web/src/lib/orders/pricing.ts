@@ -20,7 +20,7 @@ export const INVITATION_STEP = 25;
 export const DEFAULT_INVITATIONS = 100;
 
 /** The quick-pick chips under the slider. */
-export const INVITATION_PRESETS = [50, 100, 200, 300, 500, 800] as const;
+export const INVITATION_PRESETS = [50, 100, 200, 300, 400, 500, 800] as const;
 
 export function isValidInvitationCount(count: number): boolean {
   return (

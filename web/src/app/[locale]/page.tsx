@@ -37,6 +37,14 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const noQr = priceOf(InvitationTier.NO_QR);
   const withQr = priceOf(InvitationTier.WITH_QR);
 
+  // The hero's pricing link quotes the cheaper of the two rates from the same
+  // rows, so it follows any change made in the table without a deploy.
+  const tierPrices = [noQr, withQr].filter((price): price is number => price !== null);
+  const plansLinkLabel =
+    tierPrices.length > 0
+      ? h.ctaPlansFrom.replace("{price}", nf.format(Math.min(...tierPrices)))
+      : h.ctaPlans;
+
   const steps = [
     { n: "01", title: h.step1Title, body: h.step1Body },
     { n: "02", title: h.step2Title, body: h.step2Body },
@@ -87,7 +95,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           {/* Starting is free and needs no account, so the hero says that
               plainly and goes straight to the designs — one button, so there
               is only one thing to press. Pricing stays one tap away as a plain
-              link for someone who wants the number before the pretty part. */}
+              link, and the link carries the starting price itself, so «how
+              much?» is answered on the first screen. */}
           <div className="mt-1 flex flex-col items-start gap-3">
             <Link
               href={`/${locale}/themes`}
@@ -100,7 +109,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               href={`/${locale}/plans`}
               className="text-sm font-bold text-accent underline-offset-4 hover:underline"
             >
-              {h.ctaPlans} ←
+              {plansLinkLabel} ←
             </Link>
           </div>
 
@@ -132,15 +141,53 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             </div>
           ))}
         </div>
+      </Band>
 
-        {/* ── AT THE DOOR ──────────────────────────────────────────────── */}
-        <div className="mt-6 rounded-3xl border border-border bg-surface p-7 sm:p-9">
+      {/* ── PRICING ────────────────────────────────────────────────────── */}
+      {/* Straight after the three steps: once a visitor knows how it works,
+          the next question is how much. */}
+      <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-8">
+        <SectionHead kicker={h.pricingKicker} title={h.pricingTitle} subtitle={h.pricingSubtitle} />
+        {noQr !== null && withQr !== null && (
+          <div className="mx-auto mt-12 grid max-w-3xl gap-5 sm:grid-cols-2">
+            <PriceCard
+              name={dict.plans.tierNoQr}
+              price={nf.format(noQr)}
+              unit={`${dict.common.sar} ${dict.plans.perInvitation}`}
+              tagline={dict.plans.tierNoQrTagline}
+            />
+            <PriceCard
+              featured
+              badge={dict.plans.recommended}
+              name={dict.plans.tierQr}
+              price={nf.format(withQr)}
+              unit={`${dict.common.sar} ${dict.plans.perInvitation}`}
+              tagline={dict.plans.tierQrTagline}
+            />
+          </div>
+        )}
+        <div className="mt-8 flex justify-center">
+          <Link
+            href={`/${locale}/plans`}
+            className="inline-flex h-12 items-center rounded-full border border-accent px-7 text-sm font-bold text-accent transition-colors hover:bg-accent hover:text-accent-fg"
+          >
+            {h.pricingLink} ←
+          </Link>
+        </div>
+      </section>
+
+      {/* ── AT THE DOOR ────────────────────────────────────────────────── */}
+      {/* Directly under the prices, because the door is the one thing the two
+          prices differ on: this is the answer to «what does the barcode buy
+          me?». */}
+      <Band>
+        <div className="rounded-3xl border border-border bg-surface p-7 sm:p-9">
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:gap-5">
             <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-accent-soft/25 text-accent">
               <ScanIcon className="h-6 w-6" />
             </span>
             <div>
-              <h3 className="text-2xl font-extrabold leading-snug text-fg">{h.doorTitle}</h3>
+              <h2 className="text-2xl font-extrabold leading-snug text-fg">{h.doorTitle}</h2>
               <p className="mt-2 max-w-2xl text-sm leading-relaxed text-fg-muted">{h.doorSubtitle}</p>
             </div>
           </div>
@@ -152,7 +199,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
                   {nf.format(index + 1)}
                 </span>
                 <div>
-                  <h4 className="text-sm font-bold text-fg">{step.title}</h4>
+                  <h3 className="text-sm font-bold text-fg">{step.title}</h3>
                   <p className="mt-1.5 text-sm leading-relaxed text-fg-muted">{step.body}</p>
                 </div>
               </li>
@@ -193,69 +240,44 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
         </div>
       </section>
 
-      {/* ── PRICING ────────────────────────────────────────────────────── */}
-      <Band>
-        <SectionHead kicker={h.pricingKicker} title={h.pricingTitle} subtitle={h.pricingSubtitle} />
-        {noQr !== null && withQr !== null && (
-          <div className="mx-auto mt-12 grid max-w-3xl gap-5 sm:grid-cols-2">
-            <PriceCard
-              name={dict.plans.tierNoQr}
-              price={nf.format(noQr)}
-              unit={`${dict.common.sar} ${dict.plans.perInvitation}`}
-            />
-            <PriceCard
-              featured
-              badge={dict.plans.mostPopular}
-              name={dict.plans.tierQr}
-              price={nf.format(withQr)}
-              unit={`${dict.common.sar} ${dict.plans.perInvitation}`}
-            />
+      {/* ── FAQ ────────────────────────────────────────────────────────── */}
+      {/* A band, so the page still alternates tinted and plain sections now
+          that pricing sits higher up. */}
+      <Band id="faq">
+        <div className="mx-auto max-w-3xl">
+          <SectionHead kicker={h.faqKicker} title={h.faqTitle} />
+          <div className="mt-10 flex flex-col">
+            {faqs.map((item) => (
+              <details
+                key={item.q}
+                className="group border-b border-border py-5 first:border-t first:border-border"
+              >
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-fg marker:hidden">
+                  {item.q}
+                  <span
+                    aria-hidden="true"
+                    className="shrink-0 text-xl font-normal text-accent transition-transform group-open:rotate-45"
+                  >
+                    +
+                  </span>
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-fg-muted">{item.a}</p>
+              </details>
+            ))}
           </div>
-        )}
-        <div className="mt-8 flex justify-center">
-          <Link
-            href={`/${locale}/plans`}
-            className="inline-flex h-12 items-center rounded-full border border-accent px-7 text-sm font-bold text-accent transition-colors hover:bg-accent hover:text-accent-fg"
-          >
-            {h.pricingLink} ←
-          </Link>
+          <p className="mt-8 text-center text-sm text-fg-muted">
+            {h.faqNote}{" "}
+            <a
+              href={supportWhatsAppUrl(h.ctaWhatsappMessage)}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-bold text-accent hover:text-accent-strong"
+            >
+              {h.ctaWhatsapp}
+            </a>
+          </p>
         </div>
       </Band>
-
-      {/* ── FAQ ────────────────────────────────────────────────────────── */}
-      <section id="faq" className="mx-auto w-full max-w-3xl scroll-mt-20 px-4 py-20 sm:px-8">
-        <SectionHead kicker={h.faqKicker} title={h.faqTitle} />
-        <div className="mt-10 flex flex-col">
-          {faqs.map((item) => (
-            <details
-              key={item.q}
-              className="group border-b border-border py-5 first:border-t first:border-border"
-            >
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-base font-bold text-fg marker:hidden">
-                {item.q}
-                <span
-                  aria-hidden="true"
-                  className="shrink-0 text-xl font-normal text-accent transition-transform group-open:rotate-45"
-                >
-                  +
-                </span>
-              </summary>
-              <p className="mt-3 text-sm leading-relaxed text-fg-muted">{item.a}</p>
-            </details>
-          ))}
-        </div>
-        <p className="mt-8 text-center text-sm text-fg-muted">
-          {h.faqNote}{" "}
-          <a
-            href={supportWhatsAppUrl(h.ctaWhatsappMessage)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-bold text-accent hover:text-accent-strong"
-          >
-            {h.ctaWhatsapp}
-          </a>
-        </p>
-      </section>
 
       {/* ── CTA ────────────────────────────────────────────────────────── */}
       <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-8">
@@ -326,12 +348,15 @@ function PriceCard({
   name,
   price,
   unit,
+  tagline,
   featured,
   badge,
 }: {
   name: string;
   price: string;
   unit: string;
+  /** What the price buys, in one line. The cards come before the door section, so they must explain themselves. */
+  tagline: string;
   featured?: boolean;
   badge?: string;
 }) {
@@ -353,6 +378,7 @@ function PriceCard({
         <span className="text-4xl font-extrabold tabular-nums text-fg">{price}</span>
         <span className="text-sm text-fg-muted">{unit}</span>
       </p>
+      <p className="text-sm leading-relaxed text-fg-muted">{tagline}</p>
     </div>
   );
 }

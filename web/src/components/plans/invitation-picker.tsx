@@ -156,7 +156,7 @@ export function InvitationPicker({
               {/* Absolutely placed so the two cards' names still sit on one line. */}
               {option === "WITH_QR" && (
                 <span className="absolute -top-2.5 end-3 rounded-full bg-accent px-2.5 py-0.5 text-[11px] font-bold text-accent-fg">
-                  {p.mostPopular}
+                  {p.recommended}
                 </span>
               )}
               <span className="text-base font-bold text-fg">

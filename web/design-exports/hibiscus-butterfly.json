@@ -1,0 +1,1282 @@
+{
+  "slug": "hibiscus-butterfly",
+  "name": "Hibiscus Butterfly",
+  "nameAr": "ورد وفراشات",
+  "category": "romantic",
+  "status": "DRAFT",
+  "engine": "BUILDER",
+  "layout": {
+    "version": 3,
+    "page": {
+      "slot": "background",
+      "fit": "cover",
+      "overlayColor": "#000000",
+      "overlayOpacity": 0
+    },
+    "scenes": [
+      {
+        "id": "cover",
+        "name": "الظرف المغلق",
+        "role": "cover",
+        "canvas": {
+          "aspectW": 1200,
+          "aspectH": 800,
+          "safeInset": 4
+        },
+        "visible": true,
+        "requires": null
+      },
+      {
+        "id": "open",
+        "name": "الظرف المفتوح",
+        "role": "flow",
+        "canvas": {
+          "aspectW": 900,
+          "aspectH": 1200,
+          "safeInset": 4
+        },
+        "visible": true,
+        "requires": null
+      },
+      {
+        "id": "greeting",
+        "name": "الترحيب والأسماء",
+        "role": "flow",
+        "canvas": {
+          "aspectW": 390,
+          "aspectH": 620,
+          "safeInset": 6
+        },
+        "visible": true,
+        "requires": null
+      },
+      {
+        "id": "countdown",
+        "name": "العد التنازلي",
+        "role": "flow",
+        "canvas": {
+          "aspectW": 390,
+          "aspectH": 620,
+          "safeInset": 6
+        },
+        "visible": true,
+        "requires": null
+      },
+      {
+        "id": "details",
+        "name": "تفاصيل المناسبة",
+        "role": "flow",
+        "canvas": {
+          "aspectW": 390,
+          "aspectH": 620,
+          "safeInset": 6
+        },
+        "visible": true,
+        "requires": null
+      },
+      {
+        "id": "schedule",
+        "name": "برنامج اليوم",
+        "role": "flow",
+        "canvas": {
+          "aspectW": 390,
+          "aspectH": 620,
+          "safeInset": 6
+        },
+        "visible": true,
+        "requires": "schedule"
+      },
+      {
+        "id": "notes",
+        "name": "ملاحظات",
+        "role": "flow",
+        "canvas": {
+          "aspectW": 390,
+          "aspectH": 620,
+          "safeInset": 6
+        },
+        "visible": true,
+        "requires": "notes"
+      },
+      {
+        "id": "rsvp",
+        "name": "تأكيد الحضور",
+        "role": "flow",
+        "canvas": {
+          "aspectW": 390,
+          "aspectH": 620,
+          "safeInset": 6
+        },
+        "visible": true,
+        "requires": null
+      },
+      {
+        "id": "pass",
+        "name": "بطاقة الدخول",
+        "role": "pass",
+        "canvas": {
+          "aspectW": 900,
+          "aspectH": 1600,
+          "safeInset": 5
+        },
+        "visible": true,
+        "requires": null
+      }
+    ],
+    "layers": [
+      {
+        "id": "s_cover_envelope",
+        "type": "asset",
+        "name": "الظرف المغلق",
+        "slot": "envelopeClosed",
+        "fit": "contain",
+        "scene": "cover",
+        "z": 0,
+        "visible": true,
+        "locked": false,
+        "base": {
+          "x": 50,
+          "y": 50,
+          "width": 100,
+          "height": 100,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "clipPolygon": [
+          {
+            "x": 3.3,
+            "y": 12.2
+          },
+          {
+            "x": 96.7,
+            "y": 12.2
+          },
+          {
+            "x": 96.95,
+            "y": 12.5
+          },
+          {
+            "x": 96.95,
+            "y": 87.1
+          },
+          {
+            "x": 96.7,
+            "y": 87.4
+          },
+          {
+            "x": 3.3,
+            "y": 87.4
+          },
+          {
+            "x": 3.05,
+            "y": 87.1
+          },
+          {
+            "x": 3.05,
+            "y": 12.5
+          }
+        ]
+      },
+      {
+        "id": "s_cover_seal",
+        "type": "seal",
+        "name": "أحرف العروسين",
+        "scene": "cover",
+        "z": 1,
+        "visible": true,
+        "locked": false,
+        "mode": "static",
+        "script": "arabic",
+        "order": "groom-first",
+        "text": "",
+        "separator": "&",
+        "maxChars": 1,
+        "style": {
+          "font": "Amiri",
+          "fontSize": 22,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.6,
+          "letterSpacing": 0.06
+        },
+        "base": {
+          "x": 50,
+          "y": 65.2,
+          "width": 9,
+          "height": 12,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "s_open_envelope",
+        "type": "asset",
+        "name": "الظرف المفتوح",
+        "slot": "envelopeOpen",
+        "fit": "contain",
+        "scene": "open",
+        "z": 0,
+        "visible": true,
+        "locked": false,
+        "base": {
+          "x": 50,
+          "y": 50,
+          "width": 100,
+          "height": 100,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "clipPolygon": [
+          {
+            "x": 5.4,
+            "y": 96.1
+          },
+          {
+            "x": 5.4,
+            "y": 36.7
+          },
+          {
+            "x": 9.3,
+            "y": 28.4
+          },
+          {
+            "x": 10.2,
+            "y": 27.5
+          },
+          {
+            "x": 15.8,
+            "y": 23.5
+          },
+          {
+            "x": 15.8,
+            "y": 22.7
+          },
+          {
+            "x": 17.5,
+            "y": 22.7
+          },
+          {
+            "x": 48.2,
+            "y": 1.5
+          },
+          {
+            "x": 49.2,
+            "y": 1.1
+          },
+          {
+            "x": 50,
+            "y": 1
+          },
+          {
+            "x": 50.8,
+            "y": 1.1
+          },
+          {
+            "x": 51.8,
+            "y": 1.5
+          },
+          {
+            "x": 82.5,
+            "y": 22.7
+          },
+          {
+            "x": 84.2,
+            "y": 22.7
+          },
+          {
+            "x": 84.2,
+            "y": 23.5
+          },
+          {
+            "x": 89.8,
+            "y": 27.5
+          },
+          {
+            "x": 90.7,
+            "y": 28.4
+          },
+          {
+            "x": 94.6,
+            "y": 36.7
+          },
+          {
+            "x": 94.6,
+            "y": 96.1
+          }
+        ]
+      },
+      {
+        "id": "s_open_guest_label",
+        "type": "text",
+        "name": "سطر «دعوة خاصة إلى»",
+        "scene": "open",
+        "z": 1,
+        "visible": true,
+        "locked": false,
+        "source": "static",
+        "text": "دعوة خاصة إلى",
+        "fields": [],
+        "style": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 15,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 50,
+          "y": 39,
+          "width": 52,
+          "height": 7,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "s_open_guest_name",
+        "type": "text",
+        "name": "اسم المدعو",
+        "scene": "open",
+        "z": 2,
+        "visible": true,
+        "locked": false,
+        "source": "content",
+        "fields": [
+          "guestName"
+        ],
+        "text": "",
+        "style": {
+          "font": "Amiri",
+          "fontSize": 27,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 50,
+          "y": 48,
+          "width": 52,
+          "height": 10,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "s_open_invitation_text",
+        "type": "text",
+        "name": "الدعوة كاملة",
+        "scene": "open",
+        "z": 3,
+        "visible": true,
+        "locked": false,
+        "source": "static",
+        "fields": [],
+        "text": "بكل محبة، ننتظر حضوركم",
+        "style": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 15,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 50,
+          "y": 58,
+          "width": 52,
+          "height": 7,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_greeting_opening",
+        "type": "text",
+        "name": "الافتتاحية",
+        "scene": "greeting",
+        "z": 0,
+        "visible": true,
+        "locked": false,
+        "source": "content",
+        "text": "",
+        "fields": [
+          "opening"
+        ],
+        "style": {
+          "font": "Amiri",
+          "fontSize": 19,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.6,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 70,
+          "y": 23,
+          "width": 52,
+          "height": 19,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_greeting_host",
+        "type": "text",
+        "name": "سطر الداعي",
+        "scene": "greeting",
+        "z": 1,
+        "visible": true,
+        "locked": false,
+        "source": "content",
+        "text": "",
+        "fields": [
+          "hostLine",
+          "inviteVerb"
+        ],
+        "style": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 18,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.6,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 70,
+          "y": 42,
+          "width": 52,
+          "height": 17,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_greeting_couples",
+        "type": "text",
+        "name": "سطر العروسين",
+        "scene": "greeting",
+        "z": 2,
+        "visible": true,
+        "locked": false,
+        "source": "content",
+        "text": "",
+        "fields": [
+          "coupleLine"
+        ],
+        "style": {
+          "font": "Aref Ruqaa",
+          "fontSize": 40,
+          "fontWeight": 700,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.3,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 70,
+          "y": 59,
+          "width": 52,
+          "height": 15,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_greeting_inshallah",
+        "type": "text",
+        "name": "بمشيئة الله",
+        "scene": "greeting",
+        "z": 3,
+        "visible": true,
+        "locked": false,
+        "source": "content",
+        "text": "",
+        "fields": [
+          "inshallah"
+        ],
+        "style": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 18,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 70,
+          "y": 71,
+          "width": 52,
+          "height": 5,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_greeting_date",
+        "type": "text",
+        "name": "التاريخ",
+        "scene": "greeting",
+        "z": 4,
+        "visible": true,
+        "locked": false,
+        "source": "content",
+        "text": "",
+        "fields": [
+          "eventDate",
+          "eventTime"
+        ],
+        "style": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 16,
+          "fontWeight": 500,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 70,
+          "y": 81,
+          "width": 52,
+          "height": 13,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_countdown",
+        "type": "countdown",
+        "name": "العد التنازلي",
+        "scene": "countdown",
+        "z": 0,
+        "visible": true,
+        "locked": false,
+        "title": "يفصلنا عن المناسبة",
+        "titleStyle": {
+          "font": "Amiri",
+          "fontSize": 31,
+          "fontWeight": 400,
+          "color": "@fgMuted",
+          "align": "center",
+          "lineHeight": 1.6,
+          "letterSpacing": 0
+        },
+        "numberStyle": {
+          "font": "Cormorant Garamond",
+          "fontSize": 38,
+          "fontWeight": 500,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.2,
+          "letterSpacing": 0
+        },
+        "labelStyle": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 16,
+          "fontWeight": 400,
+          "color": "@fgMuted",
+          "align": "center",
+          "lineHeight": 1.7,
+          "letterSpacing": 0
+        },
+        "boxColor": "#FFFFFF",
+        "boxOpacity": 0,
+        "borderColor": "@fgMuted",
+        "borderWidth": 1,
+        "borderRadius": 12,
+        "showSeconds": true,
+        "base": {
+          "x": 70,
+          "y": 45,
+          "width": 52,
+          "height": 32,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_details_title",
+        "type": "text",
+        "name": "عنوان التفاصيل",
+        "scene": "details",
+        "z": 0,
+        "visible": true,
+        "locked": false,
+        "source": "static",
+        "text": "تفاصيل المناسبة",
+        "fields": [],
+        "style": {
+          "font": "Amiri",
+          "fontSize": 32,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.6,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 70,
+          "y": 17,
+          "width": 52,
+          "height": 10,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_details_when",
+        "type": "text",
+        "name": "التاريخ والوقت",
+        "scene": "details",
+        "z": 1,
+        "visible": true,
+        "locked": false,
+        "source": "content",
+        "text": "",
+        "fields": [
+          "eventDate",
+          "eventTime"
+        ],
+        "style": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 19,
+          "fontWeight": 500,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.8,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 70,
+          "y": 32.5,
+          "width": 52,
+          "height": 21,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_details_where",
+        "type": "text",
+        "name": "الموقع",
+        "scene": "details",
+        "z": 2,
+        "visible": true,
+        "locked": false,
+        "source": "content",
+        "text": "",
+        "fields": [
+          "locationFull"
+        ],
+        "style": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 18,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.8,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 70,
+          "y": 52,
+          "width": 52,
+          "height": 18,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_details_calendar",
+        "type": "button",
+        "name": "زر التقويم",
+        "scene": "details",
+        "z": 3,
+        "visible": true,
+        "locked": false,
+        "action": "calendar",
+        "label": "أضيفوها إلى تقويمكم",
+        "href": "",
+        "style": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 17,
+          "fontWeight": 500,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.7,
+          "letterSpacing": 0
+        },
+        "background": "#FFFFFF",
+        "backgroundOpacity": 0,
+        "borderColor": "@fgMuted",
+        "borderWidth": 1,
+        "borderRadius": 12,
+        "base": {
+          "x": 70,
+          "y": 66.5,
+          "width": 52,
+          "height": 10.5,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_details_map",
+        "type": "button",
+        "name": "زر الخريطة",
+        "scene": "details",
+        "z": 4,
+        "visible": true,
+        "locked": false,
+        "action": "map",
+        "label": "الموقع على الخريطة",
+        "href": "",
+        "style": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 17,
+          "fontWeight": 500,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.7,
+          "letterSpacing": 0
+        },
+        "background": "#FFFFFF",
+        "backgroundOpacity": 0,
+        "borderColor": "@fgMuted",
+        "borderWidth": 1,
+        "borderRadius": 12,
+        "base": {
+          "x": 70,
+          "y": 77.5,
+          "width": 52,
+          "height": 10.5,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_details_closing",
+        "type": "text",
+        "name": "الخاتمة",
+        "scene": "details",
+        "z": 5,
+        "visible": true,
+        "locked": false,
+        "source": "content",
+        "text": "",
+        "fields": [
+          "closing"
+        ],
+        "style": {
+          "font": "Amiri",
+          "fontSize": 21,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.6,
+          "letterSpacing": 0
+        },
+        "base": {
+          "x": 70,
+          "y": 88,
+          "width": 52,
+          "height": 6,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "f_schedule",
+        "type": "schedule",
+        "name": "برنامج اليوم",
+        "scene": "schedule",
+        "z": 0,
+        "visible": true,
+        "locked": false,
+        "title": "برنامج اليوم",
+        "titleStyle": {
+          "font": "Amiri",
+          "fontSize": 31,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.6,
+          "letterSpacing": 0
+        },
+        "timeStyle": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 19,
+          "fontWeight": 500,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.7,
+          "letterSpacing": 0
+        },
+        "labelStyle": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 19,
+          "fontWeight": 400,
+          "color": "@fgMuted",
+          "align": "start",
+          "lineHeight": 1.7,
+          "letterSpacing": 0
+        },
+        "rowGap": 7,
+        "base": {
+          "x": 70,
+          "y": 47,
+          "width": 52,
+          "height": 62,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "overflow": "scroll"
+      },
+      {
+        "id": "f_notes",
+        "type": "notes",
+        "name": "ملاحظات",
+        "scene": "notes",
+        "z": 0,
+        "visible": true,
+        "locked": false,
+        "title": "ملاحظات",
+        "titleStyle": {
+          "font": "Amiri",
+          "fontSize": 31,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.6,
+          "letterSpacing": 0
+        },
+        "itemStyle": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 19,
+          "fontWeight": 400,
+          "color": "@fgMuted",
+          "align": "start",
+          "lineHeight": 2,
+          "letterSpacing": 0
+        },
+        "bullet": "•",
+        "base": {
+          "x": 70,
+          "y": 47,
+          "width": 52,
+          "height": 62,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "overflow": "scroll"
+      },
+      {
+        "id": "f_rsvp",
+        "type": "rsvp",
+        "name": "تأكيد الحضور",
+        "scene": "rsvp",
+        "z": 0,
+        "visible": true,
+        "locked": false,
+        "title": "نرجو تأكيد حضوركم",
+        "titleStyle": {
+          "font": "Amiri",
+          "fontSize": 29,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.6,
+          "letterSpacing": 0
+        },
+        "fieldStyle": {
+          "font": "IBM Plex Sans Arabic",
+          "fontSize": 18,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "start",
+          "lineHeight": 1.7,
+          "letterSpacing": 0
+        },
+        "fieldBackground": "@surface",
+        "borderColor": "@fgMuted",
+        "borderRadius": 10,
+        "accent": "@accent",
+        "accentFg": "@accentFg",
+        "base": {
+          "x": 70,
+          "y": 50,
+          "width": 52,
+          "height": 76,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "overflow": "scroll"
+      },
+      {
+        "id": "dove_pass_title",
+        "name": "عنوان البطاقة",
+        "scene": "pass",
+        "type": "text",
+        "visible": true,
+        "locked": false,
+        "z": 2,
+        "source": "static",
+        "fields": [],
+        "text": "بطاقة الدخول",
+        "base": {
+          "x": 70,
+          "y": 22,
+          "width": 52,
+          "height": 5,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "style": {
+          "font": "Amiri",
+          "fontSize": 22,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "dove_pass_couple",
+        "name": "العروسان",
+        "scene": "pass",
+        "type": "text",
+        "visible": true,
+        "locked": false,
+        "z": 2,
+        "source": "content",
+        "fields": [
+          "coupleLine"
+        ],
+        "text": "",
+        "base": {
+          "x": 70,
+          "y": 31,
+          "width": 52,
+          "height": 14,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "style": {
+          "font": "Amiri",
+          "fontSize": 38,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "dove_pass_date",
+        "name": "التاريخ والوقت",
+        "scene": "pass",
+        "type": "text",
+        "visible": true,
+        "locked": false,
+        "z": 2,
+        "source": "content",
+        "fields": [
+          "eventDateShort",
+          "eventTime"
+        ],
+        "text": "",
+        "base": {
+          "x": 70,
+          "y": 42,
+          "width": 52,
+          "height": 8,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "style": {
+          "font": "Amiri",
+          "fontSize": 21,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "dove_pass_place",
+        "name": "المكان",
+        "scene": "pass",
+        "type": "text",
+        "visible": true,
+        "locked": false,
+        "z": 2,
+        "source": "content",
+        "fields": [
+          "locationFull"
+        ],
+        "text": "",
+        "base": {
+          "x": 70,
+          "y": 53,
+          "width": 52,
+          "height": 13,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "style": {
+          "font": "Amiri",
+          "fontSize": 19,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "dove_pass_guest",
+        "name": "اسم الضيف",
+        "scene": "pass",
+        "type": "text",
+        "visible": true,
+        "locked": false,
+        "z": 2,
+        "source": "content",
+        "fields": [
+          "guestName"
+        ],
+        "text": "",
+        "base": {
+          "x": 70,
+          "y": 65.5,
+          "width": 52,
+          "height": 10,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "style": {
+          "font": "Amiri",
+          "fontSize": 21,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        }
+      },
+      {
+        "id": "dove_pass_qr",
+        "type": "qr",
+        "name": "رمز الدخول",
+        "scene": "pass",
+        "z": 3,
+        "visible": true,
+        "locked": false,
+        "padding": 6,
+        "borderRadius": 8,
+        "background": "#FFFFFF",
+        "borderColor": "#FFFFFF",
+        "borderWidth": 0,
+        "fgColor": "#171717",
+        "base": {
+          "x": 70,
+          "y": 80,
+          "width": 27,
+          "height": 15.2,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        }
+      },
+      {
+        "id": "dove_pass_count",
+        "name": "عدد الأشخاص",
+        "scene": "pass",
+        "type": "text",
+        "visible": true,
+        "locked": false,
+        "z": 2,
+        "source": "static",
+        "fields": [],
+        "text": "عدد الأشخاص: {allowedCount}",
+        "base": {
+          "x": 70,
+          "y": 92,
+          "width": 52,
+          "height": 5,
+          "scale": 1,
+          "rotation": 0,
+          "opacity": 1
+        },
+        "style": {
+          "font": "Amiri",
+          "fontSize": 18,
+          "fontWeight": 400,
+          "color": "@fg",
+          "align": "center",
+          "lineHeight": 1.5,
+          "letterSpacing": 0
+        }
+      }
+    ],
+    "animation": {
+      "envelopeEntrance": "fade",
+      "envelopeOpening": "normal",
+      "cardEntrance": "fade",
+      "duration": 700,
+      "delay": 0
+    }
+  },
+  "typography": {
+    "version": 3,
+    "roles": {
+      "display": {
+        "family": "Amiri",
+        "weight": 400
+      },
+      "body": {
+        "family": "IBM Plex Sans Arabic",
+        "weight": 400
+      },
+      "latin": {
+        "family": "Cormorant Garamond",
+        "weight": 500
+      }
+    }
+  },
+  "variants": [
+    {
+      "slug": "burgundy",
+      "name": "عنابي",
+      "colorTag": "عنابي",
+      "isDefault": true,
+      "sortOrder": 0,
+      "palette": {
+        "bg": "#DFCFB9",
+        "surface": "#FFFDF8",
+        "fg": "#541F29",
+        "fgMuted": "#541F29",
+        "accent": "#541F29",
+        "accentFg": "#FFFDF8",
+        "swatch": "#712934"
+      },
+      "layoutOverrides": {},
+      "assets": {
+        "background": "/themes/hibiscus-butterfly/burgundy/background.png",
+        "envelopeClosed": "/themes/hibiscus-butterfly/burgundy/envelopeClosed.png",
+        "envelopeOpen": "/themes/hibiscus-butterfly/burgundy/envelopeOpen.png",
+        "card": "/themes/hibiscus-butterfly/burgundy/background.png",
+        "cardNoQr": "/themes/hibiscus-butterfly/burgundy/background.png"
+      }
+    },
+    {
+      "slug": "mauve",
+      "name": "موف",
+      "colorTag": "موف",
+      "isDefault": false,
+      "sortOrder": 1,
+      "palette": {
+        "bg": "#DFCFB9",
+        "surface": "#FFFDF8",
+        "fg": "#533B54",
+        "fgMuted": "#533B54",
+        "accent": "#533B54",
+        "accentFg": "#FFFDF8",
+        "swatch": "#8D6489"
+      },
+      "layoutOverrides": {},
+      "assets": {
+        "background": "/themes/hibiscus-butterfly/mauve/background.png",
+        "envelopeClosed": "/themes/hibiscus-butterfly/mauve/envelopeClosed.png",
+        "envelopeOpen": "/themes/hibiscus-butterfly/mauve/envelopeOpen.png",
+        "card": "/themes/hibiscus-butterfly/mauve/background.png",
+        "cardNoQr": "/themes/hibiscus-butterfly/mauve/background.png"
+      }
+    },
+    {
+      "slug": "navy",
+      "name": "كحلي",
+      "colorTag": "كحلي",
+      "isDefault": false,
+      "sortOrder": 2,
+      "palette": {
+        "bg": "#DFCFB9",
+        "surface": "#FFFDF8",
+        "fg": "#20334E",
+        "fgMuted": "#20334E",
+        "accent": "#20334E",
+        "accentFg": "#FFFDF8",
+        "swatch": "#2C4261"
+      },
+      "layoutOverrides": {},
+      "assets": {
+        "background": "/themes/hibiscus-butterfly/navy/background.png",
+        "envelopeClosed": "/themes/hibiscus-butterfly/navy/envelopeClosed.png",
+        "envelopeOpen": "/themes/hibiscus-butterfly/navy/envelopeOpen.png",
+        "card": "/themes/hibiscus-butterfly/navy/background.png",
+        "cardNoQr": "/themes/hibiscus-butterfly/navy/background.png"
+      }
+    },
+    {
+      "slug": "mocha",
+      "name": "موكا",
+      "colorTag": "موكا",
+      "isDefault": false,
+      "sortOrder": 3,
+      "palette": {
+        "bg": "#DFCFB9",
+        "surface": "#FFFDF8",
+        "fg": "#50382B",
+        "fgMuted": "#50382B",
+        "accent": "#50382B",
+        "accentFg": "#FFFDF8",
+        "swatch": "#84604A"
+      },
+      "layoutOverrides": {},
+      "assets": {
+        "background": "/themes/hibiscus-butterfly/mocha/background.png",
+        "envelopeClosed": "/themes/hibiscus-butterfly/mocha/envelopeClosed.png",
+        "envelopeOpen": "/themes/hibiscus-butterfly/mocha/envelopeOpen.png",
+        "card": "/themes/hibiscus-butterfly/mocha/background.png",
+        "cardNoQr": "/themes/hibiscus-butterfly/mocha/background.png"
+      }
+    }
+  ]
+}

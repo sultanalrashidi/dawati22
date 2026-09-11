@@ -1,4 +1,5 @@
 import { doveDesign } from '@/lib/themes/builder/dove-velvet';
+import { floralDesigns } from '@/lib/themes/builder/floral-pair';
 import { notFound } from 'next/navigation';
 import QRCode from 'qrcode';
 import original from '@/data/public-theme-catalog.snapshot.json';
@@ -34,5 +35,5 @@ export default async function CollectionReviewPage() {
     };
   });
   const qrDataUrl = await QRCode.toDataURL('dawati-preview-not-an-entry-pass', { margin: 1, width: 320 });
-  return <CollectionReview designs={[...designs, doveDesign()]} qrDataUrl={qrDataUrl} />;
+  return <CollectionReview designs={[...designs, doveDesign(), ...floralDesigns()]} qrDataUrl={qrDataUrl} />;
 }

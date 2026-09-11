@@ -22,6 +22,15 @@ const nextConfig: NextConfig = {
       { source: "/sultannatlus", destination: `/${defaultLocale}/sultannatlus` },
     ];
   },
+  // Nothing on the server reads `public/` at run time — the CDN serves it — but
+  // the theme-storage module's local-disk fallback builds paths from
+  // `process.cwd()/public`, and the tracer answers that by copying the whole
+  // folder into EVERY function: 222 MB of design art per route, which is what
+  // a cold start was loading. The fallback only ever runs in local
+  // development, where nothing is traced.
+  outputFileTracingExcludes: {
+    "/*": ["public/**/*"],
+  },
   images: {
     // AVIF first, WebP second. Theme art is photographic, which is exactly what
     // AVIF is best at — the same envelope lands at roughly a third of its JPEG

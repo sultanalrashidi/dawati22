@@ -113,6 +113,12 @@ export interface ThemeStageProps {
    * instead of the form — in place, without removing the screen it sits on.
    */
   rsvpResponded?: "ACCEPTED" | "DECLINED" | null;
+  /**
+   * Fetch this stage's art at once and ahead of everything else — for the
+   * guest's cover, which is what she is looking at while the page loads.
+   * Everywhere else the images wait until they are about to be seen.
+   */
+  eagerImages?: boolean;
   /** Editor-only chrome drawn on top of each layer. */
   renderLayerOverlay?: (resolved: ResolvedLayer) => ReactNode;
   /** Editor-only guides. */
@@ -146,6 +152,7 @@ export function ThemeStage({
   editing = false,
   sampleQr = false,
   rsvpResponded = null,
+  eagerImages = false,
   renderLayerOverlay,
   children,
   className,
@@ -203,6 +210,7 @@ export function ThemeStage({
             editing={editing}
             sampleQr={sampleQr}
             rsvpResponded={rsvpResponded}
+            eagerImages={eagerImages}
           />
           {renderLayerOverlay?.(entry)}
         </LayerBox>
@@ -256,6 +264,38 @@ function LayerBox({
   );
 }
 
+/**
+ * The shape an asset layer's <Image> holds while in flight. Exported with
+ * `stageImageSizes` so `SceneImageWarmer` can ask for the exact same URLs this
+ * stage will — any drift between the two and the warmed file is never used.
+ */
+export const STAGE_IMAGE_BOX = 1600;
+
+/**
+ * The layer's own share of the stage, and the stage is never wider than the
+ * screen — so this is an upper bound on every device, and an exact one on the
+ * phones that matter. An admin can upload art of any proportions, which is why
+ * it is expressed as the box's width rather than guessed from the file.
+ */
+export function stageImageSizes(layerWidthPercent: number): string {
+  return `${Math.min(100, Math.ceil(layerWidthPercent))}vw`;
+}
+
+/**
+ * The file an asset slot shows. "card" is the pass scene's background art (see
+ * slots.ts); an admin can upload a second image under "cardNoQr" — a card
+ * designed without a code window — and a NO_QR event's pass then uses that
+ * instead. Every other slot is exactly what was uploaded under its name.
+ */
+export function stageAssetUrl(
+  slot: string,
+  assets: Record<string, string>,
+  hasQr: boolean,
+): string | undefined {
+  const noQrCard = !hasQr && slot === "card" ? assets.cardNoQr : undefined;
+  return noQrCard ?? assets[slot];
+}
+
 export function boxStyle(transform: Transform): CSSProperties {
   return {
     position: "absolute",
@@ -291,6 +331,7 @@ function LayerContent({
   editing,
   sampleQr,
   rsvpResponded,
+  eagerImages,
 }: {
   resolved: ResolvedLayer;
   canvas: SceneCanvas;
@@ -313,17 +354,13 @@ function LayerContent({
   editing: boolean;
   sampleQr: boolean;
   rsvpResponded: "ACCEPTED" | "DECLINED" | null;
+  eagerImages: boolean;
 }) {
   const { layer, transform } = resolved;
 
   switch (layer.type) {
     case "asset": {
-      // "card" is the pass scene's background art (see slots.ts). An admin can
-      // upload a second image under "cardNoQr" — a card designed without a
-      // code window — and a NO_QR event's pass then uses that instead. Nothing
-      // else changes: every other asset slot renders exactly as before.
-      const noQrCard = !hasQr && layer.slot === "card" ? assets.cardNoQr : undefined;
-      const url = noQrCard ?? assets[layer.slot];
+      const url = stageAssetUrl(layer.slot, assets, hasQr);
       if (!url) return <MissingAsset slot={layer.slot} />;
       const clipPath = layer.clipPolygon?.length ? `polygon(${layer.clipPolygon.map(p => `${p.x}% ${p.y}%`).join(",")})` : undefined;
       // In the editor the admin is judging the artwork itself, so it is served
@@ -352,14 +389,13 @@ function LayerContent({
           // or follows the artwork's own proportions. So these two are only a
           // shape to hold while the image is in flight — nothing lays out from
           // them, and nothing here reads an intrinsic size.
-          width={1600}
-          height={1600}
-          // The layer's own share of the stage, and the stage is never wider
-          // than the screen — so this is an upper bound on every device, and
-          // an exact one on the phones that matter. An admin can upload art of
-          // any proportions, which is why it is expressed as the box's width
-          // rather than guessed from the file.
-          sizes={`${Math.min(100, Math.ceil(transform.width))}vw`}
+          width={STAGE_IMAGE_BOX}
+          height={STAGE_IMAGE_BOX}
+          sizes={stageImageSizes(transform.width)}
+          // The cover is the first thing a guest sees, so its art is fetched
+          // with the page instead of after layout decides it is on screen.
+          loading={eagerImages ? "eager" : undefined}
+          fetchPriority={eagerImages ? "high" : undefined}
           className="block h-full w-full select-none"
           style={{ objectFit: layer.fit, clipPath }}
         />

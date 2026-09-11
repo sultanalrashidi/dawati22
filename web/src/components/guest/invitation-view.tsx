@@ -18,6 +18,7 @@ import type { ScheduleItem } from "@/lib/events/types";
 import { fontVarFor } from "@/lib/themes/fonts";
 import { fontStackFor } from "@/lib/themes/font-registry";
 import { ThemeStage } from "@/components/themes/builder/theme-stage";
+import { SceneImageWarmer } from "@/components/themes/builder/scene-image-warmer";
 import type { RsvpResponse, StageRsvp } from "@/components/themes/builder/layers/rsvp-layer";
 import {
   closingText,
@@ -512,6 +513,7 @@ function BuilderStage({
   qrDataUrl,
   hasQr = true,
   sampleQr = false,
+  eager = false,
   data,
 }: {
   builder: BuilderTheme;
@@ -523,6 +525,8 @@ function BuilderStage({
   hasQr?: boolean;
   /** Draw the stand-in code when there is no real one — see ThemeStage. */
   sampleQr?: boolean;
+  /** The cover: fetch its art with the page — see ThemeStage's `eagerImages`. */
+  eager?: boolean;
   data: StageData;
 }) {
   // `<ThemeStage>` paints `palette.bg` on the stage box. That is right for a
@@ -554,6 +558,7 @@ function BuilderStage({
       rsvpResponded={data.rsvpResponded}
       onToggleMusic={data.onToggleMusic}
       musicPlaying={data.musicPlaying}
+      eagerImages={eager}
       style={overPageBackground ? { backgroundColor: "transparent" } : undefined}
     />
   );
@@ -911,6 +916,21 @@ function InvitationScreens({
         className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 pb-[var(--dawati-bottom-inset)] text-center text-[var(--color-fg)]"
       >
         <BuilderPageBackground page={builder.layout.page} assets={builder.assets} />
+        {/* Every screen the admin left visible after the cover — without the
+            data gating the flow applies later, because warming one screen too
+            many costs a few kilobytes and warming one too few costs the wait
+            this is here to remove. */}
+        <SceneImageWarmer
+          layout={builder.layout}
+          scenes={builder.layout.scenes
+            .filter((scene) => scene.role === "flow" && scene.visible)
+            .map((scene) => scene.id)}
+          breakpoint={breakpoint}
+          overrides={builder.overrides}
+          palette={builder.palette}
+          assets={builder.assets}
+          hasQr={hasQr}
+        />
         {/*
           The tap target is an overlay, NOT a wrapper. A designer can drop any
           layer on the cover, and an RSVP block or a link button nested inside a
@@ -941,6 +961,7 @@ function InvitationScreens({
               content={builderContent}
               breakpoint={breakpoint}
               data={coverStageData}
+              eager
             />
             {/* Makes the whole card tappable. Hidden from assistive tech and
                 taken out of the tab order on purpose: it carries no name of its

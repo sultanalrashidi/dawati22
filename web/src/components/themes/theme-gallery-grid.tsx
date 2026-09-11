@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
 import type { ThemeConfig } from "@/lib/themes/types";
+import type { EnvelopeCutout } from "@/lib/themes/thumbnail";
 import type { BuilderTheme } from "@/components/guest/invitation-view";
 import { ThemeGalleryCard } from "@/components/themes/theme-gallery-card";
 import { ThemePreviewDialog } from "@/components/themes/theme-preview-dialog";
@@ -29,6 +30,7 @@ type ThemeItem = {
   builder?: BuilderTheme;
   /** The design's own closed-envelope art, when it has any. */
   thumbnailUrl?: string;
+  thumbnailCutout?: EnvelopeCutout;
 };
 
 function buildFamilies(themes: ThemeItem[]) {
@@ -217,6 +219,7 @@ export function ThemeGalleryGrid({
                 themeVariantId: m.themeVariantId,
                 config: m.config,
                 thumbnailUrl: m.thumbnailUrl,
+                thumbnailCutout: m.thumbnailCutout,
                 colorLabel: themeColorLabel(m.config.colorTag, dict.themesGallery),
               }))}
               shownId={shownIn(family).id}

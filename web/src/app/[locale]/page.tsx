@@ -60,7 +60,11 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
     { title: h.door3Title, body: h.door3Body },
   ];
 
+  // The two answers that change what a visitor expects to pay and to do lead
+  // the list; both used to be discoverable only inside the product.
   const faqs = [
+    { q: h.faq5Q, a: h.faq5A },
+    { q: h.faq6Q, a: h.faq6A },
     { q: h.faq1Q, a: h.faq1A },
     { q: h.faq2Q, a: h.faq2A },
     { q: h.faq3Q, a: h.faq3A },
@@ -166,6 +170,18 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
             />
           </div>
         )}
+        {/* Companions ride on their guest's invitation, and the team sends for
+            free: the count a visitor multiplies by, and the work that follows. */}
+        <ul className="mx-auto mt-8 flex w-fit max-w-3xl flex-col gap-2">
+          {[h.pricingCompanions, h.pricingTeamSend].map((line) => (
+            <li key={line} className="flex items-start gap-2 text-sm leading-relaxed text-fg-muted">
+              <span className="mt-1">
+                <Tick />
+              </span>
+              {line}
+            </li>
+          ))}
+        </ul>
         <div className="mt-8 flex justify-center">
           <Link
             href={`/${locale}/plans`}

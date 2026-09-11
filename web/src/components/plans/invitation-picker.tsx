@@ -135,6 +135,9 @@ export function InvitationPicker({
           ))}
         </div>
         <p className="mt-4 text-xs text-fg-muted">{p.stepNote}</p>
+        {/* Where the count is chosen, say what is being counted: guests, not
+            heads. Without it a host multiplies by everyone coming. */}
+        <p className="mt-2 text-xs font-medium text-fg">{p.companionsNote}</p>
       </section>
 
       {/* Side by side even on a 360px phone: the whole point of two cards is

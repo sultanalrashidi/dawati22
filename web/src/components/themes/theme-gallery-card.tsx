@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
-
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
 import type { ThemeConfig } from "@/lib/themes/types";
+import type { EnvelopeCutout } from "@/lib/themes/thumbnail";
 import { StartWithDesign } from "@/components/themes/start-with-design";
+import { EnvelopeThumbnail } from "@/components/themes/envelope-thumbnail";
 
 export interface GalleryVariant {
   id: string;
@@ -15,6 +15,8 @@ export interface GalleryVariant {
   config: ThemeConfig;
   /** The design's own closed-envelope art, when it has any. */
   thumbnailUrl?: string;
+  /** Set when that art must be cut out of its photograph — see `builderThemeThumbnail`. */
+  thumbnailCutout?: EnvelopeCutout;
   /**
    * The colour's name in the reader's language. `config.colorTag` is stored as
    * an Arabic word, so it is a key, not a label — the grid resolves it.
@@ -78,12 +80,11 @@ export function ThemeGalleryCard({
             // The source art is ~1200px wide and this card is a third of a
             // 1024px page at most — `sizes` is what stops a phone downloading
             // the full-size envelope for a thumbnail.
-            <Image
-              src={shown.thumbnailUrl}
-              alt=""
-              fill
+            <EnvelopeThumbnail
+              url={shown.thumbnailUrl}
+              cutout={shown.thumbnailCutout}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 320px"
-              className="object-cover"
+              tileAspect={3 / 2}
             />
           )}
         </span>

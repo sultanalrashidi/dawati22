@@ -7,7 +7,7 @@ import { builderThemeConfig, loadBuilderThemesForGallery } from "@/lib/themes/bu
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ThemeOption } from "@/components/events/theme-picker";
 import type { Locale } from "@/lib/i18n/locales";
-import { legacyThemeThumbnail } from "@/lib/themes/thumbnail";
+import { builderThemeThumbnail, legacyThemeThumbnail } from "@/lib/themes/thumbnail";
 
 /** The columns an option needs, whichever query produced the row. */
 const THEME_SELECT = {
@@ -92,6 +92,7 @@ export async function buildThemeOptions(
     const art = builderArt.get(theme.id);
     return theme.variants.map((variant) => {
       const builder = art?.get(variant.id);
+      const thumbnail = builderThemeThumbnail(builder);
       return {
         key: `${theme.id}:${variant.id}`,
         themeId: theme.id,
@@ -110,11 +111,8 @@ export async function buildThemeOptions(
         // the family.
         familyKey: theme.id,
         colorTag: variant.colorTag ?? undefined,
-        // The closed envelope is what the customer sees first on the guest
-        // page, so it is what the tile should show; the other two only stand
-        // in for a design that has not uploaded one yet.
-        thumbnailUrl:
-          builder?.assets.envelopeClosed ?? builder?.assets.background ?? builder?.assets.card,
+        thumbnailUrl: thumbnail.url,
+        thumbnailCutout: thumbnail.cutout,
       };
     });
   });

@@ -40,7 +40,14 @@ const SAMPLE_EVENT = {
   // The composed invitation line replaces the old free text; this is the
   // optional extra, empty like the editor's sample.
   invitationTextAr: SAMPLE_CONTENT_INPUT.invitationTextAr,
-  eventDate: new Date(Date.now() + 45 * 86_400_000).toISOString(),
+  // 45 days out, at 8 PM Riyadh (UTC+3, no daylight saving) to match the
+  // programme below. Taking the time from the clock made the sample read
+  // «٢:١٩ ص» for anyone browsing at night.
+  eventDate: (() => {
+    const date = new Date(Date.now() + 45 * 86_400_000);
+    date.setUTCHours(17, 0, 0, 0);
+    return date.toISOString();
+  })(),
   locationName: "قاعة الأمير الكبرى - الرياض",
   mapUrl: "https://maps.google.com/?q=" + encodeURIComponent("قاعة الأمير الكبرى الرياض"),
   // Real, verified-embeddable royalty-free track — lets the customer see and

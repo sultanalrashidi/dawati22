@@ -13,7 +13,7 @@ import {
 } from "@/lib/themes/builder/guest";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { ThemeGalleryGrid } from "@/components/themes/theme-gallery-grid";
-import { legacyThemeThumbnail } from "@/lib/themes/thumbnail";
+import { builderThemeThumbnail, legacyThemeThumbnail, type EnvelopeCutout } from "@/lib/themes/thumbnail";
 
 type GalleryItem = {
   id: string;
@@ -42,6 +42,8 @@ type GalleryItem = {
    * its palette.
    */
   thumbnailUrl?: string;
+  /** Set when that art must be cut out of its photograph — see `builderThemeThumbnail`. */
+  thumbnailCutout?: EnvelopeCutout;
 };
 
 export default async function ThemesGalleryPage({
@@ -102,6 +104,7 @@ export default async function ThemesGalleryPage({
 
     return theme.variants.map((variant) => {
       const builder = builderArt.get(theme.id)?.get(variant.id);
+      const thumbnail = builderThemeThumbnail(builder);
       return {
         id: variant.id,
         themeId: theme.id,
@@ -121,11 +124,8 @@ export default async function ThemesGalleryPage({
         // representative keeps the family's "popular" sort from multiplying it.
         eventCount: variant.id === defaultVariant.id ? theme.eventCount : 0,
         builder,
-        // The closed envelope is what a guest sees first, so it is what the card
-        // should show; the other two only stand in for a design that has not
-        // uploaded one yet.
-        thumbnailUrl:
-          builder?.assets.envelopeClosed ?? builder?.assets.background ?? builder?.assets.card,
+        thumbnailUrl: thumbnail.url,
+        thumbnailCutout: thumbnail.cutout,
       };
     });
   });

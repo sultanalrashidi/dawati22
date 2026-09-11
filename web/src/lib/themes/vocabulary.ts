@@ -13,15 +13,18 @@
  */
 
 /**
- * One entry per category that a published theme actually uses. `soft` and
- * `modern` used to be listed and matched nothing, so both could only ever
- * return an empty gallery — a filter that can only fail is worse than none.
+ * One entry per category that a published theme actually uses. `soft` used to
+ * be listed and matched nothing, so it could only ever return an empty gallery
+ * — a filter that can only fail is worse than none. `modern` was dropped for
+ * the same reason and is back because «ندى الكريستال» uses it; without an
+ * entry here its card printed the raw value «modern» in the Arabic gallery.
  */
 export const THEME_CATEGORIES = [
   { key: "all", dictKey: "categoryAll", dbValue: null },
   { key: "luxury", dictKey: "categoryLuxury", dbValue: "luxury" },
   { key: "classic", dictKey: "categoryClassic", dbValue: "classic" },
   { key: "romantic", dictKey: "categoryRomantic", dbValue: "romantic" },
+  { key: "modern", dictKey: "categoryModern", dbValue: "modern" },
   { key: "simple", dictKey: "categorySimple", dbValue: "minimal" },
   { key: "dark", dictKey: "categoryDark", dbValue: "dark" },
   { key: "botanical", dictKey: "categoryBotanical", dbValue: "botanical" },

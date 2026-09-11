@@ -1,13 +1,14 @@
 "use client";
 
-import Image from "next/image";
 
 import { useMemo, useState } from "react";
 import type { ThemeConfig } from "@/lib/themes/types";
+import type { EnvelopeCutout } from "@/lib/themes/thumbnail";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
 import type { BuilderTheme } from "@/components/guest/invitation-view";
 import { ThemePreviewDialog } from "@/components/themes/theme-preview-dialog";
+import { EnvelopeThumbnail } from "@/components/themes/envelope-thumbnail";
 import { CustomDesignRequestFields } from "@/components/events/custom-design-request-fields";
 import {
   THEME_CATEGORIES,
@@ -38,6 +39,8 @@ export interface ThemeOption {
   colorTag?: string;
   /** The design's own closed-envelope art, when it has any. */
   thumbnailUrl?: string;
+  /** Set when that art must be cut out of its photograph — see `builderThemeThumbnail`. */
+  thumbnailCutout?: EnvelopeCutout;
 }
 
 interface Family {
@@ -274,12 +277,11 @@ export function ThemePicker({
                     {shown.thumbnailUrl && (
                       // Two columns on a phone, so each tile is about half a
                       // narrow viewport — a fraction of the source art's width.
-                      <Image
-                        src={shown.thumbnailUrl}
-                        alt=""
-                        fill
+                      <EnvelopeThumbnail
+                        url={shown.thumbnailUrl}
+                        cutout={shown.thumbnailCutout}
                         sizes="(max-width: 640px) 50vw, 220px"
-                        className="object-cover"
+                        tileAspect={3 / 2}
                       />
                     )}
                   </span>

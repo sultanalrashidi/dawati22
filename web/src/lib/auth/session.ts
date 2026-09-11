@@ -2,9 +2,9 @@ import "server-only";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db/client";
 import { generateSecureToken, sha256Hex } from "@/lib/security/tokens";
+import { SESSION_COOKIE, SESSION_HINT_COOKIE } from "@/lib/auth/cookie-names";
 import type { Role } from "@/generated/prisma/client";
 
-const SESSION_COOKIE = "dawati_session";
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 export type SessionUser = {
@@ -22,7 +22,7 @@ export async function createSession(userId: string, meta?: { userAgent?: string;
   const tokenHash = sha256Hex(token);
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
 
-  await prisma.session.create({
+  const { user } = await prisma.session.create({
     data: {
       userId,
       tokenHash,
@@ -30,6 +30,7 @@ export async function createSession(userId: string, meta?: { userAgent?: string;
       userAgent: meta?.userAgent,
       ip: meta?.ip,
     },
+    select: { user: { select: { role: true } } },
   });
 
   const cookieStore = await cookies();
@@ -40,6 +41,36 @@ export async function createSession(userId: string, meta?: { userAgent?: string;
     path: "/",
     expires: expiresAt,
   });
+  setSessionHint(cookieStore, user.role, expiresAt);
+}
+
+type CookieStore = Awaited<ReturnType<typeof cookies>>;
+
+/** See `session-hint.ts` — readable on purpose, and worth nothing on its own. */
+function setSessionHint(cookieStore: CookieStore, role: Role, expires: Date) {
+  cookieStore.set(SESSION_HINT_COOKIE, role, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    expires,
+  });
+}
+
+/**
+ * Re-issues the hint for a session that predates it (or lost it), so the
+ * static header catches up with a sign-in the server already knows about.
+ * Route handlers and actions only — a page cannot set cookies.
+ */
+export async function refreshSessionHint(): Promise<SessionUser | null> {
+  const user = await getSessionUser();
+  const cookieStore = await cookies();
+  if (user) {
+    setSessionHint(cookieStore, user.role, new Date(Date.now() + SESSION_TTL_MS));
+  } else {
+    cookieStore.delete(SESSION_HINT_COOKIE);
+  }
+  return user;
 }
 
 export async function destroySession() {
@@ -49,6 +80,7 @@ export async function destroySession() {
     await prisma.session.deleteMany({ where: { tokenHash: sha256Hex(token) } });
   }
   cookieStore.delete(SESSION_COOKIE);
+  cookieStore.delete(SESSION_HINT_COOKIE);
 }
 
 export async function getSessionUser(): Promise<SessionUser | null> {

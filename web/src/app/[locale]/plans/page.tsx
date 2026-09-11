@@ -7,6 +7,12 @@ import { supportWhatsAppUrl } from "@/lib/support";
 import { walletPassesConfigured } from "@/lib/wallet/availability";
 import { InvitationPicker } from "@/components/plans/invitation-picker";
 import { TierComparison } from "@/components/plans/tier-comparison";
+import { QueryNotice } from "@/components/query-notice";
+
+// A file on the CDN, rebuilt in the background at most every five minutes and
+// at once whenever a rate changes (updatePricingRateAction). Nothing here may
+// read the request — the query is applied in the browser instead.
+export const revalidate = 300;
 
 /**
  * The pricing page: the activation picker, shown before there is anything to
@@ -15,10 +21,9 @@ import { TierComparison } from "@/components/plans/tier-comparison";
  * the button carries her choice into the gallery instead of raising an order.
  * Under it, the comparison a first-time customer needs to choose a tier.
  */
-export default async function PlansPage({ params, searchParams }: PageProps<"/[locale]/plans">) {
+export default async function PlansPage({ params }: PageProps<"/[locale]/plans">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
-  const search = await searchParams;
   const dict = await getDictionary(locale);
   const p = dict.plans;
 
@@ -33,12 +38,6 @@ export default async function PlansPage({ params, searchParams }: PageProps<"/[l
   const withQr = rateOf(InvitationTier.WITH_QR);
   const noQr = rateOf(InvitationTier.NO_QR);
 
-  // Coming back from the gallery (or opening a shared link) keeps the choice.
-  // Read loosely on purpose: a mangled query costs her the pre-fill, not the
-  // page — the picker clamps anything off the slider onto a legal stop.
-  const initialTier = search.tier === "NO_QR" ? "NO_QR" : "WITH_QR";
-  const initialCount = typeof search.count === "string" ? Number(search.count) : 0;
-
   // The wallet line is the one feature the environment decides — the same
   // server-only check the landing page's wallet card asks. Only the boolean
   // travels, so the page never advertises a pass no wallet here can issue.
@@ -52,11 +51,11 @@ export default async function PlansPage({ params, searchParams }: PageProps<"/[l
         <p className="mt-1 text-xs text-fg-muted">{p.hint}</p>
       </div>
 
-      {search.error && (
-        <p className="rounded-xl bg-danger/10 px-4 py-3 text-center text-sm text-danger">
-          {dict.common.error}
-        </p>
-      )}
+      <QueryNotice
+        param="error"
+        fallback={dict.common.error}
+        className="rounded-xl bg-danger/10 px-4 py-3 text-center text-sm text-danger"
+      />
 
       {withQr !== null && noQr !== null ? (
         <>
@@ -67,8 +66,11 @@ export default async function PlansPage({ params, searchParams }: PageProps<"/[l
               withQr: { tier: "WITH_QR", unitPrice: withQr },
               noQr: { tier: "NO_QR", unitPrice: noQr },
             }}
-            initialTier={initialTier}
-            initialCount={initialCount}
+            // Coming back from the gallery (or opening a shared link) keeps
+            // the choice — applied in the browser, see `choiceFromUrl`.
+            initialTier="WITH_QR"
+            initialCount={0}
+            choiceFromUrl
             action={{ kind: "themes" }}
             compareHref="#compare"
           />

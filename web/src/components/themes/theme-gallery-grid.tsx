@@ -63,13 +63,10 @@ export function ThemeGalleryGrid({
   themes,
   dict,
   locale,
-  intent,
 }: {
   themes: ThemeItem[];
   dict: Dictionary;
   locale: Locale;
-  /** Count and tier chosen on the pricing page, if she arrived from there. */
-  intent?: { tier: string | null; count: number | null };
 }) {
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -227,7 +224,6 @@ export function ThemeGalleryGrid({
               onPreview={setPreviewId}
               dict={dict}
               locale={locale}
-              intent={intent}
             />
           ))}
         </div>

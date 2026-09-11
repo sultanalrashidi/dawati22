@@ -1,8 +1,6 @@
-import { notFound } from "next/navigation";
-import { isLocale } from "@/lib/i18n/locales";
+import type { Locale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { listPublishedThemes } from "@/lib/events/service";
-import { getSessionUser } from "@/lib/auth/session";
 import { ThemeEngine } from "@/generated/prisma/client";
 import { parsePalette } from "@/lib/themes/builder/schema";
 import {
@@ -13,6 +11,7 @@ import {
 } from "@/lib/themes/builder/guest";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { ThemeGalleryGrid } from "@/components/themes/theme-gallery-grid";
+import { QueryNotice } from "@/components/query-notice";
 import { builderThemeThumbnail, legacyThemeThumbnail, type EnvelopeCutout } from "@/lib/themes/thumbnail";
 
 type GalleryItem = {
@@ -46,26 +45,23 @@ type GalleryItem = {
   thumbnailCutout?: EnvelopeCutout;
 };
 
-export default async function ThemesGalleryPage({
-  params,
-  searchParams,
-}: PageProps<"/[locale]/themes">) {
-  const { locale } = await params;
-  if (!isLocale(locale)) notFound();
-  const search = await searchParams;
+/**
+ * The design gallery, shared by its two routes:
+ *
+ * - `/[locale]/themes` — what every signed-out visitor gets: a static file on
+ *   the CDN holding the PUBLIC designs, rebuilt in the background.
+ * - `/[locale]/themes/mine` — the same page plus the private designs made for
+ *   this customer (a paid custom design lands in her picker this way). The
+ *   `next.config.ts` rewrite sends anyone holding a session cookie there, so
+ *   the address bar still reads `/themes`.
+ *
+ * Neither reads the query: the pricing page's count and tier are picked up by
+ * `StartWithDesign`, and an action's `?error=` by `QueryNotice`, both in the
+ * browser — which is what lets the first route be a file at all.
+ */
+export async function ThemesGalleryView({ locale, userId }: { locale: Locale; userId: string | null }) {
   const dict = await getDictionary(locale);
-
-  // Carried from the pricing page when she picked a package before a design.
-  // Read loosely on purpose — a mangled query should cost her the pre-filled
-  // number, not the page. The action validates both again before storing them.
-  const rawCount = Number(search.count);
-  const intent = {
-    tier: typeof search.tier === "string" ? search.tier : null,
-    count: Number.isFinite(rawCount) && rawCount > 0 ? rawCount : null,
-  };
-  const startError = typeof search.error === "string" ? search.error : null;
-  const user = await getSessionUser();
-  const themes = await listPublishedThemes(user?.id ?? null);
+  const themes = await listPublishedThemes(userId);
 
   // One extra query for every builder theme on the page, not one per card.
   const builderArt = await loadBuilderThemesForGallery(
@@ -137,13 +133,14 @@ export default async function ThemesGalleryPage({
         <p className="mt-2 text-fg-muted">{dict.themesGallery.subheading}</p>
       </div>
 
-      {startError && (
-        <p className="mx-auto mt-6 max-w-md rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-center text-sm text-fg">
-          {startError === "rate" ? dict.themesGallery.startRateLimited : dict.themesGallery.startError}
-        </p>
-      )}
+      <QueryNotice
+        param="error"
+        messages={{ rate: dict.themesGallery.startRateLimited }}
+        fallback={dict.themesGallery.startError}
+        className="mx-auto mt-6 max-w-md rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-center text-sm text-fg"
+      />
 
-      <ThemeGalleryGrid themes={items} dict={dict} locale={locale} intent={intent} />
+      <ThemeGalleryGrid themes={items} dict={dict} locale={locale} />
     </div>
   );
 }

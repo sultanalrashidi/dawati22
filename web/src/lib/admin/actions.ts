@@ -176,8 +176,11 @@ export async function updatePricingRateAction(
 
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
   revalidatePath(`/${safeLocale}/admin/plans`);
-  // The public price list reads these rows on every render.
-  revalidatePath(`/${safeLocale}/plans`);
+  // The pricing page and the landing page are static files that quote these
+  // rows; both are rebuilt now rather than at the end of their window. Every
+  // locale, since the rate is the same number in each.
+  revalidatePath("/[locale]/plans", "page");
+  revalidatePath("/[locale]", "page");
   return { saved: true };
 }
 

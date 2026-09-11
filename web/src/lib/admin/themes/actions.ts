@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicGallery } from "@/lib/themes/revalidate-gallery";
 import { redirect } from "next/navigation";
 import { requireUserOrThrow } from "@/lib/auth/guards";
 import {
@@ -187,6 +188,7 @@ export async function setThemeStatusAction(themeId: string, locale: string, stat
   await setThemeStatus(themeId, status);
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
   revalidatePath(`/${safeLocale}/admin/themes`);
+  revalidatePublicGallery();
 }
 
 // ---------------------------------------------------------------------------
@@ -327,6 +329,7 @@ export async function deleteThemeAction(
   // The theme page itself is gone; the builder route shares the same data.
   revalidatePath(`/${safeLocale}/admin/themes/${themeId}`);
   revalidatePath(`/${safeLocale}/admin/themes/builder/${themeId}`);
+  revalidatePublicGallery();
   redirect(`/${safeLocale}/admin/themes`);
 }
 

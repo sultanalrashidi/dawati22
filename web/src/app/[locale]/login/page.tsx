@@ -4,6 +4,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getSessionUser } from "@/lib/auth/session";
 import { redirect } from "next/navigation";
 import { LoginForm } from "@/components/auth/login-form";
+import { ClearSessionHint } from "@/components/auth/clear-session-hint";
 import { isValidInvitationCount, parseTier } from "@/lib/orders/pricing";
 import { InvitationTier } from "@/generated/prisma/enums";
 
@@ -22,8 +23,10 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
 
+  // Signed in already: the static header must have shown «دخول» because this
+  // session carries no role hint. The handler re-issues it, then sends her home.
   const user = await getSessionUser();
-  if (user) redirect(`/${locale}`);
+  if (user) redirect(`/api/auth/resume?locale=${locale}`);
 
   const search = await searchParams;
   const dict = await getDictionary(locale);
@@ -42,6 +45,7 @@ export default async function LoginPage({ params, searchParams }: PageProps<"/[l
 
   return (
     <div className="mx-auto flex max-w-md flex-col gap-6 px-4 py-16 sm:px-8">
+      <ClearSessionHint />
       <div className="text-center">
         <h1 className="text-2xl font-semibold text-fg">{dict.auth.loginTitle}</h1>
         <p className="mt-2 text-sm text-fg-muted">{dict.auth.loginSubtitle}</p>

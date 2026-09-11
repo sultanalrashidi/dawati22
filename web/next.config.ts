@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
-import { defaultLocale } from "@/lib/i18n/locales";
+import { defaultLocale, locales } from "@/lib/i18n/locales";
+import { SESSION_COOKIE } from "@/lib/auth/cookie-names";
 
 const nextConfig: NextConfig = {
   // Lets the dev server be reached from a phone on the same Wi-Fi (e.g. http://192.168.x.x:3000)
@@ -18,9 +19,22 @@ const nextConfig: NextConfig = {
   // dynamic segment. A rewrite is server-side only, so the path it maps from
   // never reaches the browser bundle either.
   async rewrites() {
-    return [
-      { source: "/sultannatlus", destination: `/${defaultLocale}/sultannatlus` },
-    ];
+    return {
+      beforeFiles: [
+        // The design gallery is a static file of the PUBLIC designs, so the
+        // CDN can hand it out without waking a function. A signed-in customer
+        // may also own private ones (a paid custom design), so anyone holding
+        // a session cookie is served the per-request twin instead — resolved
+        // at the edge, with `/themes` still in the address bar.
+        {
+          source: `/:locale(${locales.join("|")})/themes`,
+          has: [{ type: "cookie", key: SESSION_COOKIE }],
+          destination: "/:locale/themes/mine",
+        },
+      ],
+      afterFiles: [{ source: "/sultannatlus", destination: `/${defaultLocale}/sultannatlus` }],
+      fallback: [],
+    };
   },
   // Nothing on the server reads `public/` at run time — the CDN serves it — but
   // the theme-storage module's local-disk fallback builds paths from

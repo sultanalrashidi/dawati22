@@ -43,7 +43,6 @@ export function ThemeGalleryCard({
   onPreview,
   dict,
   locale,
-  intent,
 }: {
   name: string;
   categoryLabel: string;
@@ -55,8 +54,6 @@ export function ThemeGalleryCard({
   onPreview: (variantId: string) => void;
   dict: Dictionary;
   locale: Locale;
-  /** What she chose on the pricing page, carried into the draft. */
-  intent?: { tier: string | null; count: number | null };
 }) {
   const shown = variants.find((v) => v.id === shownId) ?? variants[0];
 
@@ -135,7 +132,6 @@ export function ThemeGalleryCard({
             themeVariantId={shown.themeVariantId}
             locale={locale}
             dict={dict}
-            intent={intent}
           />
           <button
             type="button"

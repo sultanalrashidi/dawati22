@@ -2,6 +2,12 @@
 
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* Who is signed in, for the static header: <html data-auth> mirrors the
+   readable role cookie (see lib/auth/session-hint.ts and the locale layout's
+   inline script). Presentation only — it grants nothing. */
+@custom-variant signed-in (&:where([data-auth] *));
+@custom-variant customer (&:where([data-auth="CUSTOMER"] *));
+
 :root {
   --color-bg: #faf6ee;
   --color-surface: #ffffff;

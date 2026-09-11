@@ -1,11 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
-import type { SessionUser } from "@/lib/auth/session";
+import {
+  clearSessionHint,
+  readSessionHint,
+  subscribeSessionHint,
+  syncSessionHintAttribute,
+} from "@/lib/auth/session-hint";
 import { logoutAction } from "@/lib/auth/actions";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -35,17 +40,26 @@ import { ScanIcon } from "@/components/icons/scan-icon";
  *
  * Everything else lives in the slide-in panel, including the language switch —
  * it was a permanent word in the strip for something most visitors never touch.
+ *
+ * Who is signed in comes from the readable role cookie, not from the server:
+ * the pages this header sits on are static files, identical for everyone (see
+ * `session-hint.ts`). So the strip renders BOTH «دخول» and «دعواتي» and lets
+ * the `signed-in:` / `customer:` variants pick one — `<html data-auth>` is set
+ * by the layout's inline script before first paint, so the right one is the
+ * only one ever drawn. The panel opens after hydration and reads the role
+ * directly.
  */
-export function SiteHeader({
-  locale,
-  dict,
-  user,
-}: {
-  locale: Locale;
-  dict: Dictionary;
-  user: SessionUser | null;
-}) {
+export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const pathname = usePathname();
+  const role = useSyncExternalStore(subscribeSessionHint, readSessionHint, () => null);
+
+  // Sign-in and sign-out both end in a client-side navigation, which the
+  // inline script never sees. Read from the cookie itself rather than from
+  // `role`: on the hydration pass `role` is still the server's null, and
+  // mirroring that would blank a correct attribute for a frame.
+  useEffect(() => {
+    syncSessionHintAttribute(readSessionHint());
+  }, [role, pathname]);
   const [open, setOpen] = useState(false);
   const otherLocale: Locale = locale === "ar" ? "en" : "ar";
   const swappedPath = pathname.replace(`/${locale}`, `/${otherLocale}`) || `/${otherLocale}`;
@@ -92,9 +106,9 @@ export function SiteHeader({
   // purpose: the panel is the complete map of the site, and a door team that
   // opened the menu first should find it without closing the menu.
   const accountLinks = [
-    ...(user?.role === "CUSTOMER" ? [{ href: `/${locale}/events`, label: n.myEvents }] : []),
-    ...(user?.role === "ADMIN" ? [{ href: `/${locale}/admin`, label: n.admin }] : []),
-    ...(user?.role === "GATE_STAFF" ? [{ href: `/${locale}/gate`, label: n.gate }] : []),
+    ...(role === "CUSTOMER" ? [{ href: `/${locale}/events`, label: n.myEvents }] : []),
+    ...(role === "ADMIN" ? [{ href: `/${locale}/admin`, label: n.admin }] : []),
+    ...(role === "GATE_STAFF" ? [{ href: `/${locale}/gate`, label: n.gate }] : []),
     { href: `/${locale}/gate-access`, label: n.scan },
   ];
 
@@ -133,24 +147,23 @@ export function SiteHeader({
               <ScanIcon className="h-[18px] w-[18px]" />
               <span>{n.scan}</span>
             </Link>
-            {!user && (
-              <Link
-                href={`/${locale}/login`}
-                className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full px-2 text-sm font-bold text-fg transition-colors hover:text-accent max-[359px]:text-[13px] sm:px-3"
-              >
-                {n.loginShort}
-              </Link>
-            )}
+            {/* Both are always in the markup; `signed-in:` and `customer:`
+                (globals.css) show exactly one of them, or neither for an
+                admin or a gate account. */}
+            <Link
+              href={`/${locale}/login`}
+              className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full px-2 text-sm font-bold text-fg transition-colors hover:text-accent max-[359px]:text-[13px] sm:px-3 signed-in:hidden"
+            >
+              {n.loginShort}
+            </Link>
             {/* A customer's way back to what she paid for. Bordered so it reads
                 as a destination next to the scanner pill, not as loose text. */}
-            {user?.role === "CUSTOMER" && (
-              <Link
-                href={`/${locale}/events`}
-                className="inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-border px-3 text-sm font-bold text-fg transition-colors hover:border-accent hover:text-accent max-[359px]:text-[13px]"
-              >
-                {n.myEvents}
-              </Link>
-            )}
+            <Link
+              href={`/${locale}/events`}
+              className="hidden h-9 shrink-0 items-center whitespace-nowrap rounded-full border border-border px-3 text-sm font-bold text-fg transition-colors hover:border-accent hover:text-accent max-[359px]:text-[13px] customer:inline-flex"
+            >
+              {n.myEvents}
+            </Link>
           </div>
         </div>
       </header>
@@ -230,8 +243,11 @@ export function SiteHeader({
                 {n.language}
               </Link>
 
-              {user && (
-                <form action={logoutAction}>
+              {role && (
+                // Cleared here as well as by the action: signing out from the
+                // page you are on redirects to that same page, and without a
+                // change of path nothing else would re-read the cookie.
+                <form action={logoutAction} onSubmit={() => clearSessionHint()}>
                   <input type="hidden" name="locale" value={locale} />
                   <button
                     type="submit"

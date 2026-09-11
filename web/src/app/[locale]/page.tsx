@@ -20,6 +20,12 @@ import { walletPassesConfigured } from "@/lib/wallet/availability";
  * can be issued. Marketing copy that the product cannot honour is a support
  * ticket, not a headline.
  */
+
+// Served from the CDN as a file and rebuilt in the background at most every
+// five minutes. The only thing on it that the database decides is the price,
+// and changing a rate revalidates this page at once (updatePricingRateAction).
+export const revalidate = 300;
+
 export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();

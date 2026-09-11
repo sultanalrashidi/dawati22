@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicGallery } from "@/lib/themes/revalidate-gallery";
 import { redirect } from "next/navigation";
 import { Role, ThemeOccasion, ThemeStatus, ThemeVisibility } from "@/generated/prisma/client";
 import { requireUserOrThrow } from "@/lib/auth/guards";
@@ -218,6 +219,7 @@ export async function setBuilderThemeStatusAction(themeId: string, locale: strin
   });
   revalidatePath(`/${safe(locale)}/admin/themes/builder/${themeId}`);
   revalidatePath(`/${safe(locale)}/admin/themes`);
+  revalidatePublicGallery();
 }
 
 export async function publishBuilderThemeAction(
@@ -232,6 +234,7 @@ export async function publishBuilderThemeAction(
   }
   revalidatePath(`/${safe(locale)}/admin/themes/builder/${themeId}`);
   revalidatePath(`/${safe(locale)}/admin/themes`);
+  revalidatePublicGallery();
   return { ok: true };
 }
 

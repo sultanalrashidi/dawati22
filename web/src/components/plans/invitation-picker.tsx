@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
@@ -57,6 +57,7 @@ export function InvitationPicker({
   initialCount,
   action,
   compareHref,
+  choiceFromUrl = false,
 }: {
   locale: Locale;
   dict: Dictionary;
@@ -67,10 +68,28 @@ export function InvitationPicker({
   action: PickerAction;
   /** When given, a "what is the difference?" link sits under the tier cards. */
   compareHref?: string;
+  /**
+   * Take `?tier=` and `?count=` from the address bar after mounting. The
+   * pricing page is a static file that cannot read its query on the server,
+   * so a choice carried back from the gallery (or a shared link) is applied
+   * here instead. Read loosely: a mangled query costs the pre-fill, nothing
+   * more, and the count is clamped onto the slider like any other.
+   */
+  choiceFromUrl?: boolean;
 }) {
   const p = dict.plans;
   const [count, setCount] = useState(clampInvitationCount(initialCount || DEFAULT_INVITATIONS));
   const [tier, setTier] = useState<Tier>(initialTier);
+
+  useEffect(() => {
+    if (!choiceFromUrl) return;
+    const query = new URLSearchParams(window.location.search);
+    const carriedTier = query.get("tier");
+    const carriedCount = Number(query.get("count"));
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- a one-off sync from the address bar, which the server render cannot see
+    if (carriedTier === "WITH_QR" || carriedTier === "NO_QR") setTier(carriedTier);
+    if (carriedCount > 0) setCount(clampInvitationCount(carriedCount));
+  }, [choiceFromUrl]);
 
   // Arabic reads its own digits; English must not be forced into them.
   const nf = useMemo(

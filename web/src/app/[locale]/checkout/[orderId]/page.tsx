@@ -4,6 +4,7 @@ import { isLocale, type Locale } from "@/lib/i18n/locales";
 import { getDictionary, type Dictionary } from "@/lib/i18n/get-dictionary";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { getOwnedOrder, paidOrderDestination } from "@/lib/orders/service";
+import { isPayableOrderStatus } from "@/lib/orders/status";
 import { orderSummaryLabel } from "@/lib/orders/terms";
 import { isMoyasarConfigured, moyasarFormConfig } from "@/lib/payments/moyasar";
 import { confirmMockPaymentAction } from "@/lib/orders/actions";
@@ -11,19 +12,16 @@ import { MoyasarForm } from "@/components/checkout/moyasar-form";
 import { OrderStatus, Role } from "@/generated/prisma/client";
 import { supportWhatsAppUrl } from "@/lib/support";
 
-/**
- * Only a PENDING order may be paid.
+/*
+ * Only an order that can still settle is offered the card form: PENDING, or
+ * FAILED after a declined card, which she can simply try again.
  *
  * `confirmMoyasarPayment` enforces the same rule server-side, but by the time
  * it runs Moyasar has already taken the card: a page that offers a live card
- * form for a FAILED or superseded order is a page that charges a customer for
- * something that can never be activated. So the form is gated on the one
- * status that can still settle, and every other status gets told where its
- * money is and where to go next.
+ * form for a superseded or refunded order is a page that charges a customer
+ * for something that can never be activated. So every closed status gets told
+ * where its money is and where to go next instead.
  */
-function isPayable(status: OrderStatus): boolean {
-  return status === OrderStatus.PENDING;
-}
 
 export default async function CheckoutPage({
   params,
@@ -45,7 +43,15 @@ export default async function CheckoutPage({
 
   const planName = orderSummaryLabel(order, locale, dict);
   const boundConfirmMock = confirmMockPaymentAction.bind(null, order.id, locale);
-  const hasError = search?.error === "1";
+  // After a declined card the order is FAILED and the form comes back — so the
+  // page says what happened and that trying again is fine. `?error=1` alone
+  // covers the rarer refusal that leaves the order as it was.
+  const notice =
+    order.status === OrderStatus.FAILED
+      ? dict.checkout.retryNotice
+      : search?.error === "1"
+        ? dict.checkout.error
+        : null;
 
   return (
     <div className="mx-auto max-w-lg px-4 py-16 sm:px-8">
@@ -67,9 +73,9 @@ export default async function CheckoutPage({
         </dl>
       </div>
 
-      {hasError && <p className="mt-4 text-sm text-danger">{dict.checkout.error}</p>}
+      {notice && <p className="mt-4 text-sm text-danger">{notice}</p>}
 
-      {!isPayable(order.status) ? (
+      {!isPayableOrderStatus(order.status) ? (
         <ClosedOrder locale={locale} order={order} dict={dict} />
       ) : isMoyasarConfigured() ? (
         <div className="mt-6 space-y-4">
@@ -129,12 +135,12 @@ function ClosedOrder({
   dict: Dictionary;
 }) {
   const c = dict.checkout;
+  // Only CANCELLED and REFUNDED reach here: PAID redirects before rendering,
+  // and PENDING and FAILED get the card form.
   const copy =
-    order.status === OrderStatus.CANCELLED
-      ? { title: c.closedCancelledTitle, body: c.closedCancelledBody }
-      : order.status === OrderStatus.REFUNDED
-        ? { title: c.closedRefundedTitle, body: c.closedRefundedBody }
-        : { title: c.closedFailedTitle, body: c.closedFailedBody };
+    order.status === OrderStatus.REFUNDED
+      ? { title: c.closedRefundedTitle, body: c.closedRefundedBody }
+      : { title: c.closedCancelledTitle, body: c.closedCancelledBody };
 
   const onward = order.draftEventId
     ? { href: `/${locale}/draft/${order.draftEventId}/activate`, label: c.closedBackToDraft }

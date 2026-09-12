@@ -9,6 +9,7 @@ import type { InvitationTier } from "@/generated/prisma/enums";
 import { isValidInvitationCount, totalSar } from "@/lib/orders/pricing";
 import { deliverPaidDesign } from "@/lib/design-requests/service";
 import { orderTerms } from "@/lib/orders/terms";
+import { PAYABLE_ORDER_STATUSES, isPayableOrderStatus } from "@/lib/orders/status";
 import { generateReferenceCode } from "@/lib/events/reference-code";
 import { generateSecureToken } from "@/lib/security/tokens";
 
@@ -97,9 +98,11 @@ export async function createPerInvitationOrder(
   // order sitting there, still payable — and since only ONE order can ever
   // activate the draft, paying the stale one would charge a card and buy
   // literally nothing. Superseding is only half of it; the other half is that
-  // CANCELLED can no longer become PAID (see confirmMoyasarPayment).
+  // CANCELLED can no longer become PAID (see confirmMoyasarPayment). A FAILED
+  // order is closed here too, because it is still payable (a declined card can
+  // be retried) and would otherwise race the new one.
   await prisma.order.updateMany({
-    where: { draftEventId: input.draftEventId, status: OrderStatus.PENDING },
+    where: { draftEventId: input.draftEventId, status: { in: PAYABLE_ORDER_STATUSES } },
     data: { status: OrderStatus.CANCELLED },
   });
 
@@ -211,7 +214,7 @@ export async function confirmMockPayment(orderId: string, userId: string) {
   const order = await getOwnedOrder(orderId, userId);
   if (!order) throw new OrderError("Order not found");
   if (order.status === OrderStatus.PAID) return order;
-  if (order.status !== OrderStatus.PENDING) throw new OrderError("Order is not payable");
+  if (!isPayableOrderStatus(order.status)) throw new OrderError("Order is not payable");
   // The checkout page only OFFERS this button when there are no Moyasar keys,
   // but a server action is a public endpoint: without these two checks anyone
   // who has ever seen a checkout page could mark their own order paid the day
@@ -260,14 +263,15 @@ export async function confirmMoyasarPayment(orderId: string, userId: string, pay
   const order = await getOwnedOrder(orderId, userId);
   if (!order) throw new OrderError("Order not found");
   if (order.status === OrderStatus.PAID) return order;
-  // Only a PENDING order may become PAID.
+  // Only a payable order — PENDING or FAILED — may become PAID.
   //
   // This used to check nothing but "is it already paid", so an order that had
-  // been superseded (she changed the guest count) or had already failed could
-  // still be settled later by a stray redirect, a back button, or a webhook
-  // arriving after a 3DS timeout. Since exactly one order can activate a
-  // draft, that charged a card for something that could never be delivered.
-  if (order.status !== OrderStatus.PENDING) throw new OrderError("Order is not payable");
+  // been superseded (she changed the guest count) could still be settled later
+  // by a stray redirect, a back button, or a webhook arriving after a 3DS
+  // timeout. Since exactly one order can activate a draft, that charged a card
+  // for something that could never be delivered. FAILED is NOT in that group:
+  // a declined card is retried against the same order — see status.ts.
+  if (!isPayableOrderStatus(order.status)) throw new OrderError("Order is not payable");
 
   const payment = await fetchMoyasarPayment(paymentId);
   if (payment.metadata?.order_id !== order.id) throw new OrderError("Payment does not match order");
@@ -277,7 +281,7 @@ export async function confirmMoyasarPayment(orderId: string, userId: string, pay
     payment.currency?.toUpperCase() !== order.currency.toUpperCase()
   ) {
     logger.warn("orders.moyasar.verification_failed", { orderId, paymentId, status: payment.status });
-    await prisma.order.update({ where: { id: order.id }, data: { status: OrderStatus.FAILED } });
+    await markAttemptFailed(order.id);
     throw new OrderError("Payment could not be verified");
   }
 
@@ -289,15 +293,34 @@ export async function confirmMoyasarPayment(orderId: string, userId: string, pay
   return paid;
 }
 
+/**
+ * A declined attempt: PENDING becomes FAILED, and nothing else changes.
+ *
+ * Conditional, never a plain update. With retries allowed, one order can
+ * carry several payments, and the verdict on a declined one can land after
+ * another payment has already settled the order — an unconditional write here
+ * would turn a paid order back into a failed one. FAILED stays FAILED, which
+ * is still payable.
+ */
+async function markAttemptFailed(orderId: string): Promise<void> {
+  await prisma.order.updateMany({
+    where: { id: orderId, status: OrderStatus.PENDING },
+    data: { status: OrderStatus.FAILED },
+  });
+}
+
 /** Webhook path — trusted via the shared secret, not a logged-in session. */
 export async function applyMoyasarWebhookEvent(type: string, paymentId: string, orderId: string | undefined) {
   if (!orderId) return;
   const order = await prisma.order.findUnique({ where: { id: orderId } });
   if (!order || order.status === OrderStatus.PAID) return;
-  // Same rule as the redirect path: a CANCELLED or FAILED order is not
-  // payable, and the webhook must not be the way around that.
-  if (order.status !== OrderStatus.PENDING) {
-    logger.warn("orders.webhook.not_payable", { orderId, status: order.status, type });
+  // Same rule as the redirect path: a CANCELLED or REFUNDED order is closed,
+  // and the webhook must not be the way around that.
+  if (!isPayableOrderStatus(order.status)) {
+    // A PAID payment against a closed order is a card charged for nothing — a
+    // refund someone has to make — so it is an error, not a warning.
+    const log = type === "payment_paid" ? logger.error : logger.warn;
+    log("orders.webhook.not_payable", { orderId, paymentId, status: order.status, type });
     return;
   }
 
@@ -315,6 +338,6 @@ export async function applyMoyasarWebhookEvent(type: string, paymentId: string, 
       await fulfilPaidOrder(paid);
     }
   } else if (type === "payment_failed") {
-    await prisma.order.update({ where: { id: order.id }, data: { status: OrderStatus.FAILED } });
+    await markAttemptFailed(order.id);
   }
 }

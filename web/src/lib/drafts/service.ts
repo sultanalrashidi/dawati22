@@ -17,6 +17,7 @@ import {
   primaryCoupleColumns,
 } from "@/lib/events/service";
 import { getSessionUser } from "@/lib/auth/session";
+import { PAYABLE_ORDER_STATUSES } from "@/lib/orders/status";
 import { DEFAULT_MUSIC_YOUTUBE_ID } from "@/lib/themes/builder/content";
 import {
   SAMPLE_BRIDE_MOTHER,
@@ -287,24 +288,26 @@ export async function claimDraft(eventId: string): Promise<void> {
  *
  * Refused while any order is outstanding against it: a PENDING order can still
  * be settled by the payment webhook minutes later, and deleting its draft would
- * turn that into a charge with nothing to activate.
+ * turn that into a charge with nothing to activate. A FAILED order counts as
+ * outstanding too — a declined card can be retried (see orders/status.ts).
  */
 export async function deleteDraft(eventId: string): Promise<void> {
   const [tokenHash, draft] = await Promise.all([
     readDraftTokenHash(),
     prisma.event.findUnique({ where: { id: eventId }, select: { draftTokenHash: true } }),
   ]);
+  const outstanding = [...PAYABLE_ORDER_STATUSES, OrderStatus.PAID];
 
   await prisma.$transaction(async (tx) => {
     const blocking = await tx.order.count({
       where: {
         draftEventId: eventId,
-        status: { in: [OrderStatus.PENDING, OrderStatus.PAID] },
+        status: { in: outstanding },
       },
     });
     if (blocking > 0) throw new DraftError("A payment is in progress for this draft");
 
-    // A card that was declined leaves a CANCELLED or FAILED order still
+    // A superseded or refunded order leaves a CANCELLED or REFUNDED row still
     // POINTING at this draft, and `Order.draftEventId` is onDelete: Restrict —
     // so without this the database refuses the delete and she cannot remove
     // her own invitation. Nothing is lost: the order keeps its own record of
@@ -316,7 +319,7 @@ export async function deleteDraft(eventId: string): Promise<void> {
     await tx.order.updateMany({
       where: {
         draftEventId: eventId,
-        status: { notIn: [OrderStatus.PENDING, OrderStatus.PAID] },
+        status: { notIn: outstanding },
       },
       data: { draftEventId: null },
     });

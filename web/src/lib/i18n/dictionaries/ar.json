@@ -610,7 +610,7 @@
       "guestFilterAll": "الكل",
       "guestFilterAccepted": "أكّدن",
       "guestFilterDeclined": "اعتذرن",
-      "guestFilterPending": "ما ردّين",
+      "guestFilterPending": "ما ردّن",
       "guestFilterUnsent": "ما أُرسلت",
       "guestNoMatch": "ما فيه مدعوة بهذا الاسم أو الرقم.",
       "guestShowMore": "أظهري {count} أكثر",

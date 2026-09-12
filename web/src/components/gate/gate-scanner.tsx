@@ -60,10 +60,17 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
   const [searchState, setSearchState] = useState<"idle" | "searching" | "failed">("idle");
   const [partyState, setPartyState] = useState<"idle" | "saving" | "failed">("idle");
   /**
-   * The number the organiser has tapped under "how many came in?" — a choice,
-   * not yet a write. It is saved by «تأكيد», or by moving on to the next scan.
+   * How many came in WITH THIS SCAN, as tapped under "how many came in?" — a
+   * choice, not yet a write. It is saved by «تأكيد», or by moving on to the
+   * next scan.
+   *
+   * Counted from `baseline`, not from zero: on the second scan of a 3-seat
+   * invitation after 2 are already in, the only honest answer is 1. The
+   * buttons used to offer 1–3 again, as if nobody had entered yet.
    */
   const [selected, setSelected] = useState<number | null>(null);
+  /** Seats already used before this scan — what `selected` is added to. */
+  const [baseline, setBaseline] = useState(0);
   /** «تأكيد» was pressed and the count on screen is the saved one. */
   const [confirmed, setConfirmed] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -86,10 +93,16 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
     streamRef.current = null;
   }, []);
 
-  /** Puts an outcome on screen, with the count it saved as the starting choice. */
+  /**
+   * Puts an outcome on screen. What this scan let in is the starting choice,
+   * and what was in before it is the baseline the choice is added to.
+   */
   const show = useCallback((next: CheckInOutcome) => {
     setOutcome(next);
-    setSelected(typeof next.seatsUsed === "number" ? next.seatsUsed : null);
+    const used = typeof next.seatsUsed === "number" ? next.seatsUsed : null;
+    const now = typeof next.admittedNow === "number" ? next.admittedNow : used;
+    setBaseline(used !== null && now !== null ? Math.max(0, used - now) : 0);
+    setSelected(now);
     setConfirmed(false);
   }, []);
 
@@ -331,27 +344,32 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
     setSearchState("idle");
     setPartyState("idle");
     setSelected(null);
+    setBaseline(0);
     setConfirmed(false);
     setSendFailed(false);
     setCamera("starting");
     setAttempt((n) => n + 1);
   }
 
+  /** The total the choice amounts to: those already in, plus this scan's. */
+  const chosenTotal = selected === null ? null : baseline + selected;
+
   /** The chosen count differs from what is saved, so there is something to write. */
   const unsaved =
     outcome?.result === "SUCCESS" &&
     outcome.guestId !== undefined &&
-    selected !== null &&
-    selected !== outcome.seatsUsed;
+    chosenTotal !== null &&
+    chosenTotal !== outcome.seatsUsed;
 
   /** «تأكيد»: save the chosen count and say so, staying on this guest. */
   async function confirmCount() {
-    if (!outcome?.guestId || selected === null) return;
+    if (!outcome?.guestId || chosenTotal === null) return;
     if (unsaved) {
-      const next = await saveCount(outcome.guestId, selected);
+      const next = await saveCount(outcome.guestId, chosenTotal);
       if (!next) return;
+      // setOutcome, not show(): the baseline is still what was in before
+      // this scan, and the choice on screen is still hers.
       setOutcome(next);
-      setSelected(typeof next.seatsUsed === "number" ? next.seatsUsed : selected);
     }
     setConfirmed(true);
   }
@@ -363,8 +381,8 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
    * the wrong number recorded.
    */
   async function scanAnother() {
-    if (unsaved && outcome?.guestId && selected !== null) {
-      const next = await saveCount(outcome.guestId, selected);
+    if (unsaved && outcome?.guestId && chosenTotal !== null) {
+      const next = await saveCount(outcome.guestId, chosenTotal);
       if (!next) return;
     }
     reset();
@@ -376,6 +394,8 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
       outcome.guestId !== undefined &&
       typeof outcome.seatsAllowed === "number" &&
       outcome.result === "SUCCESS";
+    // The seats this scan can fill: her total, less those already inside.
+    const openSeats = Math.max(1, (outcome.seatsAllowed ?? 1) - baseline);
 
     return (
       <div className="mt-6 flex flex-col gap-4">
@@ -397,12 +417,13 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
             A guest who arrives alone must not have her invitation closed
             behind her while the rest are still parking, which is why the
             numbers below her total stay live after a successful scan.
-            A tap only chooses; «تأكيد» or the next scan is what saves it. */}
+            A tap only chooses; «تأكيد» or the next scan is what saves it.
+            The numbers are this scan's arrivals, up to the seats still open. */}
         {canSetParty && (
           <div className="rounded-2xl border border-border bg-surface p-5">
             <p className="text-sm font-semibold text-fg">{g.partyQuestion}</p>
             <div className="mt-3 flex flex-wrap gap-2">
-              {Array.from({ length: outcome.seatsAllowed! }, (_, i) => i + 1).map((n) => {
+              {Array.from({ length: openSeats }, (_, i) => i + 1).map((n) => {
                 const active = selected === n;
                 return (
                   <button
@@ -426,7 +447,7 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
                 );
               })}
               <span className="self-center text-xs text-fg-muted">
-                {g.partyOf.replace("{allowed}", String(outcome.seatsAllowed))}
+                {g.partyOf.replace("{allowed}", String(openSeats))}
               </span>
             </div>
             <p className="mt-3 text-xs leading-relaxed text-fg-muted">{g.partyHint}</p>
@@ -582,10 +603,15 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
                   onClick={() =>
                     admit(
                       guest.id,
-                      // What she declared, else one more than are already in —
-                      // never her whole allowance, which would close the
-                      // invitation on the ones still parking.
-                      Math.min(guest.allowedCount, guest.partySize ?? guest.checkedInCount + 1),
+                      // The same rule as a scan: what she declared (else one)
+                      // on top of those already in, never past her seats. It
+                      // used to be what she declared as a TOTAL, so a guest
+                      // with two of four already inside and "2" declared was
+                      // "let in" with nobody added.
+                      Math.min(
+                        guest.allowedCount,
+                        guest.checkedInCount + Math.max(1, guest.partySize ?? 1),
+                      ),
                     )
                   }
                   className="mt-3 h-11 w-full rounded-full bg-accent text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong disabled:opacity-50"

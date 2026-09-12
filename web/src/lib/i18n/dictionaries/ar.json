@@ -881,7 +881,7 @@
     "scanAnother": "مسح دعوة أخرى",
     "cameraNotAvailable": "الكاميرا غير متاحة على هذا الجهاز، استخدم الإدخال اليدوي",
     "resultSuccess": "دخول ناجح",
-    "resultDeniedFull": "مستخدمة بالكامل",
+    "resultDeniedFull": "هذي الدعوة تم استخدامها من قبل",
     "resultDeniedBlocked": "دعوة محظورة",
     "resultDeniedCancelled": "دعوة ملغاة",
     "resultDeniedExpired": "دعوة منتهية",
@@ -915,7 +915,9 @@
     "partyHint": "الدعوة تبقى مفتوحة حتى تكتمل مقاعدها — لو تأخّرت البقية امسحي مرة ثانية.",
     "partySaving": "جارٍ الحفظ…",
     "partyFailed": "ما انحفظ العدد — حاولي مرة ثانية.",
-    "partyOf": "من {allowed}"
+    "partyOf": "من {allowed}",
+    "partyConfirm": "تأكيد",
+    "partyConfirmed": "تم التأكيد ✓"
   },
   "gateAccess": {
     "title": "الدخول للمسح",

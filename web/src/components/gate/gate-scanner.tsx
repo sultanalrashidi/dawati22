@@ -59,6 +59,13 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
   const [results, setResults] = useState<DoorSearchResult[] | null>(null);
   const [searchState, setSearchState] = useState<"idle" | "searching" | "failed">("idle");
   const [partyState, setPartyState] = useState<"idle" | "saving" | "failed">("idle");
+  /**
+   * The number the organiser has tapped under "how many came in?" — a choice,
+   * not yet a write. It is saved by «تأكيد», or by moving on to the next scan.
+   */
+  const [selected, setSelected] = useState<number | null>(null);
+  /** «تأكيد» was pressed and the count on screen is the saved one. */
+  const [confirmed, setConfirmed] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [camera, setCamera] = useState<CameraState>("starting");
   const [attempt, setAttempt] = useState(0);
@@ -77,6 +84,13 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
   const stopStream = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
+  }, []);
+
+  /** Puts an outcome on screen, with the count it saved as the starting choice. */
+  const show = useCallback((next: CheckInOutcome) => {
+    setOutcome(next);
+    setSelected(typeof next.seatsUsed === "number" ? next.seatsUsed : null);
+    setConfirmed(false);
   }, []);
 
   /**
@@ -113,7 +127,7 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
           if (!response.ok) throw new Error(`scan failed: ${response.status}`);
           const outcome = (await response.json()) as CheckInOutcome;
           if (!outcome?.result) throw new Error("scan returned no result");
-          setOutcome(outcome);
+          show(outcome);
         } catch {
           setSendFailed(true);
           setCamera("starting");
@@ -123,7 +137,7 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
         }
       });
     },
-    [eventId, stopStream],
+    [eventId, stopStream, show],
   );
 
   /**
@@ -162,33 +176,44 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
   /**
    * How many of her seats are used — set outright, never nudged by one.
    *
-   * The same call lets in a guest found by search (from zero) and corrects a
-   * scan that admitted the wrong number. Absolute, so a tap that lands twice
-   * on a bad connection cannot admit two more women.
+   * The same call lets in a guest found by search (from zero) and saves the
+   * count chosen after a scan. Absolute, so a tap that lands twice on a bad
+   * connection cannot admit two more women. Resolves with the saved outcome,
+   * or null when it did not save — the caller decides what to show.
    */
+  const saveCount = useCallback(
+    async (guestId: string, seats: number): Promise<CheckInOutcome | null> => {
+      setPartyState("saving");
+      try {
+        const response = await fetch("/api/gate/admit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId, guestId, seats }),
+          signal: AbortSignal.timeout(SCAN_TIMEOUT_MS),
+        });
+        if (!response.ok) throw new Error(`admit failed: ${response.status}`);
+        const next = (await response.json()) as CheckInOutcome;
+        if (!next?.result) throw new Error("admit returned no result");
+        setPartyState("idle");
+        return next;
+      } catch {
+        setPartyState("failed");
+        return null;
+      }
+    },
+    [eventId],
+  );
+
+  /** A guest found by search: let her in straight away and show the result. */
   const admit = useCallback(
     (guestId: string, seats: number) => {
-      setPartyState("saving");
       stopStream();
       startTransition(async () => {
-        try {
-          const response = await fetch("/api/gate/admit", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ eventId, guestId, seats }),
-            signal: AbortSignal.timeout(SCAN_TIMEOUT_MS),
-          });
-          if (!response.ok) throw new Error(`admit failed: ${response.status}`);
-          const next = (await response.json()) as CheckInOutcome;
-          if (!next?.result) throw new Error("admit returned no result");
-          setOutcome(next);
-          setPartyState("idle");
-        } catch {
-          setPartyState("failed");
-        }
+        const next = await saveCount(guestId, seats);
+        if (next) show(next);
       });
     },
-    [eventId, stopStream],
+    [saveCount, show, stopStream],
   );
 
   useEffect(() => {
@@ -305,9 +330,44 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
     setResults(null);
     setSearchState("idle");
     setPartyState("idle");
+    setSelected(null);
+    setConfirmed(false);
     setSendFailed(false);
     setCamera("starting");
     setAttempt((n) => n + 1);
+  }
+
+  /** The chosen count differs from what is saved, so there is something to write. */
+  const unsaved =
+    outcome?.result === "SUCCESS" &&
+    outcome.guestId !== undefined &&
+    selected !== null &&
+    selected !== outcome.seatsUsed;
+
+  /** «تأكيد»: save the chosen count and say so, staying on this guest. */
+  async function confirmCount() {
+    if (!outcome?.guestId || selected === null) return;
+    if (unsaved) {
+      const next = await saveCount(outcome.guestId, selected);
+      if (!next) return;
+      setOutcome(next);
+      setSelected(typeof next.seatsUsed === "number" ? next.seatsUsed : selected);
+    }
+    setConfirmed(true);
+  }
+
+  /**
+   * «مسح دعوة أخرى» saves the chosen count too, so an organiser who taps a
+   * number and goes straight on to the next guest has not lost it. If the save
+   * fails she stays here, with the failure showing, rather than moving on with
+   * the wrong number recorded.
+   */
+  async function scanAnother() {
+    if (unsaved && outcome?.guestId && selected !== null) {
+      const next = await saveCount(outcome.guestId, selected);
+      if (!next) return;
+    }
+    reset();
   }
 
   if (outcome) {
@@ -336,19 +396,24 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
         {/* "How many came in?" — one tap per woman, and never past her seats.
             A guest who arrives alone must not have her invitation closed
             behind her while the rest are still parking, which is why the
-            numbers below her total stay live after a successful scan. */}
+            numbers below her total stay live after a successful scan.
+            A tap only chooses; «تأكيد» or the next scan is what saves it. */}
         {canSetParty && (
           <div className="rounded-2xl border border-border bg-surface p-5">
             <p className="text-sm font-semibold text-fg">{g.partyQuestion}</p>
             <div className="mt-3 flex flex-wrap gap-2">
               {Array.from({ length: outcome.seatsAllowed! }, (_, i) => i + 1).map((n) => {
-                const active = outcome.seatsUsed === n;
+                const active = selected === n;
                 return (
                   <button
                     key={n}
                     type="button"
                     disabled={partyState === "saving"}
-                    onClick={() => admit(outcome.guestId!, n)}
+                    onClick={() => {
+                      setSelected(n);
+                      setConfirmed(false);
+                      setPartyState("idle");
+                    }}
                     aria-pressed={active}
                     className={`h-12 min-w-12 rounded-xl border px-4 text-base font-semibold transition-colors disabled:opacity-50 ${
                       active
@@ -365,6 +430,18 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
               </span>
             </div>
             <p className="mt-3 text-xs leading-relaxed text-fg-muted">{g.partyHint}</p>
+            <button
+              type="button"
+              onClick={() => void confirmCount()}
+              disabled={partyState === "saving" || confirmed}
+              className={`mt-4 h-12 w-full rounded-full border text-sm font-semibold transition-colors ${
+                confirmed
+                  ? "border-success/40 bg-success/10 text-success"
+                  : "border-accent text-accent hover:bg-accent hover:text-accent-fg disabled:opacity-50"
+              }`}
+            >
+              {confirmed ? g.partyConfirmed : g.partyConfirm}
+            </button>
             {partyState === "saving" && <p className="mt-2 text-xs text-fg-muted">{g.partySaving}</p>}
             {partyState === "failed" && (
               <p className="mt-2 text-xs text-danger" role="alert">
@@ -376,8 +453,9 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
 
         <button
           type="button"
-          onClick={reset}
-          className="h-12 rounded-full bg-accent px-6 text-sm font-medium text-accent-fg hover:bg-accent-strong"
+          onClick={() => void scanAnother()}
+          disabled={partyState === "saving"}
+          className="h-12 rounded-full bg-accent px-6 text-sm font-medium text-accent-fg hover:bg-accent-strong disabled:opacity-50"
         >
           {g.scanAnother}
         </button>

@@ -881,7 +881,7 @@
     "scanAnother": "Scan another",
     "cameraNotAvailable": "Camera unavailable on this device, use manual entry",
     "resultSuccess": "Checked in",
-    "resultDeniedFull": "Fully used",
+    "resultDeniedFull": "This invitation has already been used",
     "resultDeniedBlocked": "Blocked invitation",
     "resultDeniedCancelled": "Cancelled invitation",
     "resultDeniedExpired": "Expired invitation",
@@ -915,7 +915,9 @@
     "partyHint": "The invitation stays open until her seats are used — if the rest are late, just scan again.",
     "partySaving": "Saving…",
     "partyFailed": "The count did not save — try again.",
-    "partyOf": "of {allowed}"
+    "partyOf": "of {allowed}",
+    "partyConfirm": "Confirm",
+    "partyConfirmed": "Confirmed ✓"
   },
   "gateAccess": {
     "title": "Scan invitations",

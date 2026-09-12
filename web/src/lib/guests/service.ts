@@ -6,7 +6,7 @@ import { lockEventDetailsOp } from "@/lib/events/lock";
 import { MAX_SEATS, type ParsedRow } from "@/lib/guests/import-parse";
 import { normalizeArabic } from "@/lib/arabic";
 import { eventCapacity } from "@/lib/events/capacity";
-import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
+import { normalizeGuestPhone } from "@/lib/security/phone";
 
 export class GuestError extends Error {}
 
@@ -266,7 +266,7 @@ export async function addGuestsBulk(
   // and the phone is re-normalized rather than stored as the string it sent.
   const clean = rows.map((row) => ({
     nameAr: row.nameAr.trim(),
-    phone: row.phone ? normalizePhone(row.phone, DEFAULT_PHONE_COUNTRY) : null,
+    phone: row.phone ? normalizeGuestPhone(row.phone) : null,
     allowedCount: Number.isInteger(row.allowedCount) ? row.allowedCount : 1,
   }));
   if (clean.some((r) => r.nameAr.length < 2)) throw new GuestError("A guest has no name");

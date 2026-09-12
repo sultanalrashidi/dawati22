@@ -10,7 +10,7 @@ import {
 import { classifyRsvp } from "@/lib/invitations/service";
 import { guestInvitationUrl } from "@/lib/urls";
 import { invitationShareText } from "@/lib/events/share-text";
-import { normalizeSaudiPhone } from "@/lib/security/phone";
+import { normalizeGuestPhone } from "@/lib/security/phone";
 import { CopyTextButton } from "@/components/admin/copy-text-button";
 import { GuestShareCell } from "@/components/admin/guest-share-cell";
 import { EventGuestManagementMode, GuestManagementRequestStatus } from "@/generated/prisma/enums";
@@ -47,11 +47,11 @@ export default async function AdminEventGuestsPage({
     const invitation = guest.invitation;
     const url = invitation ? guestInvitationUrl(invitation.linkToken) : null;
     const waMessage = url ? `${shareText}\n${url}` : null;
-    // Send straight to the guest's own number when it reads as a Saudi mobile;
-    // anything else falls back to WhatsApp's share screen rather than risking
-    // a guessed international prefix putting the invitation in a stranger's
-    // chat.
-    const waTarget = normalizeSaudiPhone(guest.phone ?? "")?.slice(1) ?? null;
+    // Send straight to the guest's own number when it reads as one — a Saudi
+    // number in any shape, or any country written with its code. Anything
+    // else falls back to WhatsApp's share screen rather than risking a guessed
+    // international prefix putting the invitation in a stranger's chat.
+    const waTarget = normalizeGuestPhone(guest.phone ?? "")?.slice(1) ?? null;
     const waHref = waMessage
       ? `https://wa.me/${waTarget ?? ""}?text=${encodeURIComponent(waMessage)}`
       : null;

@@ -6,7 +6,7 @@ import { Role } from "@/generated/prisma/client";
 import { getEventSendQueue } from "@/lib/events/service";
 import { guestInvitationUrl } from "@/lib/urls";
 import { invitationShareText } from "@/lib/events/share-text";
-import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
+import { normalizeGuestPhone } from "@/lib/security/phone";
 import { SendQueue, type QueueGuest } from "@/components/events/send-queue";
 
 /**
@@ -39,7 +39,7 @@ export default async function SendQueuePage({ params }: PageProps<"/[locale]/eve
       // Straight into HER chat when we have a number, so the host does not
       // pick from a contact list two hundred times. `wa.me/<number>` wants
       // digits with no plus, which is what E.164 gives once stripped.
-      const to = guest.phone ? normalizePhone(guest.phone, DEFAULT_PHONE_COUNTRY) : null;
+      const to = guest.phone ? normalizeGuestPhone(guest.phone) : null;
       const text = encodeURIComponent(`${shareText}\n${url}`);
       return {
         id: guest.id,

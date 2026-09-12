@@ -1,4 +1,4 @@
-import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
+import { normalizeGuestPhone } from "@/lib/security/phone";
 import { normalizeArabic } from "@/lib/arabic";
 
 /**
@@ -100,7 +100,9 @@ function peelPhone(field: string): { rest: string; phoneRaw: string | null } {
         isPhoneLength(head) &&
         tail >= 1 &&
         tail <= MAX_SEATS &&
-        normalizePhone(head, DEFAULT_PHONE_COUNTRY) !== null
+        // listedOnly: a number from outside the list is taken as written, so
+        // its parsing succeeding says nothing about where it really ends.
+        normalizeGuestPhone(head, { listedOnly: true }) !== null
       ) {
         run = head;
       }
@@ -187,7 +189,7 @@ export function parseGuestList(
       // Folded for comparison only — «أم فهد» and «ام فهد» are one woman, and
       // a duplicate that hinges on a hamza is not a duplicate anyone sees.
       const nameKey = normalizeArabic(nameAr);
-      const phone = phoneRaw ? normalizePhone(phoneRaw, DEFAULT_PHONE_COUNTRY) : null;
+      const phone = phoneRaw ? normalizeGuestPhone(phoneRaw) : null;
       const row: ParsedRow = { line, raw, nameAr, phone, allowedCount, status: "ok" };
 
       if (!nameAr) row.status = "noName";
@@ -252,7 +254,7 @@ export function existingGuestKeys(
       guests
         .map((guest) => guest.phone)
         .filter((phone): phone is string => Boolean(phone))
-        .map((phone) => normalizePhone(phone, DEFAULT_PHONE_COUNTRY) ?? phone),
+        .map((phone) => normalizeGuestPhone(phone) ?? phone),
     ),
   };
 }

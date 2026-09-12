@@ -8,7 +8,7 @@ import {
   markInvitationSharedAction,
 } from "@/lib/guests/actions";
 import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
-import { normalizePhone, DEFAULT_PHONE_COUNTRY } from "@/lib/security/phone";
+import { normalizeGuestPhone } from "@/lib/security/phone";
 
 export type RsvpBadge = "accepted" | "declined" | "pending";
 
@@ -60,7 +60,7 @@ export function GuestRow({
   // Straight into her chat when the number reads as one — the same rule as the
   // send page and the team's page. Without a number (or with one that does
   // not read), WhatsApp's own contact picker, rather than a guessed recipient.
-  const to = guest.phone ? normalizePhone(guest.phone, DEFAULT_PHONE_COUNTRY) : null;
+  const to = guest.phone ? normalizeGuestPhone(guest.phone) : null;
   const waHref = `https://wa.me/${to ? to.slice(1) : ""}?text=${encodeURIComponent(waMessage)}`;
   const d = dict.events.detail;
   const rsvpLabel = rsvp === "accepted" ? d.rsvpAccepted : rsvp === "declined" ? d.rsvpDeclined : d.rsvpPending;

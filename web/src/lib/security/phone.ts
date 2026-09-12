@@ -98,3 +98,52 @@ export function normalizePhone(input: string, iso: string): string | null {
 export function normalizeSaudiPhone(input: string): string | null {
   return normalizePhone(input, "SA");
 }
+
+/** Arabic-Indic and Eastern-Arabic digits to ASCII — `\D` above is ASCII-only. */
+function asciiDigits(input: string): string {
+  return input
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 0x0660))
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 0x06f0));
+}
+
+/** Longest code first, so a code can never be shadowed by a shorter one it starts with. */
+const BY_DIAL_CODE_LENGTH = [...PHONE_COUNTRIES].sort((a, b) => b.dialCode.length - a.dialCode.length);
+
+/**
+ * A guest's number, however the host wrote it.
+ *
+ * Saudi is the default reading, so every shape a Saudi list arrives in — 05…,
+ * 5…, 9665…, +9665…, 009665… — lands on +9665…. A number from anywhere else
+ * says where it is from: `+965…`, `00965…` or `965…` for a country in the list
+ * above, checked against that country's own pattern — or, for a country not in
+ * the list, the full number after a `+` or `00`, taken as written.
+ *
+ * A bare local number from abroad is never guessed at: `011…` is an Egyptian
+ * mobile and also Riyadh's landline code, and an eight-digit `5xxxxxxx` could
+ * be Kuwaiti or Qatari. A wrong guess puts an invitation in a stranger's chat.
+ *
+ * `listedOnly` drops the unlisted-country reading, for callers that use a
+ * successful parse as evidence (the import's seat-count back-off), where only a
+ * country's own pattern is strict enough to trust.
+ */
+export function normalizeGuestPhone(
+  input: string,
+  { listedOnly = false }: { listedOnly?: boolean } = {},
+): string | null {
+  const text = asciiDigits(input);
+  const saudi = normalizePhone(text, DEFAULT_PHONE_COUNTRY);
+  if (saudi) return saudi;
+
+  const explicit = /^\s*(\+|00)/.test(text);
+  let digits = text.replace(/\D/g, "");
+  if (digits.startsWith("00")) digits = digits.slice(2);
+
+  const country = BY_DIAL_CODE_LENGTH.find((c) => digits.startsWith(c.dialCode));
+  if (country) {
+    const national = digits.slice(country.dialCode.length).replace(/^0+/, "");
+    return country.national.test(national) ? `+${country.dialCode}${national}` : null;
+  }
+  // E.164 allows at most fifteen digits; eight is the shortest full number in use.
+  if (!listedOnly && explicit && digits.length >= 8 && digits.length <= 15) return `+${digits}`;
+  return null;
+}

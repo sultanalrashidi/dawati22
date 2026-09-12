@@ -4,6 +4,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getInvitationByLinkToken, markViewed } from "@/lib/invitations/service";
 import { renderQrDataUrl } from "@/lib/qr";
 import { headers } from "next/headers";
+import { userAgent } from "next/server";
 import { googleWalletConfigured } from "@/lib/wallet/google";
 import { appleWalletConfigured } from "@/lib/wallet/apple";
 import { walletTargetsFor } from "@/lib/wallet/platform";
@@ -61,7 +62,16 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
     return <GuestMessage title={dict.guest.expiredTitle} body={dict.guest.expiredBody} />;
   }
 
-  await markViewed(invitation);
+  const requestHeaders = await headers();
+
+  // A link preview is not a guest opening her invitation. WhatsApp fetches
+  // this page itself to draw the card — on the SENDER's phone, while the
+  // message is still being written — and counting that fetch marked every
+  // shared invitation "opened" before anyone had seen it, and locked the
+  // event's details on a message that might never be sent.
+  if (!userAgent({ headers: requestHeaders }).isBot) {
+    await markViewed(invitation);
+  }
 
   // VALID/PARTIALLY_USED/FULLY_USED are entry-state refinements an admin may
   // set post-acceptance (see task 10) — they still display as "accepted" here.
@@ -101,7 +111,7 @@ export default async function GuestInvitationPage({ params }: PageProps<"/i/[tok
   // One wallet per phone: Google has no iOS app, Apple exists nowhere else.
   // Both are read from the environment, so a wallet whose credentials are
   // missing simply is not offered rather than failing when it is tapped.
-  const walletTargets = walletTargetsFor((await headers()).get("user-agent"), {
+  const walletTargets = walletTargetsFor(requestHeaders.get("user-agent"), {
     apple: appleWalletConfigured(),
     google: googleWalletConfigured(),
   });

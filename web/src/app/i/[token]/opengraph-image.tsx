@@ -4,6 +4,8 @@ import { getInvitationByLinkToken } from "@/lib/invitations/service";
 import { couplesFor } from "@/lib/events/service";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { riyadhDateFormat } from "@/lib/dates";
+import { ThemeEngine } from "@/generated/prisma/client";
+import { builderThemeConfig, loadBuilderTheme } from "@/lib/themes/builder/guest";
 
 export const alt = "دعوة رقمية خاصة";
 export const size = { width: 1200, height: 630 };
@@ -61,12 +63,41 @@ function previewNames(couple: {
   return { text: text || "دعوتي", script: "arabic" };
 }
 
+/**
+ * The palette and fonts the invitation itself is drawn in.
+ *
+ * A BUILDER design keeps its colours on the chosen variant, not in
+ * `theme.config` — reading `config.fonts` off one threw on every invitation
+ * made with the current designs, so WhatsApp got a 500 and showed the site
+ * icon instead of a card. Composed the way the invitation page composes it,
+ * and anything unreadable falls back rather than failing the preview.
+ */
+async function previewTheme(
+  invitation: Awaited<ReturnType<typeof getInvitationByLinkToken>>,
+): Promise<{ palette: typeof FALLBACK_PALETTE; latinFont: string }> {
+  const fallback = { palette: FALLBACK_PALETTE, latinFont: "Cormorant Garamond" };
+  if (!invitation) return fallback;
+  try {
+    const { theme, themeVariantId } = invitation.event;
+    const builder =
+      theme.engine === ThemeEngine.BUILDER ? await loadBuilderTheme(theme.id, themeVariantId) : null;
+    const config: ThemeConfig | undefined = builder
+      ? builderThemeConfig({ palette: builder.palette, typography: builder.typography })
+      : (theme.config as unknown as ThemeConfig | undefined);
+    return {
+      palette: config?.palette ?? fallback.palette,
+      latinFont: config?.fonts?.latinDisplay ?? fallback.latinFont,
+    };
+  } catch {
+    return fallback;
+  }
+}
+
 export default async function Image({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
   const invitation = await getInvitationByLinkToken(token);
 
-  const theme = (invitation?.event.theme.config as unknown as ThemeConfig | undefined)?.palette ?? FALLBACK_PALETTE;
-  const latinFont = (invitation?.event.theme.config as unknown as ThemeConfig | undefined)?.fonts.latinDisplay ?? "Cormorant Garamond";
+  const { palette: theme, latinFont } = await previewTheme(invitation);
   // One card, one pair of names: a joint wedding shows its primary couple
   // rather than stacking every pair into a link preview.
   const primaryCouple = invitation ? couplesFor(invitation.event)[0] : null;

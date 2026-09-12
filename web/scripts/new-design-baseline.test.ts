@@ -3,20 +3,23 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { starterLayoutDoc } from '../src/lib/themes/builder/starter-layout';
 import { assertLayoutDoc, parseLayoutDoc } from '../src/lib/themes/builder/schema';
-import { COLLECTION_TYPOGRAPHY, contrast, newDesignLayout, standardizeLayout, standardizePalette } from '../src/lib/themes/builder/collection-standard';
+import { COLLECTION_TYPOGRAPHY, contrast, standardizePalette } from '../src/lib/themes/builder/collection-standard';
+import { jasmineNewDesignLayout, jasmineReference } from '../src/lib/themes/builder/jasmine-standard';
 import { DEFAULT_PALETTE, DEFAULT_TYPOGRAPHY_DOC } from '../src/lib/themes/builder/types';
 
-test('a new design opens on the collection standard, not the bare starter', () => {
-  const baseline = newDesignLayout();
-  assert.deepEqual(baseline, standardizeLayout(starterLayoutDoc()));
+test('a new design opens on عروس الياسمين, not the bare starter', () => {
+  const baseline = jasmineNewDesignLayout();
+  assert.deepEqual(baseline, jasmineReference().layout);
   assert.notDeepEqual(baseline, starterLayoutDoc());
+  assert.deepEqual(baseline.scenes.map(s => s.id), ['cover', 'open', 'greeting', 'details', 'countdown', 'schedule', 'notes', 'rsvp', 'pass']);
   // It has to survive the same validation every stored document goes through.
   assert.ok(parseLayoutDoc(assertLayoutDoc(structuredClone(baseline))));
 });
 
-test('applying the standard twice changes nothing, so a design may restate it', () => {
-  const once = newDesignLayout();
-  assert.deepEqual(standardizeLayout(structuredClone(once)), once);
+test('every new design gets its own copy of the reference', () => {
+  const one = jasmineNewDesignLayout();
+  one.layers[0].base.x = 1;
+  assert.notEqual(jasmineNewDesignLayout().layers[0].base.x, 1);
 });
 
 test('the starting palette already clears 4.5:1 instead of being corrected later', () => {
@@ -41,7 +44,10 @@ test('both admin paths that write a starting document go through the baseline', 
   // here, and a new design silently reverting to the bare starter is exactly
   // the regression this whole change exists to prevent.
   const source = readFileSync(new URL('../src/lib/admin/themes/builder-service.ts', import.meta.url), 'utf8');
-  assert.match(source, /layout: \{ create: \{ doc: json\(newDesignLayout\(\)\) \} \}/);
-  assert.match(source, /layers: newDesignLayout\(\)\.layers/);
+  assert.match(source, /layout: \{ create: \{ doc: json\(await newDesignStart\(\)\) \} \}/);
+  assert.match(source, /layers: \(await newDesignStart\(\)\)\.layers/);
+  // The live عروس الياسمين first, so the owner's later edits carry over; the committed copy if it is gone.
+  assert.match(source, /theme: \{ slug: REFERENCE_THEME_SLUG \}/);
+  assert.match(source, /return jasmineNewDesignLayout\(\);/);
   assert.doesNotMatch(source, /starterLayoutDoc/);
 });

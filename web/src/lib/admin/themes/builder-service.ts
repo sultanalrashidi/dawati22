@@ -21,7 +21,7 @@ import {
   parsePalette,
   parseTypographyDoc,
 } from "@/lib/themes/builder/schema";
-import { newDesignLayout } from "@/lib/themes/builder/collection-standard";
+import { jasmineNewDesignLayout, REFERENCE_THEME_SLUG } from "@/lib/themes/builder/jasmine-standard";
 import {
   DEFAULT_LAYOUT_DOC,
   DEFAULT_PALETTE,
@@ -180,10 +180,10 @@ export async function createBuilderTheme(actorId: string, input: CreateBuilderTh
       visibility: ThemeVisibility.PUBLIC,
       config: json({ engine: "builder" }),
       createdById: actorId,
-      // The collection's own hierarchy and spacing, not the bare starter, so a
-      // new design opens already speaking the same typographic language as the
-      // twelve rather than being standardised after the fact.
-      layout: { create: { doc: json(newDesignLayout()) } },
+      // عروس الياسمين's screens, lines and entry pass, so a new design opens
+      // already reading like the rest of the collection; the admin moves what
+      // the new artwork needs moved.
+      layout: { create: { doc: json(await newDesignStart()) } },
       // The house typeface, so a new design starts consistent instead of
       // starting from a default and being corrected afterwards.
       typography: { create: { doc: json(presetToTypographyDoc(await getTypographyPreset())) } },
@@ -292,7 +292,24 @@ export async function applyStarterLayout(actorId: string, themeId: string) {
   if (current.layers.length > 0) {
     throw new ThemeAdminError("التصميم فيه عناصر بالفعل — احذفها أولاً إذا تبي تبدأ من جديد");
   }
-  return saveLayoutDoc(actorId, themeId, { ...current, layers: newDesignLayout().layers });
+  return saveLayoutDoc(actorId, themeId, { ...current, layers: (await newDesignStart()).layers });
+}
+
+/**
+ * What a new design starts from: عروس الياسمين as it is in the database right
+ * now, so the owner's later changes to it carry into every design made after.
+ * The copy committed with the code stands in if that design is ever missing.
+ */
+async function newDesignStart(): Promise<LayoutDoc> {
+  const reference = await prisma.themeLayout.findFirst({ where: { theme: { slug: REFERENCE_THEME_SLUG } }, select: { doc: true } });
+  if (reference) {
+    try {
+      return assertLayoutDoc(reference.doc);
+    } catch {
+      // A reference that no longer validates must not block creating a design.
+    }
+  }
+  return jasmineNewDesignLayout();
 }
 
 export async function saveTypographyDoc(actorId: string, themeId: string, raw: unknown) {

@@ -3,15 +3,13 @@ import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getEventAdmin } from "@/lib/admin/service";
-import {
-  toggleGuestMgmtDoneAction,
-  markAllInvitationsSharedAdminAction,
-} from "@/lib/admin/actions";
+import { toggleGuestMgmtDoneAction } from "@/lib/admin/actions";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { guestInvitationUrl } from "@/lib/urls";
 import { invitationShareText } from "@/lib/events/share-text";
 import { normalizeGuestPhone } from "@/lib/security/phone";
 import { CopyTextButton } from "@/components/admin/copy-text-button";
+import { ConfirmSubmitButton } from "@/components/confirm-submit-button";
 import { GuestShareCell } from "@/components/admin/guest-share-cell";
 import { EventGuestManagementMode, GuestManagementRequestStatus } from "@/generated/prisma/enums";
 
@@ -97,9 +95,20 @@ export default async function AdminEventGuestsPage({
               {done ? a.guestMgmtDone : a.guestMgmtBadge}
             </span>
             <form action={boundToggleDone}>
-              <button type="submit" className="text-xs text-accent hover:underline">
-                {done ? a.markGuestsPending : a.markGuestsDone}
-              </button>
+              {done ? (
+                <button type="submit" className="text-xs text-accent hover:underline">
+                  {a.markGuestsPending}
+                </button>
+              ) : (
+                // Marking done records every invitation as sent, which the
+                // undo does not take back — so it asks first.
+                <ConfirmSubmitButton
+                  confirmMessage={a.markGuestsDoneConfirm}
+                  className="text-xs text-accent hover:underline"
+                >
+                  {a.markGuestsDone}
+                </ConfirmSubmitButton>
+              )}
             </form>
           </div>
         )}
@@ -111,20 +120,10 @@ export default async function AdminEventGuestsPage({
             {a.guestsCount}: {rows.length}
           </span>
           {allLinksText && (
-            <CopyTextButton
-              text={allLinksText}
-              label={a.copyAllLinks}
-              copiedLabel={a.copiedShort}
-              // Copying every link IS the send on a team-managed event, and it
-              // is the only gesture that ever happens there — so it has to be
-              // what records it.
-              onCopied={markAllInvitationsSharedAdminAction.bind(
-                null,
-                eventId,
-                rows.filter((r) => r.url).map((r) => r.guest.id),
-                locale,
-              )}
-            />
+            // Copying the list is not sending it — the team copies it to work
+            // through it. What records the sends is the per-guest WhatsApp
+            // button, the guest opening her link, or marking the event done.
+            <CopyTextButton text={allLinksText} label={a.copyAllLinks} copiedLabel={a.copiedShort} />
           )}
         </div>
 

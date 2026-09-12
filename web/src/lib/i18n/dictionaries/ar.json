@@ -828,6 +828,7 @@
     "adminNoGuestsYet": "العميل ما أضاف مدعوين بعد.",
     "noInvitationYet": "بدون دعوة",
     "markGuestsDone": "علِّمها: تم إرسال الدعوات",
+    "markGuestsDoneConfirm": "بتنحسب كل دعوات هذي المناسبة مرسلة عند العميل، وتنقفل بياناتها عن التعديل. أرسلتوها كلها؟",
     "markGuestsPending": "إرجاعها قيد التنفيذ",
     "sentMark": "أُرسلت",
     "rawExport": "تنزيل نسخة RAW",

@@ -828,6 +828,7 @@
     "adminNoGuestsYet": "The customer hasn't added guests yet.",
     "noInvitationYet": "No invitation",
     "markGuestsDone": "Mark: invitations sent",
+    "markGuestsDoneConfirm": "Every invitation for this event will show as sent to the customer, and its details will be locked. Have they all gone out?",
     "markGuestsPending": "Back to pending",
     "sentMark": "Sent",
     "rawExport": "Download RAW backup",

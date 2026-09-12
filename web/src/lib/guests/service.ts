@@ -181,8 +181,8 @@ export async function markInvitationShared(guestId: string, userId: string | nul
 }
 
 /**
- * Records a batch of invitations as sent — the admin's "copy all links", and
- * the host's send queue, both of which hand out many links in one gesture.
+ * Records a batch of invitations as sent — the team marking an event's
+ * invitations done, and the host's send queue.
  *
  * `userId` null means the admin flow, whose action has already checked the
  * role; any other caller must own the event. Idempotent by construction: every
@@ -237,6 +237,19 @@ export async function markInvitationsShared(
     if (delivered > 0) await lockEventDetailsOp(eventId, now, tx);
     return delivered;
   });
+}
+
+/**
+ * Every invitation of one event, recorded as sent — the team saying "the
+ * invitations are out" once it has finished. Admin-only: no ownership check.
+ */
+export async function markEventInvitationsShared(eventId: string): Promise<number> {
+  const guests = await prisma.guest.findMany({ where: { eventId }, select: { id: true } });
+  return markInvitationsShared(
+    eventId,
+    guests.map((guest) => guest.id),
+    null,
+  );
 }
 
 /**

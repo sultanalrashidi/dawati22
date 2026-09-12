@@ -12,7 +12,7 @@ import {
   AdminGrantError,
 } from "@/lib/admin/service";
 import { EventError, updateEventDetails } from "@/lib/events/service";
-import { markInvitationShared, markInvitationsShared } from "@/lib/guests/service";
+import { markInvitationShared, markEventInvitationsShared } from "@/lib/guests/service";
 import { readEventForm } from "@/lib/events/form";
 import { sweepAbandonedDrafts } from "@/lib/drafts/sweep";
 import { Role, EventStatus } from "@/generated/prisma/client";
@@ -51,33 +51,27 @@ export async function markInvitationSharedAdminAction(guestId: string, eventId: 
 }
 
 /**
- * The team copied EVERY link for an event at once.
+ * "The team sent this event's invitations" — and the undo for the badge.
  *
- * Without this the team-managed flow — where the customer never presses a
- * share button at all — would hand out three hundred invitations and leave
- * `sentAt` null on every one of them, so her dashboard would report nothing
- * sent and her details would stay editable while the invitations were already
- * in her guests' phones.
+ * Marking it done is also what records every invitation still unsent as sent.
+ * On a team-managed event the customer never presses a share button, so
+ * without this her dashboard would report nothing sent and her details would
+ * stay editable while the invitations were in her guests' phones.
+ *
+ * It used to happen when the team COPIED the whole list, which is not
+ * sending: copying the list to work through it marked all five hundred
+ * delivered at once, before a single message had gone out. The button asks
+ * first, because a recorded send is not taken back — the undo reopens the
+ * badge only.
  */
-export async function markAllInvitationsSharedAdminAction(
-  eventId: string,
-  guestIds: string[],
-  locale: string,
-) {
-  await requireAdmin();
-  const safeLocale = isLocale(locale) ? locale : defaultLocale;
-  await markInvitationsShared(eventId, guestIds, null);
-  revalidatePath(`/${safeLocale}/admin/events/${eventId}/guests`);
-  revalidatePath(`/${safeLocale}/events/${eventId}`);
-}
-
-/** "The team sent this event's invitations" — and the undo for a misclick. */
 export async function toggleGuestMgmtDoneAction(eventId: string, locale: string, done: boolean) {
   const admin = await requireAdmin();
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
+  if (done) await markEventInvitationsShared(eventId);
   await setGuestManagementDone(eventId, admin.id, done);
   revalidatePath(`/${safeLocale}/admin/events`);
   revalidatePath(`/${safeLocale}/admin/events/${eventId}/guests`);
+  revalidatePath(`/${safeLocale}/events/${eventId}`);
 }
 
 /**

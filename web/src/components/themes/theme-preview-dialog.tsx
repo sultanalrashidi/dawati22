@@ -5,7 +5,7 @@ import { Dialog } from "@base-ui/react/dialog";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { InvitationView, type BuilderTheme } from "@/components/guest/invitation-view";
-import { SAMPLE_CONTENT_INPUT, noteLines } from "@/lib/themes/builder/content";
+import { DEFAULT_MUSIC_TRACK, SAMPLE_CONTENT_INPUT, noteLines } from "@/lib/themes/builder/content";
 
 const SAMPLE_COUPLE = {
   groomNameEn: "Faisal",
@@ -50,10 +50,10 @@ const SAMPLE_EVENT = {
   })(),
   locationName: "قاعة الأمير الكبرى - الرياض",
   mapUrl: "https://maps.google.com/?q=" + encodeURIComponent("قاعة الأمير الكبرى الرياض"),
-  // Real, verified-embeddable royalty-free track — lets the customer see and
-  // try the music button while browsing themes, not just an empty state.
-  musicYoutubeId: "LDnUX_mwx2Q",
-  musicAutoplay: false,
+  // The house track, starting with the reveal exactly as it does for a real
+  // guest — the gallery is where she first hears what an invitation sounds like.
+  musicYoutubeId: DEFAULT_MUSIC_TRACK,
+  musicAutoplay: true,
   scheduleItems: [
     { labelAr: "استقبال الضيوف", time: "٨:٠٠ م" },
     { labelAr: "الزفة", time: "٩:٠٠ م" },

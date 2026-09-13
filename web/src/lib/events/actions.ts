@@ -5,11 +5,13 @@ import { revalidatePath } from "next/cache";
 import { requireUserOrThrow } from "@/lib/auth/guards";
 import {
   createEvent,
+  storedMusicTrack,
   updateOwnedEventDetails,
   EventError,
   EventLockedError,
 } from "@/lib/events/service";
 import { readEventForm } from "@/lib/events/form";
+import { resolveMusicLink } from "@/lib/music/link";
 import { EventType, Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 
@@ -18,7 +20,8 @@ export async function createEventAction(locale: string, formData: FormData) {
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
 
   const orderId = String(formData.get("orderId") ?? "");
-  const fields = readEventForm(formData);
+  const music = await resolveMusicLink(formData.get("musicUrl"));
+  const fields = music.ok ? readEventForm(formData, { musicTrack: music.track }) : null;
   // The accuracy tick is the customer's own record that they checked the names
   // before the one form that writes them. The checkbox is `required`, so this
   // only ever fires for a submission that went around the browser.
@@ -46,7 +49,7 @@ export async function createEventAction(locale: string, formData: FormData) {
   }
 }
 
-export type EventSelfEditState = { error?: "invalid" | "locked" | "unsupported" } | null;
+export type EventSelfEditState = { error?: "invalid" | "locked" | "unsupported" | "music" } | null;
 
 /**
  * The customer editing her own paid invitation, before any of it has gone out.
@@ -65,7 +68,12 @@ export async function saveOwnedEventDetailsAction(
   const user = await requireUserOrThrow([Role.CUSTOMER]);
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
 
-  const fields = readEventForm(formData);
+  // A song link that does not play keeps the song she had, and the rest of
+  // the form still saves — see storedMusicTrack.
+  const music = await resolveMusicLink(formData.get("musicUrl"));
+  const fields = readEventForm(formData, {
+    musicTrack: music.ok ? music.track : await storedMusicTrack(eventId),
+  });
   if (!fields) return { error: "invalid" };
   // The page pins this with a hidden input, and a hidden input is only a value
   // the browser posts — the same reason createEventAction re-checks it.
@@ -84,5 +92,6 @@ export async function saveOwnedEventDetailsAction(
   // The guest pages print these columns. Harmless while nothing has been sent,
   // and correct the moment support reopens a locked event.
   revalidatePath("/i/[token]", "page");
+  if (!music.ok) return { error: "music" };
   redirect(`/preview/${eventId}`);
 }

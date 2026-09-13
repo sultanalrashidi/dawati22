@@ -319,6 +319,20 @@ function wordingColumns(input: UpdateEventDetailsInput) {
 export type UpdateEventDetailsInput = Omit<CreateEventInput, "orderId" | "designBrief">;
 
 /**
+ * The song an event already has. A save whose new song link does not play
+ * keeps this one, so a single bad link never costs the rest of the form.
+ * Read-only and unguarded on purpose: the value only ever flows into a write
+ * that carries its own ownership and lock checks.
+ */
+export async function storedMusicTrack(eventId: string): Promise<string | null> {
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { musicYoutubeId: true },
+  });
+  return event?.musicYoutubeId ?? null;
+}
+
+/**
  * Rewrites an existing event's details, ignoring the edit lock.
  *
  * TWO callers, and neither carries a predicate of its own: support's

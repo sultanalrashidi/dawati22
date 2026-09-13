@@ -57,7 +57,7 @@ export type LegalDocId = "terms" | "privacy" | "refunds";
  * page shows when its wording was fixed, not today's date. Bump it by hand when
  * the wording changes.
  */
-const UPDATED = { ar: "٩ سبتمبر ٢٠٢٦", en: "September 9, 2026" };
+const UPDATED = { ar: "١٣ سبتمبر ٢٠٢٦", en: "September 13, 2026" };
 
 const ar: Record<LegalDocId, LegalDoc> = {
   terms: {
@@ -210,7 +210,7 @@ const ar: Record<LegalDocId, LegalDoc> = {
           "مزوّد رسائل التحقق (Authentica) الذي يستقبل رقم جوالك لإيصال رمز الدخول إليك.",
           "مزوّدي الاستضافة والبنية التقنية الذين نشغّل عليهم الخدمة.",
           "خدمة خطوط Google (Google Fonts) التي يُحمّل منها متصفّحك خطوط التصميم.",
-          "يوتيوب (YouTube) التابع لـGoogle، الذي يُحمّل منه متصفّحك مشغّل الموسيقى في الدعوة — وهو موجود في كل دعوة، بما فيها التي نضع لها المقطع الافتراضي.",
+          "يوتيوب (YouTube) التابع لـGoogle، وتيك توك (TikTok)، اللذان يُحمّل متصفّحك من أحدهما مشغّل الموسيقى في الدعوة حسب رابط الأغنية — والمشغّل موجود في كل دعوة، بما فيها التي نضع لها الأغنية الأساسية، وهي حاليًا مقطع من تيك توك.",
           "الجهات المختصة عند وجود التزام نظامي يقتضي ذلك.",
         ],
       },
@@ -462,7 +462,7 @@ const en: Record<LegalDocId, LegalDoc> = {
           "Our SMS verification provider (Authentica), which receives your mobile number in order to deliver the one-time sign-in code to it.",
           "Hosting and infrastructure providers we run the service on.",
           "Google Fonts, from which your browser loads the design's typefaces.",
-          "YouTube, operated by Google, from which your browser loads the invitation's background music player. It is present on every invitation, including those where we supply the default track because you did not choose one.",
+          "YouTube, operated by Google, and TikTok, one of which your browser loads the invitation's background music player from, depending on the song link. The player is present on every invitation, including those where we supply the default song because you did not choose one — currently a TikTok clip.",
           "Competent authorities where a legal obligation requires it.",
         ],
       },

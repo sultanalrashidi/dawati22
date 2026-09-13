@@ -32,7 +32,9 @@ export function EventEditForm({
       {children}
 
       {state?.error && (
-        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">{dict.admin.invalidForm}</p>
+        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">
+          {state.error === "music" ? dict.events.form.musicLinkError : dict.admin.invalidForm}
+        </p>
       )}
       {state?.saved && !isPending && (
         <p className="rounded-xl bg-success/10 px-4 py-3 text-sm text-success">

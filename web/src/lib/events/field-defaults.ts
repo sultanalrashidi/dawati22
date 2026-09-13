@@ -4,6 +4,8 @@ import { themeOptionKey } from "@/lib/events/theme-options";
 import type { ThemeOption } from "@/components/events/theme-picker";
 import type { ScheduleItem } from "@/lib/events/types";
 import { toRiyadhDateTimeLocal } from "@/lib/dates";
+import { trackUrl } from "@/lib/music/track";
+import { isUnchosenMusic, musicToPlay } from "@/lib/themes/builder/content";
 import type {
   CoupleFormat,
   EventGuestManagementMode,
@@ -83,8 +85,12 @@ export function eventFieldDefaults(
     locationName: event.locationName,
     regionName: event.regionName ?? "",
     mapUrl: event.mapUrl ?? "",
-    musicUrl: event.musicYoutubeId ? `https://www.youtube.com/watch?v=${event.musicYoutubeId}` : "",
-    musicAutoplay: event.musicAutoplay,
+    // A draft still holding a retired house track shows the current one — it
+    // is what plays — so saving the page never quietly switches back.
+    musicUrl: event.musicYoutubeId ? trackUrl(musicToPlay(event.musicYoutubeId)) : "",
+    // An unchosen song starts with the reveal whatever the column says; the
+    // radio shows what the guest will actually get.
+    musicAutoplay: event.musicAutoplay || isUnchosenMusic(event.musicYoutubeId),
     scheduleText: toScheduleText(event.scheduleItems),
     noteNoPhotos: event.noteNoPhotos,
     noteNoChildren: event.noteNoChildren,

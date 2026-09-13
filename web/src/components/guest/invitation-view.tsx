@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { MusicFrame, useBackgroundMusic, type BackgroundMusic } from "@/components/guest/background-music";
+import { readTrack } from "@/lib/music/track";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ScheduleItem } from "@/lib/events/types";
@@ -23,10 +24,11 @@ import type { RsvpResponse, StageRsvp } from "@/components/themes/builder/layers
 import {
   closingText,
   composeHostLine,
-  DEFAULT_MUSIC_YOUTUBE_ID,
   coupleLineFor,
   INSHALLAH,
   INVITE_VERB,
+  isUnchosenMusic,
+  musicToPlay,
   openingText,
   resolveContent,
   type CoupleInput,
@@ -584,14 +586,14 @@ export function InvitationView(props: Props) {
   // Every invitation has a song. A customer who has not chosen one gets the
   // house track rather than silence, because an envelope that opens without
   // music is the single biggest difference between this and a printed card —
-  // and "she did not paste a YouTube link" is not a request for silence.
-  const videoId = props.event.musicYoutubeId ?? DEFAULT_MUSIC_YOUTUBE_ID;
-  const music = useBackgroundMusic(videoId);
+  // and "she did not paste a song link" is not a request for silence.
+  const track = readTrack(musicToPlay(props.event.musicYoutubeId));
+  const music = useBackgroundMusic(track);
   const g = props.dict.guest;
 
   return (
     <>
-      {music.enabled && <MusicFrame videoId={videoId} frameRef={music.frameRef} />}
+      {track && <MusicFrame track={track} frameRef={music.frameRef} />}
       {music.enabled && (
         <MusicToggle
           label={g.playMusic}
@@ -742,7 +744,7 @@ function InvitationScreens({
     // own song keeps her own autoplay preference. Called synchronously inside
     // the tap — see background-music.tsx for why that is the only thing phones
     // will let make a sound.
-    if (event.musicAutoplay || !event.musicYoutubeId) music.start();
+    if (event.musicAutoplay || isUnchosenMusic(event.musicYoutubeId)) music.start();
 
     if (!animate) {
       setOpened(true);

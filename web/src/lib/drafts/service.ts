@@ -18,7 +18,7 @@ import {
 } from "@/lib/events/service";
 import { getSessionUser } from "@/lib/auth/session";
 import { PAYABLE_ORDER_STATUSES } from "@/lib/orders/status";
-import { DEFAULT_MUSIC_YOUTUBE_ID } from "@/lib/themes/builder/content";
+import { DEFAULT_MUSIC_TRACK } from "@/lib/themes/builder/content";
 import {
   SAMPLE_BRIDE_MOTHER,
   SAMPLE_COUPLE,
@@ -170,8 +170,10 @@ export async function startDraft(input: StartDraftInput): Promise<string> {
       mapUrl: null,
       // Written explicitly rather than left to the renderer's fallback, so
       // the music field opens prefilled and clearing it is her own choice.
-      musicYoutubeId: DEFAULT_MUSIC_YOUTUBE_ID,
-      musicAutoplay: false,
+      // It starts with the reveal, as the house track always has; switching
+      // to "the guest taps to play" is hers to choose.
+      musicYoutubeId: DEFAULT_MUSIC_TRACK,
+      musicAutoplay: true,
       scheduleItems: SAMPLE_SCHEDULE as unknown as Prisma.InputJsonValue,
       // One standard note on, so the notes screen exists in the preview.
       // Not the entry-pass note: a NO_QR draft has no code to show.

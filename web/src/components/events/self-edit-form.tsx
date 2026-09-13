@@ -44,6 +44,11 @@ export function SelfEditForm({
       {(state?.error === "invalid" || state?.error === "unsupported") && (
         <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">{d.editInvalid}</p>
       )}
+      {state?.error === "music" && (
+        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm leading-relaxed text-danger">
+          {dict.events.form.musicLinkError}
+        </p>
+      )}
 
       <button
         type="submit"

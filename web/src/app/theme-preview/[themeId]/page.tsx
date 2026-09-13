@@ -8,7 +8,7 @@ import { mayPreviewDeliveredTheme } from "@/lib/design-requests/service";
 import { renderQrDataUrl } from "@/lib/qr";
 import { builderThemeConfig, loadBuilderTheme } from "@/lib/themes/builder/guest";
 import { builderFontStylesheetHref } from "@/lib/themes/builder/fonts-server";
-import { SAMPLE_CONTENT_INPUT, noteLines } from "@/lib/themes/builder/content";
+import { DEFAULT_MUSIC_TRACK, SAMPLE_CONTENT_INPUT, noteLines } from "@/lib/themes/builder/content";
 import { defaultLocale } from "@/lib/i18n/locales";
 import { prisma } from "@/lib/db/client";
 import type { ScheduleItem } from "@/lib/events/types";
@@ -125,11 +125,11 @@ export default async function ThemePreviewPage({
           locationName: sample.locationName,
           regionName: sample.regionName,
           mapUrl: "https://maps.google.com/?q=24.7136,46.6753",
-          // Opens the gate on any scene the admin marked `requires: "music"`;
-          // the hidden 1x1 embed is a placeholder, so the preview proves the
-          // scene appears and lays out — real audio plays on a real invitation.
-          musicYoutubeId: "preview-sample",
-          musicAutoplay: false,
+          // The house track, starting with the reveal as it does for a guest.
+          // Also opens the gate on any scene the admin marked
+          // `requires: "music"`, so the preview proves that scene lays out.
+          musicYoutubeId: DEFAULT_MUSIC_TRACK,
+          musicAutoplay: true,
           scheduleItems: sampleSchedule,
           notesAr: sampleNotes,
           rsvpRequired: true,

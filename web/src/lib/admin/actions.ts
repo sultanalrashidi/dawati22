@@ -11,9 +11,10 @@ import {
   grantExtraInvitations,
   AdminGrantError,
 } from "@/lib/admin/service";
-import { EventError, updateEventDetails } from "@/lib/events/service";
+import { EventError, storedMusicTrack, updateEventDetails } from "@/lib/events/service";
 import { markInvitationShared, markEventInvitationsShared } from "@/lib/guests/service";
 import { readEventForm } from "@/lib/events/form";
+import { resolveMusicLink } from "@/lib/music/link";
 import { sweepAbandonedDrafts } from "@/lib/drafts/sweep";
 import { Role, EventStatus } from "@/generated/prisma/client";
 import { parseTier } from "@/lib/orders/pricing";
@@ -121,7 +122,12 @@ export async function updateEventDetailsAction(
 ): Promise<EventEditState> {
   await requireAdmin();
 
-  const fields = readEventForm(formData);
+  // As on the customer's page: a song link that does not play keeps the
+  // event's current song, and everything else still saves.
+  const music = await resolveMusicLink(formData.get("musicUrl"));
+  const fields = readEventForm(formData, {
+    musicTrack: music.ok ? music.track : await storedMusicTrack(eventId),
+  });
   if (!fields) return { error: "invalid" };
 
   try {
@@ -141,6 +147,7 @@ export async function updateEventDetailsAction(
   // by pattern, because the tokens are not known here and there can be
   // hundreds. The RSVP action revalidates the same route for the same reason.
   revalidatePath("/i/[token]", "page");
+  if (!music.ok) return { error: "music" };
   return { saved: true };
 }
 

@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { InvitationTier } from "@/generated/prisma/client";
 import { isValidInvitationCount } from "@/lib/orders/pricing";
 import { readEventForm } from "@/lib/events/form";
+import { resolveMusicLink } from "@/lib/music/link";
 import { EventError, updateEventDetails } from "@/lib/events/service";
 import {
   DraftRateLimitError,
@@ -66,9 +67,16 @@ export async function saveDraftDetailsAction(
   const draft = await resolveDraftAccess(eventId);
   if (!draft) redirect(`/${locale}/themes`);
 
+  // A song link that does not play must not cost her the rest of the page:
+  // everything else saves with the song the draft already had, and she comes
+  // back to the form to fix the link.
+  const music = await resolveMusicLink(formData.get("musicUrl"));
   // The draft page has no event-name field; the name is composed from the
   // couple ("حفل زفاف فهد و نورة") so it follows every rename automatically.
-  const values = readEventForm(formData, { composeName: true });
+  const values = readEventForm(formData, {
+    composeName: true,
+    musicTrack: music.ok ? music.track : draft.musicYoutubeId,
+  });
   if (!values) redirect(`/${locale}/draft/${eventId}/details?error=validation`);
 
   await claimDraft(eventId);
@@ -86,6 +94,7 @@ export async function saveDraftDetailsAction(
   }
 
   revalidatePath(`/${locale}/draft/${eventId}/details`);
+  if (!music.ok) redirect(`/${locale}/draft/${eventId}/details?error=music`);
   // Straight back to the preview: she just changed how the invitation reads,
   // and the whole reason this form is reachable before payment is so she can
   // see the result before deciding.

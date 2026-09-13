@@ -104,8 +104,33 @@ export const DEFAULT_CLOSING: ClosingPreset = CLOSING_PRESETS[0];
  * which every mobile browser silently refuses (see background-music.tsx). That
  * tap is a real user gesture, so the sound actually plays, and it begins with
  * the reveal rather than over a closed envelope.
+ *
+ * The owner's choice since 2026-09-13: a TikTok clip, played as sound only.
+ * Stored in the same shape as a customer's song — see lib/music/track.ts.
  */
-export const DEFAULT_MUSIC_YOUTUBE_ID = "LDnUX_mwx2Q";
+export const DEFAULT_MUSIC_TRACK = "tiktok:7563365143522970888";
+
+/**
+ * House tracks that came before the current one. Drafts were born holding the
+ * house track in their song field, so a row still carrying a retired one never
+ * chose it — it plays today's house track, and starts with the reveal.
+ */
+const RETIRED_HOUSE_TRACKS: readonly string[] = ["LDnUX_mwx2Q"];
+
+/**
+ * True when the invitation plays the house track because the customer never
+ * picked a song: an empty field, or a retired house track left over from the
+ * draft she started with. The house track in these cases always starts with
+ * the reveal — there is no preference of hers to respect.
+ */
+export function isUnchosenMusic(stored: string | null | undefined): boolean {
+  return !stored || RETIRED_HOUSE_TRACKS.includes(stored);
+}
+
+/** The track that actually plays: hers if she chose one, else the house track. */
+export function musicToPlay(stored: string | null | undefined): string {
+  return isUnchosenMusic(stored) ? DEFAULT_MUSIC_TRACK : (stored as string);
+}
 
 export const NOTE_NO_PHOTOS = "نرجو عدم التصوير حفاظاً على خصوصية الحفل";
 export const NOTE_NO_CHILDREN = "يرجى عدم اصطحاب الأطفال";

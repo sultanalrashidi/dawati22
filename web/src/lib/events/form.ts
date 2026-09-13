@@ -10,7 +10,6 @@ import {
 } from "@/lib/themes/builder/content";
 import type { ScheduleItem } from "@/lib/events/types";
 import type { DesignBrief } from "@/lib/design-requests/service";
-import { extractYoutubeVideoId } from "@/lib/youtube";
 import { riyadhDateTimeLocalToDate } from "@/lib/dates";
 import { composeWeddingName } from "@/lib/events/event-name";
 
@@ -203,11 +202,20 @@ export interface ReadEventFormOptions {
    * The draft page does not ask for an event name — see composeWeddingName.
    */
   composeName?: boolean;
+  /**
+   * The song field, already turned into a stored track by resolveMusicLink.
+   * A TikTok share link needs the network to read, which this synchronous
+   * reader cannot do — so every caller resolves it first, and a link that
+   * does not resolve is refused there, with its own message, rather than
+   * being dropped here: dropping it would silently publish the invitation
+   * without the song she chose.
+   */
+  musicTrack: string | null;
 }
 
 export function readEventForm(
   formData: FormData,
-  options: ReadEventFormOptions = {},
+  options: ReadEventFormOptions,
 ): EventFormValues | null {
   const text = (field: string) => String(formData.get(field) ?? "").trim();
   const checked = (field: string) => formData.get(field) === "on";
@@ -225,8 +233,7 @@ export function readEventForm(
   const coupleFormat = text("coupleFormat");
   const locationName = text("locationName");
   const themeId = text("themeId");
-  const musicUrlRaw = text("musicUrl");
-  const musicYoutubeId = musicUrlRaw ? extractYoutubeVideoId(musicUrlRaw) : null;
+  const musicYoutubeId = options.musicTrack;
   const eventDate = riyadhDateTimeLocalToDate(String(formData.get("eventDate") ?? ""));
 
   const isValid =
@@ -239,10 +246,7 @@ export function readEventForm(
     isOneOf(COUPLE_FORMAT_KINDS, coupleFormat) &&
     eventDate !== null &&
     locationName.length >= 2 &&
-    Boolean(themeId) &&
-    // A link that is not a YouTube video is a typo, not "no music": dropping it
-    // would silently publish the invitation without the song they chose.
-    (!musicUrlRaw || Boolean(musicYoutubeId));
+    Boolean(themeId);
 
   if (
     !isValid ||

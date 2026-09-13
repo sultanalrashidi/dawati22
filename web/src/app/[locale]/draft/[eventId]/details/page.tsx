@@ -70,7 +70,11 @@ export default async function DraftDetailsPage({
 
       {error && (
         <p className="rounded-xl border border-danger/30 bg-danger/5 px-4 py-3 text-sm text-fg">
-          {error === "delete" ? d.deleteBlocked : d.validationError}
+          {error === "delete"
+            ? d.deleteBlocked
+            : error === "music"
+              ? dict.events.form.musicLinkError
+              : d.validationError}
         </p>
       )}
 

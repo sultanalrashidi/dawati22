@@ -12,7 +12,7 @@ import { EventLockControls } from "@/components/admin/event-lock-controls";
 import { countSentInvitations, getGrantContext, MAX_EXTRA_INVITATIONS } from "@/lib/admin/service";
 import { GrantInvitationsPanel } from "@/components/admin/grant-invitations-panel";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
-import { InvitationTier, Role } from "@/generated/prisma/client";
+import { EventType, InvitationTier, Role } from "@/generated/prisma/client";
 
 export default async function AdminEventEditPage({
   params,
@@ -99,6 +99,12 @@ export default async function AdminEventEditPage({
             themeOptions={themeOptions}
             defaults={defaults}
             hasQr={event.orderId ? event.hasQr : event.intendedTier !== InvitationTier.NO_QR}
+            // A wedding's name is composed from its couple on save, so the
+            // field would only be a stale copy of it — the reason a corrected
+            // groom's name used to reach the invitation and not the calendar
+            // file or the wallet pass. Other occasions have no couple to
+            // compose from and keep the field.
+            hideName={event.type === EventType.WEDDING}
           />
         </EventTypeGate>
       </EventEditForm>

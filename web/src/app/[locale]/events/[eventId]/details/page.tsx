@@ -103,6 +103,7 @@ export default async function OwnedEventDetailsPage({
           themeOptions={themeOptions}
           defaults={eventFieldDefaults(event, themeOptions)}
           hasQr={event.hasQr}
+          hideName
         />
       </SelfEditForm>
     </div>

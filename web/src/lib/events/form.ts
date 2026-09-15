@@ -11,7 +11,7 @@ import {
 import type { ScheduleItem } from "@/lib/events/types";
 import type { DesignBrief } from "@/lib/design-requests/service";
 import { riyadhDateTimeLocalToDate } from "@/lib/dates";
-import { composeWeddingName } from "@/lib/events/event-name";
+import { eventNameFor } from "@/lib/events/event-name";
 
 /**
  * One reader for the one event form. The customer fills it in once at creation
@@ -198,11 +198,6 @@ function readDesignBrief(formData: FormData): DesignBrief | null {
 /** Returns null when the submission is not usable; the caller decides how to say so. */
 export interface ReadEventFormOptions {
   /**
-   * Compose `name` from the primary couple instead of reading a `name` field.
-   * The draft page does not ask for an event name — see composeWeddingName.
-   */
-  composeName?: boolean;
-  /**
    * The song field, already turned into a stored track by resolveMusicLink.
    * A TikTok share link needs the network to read, which this synchronous
    * reader cannot do — so every caller resolves it first, and a link that
@@ -224,12 +219,14 @@ export function readEventForm(
   const openingKind = text("openingKind");
   const host = readHost(formData);
   const couples = readCouples(formData);
-  // The draft page has no name field: its event is named after the couple, so
-  // a rename there follows the names instead of drifting away from them.
-  const name =
-    options.composeName && couples && couples.length > 0
-      ? composeWeddingName(couples)
-      : text("name");
+  // A wedding is named after its couple, so a rename follows the names instead
+  // of drifting away from them — no form asks for the name of one. See
+  // eventNameFor; every other occasion still posts a `name` field.
+  const name = eventNameFor({
+    isWedding: type === EventType.WEDDING,
+    couples: couples ?? [],
+    typed: text("name"),
+  });
   const coupleFormat = text("coupleFormat");
   const locationName = text("locationName");
   const themeId = text("themeId");

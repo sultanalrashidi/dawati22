@@ -93,7 +93,9 @@ export default async function NewEventPage({
             replaces all of it with "not yet" rather than letting someone fill
             in a form the product cannot deliver on. */}
         <EventTypeGate dict={dict}>
-          <EventFields locale={locale} dict={dict} themeOptions={themeOptions} />
+          {/* Everything inside the gate is a wedding, and a wedding is named
+              after its couple — see eventNameFor. */}
+          <EventFields locale={locale} dict={dict} themeOptions={themeOptions} hideName />
 
           <ConfirmSubmit
             label={f.confirmAccuracyLabel}

@@ -71,10 +71,9 @@ export async function saveDraftDetailsAction(
   // everything else saves with the song the draft already had, and she comes
   // back to the form to fix the link.
   const music = await resolveMusicLink(formData.get("musicUrl"));
-  // The draft page has no event-name field; the name is composed from the
-  // couple ("حفل زفاف فهد و نورة") so it follows every rename automatically.
+  // No page asks for an event name; a wedding is composed after its couple
+  // ("حفل زفاف فهد و نورة") so it follows every rename automatically.
   const values = readEventForm(formData, {
-    composeName: true,
     musicTrack: music.ok ? music.track : draft.musicYoutubeId,
   });
   if (!values) redirect(`/${locale}/draft/${eventId}/details?error=validation`);

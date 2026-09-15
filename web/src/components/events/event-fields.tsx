@@ -98,9 +98,12 @@ export function EventFields({
   /** Whether this invitation has a barcode — the design previews end on that card. */
   hasQr?: boolean;
   /**
-   * Leaves the event-name input out. The draft page composes the name from the
-   * couple server-side (readEventForm's `composeName`), so asking would only
-   * be a field she has to keep in sync with the names.
+   * Leaves the event-name input out — true for every wedding, which is named
+   * after its couple server-side (see `eventNameFor`). Asking would only be a
+   * field someone has to keep in sync with the names, and the admin form
+   * proved what happens when they do not: the name stayed on the groom who had
+   * just been renamed. Support still gets the field for other occasions, which
+   * have no couple to compose from.
    */
   hideName?: boolean;
 }) {

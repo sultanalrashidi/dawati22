@@ -102,6 +102,7 @@ export default async function OwnedEventDetailsPage({
           dict={dict}
           themeOptions={themeOptions}
           defaults={eventFieldDefaults(event, themeOptions)}
+          hasQr={event.hasQr}
         />
       </SelfEditForm>
     </div>

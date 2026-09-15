@@ -307,6 +307,7 @@ function normalizeScenes(scenes: SceneDef[]): SceneDef[] {
   const seen = new Set<string>();
   let haveCover = false;
   let havePass = false;
+  let haveNoQrPass = false;
   const out: SceneDef[] = [];
 
   for (const scene of scenes) {
@@ -320,6 +321,14 @@ function normalizeScenes(scenes: SceneDef[]): SceneDef[] {
     } else if (role === "pass") {
       if (havePass) role = "flow";
       else havePass = true;
+    } else if (role === "passNoQr") {
+      // Hidden as well as demoted: a second no-barcode card would otherwise
+      // join the scroll of EVERY guest, barcode or not.
+      if (haveNoQrPass) {
+        out.push({ ...scene, role: "flow", visible: false });
+        continue;
+      }
+      haveNoQrPass = true;
     }
     out.push(role === scene.role ? scene : { ...scene, role });
   }
@@ -336,8 +345,9 @@ function normalizeScenes(scenes: SceneDef[]): SceneDef[] {
   // reader agrees, including documents saved before this rule existed.
   const cover = out.filter((scene) => scene.role === "cover");
   const pass = out.filter((scene) => scene.role === "pass");
+  const noQrPass = out.filter((scene) => scene.role === "passNoQr");
   const flow = out.filter((scene) => scene.role === "flow");
-  return [...cover, ...flow, ...pass];
+  return [...cover, ...flow, ...pass, ...noQrPass];
 }
 
 function upgradeLegacyScenes(raw: unknown): SceneDef[] | null {
@@ -384,7 +394,7 @@ export function parseLayoutDoc(raw: unknown): LayoutDoc {
     // Structurally valid is not the same as coherent: the schema happily
     // accepts two scenes sharing an id, three covers, or a list with none.
     // Normalize on the way out so the renderer and the editor can both assume
-    // exactly one cover, at most one pass, and unique ids.
+    // exactly one cover, at most one of each pass, and unique ids.
     const doc = direct.data as LayoutDoc;
     const scenes = normalizeScenes(doc.scenes);
     return { ...doc, scenes, layers: upgradeStockFlowLayers(scenes, doc.layers) };

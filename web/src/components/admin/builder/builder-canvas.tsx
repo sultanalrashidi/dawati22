@@ -28,8 +28,9 @@ import type { ResolvedContent } from "@/lib/themes/builder/content";
  * carry a screen called `s_9f3a1c02` that the old id-keyed map knew nothing
  * about and reserved `undefined` pixels for. The three built-in scenes keep
  * exactly the numbers they had — cover/open/pass are the cover/flow/pass roles.
+ * The no-barcode pass sits in the same screen slot as the pass.
  */
-const ROLE_RESERVE_PX: Record<SceneRole, number> = { cover: 144, flow: 160, pass: 192 };
+const ROLE_RESERVE_PX: Record<SceneRole, number> = { cover: 144, flow: 160, pass: 192, passNoQr: 192 };
 const STAGE_MAX_PX = 416; // 26rem
 
 function guestStageWidth(
@@ -414,6 +415,9 @@ export function BuilderCanvas({
             // Every layer stays clickable so it can be selected and dragged,
             // interactive layers render inert, and the QR draws its sample.
             editing
+            // The no-barcode pass is drawn as its guests get it: no code, and
+            // the colour's "cardNoQr" art in place of the ordinary card.
+            hasQr={role !== "passNoQr"}
             // The stage paints `palette.bg` by default, which would hide the
             // page art behind it. With a backdrop present the frame carries
             // that colour instead and the stage lets it through.

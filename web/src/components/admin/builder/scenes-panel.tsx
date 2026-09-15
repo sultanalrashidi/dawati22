@@ -17,14 +17,27 @@ import {
  * Scenes are the screens the guest scrolls through, in this exact order. The
  * panel is deliberately the only place they can be added or removed, because
  * three of the guard rails the guest flow relies on — one cover, at most one
- * pass, and layers dying with their scene — are easiest to keep honest when
- * every change goes through one form.
+ * of each pass, and layers dying with their scene — are easiest to keep honest
+ * when every change goes through one form. (The no-barcode pass is the one
+ * exception: it is created from the toolbar, as a copy of the pass.)
  */
 
 const ROLE_LABELS: Record<SceneRole, string> = {
   cover: "الغلاف — شاشة الفتح",
   flow: "شاشة عادية",
   pass: "بطاقة الدخول",
+  passNoQr: "بطاقة الدخول — بدون باركود",
+};
+
+const PASS_HINT = "بطاقة الدخول ما تظهر إلا للمدعو اللي أكد حضوره، وشاشة وحدة بس تقدر تكون بطاقة.";
+
+/** Under the kind picker. A plain screen gets the pass line, as the choice it can make. */
+const ROLE_HINTS: Record<SceneRole, string> = {
+  cover: "لتغيير الغلاف: اختر شاشة ثانية وخلّ نوعها «الغلاف» — وهذي بتصير شاشة عادية تلقائيًا.",
+  flow: PASS_HINT,
+  pass: PASS_HINT,
+  passNoQr:
+    "تظهر بدل «بطاقة الدخول» في الدعوات اللي انباعت بدون باركود، للمدعو اللي أكد حضوره. لو أخفيتها أو حذفتها ترجع هذي الدعوات تعرض «بطاقة الدخول» نفسها بدون الباركود.",
 };
 
 const REQUIREMENT_LABELS: Record<SceneRequirement, string> = {
@@ -145,6 +158,11 @@ export function ScenesPanel({
                       بطاقة
                     </span>
                   )}
+                  {scene.role === "passNoQr" && (
+                    <span className="shrink-0 rounded-full border border-border px-1.5 text-[10px] text-fg-muted">
+                      بدون باركود
+                    </span>
+                  )}
                   {isCover && (
                     <span className="shrink-0 rounded-full border border-border px-1.5 text-[10px] text-fg-muted">
                       غلاف
@@ -205,18 +223,14 @@ export function ScenesPanel({
                     options={
                       isCover
                         ? [{ value: "cover" as SceneRole, label: ROLE_LABELS.cover }]
-                        : (["cover", "flow", "pass"] as SceneRole[]).map((role) => ({
+                        : (["cover", "flow", "pass", "passNoQr"] as SceneRole[]).map((role) => ({
                             value: role,
                             label: ROLE_LABELS[role],
                           }))
                     }
                     onChange={(role) => onPatch(scene.id, { role })}
                   />
-                  <p className="-mt-1 text-[11px] text-fg-muted">
-                    {isCover
-                      ? "لتغيير الغلاف: اختر شاشة ثانية وخلّ نوعها «الغلاف» — وهذي بتصير شاشة عادية تلقائيًا."
-                      : "بطاقة الدخول ما تظهر إلا للمدعو اللي أكد حضوره، وشاشة وحدة بس تقدر تكون بطاقة."}
-                  </p>
+                  <p className="-mt-1 text-[11px] text-fg-muted">{ROLE_HINTS[scene.role]}</p>
 
                   <SelectField
                     label="متى تظهر"

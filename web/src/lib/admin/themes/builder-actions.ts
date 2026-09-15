@@ -17,6 +17,7 @@ import {
   applyStarterLayout,
   assignThemeToUser,
   createBuilderTheme,
+  createNoQrPass,
   createVariant,
   deleteAsset,
   deleteVariant,
@@ -185,6 +186,22 @@ export async function applyStarterLayoutAction(
   }
   revalidatePath(`/${safe(locale)}/admin/themes/builder/${themeId}`);
   return { ok: true, doc };
+}
+
+/**
+ * Adds the design's own no-barcode pass, copied from its pass. Returns the new
+ * scene's id so the editor can reopen on it.
+ */
+export async function createNoQrPassAction(
+  themeId: string,
+  expectedUpdatedAt: string | null,
+): Promise<BuilderFormState & { sceneId?: string }> {
+  const user = await requireAdmin();
+  try {
+    return { ok: true, sceneId: await createNoQrPass(user.id, themeId, expectedUpdatedAt) };
+  } catch (error) {
+    return toState(error);
+  }
 }
 
 export async function saveTypographyAction(themeId: string, doc: unknown): Promise<BuilderFormState> {

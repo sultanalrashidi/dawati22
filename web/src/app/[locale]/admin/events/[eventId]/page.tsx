@@ -12,7 +12,7 @@ import { EventLockControls } from "@/components/admin/event-lock-controls";
 import { countSentInvitations, getGrantContext, MAX_EXTRA_INVITATIONS } from "@/lib/admin/service";
 import { GrantInvitationsPanel } from "@/components/admin/grant-invitations-panel";
 import { requireUserOrRedirect } from "@/lib/auth/guards";
-import { Role } from "@/generated/prisma/client";
+import { InvitationTier, Role } from "@/generated/prisma/client";
 
 export default async function AdminEventEditPage({
   params,
@@ -93,7 +93,13 @@ export default async function AdminEventEditPage({
             customer's create form. Support must be able to open and correct an
             event whatever its type says, not be locked out by it. */}
         <EventTypeGate dict={dict} defaultType={defaults.type} enabled={false}>
-          <EventFields locale={locale} dict={dict} themeOptions={themeOptions} defaults={defaults} />
+          <EventFields
+            locale={locale}
+            dict={dict}
+            themeOptions={themeOptions}
+            defaults={defaults}
+            hasQr={event.orderId ? event.hasQr : event.intendedTier !== InvitationTier.NO_QR}
+          />
         </EventTypeGate>
       </EventEditForm>
     </div>

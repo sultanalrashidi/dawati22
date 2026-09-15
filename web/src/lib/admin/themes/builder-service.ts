@@ -32,6 +32,7 @@ import {
 } from "@/lib/themes/builder/types";
 import { parseLayoutOverrides, type LayoutOverrides } from "@/lib/themes/builder/resolve";
 import { ensureInkRoles } from "@/lib/themes/builder/ink-roles-server";
+import { copyLayerOverrides, withNoQrPass, type NoQrPassRefusal } from "@/lib/themes/builder/no-qr-pass";
 
 const json = (value: unknown) => value as Prisma.InputJsonValue;
 
@@ -293,6 +294,59 @@ export async function applyStarterLayout(actorId: string, themeId: string) {
     throw new ThemeAdminError("التصميم فيه عناصر بالفعل — احذفها أولاً إذا تبي تبدأ من جديد");
   }
   return saveLayoutDoc(actorId, themeId, { ...current, layers: (await newDesignStart()).layers });
+}
+
+const NO_QR_PASS_REFUSALS: Record<NoQrPassRefusal, string> = {
+  exists: "التصميم فيه بطاقة بدون باركود من قبل — تلقاها في الشاشات.",
+  noPass: "التصميم ما فيه «بطاقة الدخول» ننسخ منها.",
+  full: "التصميم وصل الحد الأقصى للشاشات أو العناصر — احذف شي ما تحتاجه وجرّب مرة ثانية.",
+};
+
+/**
+ * Give a design its own no-barcode pass: a copy of its pass without the code,
+ * which the owner then arranges on its own (see no-qr-pass.ts). Every colour's
+ * own tweaks to the pass are copied onto the new layers in the same
+ * transaction, so the copy looks exactly like the automatic card it replaces.
+ *
+ * Built from the document as the editor loads it (`getBuilderTheme`), and only
+ * written if the stored row is still the revision the editor opened — the same
+ * guard as `saveLayoutDoc`, because a live design is being changed.
+ */
+export async function createNoQrPass(
+  actorId: string,
+  themeId: string,
+  expectedUpdatedAt: string | null,
+): Promise<string> {
+  const stale = "تغيّر التصميم من جهة ثانية بعد ما فتحت المحرر. حدّث الصفحة وجرّب مرة ثانية — ما كتبنا شيئًا.";
+  const builder = await getBuilderTheme(themeId);
+  if (!builder) throw new ThemeAdminError("التصميم غير موجود");
+  const revision = builder.layoutUpdatedAt;
+  if (!revision) throw new ThemeAdminError(NO_QR_PASS_REFUSALS.noPass);
+  if (expectedUpdatedAt && new Date(expectedUpdatedAt).getTime() !== revision.getTime()) {
+    throw new ThemeAdminError(stale);
+  }
+
+  const copy = withNoQrPass(builder.layout);
+  if ("error" in copy) throw new ThemeAdminError(NO_QR_PASS_REFUSALS[copy.error]);
+  const doc = assertLayoutDoc(copy.doc);
+
+  await prisma.$transaction(async (tx) => {
+    const applied = await tx.themeLayout.updateMany({
+      where: { themeId, updatedAt: revision },
+      data: { doc: json(doc) },
+    });
+    if (applied.count === 0) throw new ThemeAdminError(stale);
+    for (const variant of builder.variants) {
+      const overrides = copyLayerOverrides(variant.overrides, copy.layerIds);
+      if (!overrides) continue;
+      await tx.themeVariant.update({
+        where: { id: variant.id },
+        data: { layoutOverrides: json(assertLayoutOverrides(overrides)) },
+      });
+    }
+    await tx.theme.update({ where: { id: themeId }, data: { updatedById: actorId } });
+  });
+  return copy.sceneId;
 }
 
 /**

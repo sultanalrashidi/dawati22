@@ -1,4 +1,5 @@
 import { notFound, redirect } from "next/navigation";
+import { InvitationTier } from "@/generated/prisma/client";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getSessionUser } from "@/lib/auth/session";
@@ -92,6 +93,8 @@ export default async function DraftDetailsPage({
           themeOptions={themeOptions}
           defaults={defaults}
           hideName
+          // The tier she is heading for, as the draft's own preview reads it.
+          hasQr={draft.intendedTier !== InvitationTier.NO_QR}
         />
         <DraftDetailsSubmit label={d.submit} />
       </form>

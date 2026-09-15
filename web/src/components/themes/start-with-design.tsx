@@ -14,8 +14,11 @@ const subscribeNever = () => () => {};
  * gallery is a static file, the same for every visitor, and cannot see its own
  * query on the server. Read loosely on purpose — a mangled query costs her the
  * pre-filled numbers, not the page; the action validates both again.
+ *
+ * The gallery's preview reads it too, so someone who chose "without a barcode"
+ * is shown the card that choice buys.
  */
-function useCarriedChoice() {
+export function useCarriedChoice() {
   const query = useSyncExternalStore(subscribeNever, () => window.location.search, () => "");
   const params = new URLSearchParams(query);
   const count = Number(params.get("count"));

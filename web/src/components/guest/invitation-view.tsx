@@ -36,6 +36,7 @@ import {
   type ResolvedContent,
 } from "@/lib/themes/builder/content";
 import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
+import { passSceneFor } from "@/lib/themes/builder/no-qr-pass";
 import {
   breakpointForWidth,
   type Breakpoint,
@@ -1226,8 +1227,9 @@ function InvitationScreens({
   const somethingFollowsFlow = (hasRsvpForm && !designedRsvp) || hasResponded;
   // Shown only to a guest who accepted, and only if the theme still has a pass
   // scene: hidden or deleted, the generic card below keeps the entry QR
-  // reachable rather than handing them an empty stage.
-  const passScene = builder?.layout.scenes.find((scene) => scene.role === "pass" && scene.visible);
+  // reachable rather than handing them an empty stage. Without a barcode it is
+  // the design's own no-barcode card when it has one — see no-qr-pass.ts.
+  const passScene = builder ? passSceneFor(builder.layout, hasQr) : undefined;
 
   const somethingFollowsDetails = hasSchedule || hasNotes || hasRsvpForm || hasResponded;
   const somethingFollowsSchedule = hasNotes || hasRsvpForm || hasResponded;

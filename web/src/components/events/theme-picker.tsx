@@ -89,12 +89,15 @@ export function ThemePicker({
   dict,
   defaultKey,
   allowCustomRequest = false,
+  hasQr = true,
 }: {
   locale: Locale;
   options: ThemeOption[];
   dict: Dictionary;
   /** Preselects an existing choice when the form is an edit rather than a create. */
   defaultKey?: string;
+  /** Without a barcode the preview ends on the no-barcode card. */
+  hasQr?: boolean;
   /**
    * Offers "have one designed for me" under the grid. Create form only — the
    * admin edit form rewrites an existing event and must not open a request.
@@ -385,6 +388,7 @@ export function ThemePicker({
           initialVariantId={previewKey}
           themeCategory={previewFamily.category}
           dict={dict}
+          hasQr={hasQr}
           open
           onOpenChange={(open) => !open && setPreviewKey(null)}
         />

@@ -38,6 +38,7 @@ import type { FontOption } from "@/lib/themes/font-registry";
 import {
   applyStarterLayoutAction,
   checkBuilderThemeAction,
+  createNoQrPassAction,
   publishBuilderThemeAction,
   saveLayoutAction,
   saveVariantOverridesAction,
@@ -137,6 +138,7 @@ export function ThemeBuilder({
   assets,
   fonts,
   blobEnabled,
+  initialScene,
   localPreview,
 }: {
   themeId: string;
@@ -144,6 +146,8 @@ export function ThemeBuilder({
   themeStatus: string;
   locale: string;
   initialLayout: LayoutDoc;
+  /** The screen to open on (`?scene=`); an id the design lacks falls back to the cover. */
+  initialScene?: string;
   /** `ThemeLayout.updatedAt` as this editor loaded it — the save refuses if it has moved. */
   layoutRevision: string | null;
   typography: TypographyDoc;
@@ -156,7 +160,7 @@ export function ThemeBuilder({
 }) {
   const router = useRouter();
   const initialVariant = variants.find((v) => v.isDefault) ?? variants[0];
-  const state = useBuilderState(initialLayout, paintOf(initialVariant), geometryOf(initialVariant), localPreview ? localPreview.initialScene ?? "greeting" : undefined);
+  const state = useBuilderState(initialLayout, paintOf(initialVariant), geometryOf(initialVariant), localPreview ? localPreview.initialScene ?? "greeting" : initialScene);
   const [side, setSide] = useState<SidePanel>("design");
   const [showGuides, setShowGuides] = useState(!localPreview);
   const [previewOverrides, setPreviewOverrides] = useState<Record<string, LayoutOverrides>>({});
@@ -362,6 +366,37 @@ export function ThemeBuilder({
     });
   }
 
+  const activeRole = state.doc.scenes.find((scene) => scene.id === state.scene)?.role;
+  const canAddNoQrPass =
+    !localPreview &&
+    state.doc.scenes.some((scene) => scene.role === "pass") &&
+    !state.doc.scenes.some((scene) => scene.role === "passNoQr");
+
+  /**
+   * The copy is written by the server, together with every colour's own
+   * tweaks, so the document held here knows nothing about it. A full load
+   * re-seeds the editor, opened on the new card — and asking for a save first
+   * is what lets that load lose nothing.
+   */
+  function addNoQrPass() {
+    if (localPreview || saving) return;
+    if (unsaved) {
+      setSaveError("احفظ تغييراتك أول (زر «حفظ»)، وبعدها اضغط «+ بطاقة بدون باركود».");
+      return;
+    }
+    setSaveError(null);
+    startSaving(async () => {
+      const result = await createNoQrPassAction(themeId, layoutRevision);
+      if (!result?.sceneId) {
+        setSaveError(result?.error ?? "ما قدرنا ننشئ البطاقة — جرّب مرة ثانية.");
+        return;
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.set("scene", result.sceneId);
+      window.location.assign(url.toString());
+    });
+  }
+
   const errorCount = issues?.filter((i) => i.level === "error").length ?? 0;
 
   return (
@@ -426,6 +461,15 @@ export function ThemeBuilder({
         <GhostButton title="إضافة وترتيب وحذف الشاشات" onClick={() => setSide("scenes")}>
           ⚙ الشاشات
         </GhostButton>
+        {canAddNoQrPass && (
+          <GhostButton
+            title="ينسخ «بطاقة الدخول» بدون الباركود في شاشة تنسّقها لحالها — تظهر للدعوات اللي انباعت بدون باركود"
+            disabled={saving}
+            onClick={addNoQrPass}
+          >
+            + بطاقة بدون باركود
+          </GhostButton>
+        )}
 
         <div className="flex rounded-lg border border-border p-0.5">
           {(Object.keys(DEVICE_PRESETS) as Breakpoint[]).map((bp) => (
@@ -443,11 +487,21 @@ export function ThemeBuilder({
         </div>
 
         <div className="flex items-center gap-1">
-          {ADD_BUTTONS.map((button) => (
-            <GhostButton key={button.type} onClick={() => addLayer(button.type)}>
-              {button.label}
-            </GhostButton>
-          ))}
+          {ADD_BUTTONS.map((button) => {
+            // A code on the no-barcode card would never be drawn — for the
+            // admin or for any guest — so it is not offered there.
+            const noCode = button.type === "qr" && activeRole === "passNoQr";
+            return (
+              <GhostButton
+                key={button.type}
+                title={noCode ? "بطاقة بدون باركود ما يظهر فيها باركود" : undefined}
+                disabled={noCode}
+                onClick={() => addLayer(button.type)}
+              >
+                {button.label}
+              </GhostButton>
+            );
+          })}
           <AddImageMenu onAdd={(slot) => addLayer("asset", slot)} />
           <AddMenu label="+ مكوّن" items={ADD_BLOCKS} onAdd={(type) => addLayer(type)} />
           {!localPreview && state.doc.layers.length === 0 && (

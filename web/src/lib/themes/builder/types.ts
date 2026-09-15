@@ -38,14 +38,19 @@ export type SceneId = string;
 export const SCENE_COVER = "cover";
 export const SCENE_OPEN = "open";
 export const SCENE_PASS = "pass";
+/** The id a design's own no-barcode pass is created under — see no-qr-pass.ts. */
+export const SCENE_PASS_NO_QR = "passNoQr";
 
 /**
  * What the guest flow does with a scene.
- * - `cover`: the tap-to-open screen, shown before the invitation opens. Exactly one.
- * - `flow`:  an ordinary scroll-snapped screen in the post-open sequence.
- * - `pass`:  the entry pass, shown only after the guest accepts.
+ * - `cover`:    the tap-to-open screen, shown before the invitation opens. Exactly one.
+ * - `flow`:     an ordinary scroll-snapped screen in the post-open sequence.
+ * - `pass`:     the entry pass, shown only after the guest accepts.
+ * - `passNoQr`: the entry pass of an invitation sold WITHOUT a barcode, in its
+ *               own arrangement. Optional: without one, such an invitation shows
+ *               `pass` with its code dropped. At most one of each pass.
  */
-export const SCENE_ROLES = ["cover", "flow", "pass"] as const;
+export const SCENE_ROLES = ["cover", "flow", "pass", "passNoQr"] as const;
 export type SceneRole = (typeof SCENE_ROLES)[number];
 
 /**

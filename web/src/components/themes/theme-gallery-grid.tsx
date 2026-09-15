@@ -8,6 +8,7 @@ import type { EnvelopeCutout } from "@/lib/themes/thumbnail";
 import type { BuilderTheme } from "@/components/guest/invitation-view";
 import { ThemeGalleryCard } from "@/components/themes/theme-gallery-card";
 import { ThemePreviewDialog } from "@/components/themes/theme-preview-dialog";
+import { useCarriedChoice } from "@/components/themes/start-with-design";
 import {
   THEME_CATEGORIES,
   THEME_COLORS,
@@ -114,6 +115,7 @@ export function ThemeGalleryGrid({
     return family.rep;
   }
 
+  const carried = useCarriedChoice();
   const previewMember = themes.find((t) => t.id === previewId);
   const previewFamily = previewId ? families.find((f) => f.members.some((m) => m.id === previewId)) : undefined;
   const g = dict.themesGallery;
@@ -236,6 +238,9 @@ export function ThemeGalleryGrid({
           initialVariantId={previewMember.id}
           themeCategory={previewMember.category}
           dict={dict}
+          // Came from the pricing page having chosen "without a barcode"?
+          // Then the walk-through ends on the card that choice buys.
+          hasQr={carried.tier !== "NO_QR"}
           open={Boolean(previewMember)}
           onOpenChange={(open) => !open && setPreviewId(null)}
         />

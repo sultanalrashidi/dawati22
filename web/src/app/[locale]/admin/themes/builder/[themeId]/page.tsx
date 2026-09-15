@@ -11,8 +11,13 @@ import { ThemeAccessPanel } from "@/components/admin/builder/theme-access-panel"
 import { ConvertToBuilder } from "@/components/admin/builder/convert-to-builder";
 import { ThemeEngine } from "@/generated/prisma/client";
 
-export default async function ThemeBuilderPage({ params }: PageProps<"/[locale]/admin/themes/builder/[themeId]">) {
+export default async function ThemeBuilderPage({
+  params,
+  searchParams,
+}: PageProps<"/[locale]/admin/themes/builder/[themeId]">) {
   const { locale, themeId } = await params;
+  // Set when the editor reloads itself onto a screen it just created.
+  const { scene } = await searchParams;
   const dict = await getDictionary(locale === "en" ? "en" : "ar");
 
   const builder = await getBuilderTheme(themeId);
@@ -95,6 +100,7 @@ export default async function ThemeBuilderPage({ params }: PageProps<"/[locale]/
         themeStatus={builder.theme.status}
         locale={locale}
         initialLayout={builder.layout}
+        initialScene={typeof scene === "string" ? scene : undefined}
         layoutRevision={builder.layoutUpdatedAt?.toISOString() ?? null}
         typography={builder.typography}
         variants={builder.variants}

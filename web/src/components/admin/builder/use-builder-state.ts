@@ -601,8 +601,8 @@ export function useBuilderState(
    *
    * - **Exactly one `cover`.** Promoting a scene demotes the previous cover to
    *   `flow`; demoting the last remaining cover is dropped from the patch.
-   * - **At most one `pass`.** Same demotion, without the "at least one" half —
-   *   a theme with no entry pass is a legitimate design.
+   * - **At most one `pass`, and one `passNoQr`.** Same demotion, without the
+   *   "at least one" half — a theme with no entry pass is a legitimate design.
    *
    * The cover is also pinned visible: hiding it would leave the guest with no
    * screen to tap, which reads as a broken invitation rather than a hidden one.
@@ -628,7 +628,7 @@ export function useBuilderState(
             if (entry.id === id) return { ...entry, ...next };
             // Demote whichever scene held the singleton role being claimed.
             if (
-              (promotedTo === "cover" || promotedTo === "pass") &&
+              (promotedTo === "cover" || promotedTo === "pass" || promotedTo === "passNoQr") &&
               entry.role === promotedTo
             ) {
               return { ...entry, role: "flow" as const };
@@ -643,8 +643,8 @@ export function useBuilderState(
 
   /**
    * Append a scene. It lands before the entry pass when one exists — the pass
-   * is the end of the guest's journey, so a new screen almost always belongs
-   * ahead of it rather than after.
+   * (either of them) is the end of the guest's journey, so a new screen almost
+   * always belongs ahead of it rather than after.
    */
   const addScene = useCallback(
     () => {
@@ -660,7 +660,7 @@ export function useBuilderState(
           visible: true,
           requires: null,
         };
-        const passIndex = scenes.findIndex((s) => s.role === "pass");
+        const passIndex = scenes.findIndex((s) => s.role === "pass" || s.role === "passNoQr");
         if (passIndex === -1) scenes.push(entry);
         else scenes.splice(passIndex, 0, entry);
         return { ...draft, scenes };

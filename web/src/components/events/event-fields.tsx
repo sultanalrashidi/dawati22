@@ -88,12 +88,15 @@ export function EventFields({
   themeOptions,
   defaults,
   hideName = false,
+  hasQr = true,
 }: {
   locale: Locale;
   dict: Dictionary;
   themeOptions: ThemeOption[];
   /** Absent on the create form, where the sample texts are the starting point. */
   defaults?: EventFieldDefaults;
+  /** Whether this invitation has a barcode — the design previews end on that card. */
+  hasQr?: boolean;
   /**
    * Leaves the event-name input out. The draft page composes the name from the
    * couple server-side (readEventForm's `composeName`), so asking would only
@@ -312,6 +315,7 @@ export function EventFields({
           options={themeOptions}
           defaultKey={defaults?.themeKey}
           allowCustomRequest={!defaults}
+          hasQr={hasQr}
         />
       </div>
 

@@ -17,8 +17,10 @@ const SAMPLE_COUPLE = {
 };
 
 // All three standard note toggles on, so the gallery shows the same note
-// lines a guest gets ahead of the host's own notes.
+// lines a guest gets ahead of the host's own notes — except the one asking
+// guests to show their code, on a preview of an invitation that has none.
 const SAMPLE_NOTE_FLAGS = { noteNoPhotos: true, noteNoChildren: true, noteShowPass: true };
+const SAMPLE_NOTE_FLAGS_NO_QR = { ...SAMPLE_NOTE_FLAGS, noteShowPass: false };
 const SAMPLE_NOTES = "الحضور بالزي الرسمي";
 
 const SAMPLE_EVENT = {
@@ -66,6 +68,12 @@ const SAMPLE_EVENT = {
   allowGuestPartySize: true,
 };
 
+const SAMPLE_EVENT_NO_QR = {
+  ...SAMPLE_EVENT,
+  ...SAMPLE_NOTE_FLAGS_NO_QR,
+  notesAr: noteLines(SAMPLE_NOTE_FLAGS_NO_QR, SAMPLE_NOTES).join("\n"),
+};
+
 const SAMPLE_GUEST = { nameAr: "أم فهد", allowedCount: 3 };
 
 export function ThemePreviewDialog({
@@ -76,12 +84,19 @@ export function ThemePreviewDialog({
   trigger,
   open,
   onOpenChange,
+  hasQr = true,
 }: {
   /** All color variants of this design — a single-item array for a standalone (non-family) theme. */
   variants: Array<{ id: string; config: ThemeConfig; builder?: BuilderTheme }>;
   initialVariantId: string;
   themeCategory?: string;
   dict: Dictionary;
+  /**
+   * False previews an invitation sold without a barcode: it ends on that card
+   * (the design's own no-barcode pass, when it has one) and drops the
+   * "show your code at the door" note.
+   */
+  hasQr?: boolean;
   /** A single button-like element (e.g. `<button>...</button>`) — rendered as the trigger itself, not wrapped in one. */
   trigger?: ReactElement;
   open?: boolean;
@@ -129,10 +144,11 @@ export function ThemePreviewDialog({
               // invitation: no page background, none of its own artwork.
               builder={active.builder}
               themeCategory={themeCategory}
-              event={SAMPLE_EVENT}
+              event={hasQr ? SAMPLE_EVENT : SAMPLE_EVENT_NO_QR}
               guest={SAMPLE_GUEST}
               status="SENT"
               qrDataUrl={null}
+              hasQr={hasQr}
               mode="preview"
             />
           </div>

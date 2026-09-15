@@ -22,6 +22,7 @@ export function ActivatePicker({
   signedIn,
   initialTier,
   initialCount,
+  compareHref,
 }: {
   locale: Locale;
   dict: Dictionary;
@@ -31,6 +32,8 @@ export function ActivatePicker({
   signedIn: boolean;
   initialTier: Tier;
   initialCount: number;
+  /** Where «وش الفرق بين الخيارين؟» jumps to — the comparison under the picker. */
+  compareHref?: string;
 }) {
   return (
     <InvitationPicker
@@ -40,6 +43,7 @@ export function ActivatePicker({
       initialTier={initialTier}
       initialCount={initialCount}
       action={{ kind: "order", eventId, signedIn }}
+      compareHref={compareHref}
     />
   );
 }

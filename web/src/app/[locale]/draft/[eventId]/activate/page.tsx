@@ -9,6 +9,8 @@ import { couplesFor } from "@/lib/events/service";
 import { resolveDraftAccess } from "@/lib/drafts/service";
 import { ActivatePicker } from "@/components/drafts/activate-picker";
 import { DraftSteps } from "@/components/drafts/draft-steps";
+import { TierComparison } from "@/components/plans/tier-comparison";
+import { walletPassesConfigured } from "@/lib/wallet/availability";
 import {
   SAMPLE_BRIDE_GIVEN,
   SAMPLE_GROOM_GIVEN,
@@ -134,8 +136,13 @@ export default async function ActivateDraftPage({
             // that way — the whole reason that choice was carried this far.
             initialTier={draft.intendedTier === InvitationTier.NO_QR ? "NO_QR" : "WITH_QR"}
             initialCount={draft.intendedCount ?? 0}
+            compareHref="#compare"
           />
           <p className="text-xs leading-relaxed text-fg-muted">{d.activateWatermarkNote}</p>
+          {/* The same comparison as /plans, at the step where the choice costs
+              money — many arrive here straight from the gallery and never saw
+              the pricing page. */}
+          <TierComparison dict={dict} walletAvailable={walletPassesConfigured()} />
         </>
       )}
     </div>

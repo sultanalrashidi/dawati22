@@ -6,8 +6,10 @@ import { logger } from "@/lib/logger";
 import { isMoyasarConfigured, fetchMoyasarPayment, sarToHalalas } from "@/lib/payments/moyasar";
 import { EventStatus, OrderKind, OrderStatus, PaymentProvider } from "@/generated/prisma/client";
 import { InvitationTier } from "@/generated/prisma/enums";
-import { isValidInvitationCount, totalSar } from "@/lib/orders/pricing";
+import { isValidInvitationCount, totalHalalas } from "@/lib/orders/pricing";
 import { offerUnitPrice } from "@/lib/orders/offer";
+import { discountHalalas } from "@/lib/discounts/rules";
+import { DiscountError, orderCodeRefusal, requireUsableCode } from "@/lib/discounts/service";
 import { getPriceOffer } from "@/lib/settings/service";
 import { deliverPaidDesign } from "@/lib/design-requests/service";
 import { orderTerms } from "@/lib/orders/terms";
@@ -103,11 +105,12 @@ export async function getLivePricing(now: Date = new Date()): Promise<LivePricin
  * any running offer) and the total is computed server-side, so a customer
  * cannot post a price. That was
  * already true of the old package flow (only a planId was posted) and it has to
- * stay true now that a quantity is posted too.
+ * stay true now that a quantity is posted too. A discount code is the same: she
+ * posts the code, and what it takes off is worked out here.
  */
 export async function createPerInvitationOrder(
   userId: string,
-  input: { tier: InvitationTier; count: number; draftEventId: string },
+  input: { tier: InvitationTier; count: number; draftEventId: string; discountCode?: string | null },
 ) {
   if (!isValidInvitationCount(input.count)) throw new OrderError("Invalid invitation count");
 
@@ -144,6 +147,13 @@ export async function createPerInvitationOrder(
   const rate = input.tier === InvitationTier.WITH_QR ? pricing.withQr : pricing.noQr;
   if (!rate) throw new OrderError("Pricing not available");
 
+  // The code is checked BEFORE the draft's current order is superseded below:
+  // a refused code must leave her order exactly as it was, still payable.
+  const code = input.discountCode ? await requireUsableCode(input.discountCode) : null;
+  const subtotal = totalHalalas(input.count, rate.unitPrice);
+  const off = code ? discountHalalas(subtotal, code.kind, Number(code.value)) : 0;
+  const amountHalalas = subtotal - off;
+
   // At most one payable order per draft, ever.
   //
   // Changing the guest count and pressing pay again used to leave the first
@@ -169,12 +179,91 @@ export async function createPerInvitationOrder(
       // A frozen copy of today's rate — the offer price while one runs — so
       // re-pricing, or the offer ending, never re-prices this sale.
       unitPrice: rate.unitPrice.toFixed(2),
-      amount: totalSar(input.count, rate.unitPrice),
+      amount: (amountHalalas / 100).toFixed(2),
+      discountCodeId: code?.id ?? null,
+      discountAmount: code ? (off / 100).toFixed(2) : null,
       currency: rate.currency,
-      provider: isMoyasarConfigured() ? PaymentProvider.MOYASAR : PaymentProvider.MOCK,
+      // Nothing left to charge means no card at all — see settleFreeOrder.
+      provider:
+        amountHalalas === 0
+          ? PaymentProvider.FREE
+          : isMoyasarConfigured()
+            ? PaymentProvider.MOYASAR
+            : PaymentProvider.MOCK,
       idempotencyKey: randomUUID(),
     },
   });
+}
+
+/**
+ * The same invitations, priced again with a code — or without one. Applying or
+ * removing a code raises a fresh order rather than editing this one: an
+ * order's amount never changes once a card form may have been shown for it, so
+ * a payment in flight can only ever match the order it was started for.
+ */
+export async function repriceOrderWithCode(userId: string, orderId: string, discountCode: string | null) {
+  const order = await getOwnedOrder(orderId, userId);
+  if (!order) throw new OrderError("Order not found");
+  if (!isPayableOrderStatus(order.status)) throw new OrderError("Order is not payable");
+  if (order.kind !== OrderKind.INVITATIONS || !order.draftEventId || !order.tier || !order.invitationCount) {
+    throw new OrderError("This order takes no discount code");
+  }
+  return createPerInvitationOrder(userId, {
+    tier: order.tier,
+    count: order.invitationCount,
+    draftEventId: order.draftEventId,
+    discountCode,
+  });
+}
+
+/**
+ * Settles an order a discount code made free: no card, so no Moyasar — it
+ * becomes PAID here and is delivered like any other paid order.
+ *
+ * With no money involved the code CAN still be refused at the last moment, so
+ * it is checked again. The use limit is then enforced after the claim but
+ * before anything is delivered: of the paid orders carrying the code, only
+ * the first `maxUses` keep it. Two customers settling the last use at the same
+ * instant both see both rows, rank them the same way, and exactly one wins;
+ * the other goes back to PENDING, where her checkout offers to continue
+ * without the code.
+ */
+export async function settleFreeOrder(orderId: string, userId: string) {
+  const order = await getOwnedOrder(orderId, userId);
+  if (!order) throw new OrderError("Order not found");
+  if (order.status === OrderStatus.PAID) return order;
+  if (!isPayableOrderStatus(order.status)) throw new OrderError("Order is not payable");
+  if (order.provider !== PaymentProvider.FREE || Number(order.amount) !== 0 || !order.discountCodeId) {
+    throw new OrderError("Order is not free");
+  }
+  const refusal = await orderCodeRefusal(order.discountCodeId);
+  if (refusal) throw new DiscountError(refusal);
+
+  const claimed = await prisma.order.updateMany({
+    where: { id: order.id, status: { in: PAYABLE_ORDER_STATUSES } },
+    data: { status: OrderStatus.PAID, paidAt: new Date(), providerRef: `free_${order.id}` },
+  });
+  if (claimed.count === 0) return order; // Settled a moment ago by her other tab.
+
+  const code = await prisma.discountCode.findUnique({ where: { id: order.discountCodeId } });
+  if (code?.maxUses != null) {
+    const holders = await prisma.order.findMany({
+      where: { discountCodeId: code.id, status: OrderStatus.PAID },
+      orderBy: [{ paidAt: "asc" }, { id: "asc" }],
+      take: code.maxUses,
+      select: { id: true },
+    });
+    if (!holders.some((holder) => holder.id === order.id)) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: { status: OrderStatus.PENDING, paidAt: null, providerRef: null },
+      });
+      throw new DiscountError("usedUp");
+    }
+  }
+
+  await fulfilPaidOrder(order);
+  return order;
 }
 
 /**
@@ -257,7 +346,10 @@ async function allocateReferenceCode(): Promise<string> {
 }
 
 export async function getOwnedOrder(orderId: string, userId: string) {
-  const order = await prisma.order.findUnique({ where: { id: orderId }, include: { plan: true } });
+  const order = await prisma.order.findUnique({
+    where: { id: orderId },
+    include: { plan: true, discountCode: { select: { code: true } } },
+  });
   if (!order || order.userId !== userId) return null;
   return order;
 }

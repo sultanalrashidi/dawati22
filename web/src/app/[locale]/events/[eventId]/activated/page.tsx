@@ -93,7 +93,8 @@ export default async function ActivatedPage({
         <Row label={d.receiptTier} value={terms.hasQr ? dict.plans.tierQr : dict.plans.tierNoQr} />
         <Row
           label={d.receiptAmount}
-          value={`${nf.format(terms.total)} ${dict.common.sar}`}
+          // Zero only when a discount code covered all of it.
+          value={terms.total === 0 ? dict.checkout.free : `${nf.format(terms.total)} ${dict.common.sar}`}
         />
         {paidAt && (
           <Row

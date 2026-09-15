@@ -7,9 +7,17 @@ import { getOwnedOrder, paidOrderDestination } from "@/lib/orders/service";
 import { isPayableOrderStatus } from "@/lib/orders/status";
 import { orderSummaryLabel } from "@/lib/orders/terms";
 import { isMoyasarConfigured, moyasarFormConfig } from "@/lib/payments/moyasar";
-import { confirmMockPaymentAction } from "@/lib/orders/actions";
+import {
+  applyDiscountCodeAction,
+  confirmMockPaymentAction,
+  removeDiscountCodeAction,
+  settleFreeOrderAction,
+} from "@/lib/orders/actions";
+import { orderCodeRefusal } from "@/lib/discounts/service";
+import { isDiscountRefusal } from "@/lib/discounts/rules";
 import { MoyasarForm } from "@/components/checkout/moyasar-form";
-import { OrderStatus, Role } from "@/generated/prisma/client";
+import { PendingSubmit } from "@/components/checkout/pending-submit";
+import { OrderKind, OrderStatus, PaymentProvider, Role } from "@/generated/prisma/client";
 import { supportWhatsAppUrl } from "@/lib/support";
 
 /*
@@ -43,6 +51,23 @@ export default async function CheckoutPage({
 
   const planName = orderSummaryLabel(order, locale, dict);
   const boundConfirmMock = confirmMockPaymentAction.bind(null, order.id, locale);
+  const c = dict.checkout;
+  const money = (sar: number) =>
+    `${sar.toLocaleString(locale === "ar" ? "ar-SA" : "en-US")} ${dict.common.sar}`;
+
+  const payable = isPayableOrderStatus(order.status);
+  // Only an order for invitations, priced per invitation, takes a code: the
+  // design fee is a quoted price for one piece of work.
+  const takesCode =
+    order.kind === OrderKind.INVITATIONS &&
+    Boolean(order.draftEventId && order.tier && order.invitationCount);
+  // A code already on the order is asked again before any card form is
+  // offered: switched off, expired or used up since, it no longer prices this.
+  const staleCode =
+    payable && order.discountCodeId ? await orderCodeRefusal(order.discountCodeId) : null;
+  const codeNotice = isDiscountRefusal(search?.code) ? c.codeErrors[search.code] : null;
+  const isFree = order.provider === PaymentProvider.FREE && Number(order.amount) === 0;
+  const discount = order.discountAmount !== null ? Number(order.discountAmount) : null;
   // After a declined card the order is FAILED and the form comes back — so the
   // page says what happened and that trying again is fine. `?error=1` alone
   // covers the rarer refusal that leaves the order as it was.
@@ -64,21 +89,70 @@ export default async function CheckoutPage({
             <dt className="text-fg-muted">{dict.checkout.plan}</dt>
             <dd>{planName}</dd>
           </div>
+          {/* The stored figures, never re-derived: amount is what is charged,
+              and the price before the code is amount plus what it took off. */}
+          {discount !== null && order.discountCode && (
+            <>
+              <div className="flex justify-between text-sm">
+                <dt className="text-fg-muted">{c.subtotal}</dt>
+                <dd className="tabular-nums">{money(Number(order.amount) + discount)}</dd>
+              </div>
+              <div className="flex justify-between text-sm text-success">
+                <dt>
+                  {c.discountLine}{" "}
+                  <span dir="ltr" className="font-mono font-bold">
+                    {order.discountCode.code}
+                  </span>
+                </dt>
+                <dd className="tabular-nums">−{money(discount)}</dd>
+              </div>
+            </>
+          )}
           <div className="flex justify-between text-lg font-semibold">
             <dt>{dict.checkout.amount}</dt>
-            <dd>
-              {Number(order.amount).toLocaleString(locale === "ar" ? "ar-SA" : "en-US")} {dict.common.sar}
-            </dd>
+            <dd>{isFree ? c.free : money(Number(order.amount))}</dd>
           </div>
         </dl>
       </div>
 
       {notice && <p className="mt-4 text-sm text-danger">{notice}</p>}
 
-      {!isPayableOrderStatus(order.status) ? (
+      {!payable ? (
         <ClosedOrder locale={locale} order={order} dict={dict} />
+      ) : staleCode && order.discountCode ? (
+        // The code no longer holds. No card form — paying now would charge
+        // the old discounted price — only the way on without it.
+        <div className="mt-6 rounded-2xl border border-warning/40 bg-warning/5 p-5">
+          <p className="text-sm leading-relaxed text-fg">
+            {c.codeStale
+              .replace("{code}", order.discountCode.code)
+              .replace("{reason}", c.codeErrors[staleCode])}
+          </p>
+          <form action={removeDiscountCodeAction.bind(null, order.id, locale)} className="mt-4">
+            <PendingSubmit
+              label={c.continueWithoutCode}
+              pendingLabel={dict.common.loading}
+              className="h-11 w-full rounded-full bg-accent text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong"
+            />
+          </form>
+        </div>
+      ) : isFree ? (
+        // Normally settled the moment the code was applied; this is the way
+        // back in if that step was interrupted.
+        <div className="mt-6 rounded-2xl border border-success/30 bg-success/5 p-5">
+          <p className="text-base font-bold text-fg">{c.freeTitle}</p>
+          <p className="mt-1 text-sm leading-relaxed text-fg-muted">{c.freeBody}</p>
+          <form action={settleFreeOrderAction.bind(null, order.id, locale)} className="mt-4">
+            <PendingSubmit
+              label={c.freeActivate}
+              pendingLabel={dict.common.loading}
+              className="h-11 w-full rounded-full bg-accent text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong"
+            />
+          </form>
+        </div>
       ) : isMoyasarConfigured() ? (
         <div className="mt-6 space-y-4">
+          {takesCode && <DiscountCodeBox locale={locale} order={order} dict={dict} error={codeNotice} />}
           <h2 className="text-sm font-medium text-fg-muted">{dict.checkout.payMoyasar}</h2>
           {/* The order's own stored total is what gets charged and what the
               callback verifies against — the browser is never told a price it
@@ -96,6 +170,7 @@ export default async function CheckoutPage({
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-3">
+          {takesCode && <DiscountCodeBox locale={locale} order={order} dict={dict} error={codeNotice} />}
           <p className="rounded-xl bg-surface-2 px-4 py-3 text-sm text-fg-muted">{dict.checkout.mockNotice}</p>
           <form action={boundConfirmMock}>
             <button
@@ -116,6 +191,80 @@ export default async function CheckoutPage({
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * «عندك كود خصم؟» — or, once one is on the order, its name and a way to take it
+ * off. Both are plain forms: applying or removing a code raises a fresh order
+ * and lands on its checkout.
+ */
+function DiscountCodeBox({
+  locale,
+  order,
+  dict,
+  error,
+}: {
+  locale: Locale;
+  order: { id: string; discountCode: { code: string } | null };
+  dict: Dictionary;
+  /** Why the last code she typed was refused, printed under the field. */
+  error: string | null;
+}) {
+  const c = dict.checkout;
+  if (order.discountCode) {
+    return (
+      <form
+        action={removeDiscountCodeAction.bind(null, order.id, locale)}
+        className="flex items-center justify-between gap-3 rounded-xl border border-success/30 bg-success/5 px-4 py-3 text-sm"
+      >
+        <span className="text-fg">
+          {c.codeApplied}{" "}
+          <b dir="ltr" className="font-mono">
+            {order.discountCode.code}
+          </b>
+        </span>
+        <PendingSubmit
+          label={c.codeRemove}
+          pendingLabel={dict.common.loading}
+          className="shrink-0 text-xs font-bold text-danger hover:underline"
+        />
+      </form>
+    );
+  }
+  return (
+    <form
+      action={applyDiscountCodeAction.bind(null, order.id, locale)}
+      className="rounded-xl border border-border bg-surface p-4"
+    >
+      <label htmlFor="discount-code" className="text-sm font-medium text-fg">
+        {c.codeLabel}
+      </label>
+      <div className="mt-2 flex gap-2">
+        <input
+          id="discount-code"
+          name="code"
+          required
+          maxLength={30}
+          dir="ltr"
+          autoComplete="off"
+          autoCapitalize="characters"
+          spellCheck={false}
+          placeholder={c.codePlaceholder}
+          className="h-11 min-w-0 flex-1 rounded-full border border-border bg-bg px-4 font-mono uppercase text-fg outline-none placeholder:font-sans placeholder:normal-case focus:border-accent"
+        />
+        <PendingSubmit
+          label={c.codeApply}
+          pendingLabel={dict.common.loading}
+          className="h-11 shrink-0 rounded-full border border-accent px-5 text-sm font-bold text-accent transition-colors hover:bg-accent hover:text-accent-fg"
+        />
+      </div>
+      {error && (
+        <p role="alert" className="mt-2 text-sm text-danger">
+          {error}
+        </p>
+      )}
+    </form>
   );
 }
 

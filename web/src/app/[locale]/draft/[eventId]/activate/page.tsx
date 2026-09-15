@@ -141,6 +141,9 @@ export default async function ActivateDraftPage({
             compareHref="#compare"
           />
           <p className="text-xs leading-relaxed text-fg-muted">{d.activateWatermarkNote}</p>
+          {/* The code box is on the checkout, one step on — said here so a
+              customer holding a code does not go looking for it on this page. */}
+          <p className="text-xs font-medium leading-relaxed text-fg">{d.activateCodeHint}</p>
           {/* The same comparison as /plans, at the step where the choice costs
               money — many arrive here straight from the gallery and never saw
               the pricing page. */}

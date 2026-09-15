@@ -21,7 +21,10 @@
 --   the two test accounts (+966500000004, +966500000006) — the on-screen-code
 --   bypass numbers, kept so the panel switch still has accounts to work with
 --   every design: themes, colours, artwork, layouts, typography, fonts
---   the price list (PricingRate) and the panel switches (AppSetting)
+--   the price list (PricingRate) and the panel switches (AppSetting), which
+--   include the price offer
+--   the discount codes (DiscountCode). Their use counts start again from zero,
+--   because uses are counted from paid orders and those go
 --   the archived legacy plans, which are kept as a record of what was sold
 --
 -- NOT touched: files already uploaded to Blob storage. Theme artwork is still

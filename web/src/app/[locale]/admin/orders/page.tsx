@@ -119,6 +119,13 @@ export default async function AdminOrdersPage({
                 <p className="font-medium text-fg">
                   {orderSummaryLabel(order, locale, dict)} — {Number(order.amount)} {dict.common.sar}
                 </p>
+                {order.discountCode && order.discountAmount !== null && (
+                  <p className="mt-0.5 text-sm text-success">
+                    {a.discountOrderLine
+                      .replace("{code}", order.discountCode.code)
+                      .replace("{amount}", nf.format(Number(order.discountAmount)))}
+                  </p>
+                )}
                 <p className="mt-0.5 text-sm text-fg-muted">
                   {dict.admin.customer}: {order.user.name}
                   {order.user.phone && (

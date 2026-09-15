@@ -157,6 +157,42 @@ enum OrderStatus {
 enum PaymentProvider {
   MOCK
   MOYASAR
+  /// Nothing to charge: a discount code took the whole amount, so the order is
+  /// settled at once without a card.
+  FREE
+}
+
+/// Percent off an order, or a fixed number of riyals off it.
+enum DiscountKind {
+  PERCENT
+  FIXED
+}
+
+/// A discount code the owner creates in the admin and hands out. It applies to
+/// invitation orders only, entered at checkout.
+///
+/// Uses are not stored: they are counted from the PAID orders carrying the
+/// code, so a declined or abandoned checkout never spends one, and there is no
+/// counter to drift away from the orders it is meant to count.
+model DiscountCode {
+  id        String       @id @default(cuid())
+  /// Upper-case letters, digits and dashes. What the customer types is folded
+  /// to the same shape before it is looked up.
+  code      String       @unique
+  kind      DiscountKind
+  /// 1-100 for PERCENT; riyals for FIXED.
+  value     Decimal      @db.Decimal(10, 2)
+  /// Paid orders that may carry it. Null means no limit.
+  maxUses   Int?
+  /// The window it works in; either end may be left open.
+  startsAt  DateTime?
+  endsAt    DateTime?
+  /// The owner's off switch.
+  active    Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  orders Order[]
 }
 
 /// What an order buys. Invitations are the product; a custom design is a
@@ -189,6 +225,14 @@ model Order {
   unitPrice       Decimal?        @db.Decimal(10, 2)
   /// Total actually charged. The only value Moyasar is reconciled against.
   amount          Decimal         @db.Decimal(10, 2)
+  /// The code applied at checkout. Restrict: a code that has touched an order
+  /// is switched off, never deleted, so the order can still say where its
+  /// discount came from.
+  discountCodeId  String?
+  discountCode    DiscountCode?   @relation(fields: [discountCodeId], references: [id], onDelete: Restrict)
+  /// Riyals the code took off, already subtracted from `amount`; the price
+  /// before the code is amount + discountAmount.
+  discountAmount  Decimal?        @db.Decimal(10, 2)
   currency        String          @default("SAR")
   status          OrderStatus     @default(PENDING)
   provider        PaymentProvider @default(MOCK)
@@ -212,6 +256,7 @@ model Order {
 
   @@index([userId, status])
   @@index([draftEventId])
+  @@index([discountCodeId, status])
 }
 
 // ---------------------------------------------------------------------------

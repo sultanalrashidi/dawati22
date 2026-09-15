@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireUserOrThrow } from "@/lib/auth/guards";
 import {
   setUserBlocked,
@@ -23,6 +24,15 @@ import { buildPriceOffer, type OfferInputError } from "@/lib/orders/offer";
 import { listPricingRates } from "@/lib/orders/service";
 import { getPriceOffer, setPriceOffer } from "@/lib/settings/service";
 import { riyadhDateTimeLocalToDate } from "@/lib/dates";
+import { buildDiscountCode, type CodeInputError } from "@/lib/discounts/rules";
+import {
+  DiscountCodeTakenError,
+  createDiscountCode,
+  deleteUnusedDiscountCode,
+  getDiscountCode,
+  setDiscountCodeActive,
+  updateDiscountCode,
+} from "@/lib/discounts/service";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 import { logger } from "@/lib/logger";
 
@@ -240,6 +250,82 @@ export async function stopPriceOfferAction(locale: string) {
   const offer = await getPriceOffer();
   if (offer) await setPriceOffer({ ...offer, enabled: false });
   revalidatePricePages(locale);
+}
+
+export type DiscountCodeFormState = { error?: CodeInputError | "taken"; saved?: boolean } | null;
+
+/** An empty `datetime-local` is an open end, not a mistake. */
+function optionalRiyadhDate(value: FormDataEntryValue | null): Date | null {
+  const text = String(value ?? "").trim();
+  return text ? riyadhDateTimeLocalToDate(text) : null;
+}
+
+function readDiscountCodeForm(formData: FormData, code: string) {
+  const maxUses = String(formData.get("maxUses") ?? "").trim();
+  return buildDiscountCode(
+    {
+      code,
+      kind: String(formData.get("kind") ?? ""),
+      value: Number(formData.get("value")),
+      maxUses: maxUses === "" ? null : Number(maxUses),
+      startsAt: optionalRiyadhDate(formData.get("startsAt")),
+      endsAt: optionalRiyadhDate(formData.get("endsAt")),
+    },
+    new Date(),
+  );
+}
+
+function discountsPath(locale: string) {
+  return `/${isLocale(locale) ? locale : defaultLocale}/admin/discounts`;
+}
+
+export async function createDiscountCodeAction(
+  locale: string,
+  _prev: DiscountCodeFormState,
+  formData: FormData,
+): Promise<DiscountCodeFormState> {
+  await requireAdmin();
+  const built = readDiscountCodeForm(formData, String(formData.get("code") ?? ""));
+  if ("error" in built) return { error: built.error };
+  try {
+    await createDiscountCode(built.code);
+  } catch (err) {
+    if (err instanceof DiscountCodeTakenError) return { error: "taken" };
+    throw err;
+  }
+  revalidatePath(discountsPath(locale));
+  return { saved: true };
+}
+
+/** Everything but the code itself, which stays as customers were given it. */
+export async function updateDiscountCodeAction(
+  id: string,
+  locale: string,
+  _prev: DiscountCodeFormState,
+  formData: FormData,
+): Promise<DiscountCodeFormState> {
+  await requireAdmin();
+  const existing = await getDiscountCode(id);
+  if (!existing) return { error: "code" };
+  const built = readDiscountCodeForm(formData, existing.code);
+  if ("error" in built) return { error: built.error };
+  const { kind, value, maxUses, startsAt, endsAt } = built.code;
+  await updateDiscountCode(id, { kind, value, maxUses, startsAt, endsAt });
+  revalidatePath(discountsPath(locale));
+  redirect(discountsPath(locale));
+}
+
+export async function setDiscountCodeActiveAction(id: string, locale: string, active: boolean) {
+  await requireAdmin();
+  await setDiscountCodeActive(id, active);
+  revalidatePath(discountsPath(locale));
+}
+
+/** Refused quietly for a code any order carries — the page offers «إيقاف» for those instead. */
+export async function deleteDiscountCodeAction(id: string, locale: string) {
+  await requireAdmin();
+  await deleteUnusedDiscountCode(id);
+  revalidatePath(discountsPath(locale));
 }
 
 export type GrantActionState = { error?: string; saved?: { total: number; granted: number } } | null;

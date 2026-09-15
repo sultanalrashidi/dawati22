@@ -244,7 +244,12 @@ export async function listOrders(search: OrderSearch = {}) {
   const [orders, total] = await Promise.all([
     prisma.order.findMany({
       where,
-      include: { user: true, plan: true, event: { select: { id: true, name: true, referenceCode: true } } },
+      include: {
+        user: true,
+        plan: true,
+        event: { select: { id: true, name: true, referenceCode: true } },
+        discountCode: { select: { code: true } },
+      },
       orderBy: { createdAt: "desc" },
       take: PAGE,
     }),

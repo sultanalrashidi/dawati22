@@ -504,6 +504,7 @@ function TextContent({
     <FittedText
       lines={lines}
       editing={editing}
+      referenceSize={style.fontSize}
       style={{ ...textStyleToCss(style, typography), justifyContent: justifyFor(style.align) }}
     />
   );

@@ -37,11 +37,11 @@ import {
 } from "@/lib/themes/builder/content";
 import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
 import { passSceneFor } from "@/lib/themes/builder/no-qr-pass";
+import { STAGE_RESERVE, stageMaxWidth } from "@/lib/themes/builder/stage-size";
 import {
   breakpointForWidth,
   type Breakpoint,
   type LayoutDoc,
-  type SceneCanvas,
   type SceneDef,
   type SceneId,
   type SceneRequirement,
@@ -454,17 +454,12 @@ function useStageBreakpoint(enabled: boolean): Breakpoint {
   return breakpoint;
 }
 
-/**
- * A builder stage is a fixed-aspect box that fills the width it's given, so on
- * a short screen a tall scene would run off the bottom. Capping the *width* by
- * the space left after the surrounding chrome keeps the whole design visible
- * without touching the layout document's own proportions.
- */
-function stageMaxWidth(canvas: SceneCanvas, reserve: string) {
-  // The page's fixed bottom chrome (see `bottomInset`) is space the stage
-  // cannot use either.
-  return `min(26rem, calc((100dvh - ${reserve} - var(--dawati-bottom-inset, 0px)) * ${canvas.aspectW} / ${canvas.aspectH}))`;
-}
+// A builder stage is a fixed-aspect box that fills the width it's given, so on
+// a short screen a tall scene would run off the bottom. `stageMaxWidth` caps
+// the *width* by the space left after the surrounding chrome, which keeps the
+// whole design visible without touching the layout document's own
+// proportions. It lives in stage-size.ts so the fit check sizes stages the way
+// this page does.
 
 /**
  * What a stage needs from the invitation beyond its text content.
@@ -946,7 +941,7 @@ function InvitationScreens({
         <div
           className="relative flex w-full flex-col items-center gap-6"
           style={{
-            maxWidth: stageMaxWidth(coverScene.canvas, "9rem"),
+            maxWidth: stageMaxWidth(coverScene.canvas, STAGE_RESERVE.cover),
             opacity: isOpening ? 0 : 1,
             transition: "opacity 0.35s ease 0.35s",
           }}
@@ -1318,7 +1313,7 @@ function InvitationScreens({
               showHint={index < flowScenes.length - 1 || somethingFollowsFlow}
               hintLabel={index === 0 ? g.scrollHint : undefined}
             >
-              <div className="w-full" style={{ maxWidth: stageMaxWidth(scene.canvas, "10rem") }}>
+              <div className="w-full" style={{ maxWidth: stageMaxWidth(scene.canvas, STAGE_RESERVE.flow) }}>
                 <BuilderStage
                   builder={builder}
                   scene={scene.id}
@@ -1647,7 +1642,7 @@ function InvitationScreens({
                 editor's preview — and otherwise shows the thank-you line. */}
             {!hasQr || currentQr || mode === "preview" ? (
               builder && builderContent && passScene ? (
-                <div className="w-full" style={{ maxWidth: stageMaxWidth(passScene.canvas, "12rem") }}>
+                <div className="w-full" style={{ maxWidth: stageMaxWidth(passScene.canvas, STAGE_RESERVE.pass) }}>
                   <BuilderStage
                     builder={builder}
                     scene={passScene.id}

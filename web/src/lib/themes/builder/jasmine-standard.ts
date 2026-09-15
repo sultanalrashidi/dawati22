@@ -80,25 +80,73 @@ export interface StandardResult { layout: LayoutDoc; variants: { slug: string; o
 export const DARK_PAGE_FAMILIES = ['forest-green-flowers'];
 const PAGE_INK = { fg: '#FBF6EC', fgMuted: '#E8DDC8' };
 
-function onDarkPage(layout: LayoutDoc, variants: StandardResult['variants']): { layout: LayoutDoc; variants: StandardResult['variants'] } {
-  const next = { ...layout, page: { ...layout.page, overlayColor: '#000000', overlayOpacity: Math.max(layout.page.overlayOpacity, 0.18) } };
-  const onCards = layout.layers.filter(l => ['cover', 'open', 'pass'].includes(l.scene) && (l.type === 'text' || l.type === 'seal'));
+/**
+ * أزهار الخليج's page art changes with the colour. Most are pale paper, but
+ * the burgundy is dark velvet and the mocha dark linen, where its dark inks
+ * measured 1.5:1 and 1.4:1 behind the flow text (light ink: 8.2:1 and
+ * 10.2:1). Only those colours get the dark-page treatment; the page tint is
+ * shared by every colour, so it stays as it is.
+ */
+export const DARK_PAGE_COLOURS: Readonly<Record<string, readonly string[]>> = {
+  'floral-gulf-couple': ['floral-gulf-couple-03-rosy-burgundy-ivory', 'floral-gulf-couple-05-dark-mocha-antique-gold'],
+};
+
+/**
+ * Of those, colours whose entry card is dark as well: the mocha's pass art is
+ * dark brown, where its old ink measured 1.1:1 (light ink: 13.1:1). Its pass
+ * lines take the light page ink instead of keeping theirs; its opening card
+ * and the gold wax of its seal stay light, so those keep their dark ink.
+ */
+export const DARK_PASS_CARD_COLOURS: readonly string[] = ['floral-gulf-couple-05-dark-mocha-antique-gold'];
+
+/**
+ * Colours whose page art is a mid tone, where light ink reads worse than
+ * dark: their inks are darkened just until they read at 4.5:1 on the art
+ * behind the flow text, measured on a 390×664 phone. They read at 2.6:1
+ * (plum, muted), 2.8:1 (charcoal, muted) and 3.8:1 and 1.9:1 (petrol).
+ */
+export const DARKER_PAGE_INK: Readonly<Record<string, Partial<Pick<VariantPalette, 'fg' | 'fgMuted'>>>> = {
+  'floral-gulf-couple-04-plum-mauve-champagne': { fgMuted: '#493C46' },
+  'floral-gulf-couple-06-charcoal-black-ivory-gold': { fgMuted: '#665947' },
+  'floral-gulf-couple-07-petrol-blue-champagne': { fg: '#113035', fgMuted: '#282D2C' },
+};
+
+type ColourVariant = StandardResult['variants'][number];
+
+/**
+ * One colour's page text onto light ink. What sits on the cards — the cover
+ * and opening card, both entry passes and the seal — and the form's fields,
+ * which stand on the light surface colour, keep exactly the ink they had, now
+ * stated per colour; on a colour whose pass card is dark too, the pass lines
+ * go light with the page.
+ */
+export function lightPageInk<V extends ColourVariant>(layout: LayoutDoc, v: V): V {
+  if (!v.palette) return v;
+  const darkPass = DARK_PASS_CARD_COLOURS.includes(v.slug);
+  const cardScenes = new Set(layout.scenes
+    .filter(s => (s.role !== 'flow' || s.id === 'open') && !(darkPass && (s.role === 'pass' || s.role === 'passNoQr')))
+    .map(s => s.id));
+  const onCards = layout.layers.filter(l => cardScenes.has(l.scene) && (l.type === 'text' || l.type === 'seal'));
   const form = layout.layers.find(l => l.type === 'rsvp');
-  return { layout: next, variants: variants.map(v => {
-    if (!v.palette) return v;
-    const old = v.palette;
-    const hex = (ref: string) => ref.startsWith('@') ? (old[ref.slice(1) as keyof VariantPalette] as string | undefined) ?? ref : ref;
-    const overrides = structuredClone(v.overrides);
-    const keep = (id: string, key: string, colourRef: string) => {
-      const current = overrides[id]?.paint as Record<string, { color?: string }> | undefined;
-      if (current?.[key]?.color) return;
-      overrides[id] = { ...overrides[id], paint: { ...current, [key]: { ...current?.[key], color: hex(colourRef) } } };
-    };
-    for (const layer of onCards) if ('style' in layer) keep(layer.id, 'style', layer.style.color);
-    if (form?.type === 'rsvp') keep(form.id, 'fieldStyle', form.fieldStyle.color);
-    const palette = { ...old, ...PAGE_INK, accentFg: readableInk(old.accentFg, old.accent) };
-    return { ...v, palette, overrides };
-  }) };
+  const old = v.palette;
+  const hex = (ref: string) => ref.startsWith('@') ? (old[ref.slice(1) as keyof VariantPalette] as string | undefined) ?? ref : ref;
+  const overrides = structuredClone(v.overrides);
+  const keep = (id: string, key: string, colourRef: string) => {
+    const current = overrides[id]?.paint as Record<string, { color?: string }> | undefined;
+    if (current?.[key]?.color) return;
+    overrides[id] = { ...overrides[id], paint: { ...current, [key]: { ...current?.[key], color: hex(colourRef) } } };
+  };
+  for (const layer of onCards) if ('style' in layer) keep(layer.id, 'style', layer.style.color);
+  if (form?.type === 'rsvp') keep(form.id, 'fieldStyle', form.fieldStyle.color);
+  const palette = { ...old, ...PAGE_INK, accentFg: readableInk(old.accentFg, old.accent) };
+  return { ...v, palette, overrides };
+}
+
+/** The page ink one colour of a design takes: light on a dark page, darker on a mid-tone one. */
+export function pageInkFor<V extends ColourVariant>(family: string, layout: LayoutDoc, v: V): V {
+  const next = DARK_PAGE_FAMILIES.includes(family) || DARK_PAGE_COLOURS[family]?.includes(v.slug) ? lightPageInk(layout, v) : v;
+  const darker = DARKER_PAGE_INK[v.slug];
+  return darker && next.palette ? { ...next, palette: { ...next.palette, ...darker } } : next;
 }
 
 const STYLE_KEYS = ['style', 'titleStyle', 'numberStyle', 'labelStyle', 'timeStyle', 'itemStyle', 'fieldStyle'] as const;
@@ -473,10 +521,10 @@ export function applyJasmineStandard(design: StandardDesign, reference = jasmine
   const pass = passScene({ ...design, layout: doc }, layers.filter(l => l.scene === 'pass'), reference, removed, hidden);
   layers = [...layers.filter(l => l.scene !== 'pass'), ...pass.layers];
   doc.layers = layers;
-  const variants = design.variants.map((v, i) => ({ slug: v.slug, overrides: pass.overrides[i], palette: v.palette }));
+  const variants = design.variants.map((v, i) => pageInkFor(design.family, doc, { slug: v.slug, overrides: pass.overrides[i], palette: v.palette }));
   if (DARK_PAGE_FAMILIES.includes(design.family)) {
-    const dark = onDarkPage(doc, variants);
-    return { layout: dark.layout, variants: dark.variants, removed, hidden };
+    // A page that is dark in every colour is also tinted, for the art's lighter patches.
+    doc.page = { ...doc.page, overlayColor: '#000000', overlayOpacity: Math.max(doc.page.overlayOpacity, 0.18) };
   }
   return { layout: doc, variants, removed, hidden };
 }

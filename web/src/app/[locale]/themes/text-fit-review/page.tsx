@@ -28,15 +28,15 @@ function arrangement(overrides: LayoutOverrides): string {
 // it on one phone (`?phone=`) or at the 390px reference (`?reference=1`), with
 // the sample or long content (`?long=1`, `?venue=`), read from a catalogue
 // scripts/text-room.ts wrote into TEXT_FIT_DIR (`?which=live` or `proposed`).
-// Colours that differ only in colour are drawn once; `?only=` and `?scene=`
-// narrow it down and `?images=1` adds the artwork.
+// Colours that differ only in colour are drawn once unless `?every=1`;
+// `?only=` and `?scene=` narrow it down and `?images=1` adds the artwork.
 export default async function TextFitReviewPage({ searchParams }: {
-  searchParams: Promise<{ phone?: string; long?: string; venue?: string; which?: string; only?: string; scene?: string; reference?: string; images?: string }>;
+  searchParams: Promise<{ phone?: string; long?: string; venue?: string; which?: string; only?: string; scene?: string; reference?: string; images?: string; every?: string }>;
 }) {
   if (process.env.NODE_ENV !== 'development') notFound();
   const dir = process.env.TEXT_FIT_DIR;
   if (!dir) notFound();
-  const { phone: phoneId, long, venue, which = 'live', only, scene, reference, images } = await searchParams;
+  const { phone: phoneId, long, venue, which = 'live', only, scene, reference, images, every } = await searchParams;
   const phone = GUEST_PHONES.find(p => p.id === phoneId) ?? GUEST_PHONES[0];
   if (!/^[a-z]+$/.test(which)) notFound();
   const families = only?.split(',');
@@ -44,7 +44,7 @@ export default async function TextFitReviewPage({ searchParams }: {
   const designs: TextFitDesign[] = themes.filter(t => !families || families.includes(t.family)).map(theme => {
     const groups = new Map<string, TextFitDesign['variants'][number]>();
     for (const variant of theme.variants) {
-      const key = arrangement(variant.overrides ?? {});
+      const key = every === '1' ? variant.slug : arrangement(variant.overrides ?? {});
       const group = groups.get(key);
       if (group) group.slugs.push(variant.slug);
       else groups.set(key, { slugs: [variant.slug], palette: variant.palette, assets: variant.assets, overrides: variant.overrides ?? {} });

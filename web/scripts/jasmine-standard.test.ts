@@ -5,7 +5,7 @@ import { doveDesign } from '../src/lib/themes/builder/dove-velvet';
 import { floralDesigns } from '../src/lib/themes/builder/floral-pair';
 import { assertLayoutDoc } from '../src/lib/themes/builder/schema';
 import { contrast } from '../src/lib/themes/builder/collection-standard';
-import { applyJasmineStandard, jasmineReference, PASS_PLANS, type StandardDesign } from '../src/lib/themes/builder/jasmine-standard';
+import { applyJasmineStandard, DARK_PAGE_COLOURS, DARKER_PAGE_INK, jasmineReference, pageInkFor, PASS_PLANS, type StandardDesign } from '../src/lib/themes/builder/jasmine-standard';
 import type { Layer, LayoutDoc, TextLayer, VariantPalette } from '../src/lib/themes/builder/types';
 import type { LayoutOverrides } from '../src/lib/themes/builder/resolve';
 
@@ -139,4 +139,40 @@ test('a dark page gets light ink while its ivory cards keep the ink they had', (
     const ink = (result.variants[0].overrides[line.id]?.paint as { style?: { color?: string } } | undefined)?.style?.color;
     assert.ok(ink && contrast(ink, palette.surface) >= 3, `${line.id} keeps a dark ink on the card`);
   }
+});
+
+test('أزهار الخليج: only its dark colours get light ink, and its mid-tone ones darker ink', () => {
+  const layout = assertLayoutDoc(structuredClone(designs.find(d => d.family === 'floral-candles')!.layout));
+  // A copy of the pass without its QR is a card too.
+  layout.scenes.push({ ...layout.scenes.find(s => s.id === 'pass')!, id: 'passNoQr', role: 'passNoQr' });
+  const card = layout.layers.find(l => l.scene === 'pass' && l.type === 'text')!;
+  layout.layers.push({ ...card, id: `${card.id}-noqr`, scene: 'passNoQr' });
+  const colour = (slug: string, fg: string, fgMuted: string) =>
+    ({ slug, overrides: {} as LayoutOverrides, palette: { bg: '#781D36', surface: '#F3E7D6', fg, fgMuted, accent: '#C49A54', accentFg: '#35101C' } });
+  const burgundy = colour('floral-gulf-couple-03-rosy-burgundy-ivory', '#5C172A', '#785962');
+  const petrol = colour('floral-gulf-couple-07-petrol-blue-champagne', '#153D43', '#5D6967');
+  const navy = colour('floral-gulf-couple-01-royal-navy-champagne', '#102445', '#526078');
+
+  const light = pageInkFor('floral-gulf-couple', layout, burgundy);
+  assert.equal(light.palette!.fg, '#FBF6EC');
+  assert.ok(contrast(light.palette!.fg, burgundy.palette.bg) >= 4.5 && contrast(light.palette!.fgMuted, burgundy.palette.bg) >= 4.5);
+  for (const line of layout.layers.filter(l => ['cover', 'open', 'pass', 'passNoQr'].includes(l.scene) && (l.type === 'text' || l.type === 'seal'))) {
+    const ink = (light.overrides[line.id]?.paint as { style?: { color?: string } } | undefined)?.style?.color;
+    assert.ok(ink && contrast(ink, burgundy.palette.surface) >= 3, `${line.id} keeps a dark ink on the card`);
+  }
+  // Flow text is not repainted: it follows the palette, now light.
+  assert.ok(!Object.keys(light.overrides).some(id => id.startsWith('f_') && id !== 'f_rsvp'));
+  assert.deepEqual(pageInkFor('floral-gulf-couple', layout, light), light, 'applying it again changes nothing');
+
+  // The mocha's pass card is dark too: its pass lines go light with the page, its opening card keeps its ink.
+  const mocha = pageInkFor('floral-gulf-couple', layout, colour('floral-gulf-couple-05-dark-mocha-antique-gold', '#2F2118', '#604B3B'));
+  assert.ok(!layout.layers.some(l => (l.scene === 'pass' || l.scene === 'passNoQr') && mocha.overrides[l.id]), 'no pass line is held to the old ink');
+  assert.ok(layout.layers.filter(l => l.scene === 'open' && l.type === 'text').every(l => mocha.overrides[l.id]?.paint), 'the opening card keeps its ink');
+
+  const darker = pageInkFor('floral-gulf-couple', layout, petrol);
+  assert.deepEqual([darker.palette!.fg, darker.palette!.fgMuted], [DARKER_PAGE_INK[petrol.slug].fg, DARKER_PAGE_INK[petrol.slug].fgMuted]);
+  assert.deepEqual(darker.overrides, {}, 'darker ink still reads on the cards, so nothing is repainted');
+  // The pale colours are untouched.
+  assert.deepEqual(pageInkFor('floral-gulf-couple', layout, navy), navy);
+  for (const slug of Object.values(DARK_PAGE_COLOURS).flat()) assert.ok(!(slug in DARKER_PAGE_INK), slug);
 });

@@ -144,7 +144,9 @@ export function SiteHeader({ locale, dict }: { locale: Locale; dict: Dictionary 
               title={n.scanFull}
               className="inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-accent-soft/60 bg-accent-soft/15 px-2 text-sm font-bold text-accent transition-colors hover:border-accent hover:bg-accent-soft/30 max-[359px]:gap-1 max-[359px]:text-[13px] sm:gap-2 sm:px-3.5"
             >
-              <ScanIcon className="h-[18px] w-[18px]" />
+              {/* The icon gives way on the smallest phones, so «تسجيل الدخول»
+                  still fits beside the pill. */}
+              <ScanIcon className="h-[18px] w-[18px] max-[389px]:hidden" />
               <span>{n.scan}</span>
             </Link>
             {/* Both are always in the markup; `signed-in:` and `customer:`

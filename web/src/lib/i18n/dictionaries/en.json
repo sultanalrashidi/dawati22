@@ -99,7 +99,7 @@
     "step3Title": "Share and follow the replies",
     "step3Body": "Send each guest their own link over WhatsApp, or let our team send them for you for free, and watch who accepted and who declined as it happens.",
     "doorTitle": "And on the night — how is the code scanned at the door?",
-    "doorSubtitle": "Every guest carries their own QR code inside their invitation, and it is scanned straight from your door team's phone — no scanner hardware, no app, no account.",
+    "doorSubtitle": "Every guest carries their own QR code inside their invitation, and it is scanned straight from your door team's phone — no scanner hardware, no app.",
     "door1Title": "Turn on the door PIN",
     "door1Body": "From your event page, set a PIN (4 to 8 digits) and hand it to your door team along with the event's reference code.",
     "door2Title": "They open \"Door team\"",
@@ -160,7 +160,7 @@
     "faq6Q": "Can you send the invitations for me?",
     "faq6A": "Yes, for free. In your invitation details choose “Ask the Dawati team to manage them”, then after activation add your guests' names and numbers and message us on WhatsApp — our team sends the invitations for you.",
     "footerLegal": "Legal",
-    "ctaStartFree": "Start your invitation free",
+    "ctaStartFree": "See the designs and try one free",
     "ctaStartFreeNote": "Design it and see it before you pay — no account, no card."
   },
   "plans": {
@@ -284,7 +284,7 @@
         {
           "group": "door",
           "label": "Scan guests in at the door from your door team's phone",
-          "hint": "No scanner hardware, no app, no account.",
+          "hint": "No scanner hardware, no app.",
           "qr": true,
           "noQr": false
         },
@@ -432,7 +432,12 @@
       "guestManagementSelf": "I'll manage guests myself",
       "guestManagementAdmin": "Ask the Dawati team to manage them",
       "rsvpRequiredLabel": "Require RSVP",
-      "allowGuestPartySizeLabel": "Let guests choose their party size (otherwise it's locked to the count you set per guest)",
+      "allowGuestPartySizeLabel": "Who sets the number of companions?",
+      "allowGuestPartySizeGuest": "The guest chooses",
+      "allowGuestPartySizeGuestHint": "They pick how many will come, up to the number you set for them.",
+      "allowGuestPartySizeHost": "I set it for each guest",
+      "allowGuestPartySizeHostHint": "The number you set counts in full; the guest can't change it.",
+      "companionsNotCountedNote": "Note: companions don't count against your invitations — a guest and their companions are one invitation.",
       "submit": "Create event",
       "reviewNoticeTitle": "Check your details before creating the event",
       "reviewNoticeBody": "The names, date and venue appear on every guest's invitation and entry pass. You can change them yourself until you send the first invitation; after that they are frozen, because your guests are holding them. Please check the spelling, date and time.",
@@ -470,7 +475,7 @@
       "capacityReached": "This event has reached its plan's invitation limit",
       "blocked": "Blocked",
       "gateAccessTitle": "Door team access",
-      "gateAccessHint": "Give your door team the reference code and a PIN of your choosing — they open the scanner from the \"Door team\" button at the top of the site, with no account and no app.",
+      "gateAccessHint": "Give your door team the reference code and a PIN of your choosing — they open the scanner from the \"Door team\" button at the top of the site, with no app.",
       "referenceCodeLabel": "Event reference code",
       "gatePinSetStatus": "Door team access is enabled",
       "gatePinNotSetStatus": "Door team access is not enabled yet",
@@ -526,7 +531,7 @@
         "nameNeedsPhone": "Repeated name — add her phone number"
       },
       "testInvitationTitle": "Test invitation",
-      "testInvitationBody": "A link that shows your invitation exactly as your guests receive it — open it yourself, or send it to your mother or sister. It uses none of your invitations, and any reply to it is not saved.",
+      "testInvitationBody": "A link that shows your invitation exactly as your guests receive it — open it yourself, or send it to your family. It uses none of your invitations, and any reply to it is not saved.",
       "testInvitationOpen": "Open the test invitation",
       "testInvitationCopy": "Copy link",
       "testInvitationCopied": "Copied",

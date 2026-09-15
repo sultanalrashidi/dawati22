@@ -110,7 +110,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <div className="mt-1 flex flex-col items-start gap-3">
             <Link
               href={`/${locale}/themes`}
-              className="inline-flex h-12 items-center rounded-full bg-accent px-7 text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-accent px-7 py-2 text-center text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
             >
               {h.ctaStartFree}
             </Link>
@@ -311,7 +311,7 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
               href={`/${locale}/themes`}
-              className="inline-flex h-12 items-center rounded-full bg-accent px-7 text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
+              className="inline-flex min-h-12 items-center justify-center rounded-full bg-accent px-7 py-2 text-center text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
             >
               {h.ctaStartFree}
             </Link>

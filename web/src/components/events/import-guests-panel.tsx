@@ -110,7 +110,7 @@ export function ImportGuestsPanel({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 text-sm font-bold text-accent hover:underline"
+        className="mt-3 h-10 w-full rounded-full bg-accent px-5 text-sm font-medium text-accent-fg transition-colors hover:bg-accent-strong sm:w-auto"
       >
         {d.importOpen}
       </button>

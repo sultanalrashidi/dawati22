@@ -342,14 +342,39 @@ export function EventFields({
         {f.rsvpRequiredLabel}
       </label>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          name="allowGuestPartySize"
-          defaultChecked={defaults?.allowGuestPartySize ?? true}
-        />
-        {f.allowGuestPartySizeLabel}
-      </label>
+      {/* Two answers to «who sets the companions?» rather than a checkbox,
+          which read as switching a feature on and off. The guest's answer
+          posts "on", so the form still reads it as the checkbox it replaced. */}
+      <div className="flex flex-col gap-2 text-sm">
+        <span className="text-fg-muted">{f.allowGuestPartySizeLabel}</span>
+        <label className="flex items-start gap-2">
+          <input
+            type="radio"
+            name="allowGuestPartySize"
+            value="on"
+            defaultChecked={defaults?.allowGuestPartySize ?? true}
+            className="mt-1"
+          />
+          <span>
+            {f.allowGuestPartySizeGuest}
+            <span className="mt-0.5 block text-xs text-fg-muted">{f.allowGuestPartySizeGuestHint}</span>
+          </span>
+        </label>
+        <label className="flex items-start gap-2">
+          <input
+            type="radio"
+            name="allowGuestPartySize"
+            value="off"
+            defaultChecked={!(defaults?.allowGuestPartySize ?? true)}
+            className="mt-1"
+          />
+          <span>
+            {f.allowGuestPartySizeHost}
+            <span className="mt-0.5 block text-xs text-fg-muted">{f.allowGuestPartySizeHostHint}</span>
+          </span>
+        </label>
+        <p className="rounded-lg bg-accent-soft/15 px-3 py-2 text-xs leading-relaxed text-fg">{f.companionsNotCountedNote}</p>
+      </div>
     </>
   );
 }

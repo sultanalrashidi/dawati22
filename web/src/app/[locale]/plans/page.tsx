@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { listPricingRates } from "@/lib/orders/service";
-import { InvitationTier } from "@/generated/prisma/enums";
+import { getLivePricing } from "@/lib/orders/service";
+import { offerNotice } from "@/lib/orders/offer-notice";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { walletPassesConfigured } from "@/lib/wallet/availability";
 import { InvitationPicker } from "@/components/plans/invitation-picker";
@@ -28,15 +28,12 @@ export default async function PlansPage({ params }: PageProps<"/[locale]/plans">
   const p = dict.plans;
 
   // Both rates live in the PricingRate table, seeded by the
-  // per_invitation_pricing migration. If one is missing the page says so
-  // rather than rendering a card with no price in it.
-  const rates = await listPricingRates();
-  const rateOf = (tier: InvitationTier): number | null => {
-    const rate = rates.find((r) => r.tier === tier);
-    return rate ? Number(rate.unitPrice) : null;
-  };
-  const withQr = rateOf(InvitationTier.WITH_QR);
-  const noQr = rateOf(InvitationTier.NO_QR);
+  // per_invitation_pricing migration, with any running offer applied. If one
+  // is missing the page says so rather than rendering a card with no price in
+  // it. An offer that starts or ends shows here within the five-minute window
+  // above; the order itself is always priced at the moment it is raised.
+  const pricing = await getLivePricing();
+  const { withQr, noQr } = pricing;
 
   // The wallet line is the one feature the environment decides — the same
   // server-only check the landing page's wallet card asks. Only the boolean
@@ -63,9 +60,10 @@ export default async function PlansPage({ params }: PageProps<"/[locale]/plans">
             locale={locale}
             dict={dict}
             rates={{
-              withQr: { tier: "WITH_QR", unitPrice: withQr },
-              noQr: { tier: "NO_QR", unitPrice: noQr },
+              withQr: { tier: "WITH_QR", unitPrice: withQr.unitPrice, listPrice: withQr.listPrice },
+              noQr: { tier: "NO_QR", unitPrice: noQr.unitPrice, listPrice: noQr.listPrice },
             }}
+            offer={offerNotice(pricing.offer, locale, dict)}
             // Coming back from the gallery (or opening a shared link) keeps
             // the choice — applied in the browser, see `choiceFromUrl`.
             initialTier="WITH_QR"

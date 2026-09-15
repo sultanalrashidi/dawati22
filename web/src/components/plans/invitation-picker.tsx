@@ -14,13 +14,16 @@ import {
   clampInvitationCount,
   totalSar,
 } from "@/lib/orders/pricing";
+import { OfferBanner, type OfferNotice } from "@/components/plans/offer-banner";
 
 export type Tier = "WITH_QR" | "NO_QR";
 
 export interface TierRate {
   tier: Tier;
-  /** SAR per invitation, from the PricingRate table. */
+  /** SAR per invitation, what she is charged — the offer price while one runs. */
   unitPrice: number;
+  /** The regular rate, struck through, while an offer beats it. */
+  listPrice?: number | null;
 }
 
 /**
@@ -58,10 +61,13 @@ export function InvitationPicker({
   action,
   compareHref,
   choiceFromUrl = false,
+  offer = null,
 }: {
   locale: Locale;
   dict: Dictionary;
   rates: { withQr: TierRate; noQr: TierRate };
+  /** The running price offer, announced above the slider. */
+  offer?: OfferNotice | null;
   initialTier: Tier;
   /** 0 — or anything off the slider — falls back to the default count. */
   initialCount: number;
@@ -99,6 +105,7 @@ export function InvitationPicker({
 
   const rate = tier === "WITH_QR" ? rates.withQr : rates.noQr;
   const total = Number(totalSar(count, rate.unitPrice));
+  const listTotal = rate.listPrice ? Number(totalSar(count, rate.listPrice)) : null;
   const filled = ((count - MIN_INVITATIONS) / (MAX_INVITATIONS - MIN_INVITATIONS)) * 100;
   // The track fills from the side the slider starts on, which flips with the
   // page direction — `to left` in Arabic would drain the bar as you drag right.
@@ -106,6 +113,7 @@ export function InvitationPicker({
 
   return (
     <div className="flex flex-col gap-6">
+      {offer && <OfferBanner offer={offer} />}
       <section aria-label={p.countLabel} className="rounded-2xl border border-border bg-surface p-6">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <span className="text-sm font-medium text-fg-muted">{p.countLabel}</span>
@@ -185,7 +193,15 @@ export function InvitationPicker({
                 {option === "WITH_QR" ? p.tierQr : p.tierNoQr}
               </span>
               <span className="text-sm tabular-nums text-fg-muted">
-                {nf.format(optionRate.unitPrice)} {dict.common.sar} {p.perInvitation}
+                {optionRate.listPrice ? (
+                  <>
+                    <s className="decoration-danger decoration-2">{nf.format(optionRate.listPrice)}</s>{" "}
+                    <b className="font-bold text-success">{nf.format(optionRate.unitPrice)}</b>
+                  </>
+                ) : (
+                  nf.format(optionRate.unitPrice)
+                )}{" "}
+                {dict.common.sar} {p.perInvitation}
               </span>
               <span className="text-xs leading-relaxed text-fg-muted">
                 {option === "WITH_QR" ? p.tierQrTagline : p.tierNoQrTagline}
@@ -207,15 +223,27 @@ export function InvitationPicker({
       <div className="rounded-2xl border border-border bg-surface-2 p-5">
         <div className="flex items-baseline justify-between gap-3">
           <span className="text-sm text-fg-muted">{p.total}</span>
-          <b className="text-2xl font-bold tabular-nums text-accent">
-            {nf.format(total)} {dict.common.sar}
-          </b>
+          <span className="flex flex-wrap items-baseline justify-end gap-x-2">
+            {listTotal !== null && (
+              <s className="text-sm tabular-nums text-fg-muted decoration-danger decoration-2">
+                {nf.format(listTotal)} {dict.common.sar}
+              </s>
+            )}
+            <b className="text-2xl font-bold tabular-nums text-accent">
+              {nf.format(total)} {dict.common.sar}
+            </b>
+          </span>
         </div>
         <p className="mt-1 text-end text-xs tabular-nums text-fg-muted">
           {p.totalFormula
             .replace("{rate}", nf.format(rate.unitPrice))
             .replace("{count}", nf.format(count))}
         </p>
+        {listTotal !== null && (
+          <p className="mt-1 text-end text-xs font-bold tabular-nums text-success">
+            {p.offerSaving.replace("{amount}", nf.format(Number((listTotal - total).toFixed(2))))}
+          </p>
+        )}
         <PickerCta locale={locale} dict={dict} action={action} tier={tier} count={count} />
       </div>
     </div>

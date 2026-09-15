@@ -4,7 +4,8 @@ import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getSessionUser } from "@/lib/auth/session";
 import { InvitationTier, Role } from "@/generated/prisma/client";
-import { listPricingRates } from "@/lib/orders/service";
+import { getLivePricing } from "@/lib/orders/service";
+import { offerNotice } from "@/lib/orders/offer-notice";
 import { couplesFor } from "@/lib/events/service";
 import { resolveDraftAccess } from "@/lib/drafts/service";
 import { ActivatePicker } from "@/components/drafts/activate-picker";
@@ -44,9 +45,9 @@ export default async function ActivateDraftPage({
   // dashboard rather than being offered for sale a second time.
   if (!draft) redirect(`/${locale}/events/${eventId}`);
 
-  const [user, rates] = await Promise.all([getSessionUser(), listPricingRates()]);
-  const withQr = rates.find((r) => r.tier === InvitationTier.WITH_QR);
-  const noQr = rates.find((r) => r.tier === InvitationTier.NO_QR);
+  // The live prices, offer included — what createPerInvitationOrder will charge.
+  const [user, pricing] = await Promise.all([getSessionUser(), getLivePricing()]);
+  const { withQr, noQr } = pricing;
   if (!withQr || !noQr) redirect(`/${locale}/plans`);
 
   const couples = couplesFor(draft);
@@ -129,9 +130,10 @@ export default async function ActivateDraftPage({
             eventId={eventId}
             signedIn={user?.role === Role.CUSTOMER}
             rates={{
-              withQr: { tier: "WITH_QR", unitPrice: Number(withQr.unitPrice) },
-              noQr: { tier: "NO_QR", unitPrice: Number(noQr.unitPrice) },
+              withQr: { tier: "WITH_QR", unitPrice: withQr.unitPrice, listPrice: withQr.listPrice },
+              noQr: { tier: "NO_QR", unitPrice: noQr.unitPrice, listPrice: noQr.listPrice },
             }}
+            offer={offerNotice(pricing.offer, locale, dict)}
             // Pre-filled with what she picked on the pricing page, when she came
             // that way — the whole reason that choice was carried this far.
             initialTier={draft.intendedTier === InvitationTier.NO_QR ? "NO_QR" : "WITH_QR"}

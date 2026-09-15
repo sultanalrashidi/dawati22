@@ -3,6 +3,7 @@
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/locales";
 import { InvitationPicker, type Tier, type TierRate } from "@/components/plans/invitation-picker";
+import type { OfferNotice } from "@/components/plans/offer-banner";
 
 export type { TierRate };
 
@@ -23,11 +24,14 @@ export function ActivatePicker({
   initialTier,
   initialCount,
   compareHref,
+  offer,
 }: {
   locale: Locale;
   dict: Dictionary;
   eventId: string;
   rates: { withQr: TierRate; noQr: TierRate };
+  /** The running price offer, if any. */
+  offer?: OfferNotice | null;
   /** A signed-out visitor signs in first; the choice rides the login URL. */
   signedIn: boolean;
   initialTier: Tier;
@@ -44,6 +48,7 @@ export function ActivatePicker({
       initialCount={initialCount}
       action={{ kind: "order", eventId, signedIn }}
       compareHref={compareHref}
+      offer={offer}
     />
   );
 }

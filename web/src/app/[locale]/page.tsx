@@ -2,8 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLocale } from "@/lib/i18n/locales";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { listPricingRates } from "@/lib/orders/service";
-import { InvitationTier } from "@/generated/prisma/enums";
+import { getLivePricing } from "@/lib/orders/service";
+import { offerNotice } from "@/lib/orders/offer-notice";
+import { OfferBanner } from "@/components/plans/offer-banner";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { EnvelopeHero } from "@/components/home/envelope-hero";
 import { ScanIcon } from "@/components/icons/scan-icon";
@@ -32,20 +33,19 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
   const dict = await getDictionary(locale);
   const h = dict.home;
 
-  // Read from the same table /plans reads, so the landing page can never
-  // advertise a price the pricing page contradicts.
-  const rates = await listPricingRates();
-  const priceOf = (tier: InvitationTier) => {
-    const rate = rates.find((r) => r.tier === tier);
-    return rate ? Number(rate.unitPrice) : null;
-  };
+  // Read through the same function /plans reads — rates plus any running
+  // offer — so the landing page can never advertise a price the pricing page
+  // contradicts.
+  const pricing = await getLivePricing();
   const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
-  const noQr = priceOf(InvitationTier.NO_QR);
-  const withQr = priceOf(InvitationTier.WITH_QR);
+  const { noQr, withQr } = pricing;
+  const offer = offerNotice(pricing.offer, locale, dict);
 
-  // The hero's pricing link quotes the cheaper of the two rates from the same
+  // The hero's pricing link quotes the cheaper of the two prices from the same
   // rows, so it follows any change made in the table without a deploy.
-  const tierPrices = [noQr, withQr].filter((price): price is number => price !== null);
+  const tierPrices = [noQr?.unitPrice, withQr?.unitPrice].filter(
+    (price): price is number => price !== undefined,
+  );
   const plansLinkLabel =
     tierPrices.length > 0
       ? h.ctaPlansFrom.replace("{price}", nf.format(Math.min(...tierPrices)))
@@ -158,11 +158,13 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
           the next question is how much. */}
       <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-8">
         <SectionHead kicker={h.pricingKicker} title={h.pricingTitle} subtitle={h.pricingSubtitle} />
+        {offer && <OfferBanner offer={offer} className="mx-auto mt-10 max-w-3xl" />}
         {noQr !== null && withQr !== null && (
-          <div className="mx-auto mt-12 grid max-w-3xl gap-5 sm:grid-cols-2">
+          <div className={`mx-auto grid max-w-3xl gap-5 sm:grid-cols-2 ${offer ? "mt-5" : "mt-12"}`}>
             <PriceCard
               name={dict.plans.tierNoQr}
-              price={nf.format(noQr)}
+              price={nf.format(noQr.unitPrice)}
+              listPrice={noQr.listPrice !== null ? nf.format(noQr.listPrice) : undefined}
               unit={`${dict.common.sar} ${dict.plans.perInvitation}`}
               tagline={dict.plans.tierNoQrTagline}
             />
@@ -170,7 +172,8 @@ export default async function HomePage({ params }: PageProps<"/[locale]">) {
               featured
               badge={dict.plans.recommended}
               name={dict.plans.tierQr}
-              price={nf.format(withQr)}
+              price={nf.format(withQr.unitPrice)}
+              listPrice={withQr.listPrice !== null ? nf.format(withQr.listPrice) : undefined}
               unit={`${dict.common.sar} ${dict.plans.perInvitation}`}
               tagline={dict.plans.tierQrTagline}
             />
@@ -369,6 +372,7 @@ function SectionHead({
 function PriceCard({
   name,
   price,
+  listPrice,
   unit,
   tagline,
   featured,
@@ -376,6 +380,8 @@ function PriceCard({
 }: {
   name: string;
   price: string;
+  /** The regular price, struck through beside `price` while an offer beats it. */
+  listPrice?: string;
   unit: string;
   /** What the price buys, in one line. The cards come before the door section, so they must explain themselves. */
   tagline: string;
@@ -397,7 +403,15 @@ function PriceCard({
       )}
       <h3 className="text-lg font-bold text-fg">{name}</h3>
       <p className="flex items-baseline gap-2">
-        <span className="text-4xl font-extrabold tabular-nums text-fg">{price}</span>
+        {/* A thick red strike: a thin one through ٢ reads as another digit. */}
+        {listPrice && (
+          <s className="text-2xl font-bold tabular-nums text-fg-muted decoration-danger decoration-[3px]">
+            {listPrice}
+          </s>
+        )}
+        <span className={`text-4xl font-extrabold tabular-nums ${listPrice ? "text-success" : "text-fg"}`}>
+          {price}
+        </span>
         <span className="text-sm text-fg-muted">{unit}</span>
       </p>
       <p className="text-sm leading-relaxed text-fg-muted">{tagline}</p>

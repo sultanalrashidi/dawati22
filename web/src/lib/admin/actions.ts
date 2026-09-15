@@ -17,7 +17,12 @@ import { readEventForm } from "@/lib/events/form";
 import { resolveMusicLink } from "@/lib/music/link";
 import { sweepAbandonedDrafts } from "@/lib/drafts/sweep";
 import { Role, EventStatus } from "@/generated/prisma/client";
+import { InvitationTier } from "@/generated/prisma/enums";
 import { parseTier } from "@/lib/orders/pricing";
+import { buildPriceOffer, type OfferInputError } from "@/lib/orders/offer";
+import { listPricingRates } from "@/lib/orders/service";
+import { getPriceOffer, setPriceOffer } from "@/lib/settings/service";
+import { riyadhDateTimeLocalToDate } from "@/lib/dates";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 import { logger } from "@/lib/logger";
 
@@ -175,14 +180,66 @@ export async function updatePricingRateAction(
     return { error: "invalid" };
   }
 
+  revalidatePricePages(locale);
+  return { saved: true };
+}
+
+/**
+ * The pricing page and the landing page are static files that quote the
+ * prices; both are rebuilt now rather than at the end of their window. Every
+ * locale, since a price is the same number in each.
+ */
+function revalidatePricePages(locale: string) {
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
   revalidatePath(`/${safeLocale}/admin/plans`);
-  // The pricing page and the landing page are static files that quote these
-  // rows; both are rebuilt now rather than at the end of their window. Every
-  // locale, since the rate is the same number in each.
   revalidatePath("/[locale]/plans", "page");
   revalidatePath("/[locale]", "page");
+}
+
+export type OfferFormState = { error?: OfferInputError; saved?: boolean } | null;
+
+/**
+ * Saves the price offer and switches it on. The dates are Riyadh wall-clock
+ * readings from `datetime-local` fields; the offer starts and stops by itself
+ * at them, and only orders raised in between are charged the offer price.
+ */
+export async function savePriceOfferAction(
+  locale: string,
+  _prev: OfferFormState,
+  formData: FormData,
+): Promise<OfferFormState> {
+  await requireAdmin();
+
+  const rates = await listPricingRates();
+  const regular = (tier: InvitationTier) => {
+    const rate = rates.find((r) => r.tier === tier);
+    return rate ? Number(rate.unitPrice) : null;
+  };
+  const built = buildPriceOffer(
+    {
+      nameAr: String(formData.get("nameAr") ?? ""),
+      nameEn: String(formData.get("nameEn") ?? ""),
+      withQr: Number(formData.get("withQr")),
+      noQr: Number(formData.get("noQr")),
+      startsAt: riyadhDateTimeLocalToDate(String(formData.get("startsAt") ?? "")),
+      endsAt: riyadhDateTimeLocalToDate(String(formData.get("endsAt") ?? "")),
+    },
+    { withQr: regular(InvitationTier.WITH_QR), noQr: regular(InvitationTier.NO_QR) },
+    new Date(),
+  );
+  if ("error" in built) return { error: built.error };
+
+  await setPriceOffer(built.offer);
+  revalidatePricePages(locale);
   return { saved: true };
+}
+
+/** Stops the offer at once. Its fields stay, so the next occasion starts from them. */
+export async function stopPriceOfferAction(locale: string) {
+  await requireAdmin();
+  const offer = await getPriceOffer();
+  if (offer) await setPriceOffer({ ...offer, enabled: false });
+  revalidatePricePages(locale);
 }
 
 export type GrantActionState = { error?: string; saved?: { total: number; granted: number } } | null;

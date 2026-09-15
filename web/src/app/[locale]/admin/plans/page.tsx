@@ -5,15 +5,40 @@ import { listPlans } from "@/lib/admin/service";
 import { listPricingRates } from "@/lib/orders/service";
 import { InvitationTier } from "@/generated/prisma/enums";
 import { PricingRateForm } from "@/components/admin/pricing-rates-form";
+import { PriceOfferForm } from "@/components/admin/price-offer-form";
+import { getPriceOffer } from "@/lib/settings/service";
+import { offerPhase } from "@/lib/orders/offer";
+import { riyadhDateFormat, toRiyadhDateTimeLocal } from "@/lib/dates";
 
 export default async function AdminPricingPage({ params }: PageProps<"/[locale]/admin/plans">) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = await getDictionary(locale);
 
-  const [rates, legacyPlans] = await Promise.all([listPricingRates(), listPlans()]);
+  const [rates, legacyPlans, offer] = await Promise.all([
+    listPricingRates(),
+    listPlans(),
+    getPriceOffer(),
+  ]);
   const a = dict.admin;
   const p = dict.plans;
+
+  const now = new Date();
+  const phase = offerPhase(offer, now);
+  const when = riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const statusLine = {
+    none: a.offerStatusNone,
+    stopped: a.offerStatusStopped,
+    scheduled: a.offerStatusScheduled.replace("{date}", offer ? when.format(new Date(offer.startsAt)) : ""),
+    live: a.offerStatusLive.replace("{date}", offer ? when.format(new Date(offer.endsAt)) : ""),
+    ended: a.offerStatusEnded.replace("{date}", offer ? when.format(new Date(offer.endsAt)) : ""),
+  }[phase];
 
   const labelFor = (tier: InvitationTier) => (tier === InvitationTier.WITH_QR ? p.tierQr : p.tierNoQr);
 
@@ -43,6 +68,23 @@ export default async function AdminPricingPage({ params }: PageProps<"/[locale]/
           />
         ))}
       </div>
+
+      <PriceOfferForm
+        locale={locale}
+        dict={dict}
+        phase={phase}
+        statusLine={statusLine}
+        defaults={{
+          nameAr: offer?.nameAr ?? "",
+          nameEn: offer?.nameEn ?? "",
+          withQr: offer?.withQr ?? null,
+          noQr: offer?.noQr ?? null,
+          // A fresh offer starts now unless told otherwise; an old one shows
+          // its own dates, ready to be moved to the next occasion.
+          startsAt: toRiyadhDateTimeLocal(offer ? new Date(offer.startsAt) : now),
+          endsAt: offer ? toRiyadhDateTimeLocal(new Date(offer.endsAt)) : "",
+        }}
+      />
 
       {/* Read-only on purpose: these rows are what an old order points at, and
           the count a customer paid for now lives on the order itself. Editing

@@ -5,8 +5,10 @@ import { isUntouchedSample } from "@/lib/drafts/sample";
 import { logger } from "@/lib/logger";
 import { isMoyasarConfigured, fetchMoyasarPayment, sarToHalalas } from "@/lib/payments/moyasar";
 import { EventStatus, OrderKind, OrderStatus, PaymentProvider } from "@/generated/prisma/client";
-import type { InvitationTier } from "@/generated/prisma/enums";
+import { InvitationTier } from "@/generated/prisma/enums";
 import { isValidInvitationCount, totalSar } from "@/lib/orders/pricing";
+import { offerUnitPrice } from "@/lib/orders/offer";
+import { getPriceOffer } from "@/lib/settings/service";
 import { deliverPaidDesign } from "@/lib/design-requests/service";
 import { orderTerms } from "@/lib/orders/terms";
 import { PAYABLE_ORDER_STATUSES, isPayableOrderStatus } from "@/lib/orders/status";
@@ -41,17 +43,65 @@ async function fulfilPaidOrder(order: {
   await activateDraftEvent(order);
 }
 
-/** The live price list — two rows, one per tier. */
+/** The regular price list — two rows, one per tier. What the admin edits. */
 export async function listPricingRates() {
   return prisma.pricingRate.findMany({ orderBy: { unitPrice: "desc" } });
+}
+
+export interface LiveTierPrice {
+  /** SAR per invitation, what an order raised now is charged. */
+  unitPrice: number;
+  /** The regular rate, only when a running offer beats it — the struck-through figure. */
+  listPrice: number | null;
+  currency: string;
+}
+
+export interface LivePricing {
+  /** Null when that tier has no PricingRate row: nothing can be sold at it. */
+  withQr: LiveTierPrice | null;
+  noQr: LiveTierPrice | null;
+  /** The running offer, only while it lowers at least one of the two prices. */
+  offer: { nameAr: string; nameEn: string; endsAt: Date } | null;
+}
+
+/**
+ * What an invitation costs right now: the regular rates with any running offer
+ * applied. Every page that quotes a price and the order that charges one read
+ * THIS, so an offer can never show on a card and be missing from the invoice,
+ * or the other way round.
+ */
+export async function getLivePricing(now: Date = new Date()): Promise<LivePricing> {
+  const [rates, offer] = await Promise.all([listPricingRates(), getPriceOffer()]);
+
+  const priceFor = (tier: InvitationTier): LiveTierPrice | null => {
+    const rate = rates.find((r) => r.tier === tier);
+    if (!rate) return null;
+    const regular = Number(rate.unitPrice);
+    const unitPrice = offerUnitPrice(offer, tier, regular, now);
+    return { unitPrice, listPrice: unitPrice < regular ? regular : null, currency: rate.currency };
+  };
+
+  const withQr = priceFor(InvitationTier.WITH_QR);
+  const noQr = priceFor(InvitationTier.NO_QR);
+  const discounted = withQr?.listPrice != null || noQr?.listPrice != null;
+
+  return {
+    withQr,
+    noQr,
+    offer:
+      discounted && offer
+        ? { nameAr: offer.nameAr, nameEn: offer.nameEn, endsAt: new Date(offer.endsAt) }
+        : null,
+  };
 }
 
 /**
  * The only way an order is created.
  *
  * `count` arrives from the browser and is therefore re-validated here; the RATE
- * never crosses the trust boundary at all — it is read from PricingRate and the
- * total is computed server-side, so a customer cannot post a price. That was
+ * never crosses the trust boundary at all — it is read from PricingRate (and
+ * any running offer) and the total is computed server-side, so a customer
+ * cannot post a price. That was
  * already true of the old package flow (only a planId was posted) and it has to
  * stay true now that a quantity is posted too.
  */
@@ -89,7 +139,9 @@ export async function createPerInvitationOrder(
     throw new OrderError("Draft is still the untouched sample invitation");
   }
 
-  const rate = await prisma.pricingRate.findUnique({ where: { tier: input.tier } });
+  // Today's price, offer included — the same figure the activate page showed.
+  const pricing = await getLivePricing();
+  const rate = input.tier === InvitationTier.WITH_QR ? pricing.withQr : pricing.noQr;
   if (!rate) throw new OrderError("Pricing not available");
 
   // At most one payable order per draft, ever.
@@ -114,9 +166,10 @@ export async function createPerInvitationOrder(
       draftEventId: input.draftEventId,
       invitationCount: input.count,
       tier: input.tier,
-      // A frozen copy of today's rate, so re-pricing never re-prices this sale.
-      unitPrice: rate.unitPrice,
-      amount: totalSar(input.count, Number(rate.unitPrice)),
+      // A frozen copy of today's rate — the offer price while one runs — so
+      // re-pricing, or the offer ending, never re-prices this sale.
+      unitPrice: rate.unitPrice.toFixed(2),
+      amount: totalSar(input.count, rate.unitPrice),
       currency: rate.currency,
       provider: isMoyasarConfigured() ? PaymentProvider.MOYASAR : PaymentProvider.MOCK,
       idempotencyKey: randomUUID(),

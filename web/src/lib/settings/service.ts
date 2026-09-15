@@ -5,6 +5,7 @@ import {
   parseTypographyPreset,
   type TypographyPreset,
 } from "@/lib/themes/typography-preset";
+import { parsePriceOffer, type PriceOffer } from "@/lib/orders/offer";
 
 /**
  * Operational switches, stored in the database so the admin can flip them.
@@ -20,6 +21,8 @@ export const SETTING_KEYS = {
   testPhoneBypass: "auth.test_phone_bypass",
   /** The house typeface new designs start from. */
   typographyPreset: "themes.typography_preset",
+  /** The time-boxed price offer, e.g. «عرض اليوم الوطني». */
+  priceOffer: "pricing.offer",
 } as const;
 
 /**
@@ -79,6 +82,25 @@ export async function setTypographyPreset(preset: TypographyPreset): Promise<voi
   await prisma.appSetting.upsert({
     where: { key: SETTING_KEYS.typographyPreset },
     create: { key: SETTING_KEYS.typographyPreset, value },
+    update: { value },
+  });
+}
+
+/**
+ * The price offer. One at a time: the owner edits the same row for the next
+ * occasion, and every order keeps the price it was sold at, so replacing an
+ * old offer rewrites nothing that was already paid.
+ */
+export async function getPriceOffer(): Promise<PriceOffer | null> {
+  const row = await prisma.appSetting.findUnique({ where: { key: SETTING_KEYS.priceOffer } });
+  return parsePriceOffer(row?.value);
+}
+
+export async function setPriceOffer(offer: PriceOffer): Promise<void> {
+  const value = JSON.stringify(offer);
+  await prisma.appSetting.upsert({
+    where: { key: SETTING_KEYS.priceOffer },
+    create: { key: SETTING_KEYS.priceOffer, value },
     update: { value },
   });
 }

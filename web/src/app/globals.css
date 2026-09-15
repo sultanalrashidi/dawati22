@@ -167,6 +167,13 @@ body {
   scroll-snap-type: y mandatory;
   -webkit-overflow-scrolling: touch;
 }
+/* The snap target. It must never carry a transform: Safari measures a snap
+   point from the snapped box AS TRANSFORMED, so while the reveal below still
+   had this box pushed down, the swipe landed that much too far, and a moment
+   later Safari re-snapped to the real position in a single frame. That was
+   the "stop, then jump" after every swipe on iPhone, and its size was
+   exactly the reveal's offset (4vh = 35px on an iPhone Pro Max, measured
+   frame by frame from the owner's screen recording). */
 .dawati-scene {
   position: relative;
   min-height: 100vh;
@@ -177,19 +184,26 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
   padding: 4rem 1.5rem;
   text-align: center;
-  /* Short + subtle on purpose: on a real phone this reveal was visibly still
-     mid-fade/mid-slide by the time the scroll-snap itself had already
-     settled, reading as "stop, pause, then jump" after every swipe. A big
-     translateY + a near-1s transition is fine on a slow synthetic scroll
-     but not against real touch-momentum timing. */
+}
+/* The scene's content, laid out as the scene itself used to lay it out, and
+   the only thing that fades and rises in. Moving it moves nothing Safari
+   snaps to. Short + subtle on purpose: a big translateY or a near-1s
+   transition is still visibly running after a real touch-momentum swipe has
+   settled. */
+.dawati-scene-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  width: 100%;
   opacity: 0;
   transform: translateY(4vh);
   transition: opacity 0.4s ease-out, transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
-.dawati-scene-in-view {
+.dawati-scene-in-view > .dawati-scene-content {
   opacity: 1;
   transform: translateY(0);
 }

@@ -343,7 +343,7 @@ function MusicToggle({
  * Fires once a scene first crosses into the viewport; stays true afterward.
  * Low threshold on purpose — it should trigger early, while the scene is
  * still scrolling into place, so the CSS reveal transition (globals.css
- * `.dawati-scene`) finishes close to when the scroll-snap itself settles
+ * `.dawati-scene-content`) finishes close to when the scroll-snap itself settles
  * instead of visibly continuing after the swipe has already stopped.
  */
 function useInView<T extends HTMLElement>(threshold = 0.05) {
@@ -385,7 +385,9 @@ function Scene({
       // stylesheet's own 4rem is all there is.
       style={{ paddingBottom: "calc(4rem + var(--dawati-bottom-inset, 0px))" }}
     >
-      {children}
+      {/* The reveal moves this wrapper, never the section: the section is
+          what the scroll snaps to — see `.dawati-scene` in globals.css. */}
+      <div className="dawati-scene-content">{children}</div>
       {showHint && (
         <span
           className="dawati-scroll-hint flex flex-col items-center gap-0.5"

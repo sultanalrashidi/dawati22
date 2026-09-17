@@ -8,6 +8,7 @@ import { SESSION_HINT_COOKIE } from "@/lib/auth/session-hint";
 import { THEME_FONT_CLASS } from "@/lib/themes/fonts";
 import { AppChrome } from "@/components/app-chrome";
 import { InlineScript } from "@/components/inline-script";
+import { Analytics } from "@vercel/analytics/next";
 import "../globals.css";
 
 const bodyFont = Almarai({
@@ -63,6 +64,18 @@ export default async function LocaleLayout({
         <AppChrome locale={locale} dict={dict}>
           {children}
         </AppChrome>
+        {/*
+          Counts visits, which nothing did before: «كم زياره صارت من امس» had
+          no answer to give. It beacons from the browser rather than the
+          server, so the home, pricing and design pages still report even
+          though the CDN serves them as files.
+
+          Deliberately only on this root. `/i`, `/t` and `/preview` are the
+          invitation itself — one wedding sends hundreds of guest opens, and
+          folding those in would bury the handful of numbers this is for (and
+          spend the plan's event allowance on them).
+        */}
+        <Analytics />
       </body>
     </html>
   );

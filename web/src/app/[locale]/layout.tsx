@@ -9,6 +9,7 @@ import { THEME_FONT_CLASS } from "@/lib/themes/fonts";
 import { AppChrome } from "@/components/app-chrome";
 import { InlineScript } from "@/components/inline-script";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "../globals.css";
 
 const bodyFont = Almarai({
@@ -76,6 +77,15 @@ export default async function LocaleLayout({
           spend the plan's event allowance on them).
         */}
         <Analytics />
+        {/*
+          Reports how slow the site actually felt, from the visitor's phone.
+          The speed work so far — the smaller functions, `cle1` next to the
+          database, serving these pages off the CDN — was measured from here,
+          on a laptop in the same country as the servers. A guest in Riyadh
+          loading over mobile data is the number that matters, and nothing
+          was collecting it.
+        */}
+        <SpeedInsights />
       </body>
     </html>
   );

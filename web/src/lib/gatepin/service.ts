@@ -19,10 +19,16 @@ export async function setGatePin(eventId: string, ownerId: string, pin: string):
   const event = await prisma.event.findUnique({ where: { id: eventId }, select: { ownerId: true } });
   if (!event || event.ownerId !== ownerId) throw new GatePinError("not_found");
 
-  await prisma.event.update({
-    where: { id: eventId },
-    data: { gatePinHash: sha256Hex(pin), gatePinFailedAttempts: 0, gatePinLockedUntil: null },
-  });
+  await prisma.$transaction([
+    prisma.event.update({
+      where: { id: eventId },
+      data: { gatePinHash: sha256Hex(pin), gatePinFailedAttempts: 0, gatePinLockedUntil: null },
+    }),
+    // Revoke every door already granted under the OLD pin — the same thing
+    // clearGatePin does. Changing the pin because it leaked, but leaving the
+    // sessions it minted alive, would change nothing for whoever already had one.
+    prisma.gateAccessSession.deleteMany({ where: { eventId } }),
+  ]);
 }
 
 export async function clearGatePin(eventId: string, ownerId: string): Promise<void> {
@@ -53,15 +59,24 @@ export async function verifyGatePin(referenceCode: string, pin: string): Promise
   }
 
   if (sha256Hex(pin) !== event.gatePinHash) {
-    const attempts = event.gatePinFailedAttempts + 1;
-    const lockedOut = attempts >= MAX_ATTEMPTS;
-    await prisma.event.update({
-      where: { id: event.id },
-      data: lockedOut
-        ? { gatePinFailedAttempts: 0, gatePinLockedUntil: new Date(Date.now() + LOCKOUT_MS) }
-        : { gatePinFailedAttempts: attempts },
-    });
-    if (lockedOut) throw new GatePinLockedError(Math.ceil(LOCKOUT_MS / 1000));
+    // Atomic increment: a plain read-then-write let a burst of parallel guesses
+    // all read the same count and each write count+1, losing every increment
+    // but one and slipping the 5-attempt lock. The database does the add here,
+    // so N concurrent wrong guesses advance the counter by N.
+    const [row] = await prisma.$queryRaw<{ gatePinFailedAttempts: number }[]>`
+      UPDATE "Event"
+         SET "gatePinFailedAttempts" = "gatePinFailedAttempts" + 1, "updatedAt" = NOW()
+       WHERE "id" = ${event.id}
+      RETURNING "gatePinFailedAttempts"
+    `;
+    const attempts = row?.gatePinFailedAttempts ?? MAX_ATTEMPTS;
+    if (attempts >= MAX_ATTEMPTS) {
+      await prisma.event.update({
+        where: { id: event.id },
+        data: { gatePinFailedAttempts: 0, gatePinLockedUntil: new Date(Date.now() + LOCKOUT_MS) },
+      });
+      throw new GatePinLockedError(Math.ceil(LOCKOUT_MS / 1000));
+    }
     throw new GatePinError("Invalid reference code or PIN");
   }
 

@@ -5,12 +5,24 @@ import { generateSecureToken, sha256Hex } from "@/lib/security/tokens";
 
 const GATE_SESSION_COOKIE = "dawati_gate_session";
 const GATE_SESSION_TTL_MS = 12 * 60 * 60 * 1000; // 12 hours — a single event's door duty
+/** How long after the ceremony's start time a door may still be worked. */
+const EVENT_TAIL_MS = 18 * 60 * 60 * 1000;
+/** A door is always usable for at least this long once granted. */
+const MIN_SESSION_MS = 2 * 60 * 60 * 1000;
 
 /** Grants the current browser scan access to one event, no user login involved. */
 export async function createGateSession(eventId: string) {
   const token = generateSecureToken();
   const tokenHash = sha256Hex(token);
-  const expiresAt = new Date(Date.now() + GATE_SESSION_TTL_MS);
+
+  // Bound to the wedding, not just to a fixed 12 hours from now: a door minted
+  // weeks early (a test) or for a date already past should not stay valid for
+  // half a day. Same-night duty is unaffected — the 18h tail keeps a session
+  // created that evening at its full length.
+  const event = await prisma.event.findUnique({ where: { id: eventId }, select: { eventDate: true } });
+  const now = Date.now();
+  const eventEnd = event ? event.eventDate.getTime() + EVENT_TAIL_MS : now + GATE_SESSION_TTL_MS;
+  const expiresAt = new Date(Math.min(now + GATE_SESSION_TTL_MS, Math.max(now + MIN_SESSION_MS, eventEnd)));
 
   await prisma.gateAccessSession.create({ data: { eventId, tokenHash, expiresAt } });
 

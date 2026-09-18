@@ -10,6 +10,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(getAppUrl()),
   title: "دعوتي",
   description: "دعوة رقمية خاصة",
+  // A per-guest invitation link, carrying a guest's name and a token, is not a
+  // public page. WhatsApp still draws its link-preview card from the OG tags —
+  // that fetch identifies as a bot and is unaffected by noindex.
+  robots: { index: false, follow: false },
 };
 
 // Standalone root layout for the guest experience: no site chrome, always

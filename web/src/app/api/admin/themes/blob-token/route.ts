@@ -20,9 +20,12 @@ const PATHNAME_PATTERN =
   /^themes\/([a-z0-9]+)\/([a-zA-Z][a-zA-Z0-9-]{0,39})-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.(png|jpg|webp|avif)$/;
 
 export async function POST(request: Request): Promise<NextResponse> {
-  const body = (await request.json()) as HandleUploadBody;
-
+  // Inside the try: a malformed body used to throw here, before the try, and
+  // escape as an unauthenticated 500. It is now a plain 400 like any other bad
+  // request. Authorization still happens in onBeforeGenerateToken below.
   try {
+    const body = (await request.json()) as HandleUploadBody;
+
     const result = await handleUpload({
       body,
       request,

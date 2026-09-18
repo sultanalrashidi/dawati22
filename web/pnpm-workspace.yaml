@@ -5,3 +5,7 @@ allowBuilds:
   sharp: false
   unrs-resolver: false
   workerd: true
+# Force the libheif fix (GHSA-rgj7-g3m4-5g8c) into the sharp that Next pulls in.
+# Next 16.3.3 patched the AVIF image-optimizer RCE but did not bump sharp itself.
+overrides:
+  sharp: '>=0.35.4'

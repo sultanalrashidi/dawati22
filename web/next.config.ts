@@ -53,7 +53,55 @@ const nextConfig: NextConfig = {
     // Artwork uploaded from the theme builder lives on Vercel Blob, so the
     // optimizer has to be allowed to fetch it; without this every builder
     // design's image throws instead of rendering.
-    remotePatterns: [{ protocol: "https", hostname: "*.public.blob.vercel-storage.com" }],
+    //
+    // Pinned to THIS store's own hostname, not `*.public.blob.vercel-storage.com`:
+    // the wildcard let any Vercel account's blob store feed our image optimizer,
+    // turning `/_next/image` into an open proxy (billable transforms, attacker
+    // images served under our domain, and the AVIF-decode input path). The store
+    // id is public — it is in every image URL the site already serves.
+    remotePatterns: [
+      { protocol: "https", hostname: "2wdnnxymntbtqxr7.public.blob.vercel-storage.com" },
+    ],
+  },
+  // The framework version is not something a visitor needs, and naming it just
+  // points an attacker straight at the matching advisories.
+  poweredByHeader: false,
+  // Response headers applied to every route. Kept deliberately conservative so
+  // nothing here can break a working page: it hardens framing, sniffing,
+  // referrer and transport, and sets the CSP directives that never depend on
+  // knowing every inline script (`frame-ancestors`, `base-uri`, `object-src`).
+  // A full `script-src`/`style-src` policy needs nonces and per-page testing and
+  // is intentionally left for a separate pass.
+  async headers() {
+    const securityHeaders = [
+      {
+        key: "Strict-Transport-Security",
+        value: "max-age=63072000; includeSubDomains; preload",
+      },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      { key: "X-Frame-Options", value: "SAMEORIGIN" },
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      // The gate scanner reads the camera on our own origin; nothing else needs
+      // a powerful feature, so everything else is denied outright.
+      {
+        key: "Permissions-Policy",
+        value: "camera=(self), microphone=(), geolocation=(), browsing-topics=()",
+      },
+      {
+        key: "Content-Security-Policy",
+        value: "frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests",
+      },
+    ];
+    // A per-guest invitation link is not a public page — keep it out of search
+    // indexes at the header level too, not only via page metadata (a crawler
+    // that fetches the RSC payload or a sub-resource never sees the <meta>).
+    const noindex = [{ key: "X-Robots-Tag", value: "noindex, nofollow" }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/i/:path*", headers: noindex },
+      { source: "/t/:path*", headers: noindex },
+      { source: "/preview/:path*", headers: noindex },
+    ];
   },
   // Inlined as a literal at build time (see lib/db/client.ts) so the Cloudflare
   // build can dead-code-eliminate the `pg` driver branch entirely instead of

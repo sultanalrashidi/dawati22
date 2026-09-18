@@ -3,7 +3,7 @@ import type { NextRequest } from "next/server";
 import { getSessionUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db/client";
 import { visitPreviewShare } from "@/lib/drafts/share";
-import { PREVIEW_GRANT_COOKIE, previewGrantCookieOptions } from "@/lib/drafts/grant";
+import { PREVIEW_GRANT_COOKIE, previewGrantCookieOptions, signedPreviewGrant } from "@/lib/drafts/grant";
 
 /**
  * The link she sends her mother.
@@ -38,8 +38,9 @@ export async function GET(
   }
 
   const response = NextResponse.redirect(new URL(`/preview/${result.eventId}`, request.url));
-  // Names the one event this browser was let into. Scoped to a single id on
-  // purpose: a grant is not a key to every preview on the site.
-  response.cookies.set(PREVIEW_GRANT_COOKIE, result.eventId, previewGrantCookieOptions());
+  // Names the one event this browser was let into, signed so it cannot be
+  // forged. Scoped to a single id on purpose: a grant is not a key to every
+  // preview on the site.
+  response.cookies.set(PREVIEW_GRANT_COOKIE, signedPreviewGrant(result.eventId), previewGrantCookieOptions());
   return response;
 }

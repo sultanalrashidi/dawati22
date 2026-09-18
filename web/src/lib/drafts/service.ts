@@ -94,10 +94,13 @@ export interface StartDraftInput {
  * design is the most ordinary thing on the gallery, and it must not litter.
  */
 export async function startDraft(input: StartDraftInput): Promise<string> {
-  await assertThemeSelectable(input.themeId, input.themeVariantId);
-
   const user = await getSessionUser();
   const ownerId = user?.role === Role.CUSTOMER ? user.id : null;
+
+  // An anonymous draft (ownerId null) may use PUBLIC designs only; a signed-in
+  // customer may also use a PRIVATE design assigned to her. A hand-posted
+  // private theme id from anyone else is refused here.
+  await assertThemeSelectable(input.themeId, input.themeVariantId, { userId: ownerId });
 
   // Only what was actually supplied. Coercing a missing tier/count to null
   // would mean arriving at the gallery a second time (from the header, or via

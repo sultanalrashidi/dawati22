@@ -219,7 +219,7 @@ export async function createEvent(userId: string, input: CreateEventInput) {
   if (order.status !== OrderStatus.PAID) throw new EventError("Order is not paid");
   if (order.event) throw new EventError("Order already has an event");
 
-  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null);
+  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null, { userId });
   assertCoupleCount(input.couples);
 
   // Snapshotted from the order, not read through it later: the guest page must
@@ -239,14 +239,46 @@ export async function createEvent(userId: string, input: CreateEventInput) {
  * archived after it was created must still be saveable without support being
  * forced to move the invitation onto a different design first.
  */
+export interface ThemeSelectableOptions {
+  /**
+   * The customer this selection is for. A PRIVATE design (a paid bespoke one)
+   * is only selectable by a customer it was assigned to — the picker already
+   * hides it from everyone else, and this is the server-side twin of that so a
+   * hand-posted theme id cannot mount another customer's private design (design
+   * fee bypass). `null`/absent means an anonymous draft, which may use PUBLIC
+   * designs only.
+   */
+  userId?: string | null;
+  /** The event's current design, always allowed even once archived (admin edit of an old event). */
+  alsoAllowThemeId?: string;
+  /** The caller is the admin panel, which may assign any published design. */
+  adminOverride?: boolean;
+}
+
 export async function assertThemeSelectable(
   themeId: string,
   themeVariantId: string | null,
-  alsoAllowThemeId?: string,
+  options: ThemeSelectableOptions = {},
 ) {
+  const { userId = null, alsoAllowThemeId, adminOverride = false } = options;
   const theme = await prisma.theme.findUnique({ where: { id: themeId } });
-  if (!theme || (theme.status !== "PUBLISHED" && theme.id !== alsoAllowThemeId)) {
+  const isCurrent = Boolean(alsoAllowThemeId) && theme?.id === alsoAllowThemeId;
+  if (!theme || (theme.status !== "PUBLISHED" && !isCurrent)) {
     throw new EventError("Theme not available");
+  }
+
+  // A PRIVATE design is reachable only by a customer it was assigned to (or the
+  // admin, or when it is already this event's design). Checked here, on the
+  // server, because the theme id arrives from the browser and the gallery's own
+  // filtering is not a security boundary.
+  if (theme.visibility === "PRIVATE" && !isCurrent && !adminOverride) {
+    const assigned = userId
+      ? await prisma.themeAssignment.findUnique({
+          where: { themeId_userId: { themeId: theme.id, userId } },
+          select: { id: true },
+        })
+      : null;
+    if (!assigned) throw new EventError("Theme not available");
   }
 
   if (themeVariantId) {
@@ -358,7 +390,12 @@ export async function updateEventDetails(eventId: string, input: UpdateEventDeta
   if (!event) throw new EventError("Event not found");
 
   assertCoupleCount(input.couples);
-  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null, event.themeId);
+  // Admin edit path: trusted to assign any published design (including a private
+  // bespoke one), and always allowed to keep the event's current design.
+  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null, {
+    adminOverride: true,
+    alsoAllowThemeId: event.themeId,
+  });
 
   const [, updated] = await prisma.$transaction([
     prisma.eventCouple.deleteMany({ where: { eventId } }),
@@ -430,9 +467,13 @@ export async function updateOwnedEventDetails(
   if (!event) throw new EventError("Event not found");
 
   assertCoupleCount(input.couples);
-  // `alsoAllowThemeId`, exactly as the admin form passes it: a design archived
-  // after she paid must not make every later save impossible.
-  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null, event.themeId);
+  // Her own event: she may keep the current design (archived or not) or pick any
+  // design the picker would offer her — a PUBLIC one, or a PRIVATE one assigned
+  // to her. `alsoAllowThemeId` covers a design archived after she paid.
+  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null, {
+    userId,
+    alsoAllowThemeId: event.themeId,
+  });
 
   await prisma.$transaction(async (tx) => {
     const updated = await tx.event.updateMany({

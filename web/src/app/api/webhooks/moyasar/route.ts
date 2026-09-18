@@ -11,9 +11,18 @@ interface MoyasarWebhookPayload {
 }
 
 export async function POST(request: NextRequest) {
-  const payload = (await request.json()) as MoyasarWebhookPayload;
+  // Parse before anything else can throw: an empty, malformed or `null` body
+  // used to escape as an uncaught 500 to any anonymous caller, before the
+  // secret was ever checked. A body we cannot read carries no valid secret, so
+  // it gets the same answer a wrong secret does.
+  let payload: MoyasarWebhookPayload;
+  try {
+    payload = (await request.json()) as MoyasarWebhookPayload;
+  } catch {
+    return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  }
 
-  if (!verifyMoyasarWebhookSecret(payload.secret_token)) {
+  if (!payload || !verifyMoyasarWebhookSecret(payload.secret_token)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

@@ -58,6 +58,11 @@ export default async function DraftPreviewPage({
   // Only she (signed in, or holding the draft cookie) gets the controls; the
   // person she shared it with gets the caption and the privacy link.
   const controls = isOwner || isBearer;
+  // A share viewer reached this page through a grant, not as the owner. She
+  // keeps the watermark whatever the event's paid state: the clean, paid
+  // invitation is for the owner's own preview, never for the three people a
+  // draft was shown to (and never for a forged grant that slipped the cap).
+  const showWatermark = !activated || !controls;
   // Before payment the pass follows the tier she is heading for: a trial that
   // hid the code was the one place the preview lied about the product. NO_QR
   // is the only choice that drops it; undecided means WITH_QR, which is also
@@ -73,7 +78,7 @@ export default async function DraftPreviewPage({
         dict={dict}
         mode="preview"
         watermark={
-          activated ? undefined : { primary: dict.draft.watermarkPrimary, secondary: dict.draft.watermarkSecondary }
+          showWatermark ? { primary: dict.draft.watermarkPrimary, secondary: dict.draft.watermarkSecondary } : undefined
         }
         // A real-looking kunya, not a descriptor: the whole point of this
         // screen is that she sees her own invitation exactly as a guest

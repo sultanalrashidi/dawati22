@@ -22,6 +22,7 @@ import {
 } from "@/lib/guests/import-parse";
 import { Role } from "@/generated/prisma/client";
 import { isLocale, defaultLocale } from "@/lib/i18n/locales";
+import { toWesternDigits } from "@/lib/arabic";
 
 export type GuestActionState = { error?: string } | null;
 
@@ -50,8 +51,10 @@ export async function addGuestAction(
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
 
   const nameAr = String(formData.get("nameAr") ?? "").trim();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const allowedCount = Number(formData.get("allowedCount") ?? 1);
+  // Someone typing on an Arabic keyboard sends "٠٥٠…" and "٢"; fold to ASCII
+  // digits before the phone parser and Number() ever see them.
+  const phone = toWesternDigits(String(formData.get("phone") ?? "")).trim();
+  const allowedCount = Number(toWesternDigits(String(formData.get("allowedCount") ?? "1"))) || 1;
 
   if (nameAr.length < 2) return { error: "invalid_name" };
 

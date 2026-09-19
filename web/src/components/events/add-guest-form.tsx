@@ -44,9 +44,8 @@ export function AddGuestForm({
         <span className="text-fg-muted">{f.allowedCountLabel}</span>
         <input
           name="allowedCount"
-          type="number"
-          min={1}
-          max={20}
+          type="text"
+          inputMode="numeric"
           defaultValue={1}
           className="h-10 rounded-lg border border-border bg-bg px-3 text-fg outline-none focus:border-accent"
         />

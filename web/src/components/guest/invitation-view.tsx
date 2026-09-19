@@ -13,6 +13,7 @@ import {
 } from "react";
 import { MusicFrame, useBackgroundMusic, type BackgroundMusic } from "@/components/guest/background-music";
 import { readTrack } from "@/lib/music/track";
+import { toWesternDigits } from "@/lib/arabic";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ScheduleItem } from "@/lib/events/types";
@@ -1561,7 +1562,7 @@ function InvitationScreens({
                   type="tel"
                   dir="ltr"
                   value={rsvpPhone}
-                  onChange={(e) => setRsvpPhone(e.target.value)}
+                  onChange={(e) => setRsvpPhone(toWesternDigits(e.target.value))}
                   className="h-11 rounded-lg border border-[var(--color-accent)]/40 bg-[var(--color-surface)] px-3 text-[var(--color-fg)] outline-none focus:border-[var(--color-accent)]"
                 />
               </label>

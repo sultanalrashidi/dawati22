@@ -2,6 +2,7 @@
 
 import { useState, useTransition, type CSSProperties, type FormEvent, type ReactNode } from "react";
 import { submitRsvpAction } from "@/lib/invitations/actions";
+import { toWesternDigits } from "@/lib/arabic";
 import type { RsvpLayer, TypographyDoc, VariantPalette } from "@/lib/themes/builder/types";
 import { scaled, textStyleToCss } from "./style";
 
@@ -210,7 +211,7 @@ export function RsvpForm({
           type="tel"
           dir="ltr"
           value={phone}
-          onChange={(event) => setPhone(event.target.value)}
+          onChange={(event) => setPhone(toWesternDigits(event.target.value))}
           style={controlStyle}
         />
       </Field>

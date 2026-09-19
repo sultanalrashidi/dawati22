@@ -4,6 +4,7 @@ import { useState, useTransition, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { OTP_MAX_LENGTH, isSubmittableOtp } from "@/lib/otp/format";
+import { toWesternDigits } from "@/lib/arabic";
 import type { Locale } from "@/lib/i18n/locales";
 import {
   PHONE_COUNTRIES,
@@ -168,7 +169,7 @@ export function LoginForm({
                   inputMode="numeric"
                   dir="ltr"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(toWesternDigits(e.target.value))}
                   placeholder={selected.example}
                   className="h-full min-w-0 flex-1 rounded-e-lg bg-transparent pe-3 text-fg outline-none"
                   autoFocus
@@ -206,7 +207,7 @@ export function LoginForm({
               dir="ltr"
               maxLength={OTP_MAX_LENGTH}
               value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              onChange={(e) => setCode(toWesternDigits(e.target.value).replace(/\D/g, ""))}
               className="h-11 rounded-lg border border-border bg-bg px-3 text-center text-lg tracking-[0.5em] text-fg outline-none focus:border-accent"
               autoFocus
             />

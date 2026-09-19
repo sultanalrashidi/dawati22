@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { toWesternDigits } from "@/lib/arabic";
 import { setGatePinAction, clearGatePinAction } from "@/lib/gatepin/actions";
 
 export function GatePinForm({
@@ -51,7 +52,7 @@ export function GatePinForm({
           <span className="text-fg-muted">{hasPinSet ? f.gatePinChangeLabel : f.gatePinSetLabel}</span>
           <input
             value={pin}
-            onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+            onChange={(e) => setPin(toWesternDigits(e.target.value).replace(/\D/g, ""))}
             type="password"
             inputMode="numeric"
             dir="ltr"

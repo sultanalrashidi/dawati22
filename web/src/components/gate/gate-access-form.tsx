@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { toWesternDigits } from "@/lib/arabic";
 import { verifyGatePinAction } from "@/lib/gatepin/actions";
 
 export function GateAccessForm({ dict }: { dict: Dictionary }) {
@@ -37,7 +38,7 @@ export function GateAccessForm({ dict }: { dict: Dictionary }) {
         <span className="text-fg-muted">{g.referenceCodeLabel}</span>
         <input
           value={referenceCode}
-          onChange={(e) => setReferenceCode(e.target.value.toUpperCase())}
+          onChange={(e) => setReferenceCode(toWesternDigits(e.target.value).toUpperCase())}
           dir="ltr"
           autoCapitalize="characters"
           placeholder={g.referenceCodePlaceholder}
@@ -48,7 +49,7 @@ export function GateAccessForm({ dict }: { dict: Dictionary }) {
         <span className="text-fg-muted">{g.pinLabel}</span>
         <input
           value={pin}
-          onChange={(e) => setPin(e.target.value.replace(/\D/g, ""))}
+          onChange={(e) => setPin(toWesternDigits(e.target.value).replace(/\D/g, ""))}
           type="password"
           inputMode="numeric"
           dir="ltr"

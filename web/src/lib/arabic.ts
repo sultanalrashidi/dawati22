@@ -18,6 +18,20 @@ const MARKS = /[ؐ-ًؚ-ٰٟۖ-ۭـ]/g;
 /** Arabic-Indic and extended Arabic-Indic digits, in order 0–9. */
 const DIGIT_BASES = [0x0660, 0x06f0];
 
+/**
+ * Fold Arabic-Indic (٠-٩) and extended/Persian (۰-۹) digits to Western 0-9,
+ * leaving every other character untouched. This is what lets someone type a
+ * phone, a code or a count on an Arabic keyboard and have the value land as
+ * plain ASCII digits, rather than a field that silently rejects "٠٥٠".
+ */
+export function toWesternDigits(input: string): string {
+  return input.replace(/[٠-٩۰-۹]/g, (d) => {
+    const code = d.codePointAt(0)!;
+    const base = DIGIT_BASES.find((b) => code >= b && code <= b + 9)!;
+    return String(code - base);
+  });
+}
+
 export function normalizeArabic(input: string): string {
   let text = input.normalize("NFKC").replace(MARKS, "");
 
@@ -30,11 +44,7 @@ export function normalizeArabic(input: string): string {
     .replace(/ء/g, "");
 
   // Arabic-Indic digits fold to Latin ones so "٠٥٠" and "050" are one string.
-  text = text.replace(/[٠-٩۰-۹]/g, (d) => {
-    const code = d.codePointAt(0)!;
-    const base = DIGIT_BASES.find((b) => code >= b && code <= b + 9)!;
-    return String(code - base);
-  });
+  text = toWesternDigits(text);
 
   return text.toLowerCase().replace(/\s+/g, " ").trim();
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { OTP_MAX_LENGTH, isSubmittableOtp } from "@/lib/otp/format";
+import { toWesternDigits } from "@/lib/arabic";
 import type { Locale } from "@/lib/i18n/locales";
 import { MIN_PASSWORD_LENGTH } from "@/lib/security/password-rules";
 import {
@@ -183,7 +184,7 @@ export function AdminLoginForm({ locale, dict }: { locale: Locale; dict: Diction
               maxLength={OTP_MAX_LENGTH}
               autoComplete="one-time-code"
               value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              onChange={(e) => setCode(toWesternDigits(e.target.value).replace(/\D/g, ""))}
               className="h-11 rounded-lg border border-border bg-bg px-3 text-center text-lg tracking-[0.5em] text-fg outline-none focus:border-accent"
               autoFocus
             />

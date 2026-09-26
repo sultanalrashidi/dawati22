@@ -44,7 +44,7 @@ export function LoginForm({
   const [sentTo, setSentTo] = useState("");
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
-  const [otpId, setOtpId] = useState<string | null>(null);
+  const [signupGrant, setSignupGrant] = useState<string | null>(null);
   const [devCode, setDevCode] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cooldown, setCooldown] = useState(0);
@@ -113,7 +113,7 @@ export function LoginForm({
         return;
       }
       if (result.needsName) {
-        setOtpId(result.otpId);
+        setSignupGrant(result.signupGrant);
         setStep("name");
         return;
       }
@@ -123,9 +123,9 @@ export function LoginForm({
 
   function completeSignup() {
     setError(null);
-    if (!otpId) return;
+    if (!signupGrant) return;
     startTransition(async () => {
-      const result = await completeSignupAction(otpId, phone, country, name, locale, pendingOrder);
+      const result = await completeSignupAction(signupGrant, phone, country, name, locale, pendingOrder);
       if (!result.ok) {
         setError(result.error === "name_required" ? dict.common.requiredField : dict.auth.codeExpired);
         return;

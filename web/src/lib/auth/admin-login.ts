@@ -1,12 +1,14 @@
 import "server-only";
+import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db/client";
 import { OtpPurpose, Role } from "@/generated/prisma/client";
 import { normalizeSaudiPhone } from "@/lib/security/phone";
 import { hashPassword, verifyPassword } from "@/lib/security/password";
 import { isAcceptablePassword } from "@/lib/security/password-rules";
-import { requestOtp, peekOtp, consumeOtp, OtpRateLimitError } from "@/lib/otp/service";
+import { requestOtp, checkAndConsumeOtp, OtpRateLimitError } from "@/lib/otp/service";
+import { writeAuditLog } from "@/lib/audit/service";
 import { logger } from "@/lib/logger";
-import { maskPhone } from "@/lib/security/tokens";
+import { maskPhone, sha256Hex } from "@/lib/security/tokens";
 
 /**
  * The private way in for the admin.
@@ -15,11 +17,17 @@ import { maskPhone } from "@/lib/security/tokens";
  * the account is registered to. The public sign-in page cannot reach an admin
  * account at all, so this route is the only door.
  *
- * The one state that looks like a hole and is not: an admin with NO password
- * set can sign in with the SMS code alone, and is made to set one immediately.
- * That is the recovery path, and reaching it requires clearing `passwordHash`
- * in the database — so recovery costs database access AND the phone, which is
- * two factors of a different kind.
+ * An admin with NO password does not get in on the SMS code alone. That used
+ * to be the "recovery" state, and it made any seeded or cleared admin row
+ * claimable by whoever held its phone. Now a password-less admin must present
+ * an ENROLLMENT TOKEN in the password field — issued by an operator through
+ * `pnpm admin:accounts enroll`, stored only as a hash, expiring, single-use —
+ * plus the code, and must set a password in the same sign-in. No token, no
+ * way in.
+ *
+ * Every attempt (password, enrollment token or code, right or wrong) is
+ * CLAIMED from the account's attempt budget in one conditional UPDATE before
+ * anything is checked, so concurrent guesses cannot outrun the lockout.
  */
 
 const MAX_ATTEMPTS = 5;
@@ -35,9 +43,8 @@ export class AdminLoginLockedError extends Error {
 interface AdminAccount {
   id: string;
   passwordHash: string | null;
-  adminLoginFailedAttempts: number;
-  adminLoginLockedUntil: Date | null;
-  isBlocked: boolean;
+  adminEnrollmentHash: string | null;
+  adminEnrollmentExpiresAt: Date | null;
 }
 
 /**
@@ -55,35 +62,90 @@ async function findAdmin(phone: string): Promise<AdminAccount | null> {
       role: true,
       isBlocked: true,
       passwordHash: true,
-      adminLoginFailedAttempts: true,
-      adminLoginLockedUntil: true,
+      adminEnrollmentHash: true,
+      adminEnrollmentExpiresAt: true,
     },
   });
   if (!user || user.role !== Role.ADMIN || user.isBlocked) return null;
   return user;
 }
 
-function assertNotLocked(admin: AdminAccount) {
-  if (admin.adminLoginLockedUntil && admin.adminLoginLockedUntil > new Date()) {
-    const seconds = Math.ceil((admin.adminLoginLockedUntil.getTime() - Date.now()) / 1000);
-    throw new AdminLoginLockedError(Math.max(1, seconds));
-  }
+async function lockedError(adminId: string): Promise<AdminLoginLockedError> {
+  const row = await prisma.user.findUnique({ where: { id: adminId }, select: { adminLoginLockedUntil: true } });
+  const until = row?.adminLoginLockedUntil?.getTime() ?? Date.now() + LOCKOUT_MS;
+  return new AdminLoginLockedError(Math.max(1, Math.ceil((until - Date.now()) / 1000)));
 }
 
-async function countFailure(admin: AdminAccount) {
-  const attempts = admin.adminLoginFailedAttempts + 1;
-  const lockedOut = attempts >= MAX_ATTEMPTS;
-  await prisma.user.update({
-    where: { id: admin.id },
-    data: lockedOut
-      ? { adminLoginFailedAttempts: 0, adminLoginLockedUntil: new Date(Date.now() + LOCKOUT_MS) }
-      : { adminLoginFailedAttempts: attempts },
-  });
-  if (lockedOut) throw new AdminLoginLockedError(Math.ceil(LOCKOUT_MS / 1000));
+/** Locks the account unless it already is. Conditional, so parallel losers cannot extend it. */
+async function lock(adminId: string): Promise<void> {
+  await prisma.$executeRaw`
+    UPDATE "User"
+       SET "adminLoginFailedAttempts" = 0,
+           "adminLoginLockedUntil" = NOW() + ${LOCKOUT_MS} * INTERVAL '1 millisecond',
+           "updatedAt" = NOW()
+     WHERE "id" = ${adminId}
+       AND ("adminLoginLockedUntil" IS NULL OR "adminLoginLockedUntil" <= NOW())
+  `;
+}
+
+/**
+ * Takes one attempt from the budget, or throws "locked". A single statement:
+ * Postgres re-checks the lock and the count on the row it actually updates, so
+ * a burst of N requests admits at most the attempts that remain.
+ */
+async function claimAttempt(adminId: string): Promise<number> {
+  const [row] = await prisma.$queryRaw<{ attempts: number }[]>`
+    UPDATE "User"
+       SET "adminLoginFailedAttempts" = "adminLoginFailedAttempts" + 1, "updatedAt" = NOW()
+     WHERE "id" = ${adminId}
+       AND ("adminLoginLockedUntil" IS NULL OR "adminLoginLockedUntil" <= NOW())
+       AND "adminLoginFailedAttempts" < ${MAX_ATTEMPTS}
+    RETURNING "adminLoginFailedAttempts" AS "attempts"
+  `;
+  if (!row) {
+    // Budget spent without a lock recorded yet (the claims that spent it are
+    // still in flight): record it now, so the account cannot sit exhausted
+    // and unlocked forever.
+    await lock(adminId);
+    throw await lockedError(adminId);
+  }
+  return row.attempts;
+}
+
+/** A wrong answer on a claimed attempt: the last one in the budget locks the account. */
+async function failAttempt(adminId: string, attempts: number, error: AdminLoginError): Promise<never> {
+  if (attempts >= MAX_ATTEMPTS) {
+    await lock(adminId);
+    throw new AdminLoginLockedError(Math.ceil(LOCKOUT_MS / 1000));
+  }
+  throw error;
+}
+
+/**
+ * A right answer: the counter returns to zero — but only if no parallel
+ * failure locked the account in the meantime. A stale success must not
+ * unlock what a concurrent failure just locked.
+ */
+async function succeedAttempt(adminId: string): Promise<void> {
+  const reset = await prisma.$executeRaw`
+    UPDATE "User"
+       SET "adminLoginFailedAttempts" = 0, "adminLoginLockedUntil" = NULL, "updatedAt" = NOW()
+     WHERE "id" = ${adminId}
+       AND ("adminLoginLockedUntil" IS NULL OR "adminLoginLockedUntil" <= NOW())
+  `;
+  if (reset === 0) throw await lockedError(adminId);
+}
+
+function enrollmentMatches(admin: AdminAccount, token: string): boolean {
+  if (!token || !admin.adminEnrollmentHash || !admin.adminEnrollmentExpiresAt) return false;
+  if (admin.adminEnrollmentExpiresAt <= new Date()) return false;
+  const supplied = Buffer.from(sha256Hex(token));
+  const expected = Buffer.from(admin.adminEnrollmentHash);
+  return supplied.length === expected.length && timingSafeEqual(supplied, expected);
 }
 
 export interface AdminChallengeResult {
-  /** True when this account has no password yet — the caller must collect one. */
+  /** True when this account is enrolling — the caller must collect a new password. */
   needsPassword: boolean;
   /** Shown only for a test number with the bypass switched on. */
   devCode?: string;
@@ -92,9 +154,10 @@ export interface AdminChallengeResult {
 }
 
 /**
- * Step one: password (when one is set), then a code to the phone.
+ * Step one: the password — or, for an account that has none yet, its
+ * enrollment token — then a code to the phone.
  *
- * The password is checked BEFORE any SMS goes out. Sending first would let
+ * The secret is checked BEFORE any SMS goes out. Sending first would let
  * anyone who guesses the route spend the SMS balance, and would tell them
  * which numbers are admin accounts by which ones ring.
  */
@@ -111,20 +174,12 @@ export async function startAdminLogin(
     throw new AdminLoginError("invalid");
   }
 
-  assertNotLocked(admin);
-
-  if (admin.passwordHash) {
-    const ok = await verifyPassword(password, admin.passwordHash);
-    if (!ok) {
-      await countFailure(admin);
-      throw new AdminLoginError("invalid");
-    }
-  }
-
-  await prisma.user.update({
-    where: { id: admin.id },
-    data: { adminLoginFailedAttempts: 0, adminLoginLockedUntil: null },
-  });
+  const attempts = await claimAttempt(admin.id);
+  const ok = admin.passwordHash
+    ? await verifyPassword(password, admin.passwordHash)
+    : enrollmentMatches(admin, password);
+  if (!ok) await failAttempt(admin.id, attempts, new AdminLoginError("invalid"));
+  await succeedAttempt(admin.id);
 
   try {
     const { devCode } = await requestOtp(phone, OtpPurpose.LOGIN);
@@ -137,50 +192,75 @@ export async function startAdminLogin(
 
 export interface AdminVerifyResult {
   userId: string;
-  /** The password the admin set on this recovery sign-in, already applied. */
+  /** The password the admin set on this enrollment sign-in, already applied. */
   passwordWasSet: boolean;
 }
 
 /**
- * Step two: the code. Also where a recovering admin sets their new password —
- * in the same call, so the account cannot be left password-less afterwards by
- * closing the tab.
+ * Step two: the code. Also where an enrolling admin sets their password — in
+ * the same call, so the account cannot be left password-less afterwards by
+ * closing the tab — and where the enrollment token is spent.
  */
 export async function completeAdminLogin(
   rawPhone: string,
   code: string,
   newPassword: string | null,
+  enrollmentToken: string | null = null,
 ): Promise<AdminVerifyResult> {
   const phone = normalizeSaudiPhone(rawPhone);
   if (!phone) throw new AdminLoginError("invalid");
 
   const admin = await findAdmin(phone);
   if (!admin) throw new AdminLoginError("invalid");
-  assertNotLocked(admin);
+  const enrolling = !admin.passwordHash;
 
-  // A password-less account is being recovered, so one must be set here. The
-  // check is repeated on the server because the form's own rule is only a hint,
-  // and it runs BEFORE the code is checked: with real SMS the provider spends
-  // the code on the first check, so refusing afterwards would burn a code the
-  // customer typed correctly and make them wait for another.
-  if (!admin.passwordHash && (!newPassword || !isAcceptablePassword(newPassword))) {
+  // An enrolling account must set a password here. Checked BEFORE the code:
+  // with real SMS the provider spends the code on the first check, so refusing
+  // afterwards would burn a code typed correctly.
+  if (enrolling && (!newPassword || !isAcceptablePassword(newPassword))) {
     throw new AdminLoginError("password_required");
   }
 
-  const { valid, otpId } = await peekOtp(phone, OtpPurpose.LOGIN, code.trim());
-  if (!valid || !otpId) {
-    await countFailure(admin);
-    throw new AdminLoginError("invalid_code");
+  const attempts = await claimAttempt(admin.id);
+  // The enrollment token again, checked before the code for the same reason.
+  if (enrolling && !enrollmentMatches(admin, enrollmentToken ?? "")) {
+    await failAttempt(admin.id, attempts, new AdminLoginError("invalid"));
   }
 
-  await consumeOtp(otpId);
+  const { valid } = await checkAndConsumeOtp(phone, OtpPurpose.LOGIN, code);
+  if (!valid) await failAttempt(admin.id, attempts, new AdminLoginError("invalid_code"));
+  await succeedAttempt(admin.id);
 
-  if (!admin.passwordHash && newPassword) {
-    await prisma.user.update({
-      where: { id: admin.id },
-      data: { passwordHash: await hashPassword(newPassword) },
+  if (enrolling && newPassword && enrollmentToken) {
+    const passwordHash = await hashPassword(newPassword);
+    // Spends the token and sets the password in ONE conditional write: only
+    // while there is still no password and the very same unexpired token is
+    // on the row. Two parallel enrollments cannot both land.
+    const enrolled = await prisma.$transaction(async (tx) => {
+      const [row] = await tx.$queryRaw<{ id: string; name: string }[]>`
+        UPDATE "User"
+           SET "passwordHash" = ${passwordHash},
+               "adminEnrollmentHash" = NULL,
+               "adminEnrollmentExpiresAt" = NULL,
+               "updatedAt" = NOW()
+         WHERE "id" = ${admin.id}
+           AND "role" = 'ADMIN'
+           AND "passwordHash" IS NULL
+           AND "adminEnrollmentHash" = ${sha256Hex(enrollmentToken)}
+           AND "adminEnrollmentExpiresAt" > NOW()
+        RETURNING "id", "name"
+      `;
+      if (!row) return false;
+      await writeAuditLog(tx, {
+        actor: { id: row.id, name: row.name, role: Role.ADMIN },
+        action: "user.admin_enrollment.completed",
+        entityType: "User",
+        entityId: row.id,
+      });
+      return true;
     });
-    logger.warn("auth.admin_login.password_set_on_recovery", { phone: maskPhone(phone) });
+    if (!enrolled) throw new AdminLoginError("invalid");
+    logger.warn("auth.admin_login.enrolled", { phone: maskPhone(phone) });
     return { userId: admin.id, passwordWasSet: true };
   }
 
@@ -218,6 +298,9 @@ export async function setAdminPassword(
       passwordHash: await hashPassword(newPassword),
       adminLoginFailedAttempts: 0,
       adminLoginLockedUntil: null,
+      // A password now exists, so any outstanding enrollment token is moot.
+      adminEnrollmentHash: null,
+      adminEnrollmentExpiresAt: null,
     },
   });
   logger.warn("auth.admin_password.changed", { userId });

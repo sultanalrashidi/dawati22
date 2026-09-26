@@ -41,7 +41,7 @@ export default async function DraftPreviewPage({
   const [user, tokenHash, granted] = await Promise.all([
     getSessionUser(),
     readDraftTokenHash(),
-    hasPreviewGrant(eventId),
+    hasPreviewGrant(eventId, event.previewShareToken),
   ]);
 
   const isOwner = Boolean(user && event.ownerId === user.id);

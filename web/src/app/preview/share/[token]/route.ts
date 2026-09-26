@@ -37,10 +37,16 @@ export async function GET(
     return NextResponse.redirect(new URL("/preview/unavailable", request.url));
   }
 
-  const response = NextResponse.redirect(new URL(`/preview/${result.eventId}`, request.url));
   // Names the one event this browser was let into, signed so it cannot be
   // forged. Scoped to a single id on purpose: a grant is not a key to every
-  // preview on the site.
-  response.cookies.set(PREVIEW_GRANT_COOKIE, signedPreviewGrant(result.eventId), previewGrantCookieOptions());
+  // preview on the site. Bound to THIS share token, so replacing the link
+  // revokes it. No signing key configured means no grant at all.
+  // The owner needs no grant: her session already opens the preview.
+  const grant = signedPreviewGrant(result.eventId, token);
+  if (!grant && !viewerIsOwner) {
+    return NextResponse.redirect(new URL("/preview/unavailable", request.url));
+  }
+  const response = NextResponse.redirect(new URL(`/preview/${result.eventId}`, request.url));
+  if (grant) response.cookies.set(PREVIEW_GRANT_COOKIE, grant, previewGrantCookieOptions());
   return response;
 }

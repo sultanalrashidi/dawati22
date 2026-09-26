@@ -9,7 +9,7 @@ import {
   ThemeStatus,
 } from "@/generated/prisma/client";
 import { generateReferenceCode } from "@/lib/events/reference-code";
-import { isMoyasarConfigured } from "@/lib/payments/moyasar";
+import { chargeableOrderProvider, PaymentsUnavailableError } from "@/lib/payments/moyasar";
 import { assignThemeToEvent } from "@/lib/admin/themes/service";
 import { CUSTOM_DESIGN_PRICE_SAR } from "@/lib/design-requests/pricing";
 
@@ -220,6 +220,16 @@ export async function requestDesignChanges(requestId: string, userId: string, no
   });
 }
 
+/** Refuses to raise a design fee a production without payment keys could only "mock-settle". */
+function designFeeProvider(): PaymentProvider {
+  try {
+    return chargeableOrderProvider() === "MOYASAR" ? PaymentProvider.MOYASAR : PaymentProvider.MOCK;
+  } catch (err) {
+    if (err instanceof PaymentsUnavailableError) throw new DesignRequestError("Payments are not configured");
+    throw err;
+  }
+}
+
 /**
  * "I like it" — the moment money becomes owed, and the first moment it does.
  *
@@ -248,7 +258,7 @@ export async function approveDesign(requestId: string, userId: string) {
         // `kind` is what keeps it out of listEligibleOrders, where it would
         // otherwise read as a package waiting to be spent on a free event.
         amount: request.priceSar,
-        provider: isMoyasarConfigured() ? PaymentProvider.MOYASAR : PaymentProvider.MOCK,
+        provider: designFeeProvider(),
         idempotencyKey: randomUUID(),
       },
     });

@@ -2,6 +2,7 @@ import "server-only";
 import { getSessionUser } from "@/lib/auth/session";
 import { getGateSessionEventId } from "@/lib/gatepin/session";
 import { assertGateAccess, CheckInAccessError } from "@/lib/checkin/service";
+import { isDoorEligible } from "@/lib/checkin/eligibility";
 import { Role } from "@/generated/prisma/client";
 
 /**
@@ -18,6 +19,10 @@ import { Role } from "@/generated/prisma/client";
 export type DoorAccess = { ok: true; gateStaffId: string | null } | { ok: false };
 
 export async function resolveDoorAccess(eventId: string): Promise<DoorAccess> {
+  // No door at all for an event without the QR pass, however the caller got
+  // here — a PIN set before this rule existed, or an assignment.
+  if (!(await isDoorEligible(eventId))) return { ok: false };
+
   // The PIN door first: the common case, and the only one needing no user.
   if ((await getGateSessionEventId()) === eventId) return { ok: true, gateStaffId: null };
 

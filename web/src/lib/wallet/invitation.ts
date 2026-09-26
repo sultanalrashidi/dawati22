@@ -1,5 +1,5 @@
 import "server-only";
-import { getInvitationByLinkToken } from "@/lib/invitations/service";
+import { getViewableInvitationByLinkToken } from "@/lib/invitations/service";
 import { loadBuilderTheme } from "@/lib/themes/builder/guest";
 import { InvitationStatus, ThemeEngine } from "@/generated/prisma/client";
 import type { ThemeConfig } from "@/lib/themes/types";
@@ -39,7 +39,7 @@ export type WalletInvitation = {
  * the QR product, or a guest who has not accepted.
  */
 export async function resolveWalletInvitation(linkToken: string): Promise<WalletInvitation | null> {
-  const invitation = await getInvitationByLinkToken(linkToken);
+  const invitation = await getViewableInvitationByLinkToken(linkToken);
   if (!invitation) return null;
   if (!invitation.event.hasQr || !ADMITTED.includes(invitation.status)) return null;
 

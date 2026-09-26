@@ -53,12 +53,13 @@ export async function completeAdminLoginAction(
   phone: string,
   code: string,
   newPassword: string | null,
+  enrollmentToken: string | null,
   locale: string,
 ): Promise<AdminVerifyResult> {
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
 
   try {
-    const { userId } = await completeAdminLogin(phone, code, newPassword);
+    const { userId } = await completeAdminLogin(phone, code, newPassword, enrollmentToken);
     const hdrs = await headers();
     await createSession(userId, {
       userAgent: hdrs.get("user-agent") ?? undefined,

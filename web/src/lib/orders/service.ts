@@ -3,13 +3,26 @@ import { randomUUID } from "node:crypto";
 import { prisma } from "@/lib/db/client";
 import { isUntouchedSample } from "@/lib/drafts/sample";
 import { logger } from "@/lib/logger";
-import { isMoyasarConfigured, fetchMoyasarPayment, sarToHalalas } from "@/lib/payments/moyasar";
+import {
+  chargeableOrderProvider,
+  isMockPaymentAllowed,
+  isMoyasarConfigured,
+  fetchMoyasarPayment,
+  PaymentsUnavailableError,
+  sarToHalalas,
+} from "@/lib/payments/moyasar";
 import { EventStatus, OrderKind, OrderStatus, PaymentProvider } from "@/generated/prisma/client";
 import { InvitationTier } from "@/generated/prisma/enums";
 import { isValidInvitationCount, totalHalalas } from "@/lib/orders/pricing";
 import { offerUnitPrice } from "@/lib/orders/offer";
-import { discountHalalas } from "@/lib/discounts/rules";
-import { DiscountError, orderCodeRefusal, requireUsableCode } from "@/lib/discounts/service";
+import { codeRefusal, discountHalalas } from "@/lib/discounts/rules";
+import {
+  DISCOUNT_RESERVATION_MS,
+  DiscountError,
+  heldUses,
+  lockDiscountCode,
+  requireUsableCode,
+} from "@/lib/discounts/service";
 import { getPriceOffer } from "@/lib/settings/service";
 import { deliverPaidDesign } from "@/lib/design-requests/service";
 import { orderTerms } from "@/lib/orders/terms";
@@ -149,7 +162,7 @@ export async function createPerInvitationOrder(
 
   // The code is checked BEFORE the draft's current order is superseded below:
   // a refused code must leave her order exactly as it was, still payable.
-  const code = input.discountCode ? await requireUsableCode(input.discountCode) : null;
+  const code = input.discountCode ? await requireUsableCode(input.discountCode, input.draftEventId) : null;
   const subtotal = totalHalalas(input.count, rate.unitPrice);
   const off = code ? discountHalalas(subtotal, code.kind, Number(code.value)) : 0;
   const amountHalalas = subtotal - off;
@@ -163,35 +176,104 @@ export async function createPerInvitationOrder(
   // CANCELLED can no longer become PAID (see confirmMoyasarPayment). A FAILED
   // order is closed here too, because it is still payable (a declined card can
   // be retried) and would otherwise race the new one.
-  await prisma.order.updateMany({
-    where: { draftEventId: input.draftEventId, status: { in: PAYABLE_ORDER_STATUSES } },
-    data: { status: OrderStatus.CANCELLED },
-  });
+  const provider = amountHalalas === 0 ? PaymentProvider.FREE : chargeableProvider();
 
-  return prisma.order.create({
-    data: {
-      userId,
-      // No plan: fixed packages are retired. The order carries its own terms.
-      planId: null,
-      draftEventId: input.draftEventId,
-      invitationCount: input.count,
-      tier: input.tier,
-      // A frozen copy of today's rate — the offer price while one runs — so
-      // re-pricing, or the offer ending, never re-prices this sale.
-      unitPrice: rate.unitPrice.toFixed(2),
-      amount: (amountHalalas / 100).toFixed(2),
-      discountCodeId: code?.id ?? null,
-      discountAmount: code ? (off / 100).toFixed(2) : null,
-      currency: rate.currency,
-      // Nothing left to charge means no card at all — see settleFreeOrder.
-      provider:
-        amountHalalas === 0
-          ? PaymentProvider.FREE
-          : isMoyasarConfigured()
-            ? PaymentProvider.MOYASAR
-            : PaymentProvider.MOCK,
-      idempotencyKey: randomUUID(),
-    },
+  return prisma.$transaction(async (tx) => {
+    // At most one payable order per draft, ever.
+    //
+    // Changing the guest count and pressing pay again used to leave the first
+    // order sitting there, still payable — and since only ONE order can ever
+    // activate the draft, paying the stale one would charge a card and buy
+    // literally nothing. Superseding is only half of it; the other half is that
+    // CANCELLED can no longer become PAID (see confirmMoyasarPayment). A FAILED
+    // order is closed here too, because it is still payable (a declined card can
+    // be retried) and would otherwise race the new one. Superseding also
+    // releases whatever code use the old order was holding.
+    await tx.order.updateMany({
+      where: { draftEventId: input.draftEventId, status: { in: PAYABLE_ORDER_STATUSES } },
+      data: { status: OrderStatus.CANCELLED },
+    });
+
+    // The code's use is RESERVED here, under the code's lock and in the same
+    // transaction that writes the order: the count above was only a
+    // pre-check, and two customers racing for the last use must not both get
+    // a discounted checkout.
+    const now = new Date();
+    if (code) {
+      await lockDiscountCode(tx, code.id);
+      const refusal = codeRefusal(code, await heldUses(tx, code.id, now), now);
+      if (refusal) throw new DiscountError(refusal);
+    }
+
+    return tx.order.create({
+      data: {
+        userId,
+        // No plan: fixed packages are retired. The order carries its own terms.
+        planId: null,
+        draftEventId: input.draftEventId,
+        invitationCount: input.count,
+        tier: input.tier,
+        // A frozen copy of today's rate — the offer price while one runs — so
+        // re-pricing, or the offer ending, never re-prices this sale.
+        unitPrice: rate.unitPrice.toFixed(2),
+        amount: (amountHalalas / 100).toFixed(2),
+        discountCodeId: code?.id ?? null,
+        discountAmount: code ? (off / 100).toFixed(2) : null,
+        discountReservedUntil: code ? new Date(now.getTime() + DISCOUNT_RESERVATION_MS) : null,
+        currency: rate.currency,
+        // Nothing left to charge means no card at all — see settleFreeOrder.
+        provider,
+        idempotencyKey: randomUUID(),
+      },
+    });
+  });
+}
+
+/**
+ * The one way an order becomes PAID — every settlement path goes through it.
+ *
+ * Conditional on the order still being payable, so of the redirect, the
+ * webhook and a second tab, exactly one transition happens and exactly one
+ * caller goes on to fulfil. For a discounted order it runs under the code's
+ * lock:
+ *
+ *  - `enforceCode: true` (no money has moved: a free order, the dev mock) —
+ *    the code must still be valid and a use must still be available to THIS
+ *    order, or it is refused with DiscountError and stays unpaid.
+ *  - `enforceCode: false` (a card has already been charged at the discounted
+ *    amount) — the payment is honoured whatever happened; an over-redemption
+ *    is logged for the owner rather than turned into a charge for nothing.
+ *
+ * Returns the paid order, or null when another caller settled it first.
+ */
+async function markOrderPaid(
+  orderId: string,
+  providerRef: string,
+  options: { enforceCode: boolean },
+) {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({ where: { id: orderId } });
+    if (!order || !isPayableOrderStatus(order.status)) return null;
+
+    if (order.discountCodeId) {
+      await lockDiscountCode(tx, order.discountCodeId);
+      const code = await tx.discountCode.findUnique({ where: { id: order.discountCodeId } });
+      const now = new Date();
+      const refusal = code
+        ? codeRefusal(code, await heldUses(tx, code.id, now, order.id), now)
+        : ("unknown" as const);
+      if (refusal) {
+        if (options.enforceCode) throw new DiscountError(refusal);
+        logger.error("orders.discount.over_redeemed", { orderId, codeId: order.discountCodeId, refusal });
+      }
+    }
+
+    const claimed = await tx.order.updateMany({
+      where: { id: order.id, status: { in: PAYABLE_ORDER_STATUSES } },
+      data: { status: OrderStatus.PAID, paidAt: new Date(), providerRef, discountReservedUntil: null },
+    });
+    if (claimed.count === 0) return null;
+    return tx.order.findUniqueOrThrow({ where: { id: order.id } });
   });
 }
 
@@ -221,12 +303,9 @@ export async function repriceOrderWithCode(userId: string, orderId: string, disc
  * becomes PAID here and is delivered like any other paid order.
  *
  * With no money involved the code CAN still be refused at the last moment, so
- * it is checked again. The use limit is then enforced after the claim but
- * before anything is delivered: of the paid orders carrying the code, only
- * the first `maxUses` keep it. Two customers settling the last use at the same
- * instant both see both rows, rank them the same way, and exactly one wins;
- * the other goes back to PENDING, where her checkout offers to continue
- * without the code.
+ * `markOrderPaid` re-checks it under the code's lock: switched off, expired, or
+ * its last use taken by someone else, and the order stays PENDING, where her
+ * checkout offers to continue without the code.
  */
 export async function settleFreeOrder(orderId: string, userId: string) {
   const order = await getOwnedOrder(orderId, userId);
@@ -236,34 +315,11 @@ export async function settleFreeOrder(orderId: string, userId: string) {
   if (order.provider !== PaymentProvider.FREE || Number(order.amount) !== 0 || !order.discountCodeId) {
     throw new OrderError("Order is not free");
   }
-  const refusal = await orderCodeRefusal(order.discountCodeId);
-  if (refusal) throw new DiscountError(refusal);
 
-  const claimed = await prisma.order.updateMany({
-    where: { id: order.id, status: { in: PAYABLE_ORDER_STATUSES } },
-    data: { status: OrderStatus.PAID, paidAt: new Date(), providerRef: `free_${order.id}` },
-  });
-  if (claimed.count === 0) return order; // Settled a moment ago by her other tab.
-
-  const code = await prisma.discountCode.findUnique({ where: { id: order.discountCodeId } });
-  if (code?.maxUses != null) {
-    const holders = await prisma.order.findMany({
-      where: { discountCodeId: code.id, status: OrderStatus.PAID },
-      orderBy: [{ paidAt: "asc" }, { id: "asc" }],
-      take: code.maxUses,
-      select: { id: true },
-    });
-    if (!holders.some((holder) => holder.id === order.id)) {
-      await prisma.order.update({
-        where: { id: order.id },
-        data: { status: OrderStatus.PENDING, paidAt: null, providerRef: null },
-      });
-      throw new DiscountError("usedUp");
-    }
-  }
-
-  await fulfilPaidOrder(order);
-  return order;
+  const paid = await markOrderPaid(order.id, `free_${order.id}`, { enforceCode: true });
+  if (!paid) return order; // Settled a moment ago by her other tab.
+  await fulfilPaidOrder(paid);
+  return paid;
 }
 
 /**
@@ -345,6 +401,16 @@ async function allocateReferenceCode(): Promise<string> {
   return generateReferenceCode();
 }
 
+/** `chargeableOrderProvider`, as the error type this module's callers already handle. */
+function chargeableProvider(): PaymentProvider {
+  try {
+    return chargeableOrderProvider() === "MOYASAR" ? PaymentProvider.MOYASAR : PaymentProvider.MOCK;
+  } catch (err) {
+    if (err instanceof PaymentsUnavailableError) throw new OrderError("Payments are not configured");
+    throw err;
+  }
+}
+
 export async function getOwnedOrder(orderId: string, userId: string) {
   const order = await prisma.order.findUnique({
     where: { id: orderId },
@@ -367,11 +433,13 @@ export async function confirmMockPayment(orderId: string, userId: string) {
   // MOCK because no keys are set) — which is exactly when it is cheap to add.
   if (isMoyasarConfigured()) throw new OrderError("Order must be paid by card");
   if (order.provider !== PaymentProvider.MOCK) throw new OrderError("Order must be paid by card");
+  // Fail closed in any built deployment: a production with missing keys must
+  // not become one where the customer marks her own order paid.
+  if (!isMockPaymentAllowed()) throw new OrderError("Payments are not configured");
 
-  const paid = await prisma.order.update({
-    where: { id: order.id },
-    data: { status: OrderStatus.PAID, paidAt: new Date(), providerRef: `mock_${order.id}` },
-  });
+  // Nothing is charged here, so the code is enforced exactly as for a free order.
+  const paid = await markOrderPaid(order.id, `mock_${order.id}`, { enforceCode: true });
+  if (!paid) return order;
   await fulfilPaidOrder(paid);
   return paid;
 }
@@ -430,10 +498,9 @@ export async function confirmMoyasarPayment(orderId: string, userId: string, pay
     throw new OrderError("Payment could not be verified");
   }
 
-  const paid = await prisma.order.update({
-    where: { id: order.id },
-    data: { status: OrderStatus.PAID, paidAt: new Date(), providerRef: paymentId },
-  });
+  const paid = await markOrderPaid(order.id, paymentId, { enforceCode: false });
+  // Null: the webhook (or another tab) settled it first and fulfilled it.
+  if (!paid) return order;
   await fulfilPaidOrder(paid);
   return paid;
 }
@@ -476,11 +543,8 @@ export async function applyMoyasarWebhookEvent(type: string, paymentId: string, 
       payment.amount === sarToHalalas(Number(order.amount)) &&
       payment.currency?.toUpperCase() === order.currency.toUpperCase()
     ) {
-      const paid = await prisma.order.update({
-        where: { id: order.id },
-        data: { status: OrderStatus.PAID, paidAt: new Date(), providerRef: paymentId },
-      });
-      await fulfilPaidOrder(paid);
+      const paid = await markOrderPaid(order.id, paymentId, { enforceCode: false });
+      if (paid) await fulfilPaidOrder(paid);
     }
   } else if (type === "payment_failed") {
     await markAttemptFailed(order.id);

@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { submitRsvp, getInvitationByLinkToken, InvitationError, type RsvpDetails } from "@/lib/invitations/service";
+import { submitRsvp, getViewableInvitationByLinkToken, InvitationError, type RsvpDetails } from "@/lib/invitations/service";
 import { sha256Hex } from "@/lib/security/tokens";
 import { renderQrDataUrl } from "@/lib/qr";
 import { RsvpStatus } from "@/generated/prisma/client";
@@ -30,7 +30,7 @@ export async function submitRsvpAction(
   revalidatePath(`/i/${linkToken}`);
 
   if (response === "ACCEPTED") {
-    const invitation = await getInvitationByLinkToken(linkToken);
+    const invitation = await getViewableInvitationByLinkToken(linkToken);
     // Same gate as the page render, and it has to be here too: the client swaps
     // this value straight into the pass without another page load, so returning
     // it for a no-QR event would hand over the paid feature the moment the guest

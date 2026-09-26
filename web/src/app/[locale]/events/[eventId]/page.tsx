@@ -8,7 +8,7 @@ import { getDesignRequestForEvent } from "@/lib/design-requests/service";
 import { THEME_CATEGORIES, THEME_COLORS } from "@/lib/themes/vocabulary";
 import { classifyRsvp } from "@/lib/invitations/service";
 import { attendanceSnapshot, daysUntil, eventHasStarted, relativeTime } from "@/lib/events/activity";
-import { guestInvitationUrl, testInvitationUrl } from "@/lib/urls";
+import { gateLinkUrl, guestInvitationUrl, testInvitationUrl } from "@/lib/urls";
 import { invitationShareText } from "@/lib/events/share-text";
 import { supportWhatsAppUrl } from "@/lib/support";
 import { Role, EventGuestManagementMode } from "@/generated/prisma/client";
@@ -16,6 +16,7 @@ import { AddGuestForm } from "@/components/events/add-guest-form";
 import { ImportGuestsPanel } from "@/components/events/import-guests-panel";
 import { GuestList } from "@/components/events/guest-list";
 import { GatePinForm } from "@/components/events/gate-pin-form";
+import { GateLinkCard } from "@/components/events/gate-link-card";
 import { DesignRequestCard } from "@/components/events/design-request-card";
 import { StartDesignRequestCard } from "@/components/events/custom-design-request-fields";
 import { TestInvitationCard } from "@/components/events/test-invitation-card";
@@ -227,7 +228,13 @@ export default async function EventDetailPage({
               {d.openScanner}
             </Link>
 
-            <div className="mt-4 border-t border-bg/15 pt-4 [&_input]:text-fg">
+            <div className="mt-4 flex flex-col gap-3 border-t border-bg/15 pt-4 [&_input]:text-fg">
+              <GateLinkCard
+                eventId={event.id}
+                locale={locale}
+                dict={dict}
+                url={event.gateLinkToken ? gateLinkUrl(event.gateLinkToken) : null}
+              />
               <GatePinForm eventId={event.id} dict={dict} hasPinSet={Boolean(event.gatePinHash)} />
             </div>
           </section>

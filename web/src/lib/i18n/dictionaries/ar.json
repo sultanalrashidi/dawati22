@@ -643,7 +643,17 @@
       "guestFilterUnsent": "ما أُرسلت",
       "guestNoMatch": "ما فيه مدعوة بهذا الاسم أو الرقم.",
       "guestShowMore": "أظهري {count} أكثر",
-      "guestShowingCount": "{shown} من {total}"
+      "guestShowingCount": "{shown} من {total}",
+      "gateLinkTitle": "رابط منظّمات الدخول",
+      "gateLinkBody": "أرسلي رابط للمنظّمة بالواتساب، تضغطه وتنفتح الكاميرا على طول — بدون رقم مرجعي ولا رمز سري.",
+      "gateLinkEnable": "أنشئ الرابط",
+      "gateLinkActiveBody": "أي أحد معه هذا الرابط يقدر يفتح الماسح لمناسبتك، فأرسليه للمنظّمات فقط. إذا وصل لأحد ثاني غيّريه.",
+      "gateLinkWhatsapp": "أرسليه بواتساب",
+      "gateLinkShareText": "رابط ماسح الدخول لمناسبتنا — افتحيه يوم الحفل:",
+      "gateLinkRotate": "غيّر الرابط",
+      "gateLinkRotateConfirm": "بيبطل الرابط القديم، وكل المنظّمات اللي فاتحات الماسح بيطلعن ويحتجن الرابط الجديد. تكملين؟",
+      "gateLinkDisable": "إيقاف الرابط",
+      "gateLinkDisableConfirm": "بيبطل الرابط، وكل المنظّمات اللي فاتحات الماسح بيطلعن. تكملين؟"
     }
   },
   "admin": {
@@ -1034,7 +1044,8 @@
     "submit": "دخول",
     "invalidError": "الرقم المرجعي أو الرمز السري غير صحيح",
     "lockedError": "محاولات كثيرة خاطئة، حاول بعد {minutes} دقيقة",
-    "exit": "خروج"
+    "exit": "خروج",
+    "linkInvalid": "هذا الرابط موقوف أو تغيّر. اطلبي الرابط الجديد من صاحبة المناسبة."
   },
   "guest": {
     "openInvitation": "افتح الدعوة",

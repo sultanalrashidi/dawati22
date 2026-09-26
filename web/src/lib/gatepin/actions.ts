@@ -1,7 +1,18 @@
 "use server";
 
 import { requireUserOrThrow } from "@/lib/auth/guards";
-import { setGatePin, clearGatePin, verifyGatePin, GatePinError, GatePinLockedError } from "@/lib/gatepin/service";
+import { revalidatePath } from "next/cache";
+import {
+  setGatePin,
+  clearGatePin,
+  verifyGatePin,
+  enableGateLink,
+  rotateGateLink,
+  disableGateLink,
+  GatePinError,
+  GatePinLockedError,
+} from "@/lib/gatepin/service";
+import { isLocale, defaultLocale } from "@/lib/i18n/locales";
 import { createGateSession, destroyGateSession } from "@/lib/gatepin/session";
 import { Role } from "@/generated/prisma/client";
 
@@ -48,4 +59,31 @@ export async function verifyGatePinAction(referenceCode: string, pin: string): P
 
 export async function exitGateAccessAction(): Promise<void> {
   await destroyGateSession();
+}
+
+/** The owner's door-link controls. Each re-renders her event page. */
+async function ownerGateLink(
+  eventId: string,
+  locale: string,
+  apply: (eventId: string, ownerId: string) => Promise<void>,
+): Promise<void> {
+  const user = await requireUserOrThrow([Role.CUSTOMER]);
+  try {
+    await apply(eventId, user.id);
+  } catch (err) {
+    if (!(err instanceof GatePinError)) throw err;
+  }
+  revalidatePath(`/${isLocale(locale) ? locale : defaultLocale}/events/${eventId}`);
+}
+
+export async function enableGateLinkAction(eventId: string, locale: string): Promise<void> {
+  await ownerGateLink(eventId, locale, enableGateLink);
+}
+
+export async function rotateGateLinkAction(eventId: string, locale: string): Promise<void> {
+  await ownerGateLink(eventId, locale, rotateGateLink);
+}
+
+export async function disableGateLinkAction(eventId: string, locale: string): Promise<void> {
+  await ownerGateLink(eventId, locale, disableGateLink);
 }

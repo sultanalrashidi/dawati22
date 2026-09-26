@@ -7,8 +7,10 @@ import { exitGateAccessAction } from "@/lib/gatepin/actions";
 import { GateScanner } from "@/components/gate/gate-scanner";
 import { GateAccessForm } from "@/components/gate/gate-access-form";
 
-export default async function GateAccessPage({ params }: PageProps<"/[locale]/gate-access">) {
+export default async function GateAccessPage({ params, searchParams }: PageProps<"/[locale]/gate-access">) {
   const { locale } = await params;
+  // Arrived from a door link the host has since changed or switched off.
+  const linkInvalid = (await searchParams)?.link === "invalid";
   if (!isLocale(locale)) notFound();
   const dict = await getDictionary(locale);
   const g = dict.gateAccess;
@@ -36,6 +38,7 @@ export default async function GateAccessPage({ params }: PageProps<"/[locale]/ga
     <div className="mx-auto max-w-md px-4 py-12 sm:px-8">
       <h1 className="text-xl font-semibold text-fg">{g.title}</h1>
       <p className="mt-1 text-sm text-fg-muted">{g.subtitle}</p>
+      {linkInvalid && <p className="mt-4 rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger">{g.linkInvalid}</p>}
       <GateAccessForm dict={dict} />
     </div>
   );

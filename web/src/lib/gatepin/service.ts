@@ -1,7 +1,7 @@
 import "server-only";
 import { timingSafeEqual } from "node:crypto";
 import { prisma } from "@/lib/db/client";
-import { sha256Hex } from "@/lib/security/tokens";
+import { generateSecureToken, sha256Hex } from "@/lib/security/tokens";
 import { DOOR_ELIGIBLE_EVENT, isDoorEligible } from "@/lib/checkin/eligibility";
 
 const MAX_ATTEMPTS = 5;
@@ -138,4 +138,59 @@ export async function verifyGatePin(referenceCode: string, pin: string): Promise
   }
 
   return event.id;
+}
+
+// ---------------------------------------------------------------------------
+// The door team's link — the PIN-free way in
+// ---------------------------------------------------------------------------
+
+async function assertOwnDoor(eventId: string, ownerId: string): Promise<void> {
+  const event = await prisma.event.findUnique({ where: { id: eventId }, select: { ownerId: true } });
+  if (!event || event.ownerId !== ownerId) throw new GatePinError("not_found");
+  if (!(await isDoorEligible(eventId))) throw new GatePinError("not_eligible");
+}
+
+/**
+ * Turns the door link on, or hands back the one already on. Guarded on the
+ * column still being empty so two taps cannot mint two links.
+ */
+export async function enableGateLink(eventId: string, ownerId: string): Promise<void> {
+  await assertOwnDoor(eventId, ownerId);
+  await prisma.event.updateMany({
+    where: { id: eventId, gateLinkToken: null },
+    data: { gateLinkToken: generateSecureToken() },
+  });
+}
+
+/**
+ * A new link, and every door opened so far is closed. For a link that went
+ * further than the door team. Door sessions are per event, not per way in, so
+ * anyone who entered with the PIN signs in again too.
+ */
+export async function rotateGateLink(eventId: string, ownerId: string): Promise<void> {
+  await assertOwnDoor(eventId, ownerId);
+  await prisma.$transaction([
+    prisma.event.update({ where: { id: eventId }, data: { gateLinkToken: generateSecureToken() } }),
+    prisma.gateAccessSession.deleteMany({ where: { eventId } }),
+  ]);
+}
+
+/** Link off, open doors closed. Allowed even when the event is no longer door-eligible. */
+export async function disableGateLink(eventId: string, ownerId: string): Promise<void> {
+  const event = await prisma.event.findUnique({ where: { id: eventId }, select: { ownerId: true } });
+  if (!event || event.ownerId !== ownerId) throw new GatePinError("not_found");
+  await prisma.$transaction([
+    prisma.event.update({ where: { id: eventId }, data: { gateLinkToken: null } }),
+    prisma.gateAccessSession.deleteMany({ where: { eventId } }),
+  ]);
+}
+
+/** The event a door link opens, or null — unknown, switched off, or no longer a door event. */
+export async function resolveGateLink(token: string): Promise<string | null> {
+  if (!token) return null;
+  const event = await prisma.event.findFirst({
+    where: { gateLinkToken: token, ...DOOR_ELIGIBLE_EVENT },
+    select: { id: true },
+  });
+  return event?.id ?? null;
 }

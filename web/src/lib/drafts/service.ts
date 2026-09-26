@@ -1,5 +1,6 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
+import { lockKey } from "@/lib/db/lock";
 import {
   CoupleFormat,
   EventType,
@@ -70,12 +71,22 @@ const DRAFT_RATE_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 export class DraftError extends Error {}
 export class DraftRateLimitError extends DraftError {}
 
+/**
+ * Admits one anonymous start for this address, or throws.
+ *
+ * Count-then-insert under a Postgres advisory lock on the address, so a burst
+ * of parallel starts from one address queue behind each other and cannot all
+ * see the same spare capacity — on any number of server instances.
+ */
 async function assertUnderRateLimit() {
   const ipHash = await clientAddressHash();
-  const since = new Date(Date.now() - DRAFT_RATE_WINDOW_MS);
-  const recent = await prisma.draftCreationAttempt.count({ where: { ipHash, createdAt: { gte: since } } });
-  if (recent >= DRAFT_RATE_LIMIT) throw new DraftRateLimitError("Too many drafts started");
-  await prisma.draftCreationAttempt.create({ data: { ipHash } });
+  await prisma.$transaction(async (tx) => {
+    await lockKey(tx, "draft-start", ipHash);
+    const since = new Date(Date.now() - DRAFT_RATE_WINDOW_MS);
+    const recent = await tx.draftCreationAttempt.count({ where: { ipHash, createdAt: { gte: since } } });
+    if (recent >= DRAFT_RATE_LIMIT) throw new DraftRateLimitError("Too many drafts started");
+    await tx.draftCreationAttempt.create({ data: { ipHash } });
+  });
 }
 
 export interface StartDraftInput {

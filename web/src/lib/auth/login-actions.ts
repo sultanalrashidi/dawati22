@@ -3,7 +3,13 @@
 import { headers } from "next/headers";
 import { prisma } from "@/lib/db/client";
 import { createSession } from "@/lib/auth/session";
-import { requestOtp, peekOtp, consumeOtp, OtpRateLimitError } from "@/lib/otp/service";
+import {
+  requestOtp,
+  checkAndConsumeOtp,
+  issueSignupGrant,
+  consumeSignupGrant,
+  OtpRateLimitError,
+} from "@/lib/otp/service";
 import { OtpDeliveryError } from "@/lib/otp/adapter";
 import { normalizePhone } from "@/lib/security/phone";
 import { OtpPurpose, Role } from "@/generated/prisma/client";
@@ -44,22 +50,22 @@ export async function requestLoginOtpAction(
 
   // Admins do not sign in here — but this page must not SAY so. It used to
   // answer "this account signs in from the admin page", which handed anyone
-  // probing phone numbers a confirmed list of admin accounts. Now an admin
-  // number gets the same answer as any other: "code sent". Nothing is sent,
-  // no OtpCode row is written, and whatever code gets typed fails as a plain
-  // wrong code — the illusion the private route has always kept.
+  // probing phone numbers a confirmed list of admin accounts. Later it
+  // answered "code sent" without touching the send ledger, which leaked the
+  // same fact a different way: an admin number never hit the rate limit and
+  // never failed delivery. Now an admin number takes the SAME path as any
+  // other — same adapter check, same shared per-phone ledger, same limit, same
+  // errors — and only the final SMS is withheld. The row it records can never
+  // be satisfied by any code.
   //
   // The pause stands in for the SMS round-trip the real path pays; without it
-  // the instant answer would be its own tell. Known, accepted residue: a
-  // pretend-send never rate-limits, where a real number eventually would.
+  // the instant answer would be its own tell.
   const user = await prisma.user.findUnique({ where: { phone }, select: { role: true } });
-  if (user?.role === Role.ADMIN) {
-    await new Promise((resolve) => setTimeout(resolve, 400 + Math.random() * 600));
-    return { ok: true, phone };
-  }
+  const isAdmin = user?.role === Role.ADMIN;
 
   try {
-    const { devCode } = await requestOtp(phone, OtpPurpose.LOGIN);
+    const { devCode } = await requestOtp(phone, OtpPurpose.LOGIN, { deliver: !isAdmin });
+    if (isAdmin) await new Promise((resolve) => setTimeout(resolve, 400 + Math.random() * 600));
     return { ok: true, devCode, phone };
   } catch (err) {
     if (err instanceof OtpRateLimitError) {
@@ -138,7 +144,7 @@ async function startSession(
 
 export type OtpSubmitResult =
   | { ok: true; needsName: false; redirectTo: string }
-  | { ok: true; needsName: true; otpId: string }
+  | { ok: true; needsName: true; signupGrant: string }
   | { ok: false; error: "invalid_phone" | "invalid_code" | "account_blocked" };
 
 export async function submitOtpCodeAction(
@@ -151,24 +157,27 @@ export async function submitOtpCodeAction(
   const phone = normalizePhone(rawPhone, iso);
   if (!phone) return { ok: false, error: "invalid_phone" };
 
-  const { valid, otpId } = await peekOtp(phone, OtpPurpose.LOGIN, code.trim());
-  if (!valid || !otpId) return { ok: false, error: "invalid_code" };
+  const user = await prisma.user.findUnique({ where: { phone } });
+  // An admin never signs in here. Refused BEFORE the code is checked, so a real
+  // admin code pasted into this page is neither spent nor confirmed — and as a
+  // plain wrong code, since naming the real reason would un-hide what the
+  // uniform send above hides.
+  if (user?.role === Role.ADMIN) return { ok: false, error: "invalid_code" };
+
+  // One atomic claim-check-consume: a burst of parallel guesses cannot exceed
+  // the attempt budget, and two right answers cannot both succeed.
+  const check = await checkAndConsumeOtp(phone, OtpPurpose.LOGIN, code);
+  if (!check.valid) return { ok: false, error: "invalid_code" };
 
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
-  const user = await prisma.user.findUnique({ where: { phone } });
 
   if (!user) {
-    return { ok: true, needsName: true, otpId };
+    // The code is spent; what carries her to the name step is a single-use,
+    // short-lived grant bound to this phone — not the raw challenge id.
+    return { ok: true, needsName: true, signupGrant: await issueSignupGrant(check.otpId) };
   }
   if (user.isBlocked) return { ok: false, error: "account_blocked" };
-  // An admin can only reach this line with a REAL code — one the private
-  // route sent for their own sign-in, pasted here instead. Still refused (a
-  // customer session for an admin must never exist), but as a plain wrong
-  // code: naming the real reason would un-hide what the pretend-send above
-  // hides.
-  if (user.role === Role.ADMIN) return { ok: false, error: "invalid_code" };
 
-  await consumeOtp(otpId);
   if (!user.phoneVerifiedAt) {
     await prisma.user.update({ where: { id: user.id }, data: { phoneVerifiedAt: new Date() } });
   }
@@ -181,7 +190,7 @@ export type CompleteSignupResult =
   | { ok: false; error: "invalid_code" | "name_required" };
 
 export async function completeSignupAction(
-  otpId: string,
+  signupGrant: string,
   rawPhone: string,
   iso: string,
   name: string,
@@ -193,18 +202,10 @@ export async function completeSignupAction(
   if (trimmedName.length < 2) return { ok: false, error: "name_required" };
   if (!phone) return { ok: false, error: "invalid_code" };
 
-  const record = await prisma.otpCode.findUnique({ where: { id: otpId } });
-  if (
-    !record ||
-    record.phone !== phone ||
-    record.purpose !== OtpPurpose.LOGIN ||
-    record.consumedAt ||
-    record.expiresAt < new Date()
-  ) {
+  // Spent atomically: exactly one submission of a grant creates a session.
+  if (!(await consumeSignupGrant(String(signupGrant ?? ""), phone, OtpPurpose.LOGIN))) {
     return { ok: false, error: "invalid_code" };
   }
-
-  await consumeOtp(otpId);
   const safeLocale = isLocale(locale) ? locale : defaultLocale;
 
   const user = await prisma.user.upsert({
@@ -218,6 +219,9 @@ export async function completeSignupAction(
       locale: safeLocale === "ar" ? "ar" : "en",
     },
   });
+  // The account may have been created (or promoted, or blocked) between the
+  // code step and this one. A grant only ever opens a customer session.
+  if (user.role !== Role.CUSTOMER || user.isBlocked) return { ok: false, error: "invalid_code" };
 
   const redirectTo = await startSession(user.id, user.role, safeLocale, pending);
   return { ok: true, redirectTo };

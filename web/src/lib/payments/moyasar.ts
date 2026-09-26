@@ -8,6 +8,31 @@ export function isMoyasarConfigured(): boolean {
   return Boolean(process.env.MOYASAR_SECRET_KEY && process.env.MOYASAR_PUBLISHABLE_KEY);
 }
 
+/**
+ * Whether the instant "pay now" mock may settle orders.
+ *
+ * Only in development, and only while Moyasar is not configured. A built
+ * deployment (NODE_ENV=production — previews included) NEVER falls back to it:
+ * a missing or half-set key there used to turn every checkout into a free
+ * "mark as paid" button. The OTP adapter refuses its mock the same way.
+ */
+export function isMockPaymentAllowed(): boolean {
+  return !isMoyasarConfigured() && process.env.NODE_ENV !== "production";
+}
+
+export class PaymentsUnavailableError extends Error {
+  constructor() {
+    super("Payments are not configured");
+  }
+}
+
+/** The provider a new chargeable order is written with; throws rather than fall back in production. */
+export function chargeableOrderProvider(): "MOYASAR" | "MOCK" {
+  if (isMoyasarConfigured()) return "MOYASAR";
+  if (isMockPaymentAllowed()) return "MOCK";
+  throw new PaymentsUnavailableError();
+}
+
 interface MoyasarPayment {
   id: string;
   status: "initiated" | "paid" | "failed" | "authorized" | "captured" | "refunded" | "voided";

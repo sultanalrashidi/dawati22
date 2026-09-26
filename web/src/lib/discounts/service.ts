@@ -1,5 +1,7 @@
 import "server-only";
 import { prisma } from "@/lib/db/client";
+import { lockKey } from "@/lib/db/lock";
+import { PAYABLE_ORDER_STATUSES } from "@/lib/orders/status";
 import { OrderStatus, Prisma } from "@/generated/prisma/client";
 import {
   codeRefusal,
@@ -15,29 +17,86 @@ export class DiscountError extends Error {
   }
 }
 
-/** Uses are PAID orders carrying the code — nothing else spends one. */
-function paidUses(codeId: string): Promise<number> {
-  return prisma.order.count({ where: { discountCodeId: codeId, status: OrderStatus.PAID } });
+/** How long presenting a discounted checkout holds one of the code's uses. */
+export const DISCOUNT_RESERVATION_MS = 30 * 60 * 1000;
+
+/**
+ * Serialises every decision about one code's remaining uses — reserving at
+ * checkout, renewing, and settling without a card — so two customers can never
+ * both take the last one.
+ */
+export async function lockDiscountCode(tx: Prisma.TransactionClient, codeId: string): Promise<void> {
+  await lockKey(tx, "discount-code", codeId);
 }
 
-/** The code a customer typed, if it may be used right now. Throws DiscountError otherwise. */
-export async function requireUsableCode(raw: string, now: Date = new Date()) {
+/**
+ * Uses that count against `maxUses`: PAID orders carrying the code, plus
+ * unpaid ones whose reservation is still live. `excludeOrderId` leaves out the
+ * order asking, so it is judged against everybody else.
+ */
+export function heldUses(
+  tx: Prisma.TransactionClient,
+  codeId: string,
+  now: Date,
+  excludeOrderId?: string,
+  /** Also ignore reservations held by unpaid orders for this draft — the ones a re-price is about to supersede. */
+  excludeDraftEventId?: string,
+): Promise<number> {
+  const liveReservation: Prisma.OrderWhereInput = {
+    status: { in: PAYABLE_ORDER_STATUSES },
+    discountReservedUntil: { gt: now },
+    ...(excludeDraftEventId ? { NOT: { draftEventId: excludeDraftEventId } } : {}),
+  };
+  return tx.order.count({
+    where: {
+      discountCodeId: codeId,
+      ...(excludeOrderId ? { id: { not: excludeOrderId } } : {}),
+      OR: [{ status: OrderStatus.PAID }, liveReservation],
+    },
+  });
+}
+
+/**
+ * The code a customer typed, if it may be used right now. Throws DiscountError
+ * otherwise. A pre-check only: the use itself is reserved under the code's lock
+ * when the order is written (see `createPerInvitationOrder`).
+ */
+export async function requireUsableCode(raw: string, draftEventId?: string, now: Date = new Date()) {
   const code = await prisma.discountCode.findUnique({ where: { code: normalizeCode(raw) } });
   if (!code) throw new DiscountError("unknown");
-  const refusal = codeRefusal(code, await paidUses(code.id), now);
+  // Her own unpaid order for the same draft is about to be superseded, so the
+  // use it holds is hers to carry over, not someone else's.
+  const refusal = codeRefusal(code, await heldUses(prisma, code.id, now, undefined, draftEventId), now);
   if (refusal) throw new DiscountError(refusal);
   return code;
 }
 
 /**
- * Whether the code already on an unpaid order still holds. Asked again before
- * the card form is offered, so an order raised on the code's last day cannot
- * be paid at its price a week later.
+ * Whether the code on an unpaid order still holds — and, if it does, renews
+ * the order's reservation. Called before the card form is offered, so an order
+ * raised on the code's last day cannot be paid at its price a week later, and
+ * so no discounted checkout is ever presented without a use held for it.
  */
-export async function orderCodeRefusal(codeId: string, now: Date = new Date()): Promise<DiscountRefusal | null> {
-  const code = await prisma.discountCode.findUnique({ where: { id: codeId } });
-  if (!code) return "unknown";
-  return codeRefusal(code, await paidUses(code.id), now);
+export async function holdOrderCode(orderId: string, now: Date = new Date()): Promise<DiscountRefusal | null> {
+  return prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, status: true, discountCodeId: true },
+    });
+    if (!order?.discountCodeId) return null;
+    await lockDiscountCode(tx, order.discountCodeId);
+
+    const code = await tx.discountCode.findUnique({ where: { id: order.discountCodeId } });
+    if (!code) return "unknown";
+    const refusal = codeRefusal(code, await heldUses(tx, code.id, now, order.id), now);
+    if (refusal) return refusal;
+
+    await tx.order.updateMany({
+      where: { id: order.id, status: { in: PAYABLE_ORDER_STATUSES } },
+      data: { discountReservedUntil: new Date(now.getTime() + DISCOUNT_RESERVATION_MS) },
+    });
+    return null;
+  });
 }
 
 // ---------------------------------------------------------------------------

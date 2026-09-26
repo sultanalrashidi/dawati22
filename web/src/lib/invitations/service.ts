@@ -33,6 +33,27 @@ export async function getInvitationByLinkToken(linkToken: string) {
   });
 }
 
+/** Statuses in which a link token opens nothing but a notice. */
+const REVOKED_STATUSES = new Set<InvitationStatus>([
+  InvitationStatus.BLOCKED,
+  InvitationStatus.CANCELLED,
+  InvitationStatus.EXPIRED,
+]);
+
+/**
+ * The invitation behind a link token ONLY while its guest may still see the
+ * event: not blocked, not cancelled, not expired. The access rule for every
+ * output derived from a token — the calendar file, the wallet passes, the
+ * link-preview title and image — so a blocked guest who kept her link loses
+ * the event's name, time and venue everywhere at once, not only on the page.
+ * The page itself reads the raw invitation, because it has a notice to show.
+ */
+export async function getViewableInvitationByLinkToken(linkToken: string) {
+  const invitation = await getInvitationByLinkToken(linkToken);
+  if (!invitation || invitation.guest.isBlocked || REVOKED_STATUSES.has(invitation.status)) return null;
+  return invitation;
+}
+
 const VIEW_ELIGIBLE = new Set<InvitationStatus>([InvitationStatus.DRAFT, InvitationStatus.SENT]);
 
 export async function markViewed(invitation: {

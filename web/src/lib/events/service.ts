@@ -367,12 +367,11 @@ export async function storedMusicTrack(eventId: string): Promise<string | null> 
 /**
  * Rewrites an existing event's details, ignoring the edit lock.
  *
- * TWO callers, and neither carries a predicate of its own: support's
- * `updateEventDetailsAction`, and the customer's PRE-payment
- * `saveDraftDetailsAction`. The second is safe because `resolveDraftAccess`
- * has already filtered `orderId: null` and an unpaid draft can never be
- * locked. Her PAID event goes through `updateOwnedEventDetails` below, which
- * carries the lock guard in its own WHERE clause.
+ * Support's `updateEventDetailsAction` ONLY. It validates the design with the
+ * admin override and writes by id alone, so it must never be reached from a
+ * customer path: her unpaid draft goes through `updateDraftDetails`, and her
+ * PAID event through `updateOwnedEventDetails`, each of which carries its own
+ * access predicate in the WHERE clause.
  *
  * Support keeps ignoring the lock deliberately: fixing a misspelt name after
  * the invitations went out is the entire reason this path exists.
@@ -481,6 +480,69 @@ export async function updateOwnedEventDetails(
       data: eventDetailsColumns(input),
     });
     if (updated.count === 0) throw new EventLockedError("Invitations have gone out");
+
+    await tx.eventCouple.deleteMany({ where: { eventId } });
+    await tx.eventCouple.createMany({
+      data: coupleRows(input.couples).map((row) => ({ ...row, eventId })),
+    });
+  });
+}
+
+/**
+ * Who is editing an unpaid draft: the signed-in customer (if any) and the
+ * draft cookie this browser carries (if any), exactly as `resolveDraftAccess`
+ * reads them.
+ */
+export interface DraftEditor {
+  userId: string | null;
+  draftTokenHash: string | null;
+}
+
+/**
+ * The customer's PRE-payment edit of a draft.
+ *
+ * Deliberately NOT `updateEventDetails`: that is support's writer, which
+ * validates the design with the admin's override and writes by event id alone.
+ * Here the design is validated for the person actually editing — a PRIVATE
+ * design only if it is assigned to the signed-in owner, never for an
+ * anonymous cookie holder — and the write itself re-checks, in its WHERE
+ * clause, that the draft is still unpaid and still this caller's: owned by her,
+ * or ownerless and matching her cookie. Payment or a claim by someone else
+ * between the access check and this write aborts it instead of landing.
+ */
+export async function updateDraftDetails(eventId: string, editor: DraftEditor, input: UpdateEventDetailsInput) {
+  const draft = await prisma.event.findFirst({
+    where: { id: eventId, orderId: null },
+    select: { id: true, themeId: true, ownerId: true, draftTokenHash: true },
+  });
+  if (!draft) throw new EventError("Event not found");
+
+  const asOwner = editor.userId !== null && draft.ownerId === editor.userId;
+  const asBearer =
+    !asOwner &&
+    draft.ownerId === null &&
+    editor.draftTokenHash !== null &&
+    draft.draftTokenHash === editor.draftTokenHash;
+  if (!asOwner && !asBearer) throw new EventError("Event not found");
+
+  assertCoupleCount(input.couples);
+  // An anonymous bearer is `userId: null` — PUBLIC designs only. The draft's
+  // current design stays allowed so a save never forces a design change.
+  await assertThemeSelectable(input.themeId, input.themeVariantId ?? null, {
+    userId: asOwner ? editor.userId : null,
+    alsoAllowThemeId: draft.themeId,
+  });
+
+  const access: Prisma.EventWhereInput = asOwner
+    ? { ownerId: editor.userId }
+    : { ownerId: null, draftTokenHash: editor.draftTokenHash };
+
+  await prisma.$transaction(async (tx) => {
+    const updated = await tx.event.updateMany({
+      where: { id: eventId, orderId: null, ...access },
+      data: eventDetailsColumns(input),
+    });
+    if (updated.count === 0) throw new EventError("Event not found");
 
     await tx.eventCouple.deleteMany({ where: { eventId } });
     await tx.eventCouple.createMany({

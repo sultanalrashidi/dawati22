@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
-import { getInvitationByLinkToken, markViewed } from "@/lib/invitations/service";
+import { getInvitationByLinkToken, getViewableInvitationByLinkToken, markViewed } from "@/lib/invitations/service";
 import { renderQrDataUrl } from "@/lib/qr";
 import { headers } from "next/headers";
 import { userAgent } from "next/server";
@@ -25,7 +25,8 @@ import { riyadhDateFormat } from "@/lib/dates";
 // URL, without changing how the link itself works.
 export async function generateMetadata({ params }: PageProps<"/i/[token]">): Promise<Metadata> {
   const { token } = await params;
-  const invitation = await getInvitationByLinkToken(token);
+  // Names, date and venue: nothing for a guest who has been blocked.
+  const invitation = await getViewableInvitationByLinkToken(token);
   if (!invitation) return {};
 
   const dual = riyadhDateFormat("ar-SA-u-ca-gregory", { day: "numeric", month: "long", year: "numeric" }).format(

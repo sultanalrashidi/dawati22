@@ -1,4 +1,5 @@
 import "dotenv/config";
+import { createHash, randomBytes } from "node:crypto";
 import { PrismaClient, Prisma, Role, ThemeStatus, InvitationTier } from "../src/generated/prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import type { ThemeConfig } from "../src/lib/themes/types";
@@ -6,23 +7,78 @@ import type { ThemeConfig } from "../src/lib/themes/types";
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
-async function main() {
-  const admin = await prisma.user.upsert({
-    where: { phone: "+966500000001" },
+/**
+ * The fixed demo numbers. Anyone who controls these phones would own whatever
+ * role they carry, so they are only ever created on explicit request, never in
+ * production, and never as a claimable admin (see `seedDemoAccounts`).
+ */
+const DEMO_ADMIN_PHONE = "+966500000001";
+const DEMO_GATE_PHONE = "+966500000002";
+const DEMO_ENROLLMENT_TTL_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Themes need a `createdById`. It used to be the demo admin, which is why the
+ * generic seed created one. Now: the oldest real admin if the database has one,
+ * otherwise a system row with no phone and blocked — an account nobody can
+ * ever sign in to, because every way in starts with a phone number.
+ */
+async function themeCreatorId(): Promise<string> {
+  const admin = await prisma.user.findFirst({
+    where: { role: Role.ADMIN },
+    orderBy: { createdAt: "asc" },
+    select: { id: true },
+  });
+  if (admin) return admin.id;
+
+  const system = await prisma.user.upsert({
+    where: { email: "system-seed@dawati.invalid" },
     update: {},
     create: {
-      phone: "+966500000001",
-      name: "مدير دعوتي",
-      role: Role.ADMIN,
-      phoneVerifiedAt: new Date(),
+      email: "system-seed@dawati.invalid",
+      name: "دعوتي (النظام)",
+      role: Role.CUSTOMER,
+      isBlocked: true,
     },
+    select: { id: true },
   });
+  return system.id;
+}
+
+/**
+ * Local demo accounts — only with SEED_DEMO_ACCOUNTS=true, refused outright in
+ * production. The demo admin is created with NO password and a single-use
+ * enrollment token printed once below: it cannot be signed in to with the SMS
+ * code alone, so a seeded row on a database someone else can reach is not an
+ * open admin account. Existing rows are left exactly as they are.
+ */
+async function seedDemoAccounts() {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SEED_DEMO_ACCOUNTS is refused when NODE_ENV=production");
+  }
+
+  const existingAdmin = await prisma.user.findUnique({ where: { phone: DEMO_ADMIN_PHONE }, select: { id: true } });
+  if (!existingAdmin) {
+    const token = randomBytes(32).toString("base64url");
+    await prisma.user.create({
+      data: {
+        phone: DEMO_ADMIN_PHONE,
+        name: "مدير دعوتي",
+        role: Role.ADMIN,
+        phoneVerifiedAt: new Date(),
+        adminEnrollmentHash: createHash("sha256").update(token).digest("hex"),
+        adminEnrollmentExpiresAt: new Date(Date.now() + DEMO_ENROLLMENT_TTL_MS),
+      },
+    });
+    console.log(
+      `Demo admin ${DEMO_ADMIN_PHONE} created. Enrollment token (single use, 24h) — type it into the password field of the private admin sign-in:\n  ${token}`,
+    );
+  }
 
   const gateUser = await prisma.user.upsert({
-    where: { phone: "+966500000002" },
+    where: { phone: DEMO_GATE_PHONE },
     update: {},
     create: {
-      phone: "+966500000002",
+      phone: DEMO_GATE_PHONE,
       name: "موظف البوابة",
       role: Role.GATE_STAFF,
       phoneVerifiedAt: new Date(),
@@ -34,6 +90,14 @@ async function main() {
     update: {},
     create: { userId: gateUser.id, name: gateUser.name, phone: gateUser.phone },
   });
+}
+
+async function main() {
+  // Theme and pricing data only, unless demo identities are asked for by name.
+  // Production administrators are created with `pnpm admin:accounts enroll`.
+  const withDemoAccounts = process.env.SEED_DEMO_ACCOUNTS === "true";
+  if (withDemoAccounts) await seedDemoAccounts();
+  const creatorId = await themeCreatorId();
 
   // Pricing is per invitation and lives in PricingRate. The Plan table is not
   // seeded any more: fixed packages are retired, and the rows that remain in an
@@ -1546,14 +1610,13 @@ async function main() {
         category: theme.category,
         config: theme.config as unknown as Prisma.InputJsonValue,
         status: ThemeStatus.PUBLISHED,
-        createdById: admin.id,
+        createdById: creatorId,
       },
     });
   }
 
   console.log("Seeded:", {
-    admin: admin.phone,
-    gateStaff: gateUser.phone,
+    demoAccounts: withDemoAccounts,
     pricingRates: rates.length,
     themes: themes.length,
   });

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getInvitationByLinkToken } from "@/lib/invitations/service";
+import { getViewableInvitationByLinkToken } from "@/lib/invitations/service";
 import { invitationShareText } from "@/lib/events/share-text";
 
 /** Escapes text per RFC 5545 §3.3.11 — commas, semicolons, backslashes, newlines. */
@@ -20,7 +20,7 @@ const DURATION_MINUTES = 180;
  */
 export async function GET(_request: Request, { params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const invitation = await getInvitationByLinkToken(token);
+  const invitation = await getViewableInvitationByLinkToken(token);
   if (!invitation) return new NextResponse("Not found", { status: 404 });
 
   const { event } = invitation;

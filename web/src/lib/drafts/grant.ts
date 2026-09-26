@@ -19,19 +19,44 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 export const PREVIEW_GRANT_COOKIE = "dawati_preview_grant";
 const PREVIEW_GRANT_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+const GRANT_VERSION = "v1";
+/** A key shorter than this is treated as no key at all. */
+const MIN_SECRET_LENGTH = 16;
 
 /**
- * Keyed on SESSION_SECRET, which every real deployment sets. An HMAC over the
- * event id: unforgeable without the key, and cheap to check.
+ * Keyed on SESSION_SECRET. A deployment without one (or with a token-length
+ * placeholder) issues and honours NO grants: an HMAC under an empty key is a
+ * signature anyone can compute, which is the same as no signature.
  */
-function grantSignature(eventId: string): string {
-  const key = process.env.SESSION_SECRET ?? "";
-  return createHmac("sha256", key).update(eventId).digest("base64url");
+function grantKey(): string | null {
+  const key = process.env.SESSION_SECRET;
+  return key && key.length >= MIN_SECRET_LENGTH ? key : null;
 }
 
-/** The value the share route stores in the cookie: `<eventId>.<hmac>`. */
-export function signedPreviewGrant(eventId: string): string {
-  return `${eventId}.${grantSignature(eventId)}`;
+/**
+ * Signs the event, the expiry and the share link the grant came through.
+ *
+ * The expiry is inside the signature because a cookie's own `expires` is only
+ * advice to the browser — a copied cookie value would otherwise work forever.
+ * The share token is inside it so that the grant dies with the link: rotating
+ * or clearing `Event.previewShareToken` revokes every grant issued from it,
+ * server-side, without a table of grants.
+ */
+function grantSignature(key: string, eventId: string, expiresAtMs: number, shareToken: string): string {
+  return createHmac("sha256", key)
+    .update(`preview-grant:${GRANT_VERSION}|${eventId}|${expiresAtMs}|${shareToken}`)
+    .digest("base64url");
+}
+
+/**
+ * The value the share route stores in the cookie:
+ * `v1.<eventId>.<expiresAtMs>.<hmac>`, or null when grants cannot be signed.
+ */
+export function signedPreviewGrant(eventId: string, shareToken: string): string | null {
+  const key = grantKey();
+  if (!key) return null;
+  const expiresAtMs = Date.now() + PREVIEW_GRANT_TTL_MS;
+  return `${GRANT_VERSION}.${eventId}.${expiresAtMs}.${grantSignature(key, eventId, expiresAtMs, shareToken)}`;
 }
 
 export function previewGrantCookieOptions() {
@@ -44,17 +69,28 @@ export function previewGrantCookieOptions() {
   };
 }
 
-/** Whether this browser holds a VALID, signed grant for this specific event. */
-export async function hasPreviewGrant(eventId: string): Promise<boolean> {
+/**
+ * Whether this browser holds a VALID, unexpired grant for this specific event,
+ * issued through its CURRENT share link. `shareToken` is the event's
+ * `previewShareToken` as stored now; an event without one has no live grants.
+ */
+export async function hasPreviewGrant(eventId: string, shareToken: string | null): Promise<boolean> {
+  const key = grantKey();
+  if (!key || !shareToken) return false;
+
   const store = await cookies();
   const value = store.get(PREVIEW_GRANT_COOKIE)?.value;
   if (!value) return false;
 
-  const dot = value.lastIndexOf(".");
-  if (dot <= 0) return false;
-  if (value.slice(0, dot) !== eventId) return false;
+  const parts = value.split(".");
+  if (parts.length !== 4) return false;
+  const [version, grantedEventId, expiresRaw, signature] = parts;
+  if (version !== GRANT_VERSION || grantedEventId !== eventId) return false;
+  if (!/^\d{1,15}$/.test(expiresRaw)) return false;
+  const expiresAtMs = Number(expiresRaw);
+  if (expiresAtMs <= Date.now()) return false;
 
-  const supplied = Buffer.from(value.slice(dot + 1));
-  const expected = Buffer.from(grantSignature(eventId));
+  const supplied = Buffer.from(signature);
+  const expected = Buffer.from(grantSignature(key, eventId, expiresAtMs, shareToken));
   return supplied.length === expected.length && timingSafeEqual(supplied, expected);
 }

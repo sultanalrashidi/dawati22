@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import type { ReactNode } from "react";
-import { getInvitationByLinkToken } from "@/lib/invitations/service";
+import { getViewableInvitationByLinkToken } from "@/lib/invitations/service";
 import { couplesFor } from "@/lib/events/service";
 import type { ThemeConfig } from "@/lib/themes/types";
 import { riyadhDateFormat } from "@/lib/dates";
@@ -73,7 +73,7 @@ function previewNames(couple: {
  * and anything unreadable falls back rather than failing the preview.
  */
 async function previewTheme(
-  invitation: Awaited<ReturnType<typeof getInvitationByLinkToken>>,
+  invitation: Awaited<ReturnType<typeof getViewableInvitationByLinkToken>>,
 ): Promise<{ palette: typeof FALLBACK_PALETTE; latinFont: string }> {
   const fallback = { palette: FALLBACK_PALETTE, latinFont: "Cormorant Garamond" };
   if (!invitation) return fallback;
@@ -95,7 +95,7 @@ async function previewTheme(
 
 export default async function Image({ params }: { params: Promise<{ token: string }> }) {
   const { token } = await params;
-  const invitation = await getInvitationByLinkToken(token);
+  const invitation = await getViewableInvitationByLinkToken(token);
 
   const { palette: theme, latinFont } = await previewTheme(invitation);
   // One card, one pair of names: a joint wedding shows its primary couple

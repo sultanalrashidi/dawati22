@@ -22,7 +22,7 @@ Next.js 16 (Turbopack, React 19) · PostgreSQL 16 + Prisma 7 (`prisma-client` ge
 cp .env.example .env        # edit DATABASE_URL if not using the default below
 pnpm install                 # also runs `prisma generate` (postinstall)
 pnpm db:migrate               # applies the schema
-pnpm db:seed                  # admin + gate-staff accounts, plans, themes
+pnpm db:seed                  # pricing + themes (SEED_DEMO_ACCOUNTS=true adds local demo accounts)
 pnpm dev                      # http://localhost:3000
 ```
 
@@ -38,22 +38,39 @@ Default `.env` value: `DATABASE_URL="postgresql://<your-user>@localhost:5432/daw
 
 ## Demo accounts
 
-Auth is phone + OTP for every role. With no `AUTHENTICA_API_KEY` set, OTP codes are **not sent anywhere** — the login screen displays the code directly ("وضع تجريبي — رمز التحقق"), so any of these numbers can be used to sign in locally:
+Auth is phone + OTP for every role. With no `AUTHENTICA_API_KEY` set, OTP codes are **not sent anywhere** — the login screen displays the code directly ("وضع تجريبي — رمز التحقق").
 
-| Role | Phone |
-|---|---|
-| Admin | `0500000001` |
-| Gate staff | `0500000002` |
-| Customer | any new number — first login creates the account |
+`pnpm db:seed` creates **no accounts** by default. For local work, run `SEED_DEMO_ACCOUNTS=true pnpm db:seed` (refused when `NODE_ENV=production`):
+
+| Role | Phone | How to sign in |
+|---|---|---|
+| Admin | `0500000001` | Private admin route only. Created with **no password**: the seed prints a single-use enrollment token (24h) — type it in the password field, then the on-screen code, then choose a password. |
+| Gate staff | `0500000002` | Public sign-in with the on-screen code. |
+| Customer | any new number | Public sign-in — the first login creates the account. |
+
+### Admin accounts on a real database
+
+Admins are created and recovered only with the operator command, never by the seed:
+
+```bash
+pnpm admin:accounts list                                   # read-only audit of ADMIN / GATE_STAFF rows
+pnpm admin:accounts enroll 05XXXXXXXX --name "الاسم"        # new admin: prints a single-use token (24h)
+pnpm admin:accounts enroll 05XXXXXXXX --reset-password     # recovery: new token, old password + sessions revoked
+pnpm admin:accounts revoke 05XXXXXXXX --confirm            # demote to customer, end all sessions
+```
+
+An admin without a password can only sign in with an unexpired enrollment token **and** the SMS code, and must set a password in that same sign-in. Every enrollment and revocation is written to `AuditLog`.
+
+If an earlier `db:seed` created the fixed demo admin (`+966500000001`) or gate account (`+966500000002`) on a shared or production database, `list` flags them: enroll a real operator first, then `revoke` each demo number.
 
 ## Environment variables
 
 See `.env.example` for the full list. Everything payment/SMS-related is optional in dev — leaving it unset switches to a local mock adapter, never a live call:
 
 - `DATABASE_URL` — Postgres connection string.
-- `SESSION_SECRET` — used for session bookkeeping; set a real random value in production.
+- `SESSION_SECRET` — signs preview-share grants; set a real random value (32+ characters) in production. Unset or shorter than 16 characters ⇒ share links refuse to issue grants.
 - `AUTHENTICA_API_KEY` — set to send real SMS via [Authentica](https://authentica.sa). Unset ⇒ mock adapter (code shown on-screen).
-- `MOYASAR_SECRET_KEY` / `MOYASAR_PUBLISHABLE_KEY` / `MOYASAR_WEBHOOK_SECRET` — set to enable [Moyasar](https://moyasar.com) checkout (Sandbox or live keys). Unset ⇒ mock "pay now" flow that marks the order paid instantly, for exercising the rest of the product without a payment gateway.
+- `MOYASAR_SECRET_KEY` / `MOYASAR_PUBLISHABLE_KEY` / `MOYASAR_WEBHOOK_SECRET` — set to enable [Moyasar](https://moyasar.com) checkout (Sandbox or live keys). Unset in development ⇒ mock "pay now" flow that marks the order paid instantly, for exercising the rest of the product without a payment gateway. Unset in any built deployment (`NODE_ENV=production`, previews included) ⇒ checkout refuses; the mock is never offered there.
 - `NEXT_PUBLIC_APP_URL` — used to build guest invitation links (`/i/[token]`) and Moyasar callback URLs.
 
 ## What's built vs. deferred

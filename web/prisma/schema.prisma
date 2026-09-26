@@ -40,6 +40,11 @@ model User {
   /// same shape, so the same rules are obvious to whoever reads either.
   adminLoginFailedAttempts Int       @default(0)
   adminLoginLockedUntil    DateTime?
+  /// sha256 of a single-use enrollment token issued by `pnpm admin:accounts
+  /// enroll`. The ONLY way an admin with no password can sign in: token + SMS
+  /// code + a new password, all in one sign-in, before the expiry below.
+  adminEnrollmentHash      String?
+  adminEnrollmentExpiresAt DateTime?
   createdAt                DateTime  @default(now())
   updatedAt                DateTime  @updatedAt
 
@@ -93,6 +98,11 @@ model OtpCode {
   expiresAt   DateTime
   consumedAt  DateTime?
   createdAt   DateTime   @default(now())
+  /// sha256 of the one-time grant issued when this code verified a phone with
+  /// no account yet. The name step spends the grant, never the code again.
+  signupGrantHash      String?   @unique
+  signupGrantExpiresAt DateTime?
+  signupGrantUsedAt    DateTime?
 
   @@index([phone, purpose])
 }
@@ -233,6 +243,10 @@ model Order {
   /// Riyals the code took off, already subtracted from `amount`; the price
   /// before the code is amount + discountAmount.
   discountAmount  Decimal?        @db.Decimal(10, 2)
+  /// While in the future, this unpaid order holds one of its code's `maxUses`
+  /// — reserved when the discounted checkout is presented, renewed while it
+  /// is shown, spent when the order becomes PAID.
+  discountReservedUntil DateTime?
   currency        String          @default("SAR")
   status          OrderStatus     @default(PENDING)
   provider        PaymentProvider @default(MOCK)

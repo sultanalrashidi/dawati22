@@ -17,9 +17,9 @@ import {
  *
  * Two steps, always in this order: the password is checked before any code is
  * sent, so guessing the URL cannot ring the admin's phone or burn SMS credit.
- * A third step appears only for an account whose password has been cleared —
- * the recovery path — and it will not let the sign-in finish without setting a
- * new one.
+ * A third step appears only for an account that has no password yet — one
+ * enrolling with the single-use token an operator issued, typed into the
+ * password field — and it will not let the sign-in finish without setting one.
  */
 export function AdminLoginForm({ locale, dict }: { locale: Locale; dict: Dictionary }) {
   const router = useRouter();
@@ -73,6 +73,9 @@ export function AdminLoginForm({ locale, dict }: { locale: Locale; dict: Diction
         phone,
         code,
         needsPassword ? newPassword : null,
+        // An enrolling account typed its enrollment token into the password
+        // field; the server spends it together with the code.
+        needsPassword ? password : null,
         locale,
       );
       if (!result.ok) {

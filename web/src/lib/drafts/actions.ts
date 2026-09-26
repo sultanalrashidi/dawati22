@@ -6,7 +6,8 @@ import { InvitationTier } from "@/generated/prisma/client";
 import { isValidInvitationCount } from "@/lib/orders/pricing";
 import { readEventForm } from "@/lib/events/form";
 import { resolveMusicLink } from "@/lib/music/link";
-import { EventError, updateEventDetails } from "@/lib/events/service";
+import { EventError, updateDraftDetails } from "@/lib/events/service";
+import { getSessionUser } from "@/lib/auth/session";
 import {
   DraftRateLimitError,
   claimDraft,
@@ -14,7 +15,7 @@ import {
   resolveDraftAccess,
   startDraft,
 } from "@/lib/drafts/service";
-import { refreshDraftToken } from "@/lib/drafts/session";
+import { readDraftTokenHash, refreshDraftToken } from "@/lib/drafts/session";
 import { isLocale, type Locale } from "@/lib/i18n/locales";
 
 /** Only the two real tiers, and only when the count is one we actually sell. */
@@ -87,7 +88,8 @@ export async function saveDraftDetailsAction(
   await refreshDraftToken();
 
   try {
-    await updateEventDetails(eventId, values);
+    const [user, draftTokenHash] = await Promise.all([getSessionUser(), readDraftTokenHash()]);
+    await updateDraftDetails(eventId, { userId: user?.id ?? null, draftTokenHash }, values);
   } catch {
     redirect(`/${locale}/draft/${eventId}/details?error=validation`);
   }

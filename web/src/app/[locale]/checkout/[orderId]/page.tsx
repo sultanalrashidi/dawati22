@@ -6,14 +6,14 @@ import { requireUserOrRedirect } from "@/lib/auth/guards";
 import { getOwnedOrder, paidOrderDestination } from "@/lib/orders/service";
 import { isPayableOrderStatus } from "@/lib/orders/status";
 import { orderSummaryLabel } from "@/lib/orders/terms";
-import { isMoyasarConfigured, moyasarFormConfig } from "@/lib/payments/moyasar";
+import { isMockPaymentAllowed, isMoyasarConfigured, moyasarFormConfig } from "@/lib/payments/moyasar";
 import {
   applyDiscountCodeAction,
   confirmMockPaymentAction,
   removeDiscountCodeAction,
   settleFreeOrderAction,
 } from "@/lib/orders/actions";
-import { orderCodeRefusal } from "@/lib/discounts/service";
+import { holdOrderCode } from "@/lib/discounts/service";
 import { isDiscountRefusal } from "@/lib/discounts/rules";
 import { MoyasarForm } from "@/components/checkout/moyasar-form";
 import { PendingSubmit } from "@/components/checkout/pending-submit";
@@ -63,8 +63,8 @@ export default async function CheckoutPage({
     Boolean(order.draftEventId && order.tier && order.invitationCount);
   // A code already on the order is asked again before any card form is
   // offered: switched off, expired or used up since, it no longer prices this.
-  const staleCode =
-    payable && order.discountCodeId ? await orderCodeRefusal(order.discountCodeId) : null;
+  // When it still holds, this also renews the use reserved for her.
+  const staleCode = payable && order.discountCodeId ? await holdOrderCode(order.id) : null;
   const codeNotice = isDiscountRefusal(search?.code) ? c.codeErrors[search.code] : null;
   const isFree = order.provider === PaymentProvider.FREE && Number(order.amount) === 0;
   const discount = order.discountAmount !== null ? Number(order.discountAmount) : null;
@@ -168,6 +168,10 @@ export default async function CheckoutPage({
             unavailableLabel={dict.checkout.payUnavailable}
           />
         </div>
+      ) : !isMockPaymentAllowed() ? (
+        // A built deployment with no payment keys: no card form, and never the
+        // mock button — the server would refuse it anyway.
+        <p className="mt-6 rounded-xl bg-surface-2 px-4 py-3 text-sm text-fg-muted">{dict.checkout.payUnavailable}</p>
       ) : (
         <div className="mt-6 flex flex-col gap-3">
           {takesCode && <DiscountCodeBox locale={locale} order={order} dict={dict} error={codeNotice} />}

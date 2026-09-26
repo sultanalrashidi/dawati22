@@ -17,3 +17,8 @@ export function guestInvitationUrl(linkToken: string): string {
 export function testInvitationUrl(token: string): string {
   return `${getAppUrl()}/t/${token}`;
 }
+
+/** The door team's one-tap link into the scanner (`Event.gateLinkToken`). */
+export function gateLinkUrl(token: string): string {
+  return `${getAppUrl()}/gate-link/${token}`;
+}

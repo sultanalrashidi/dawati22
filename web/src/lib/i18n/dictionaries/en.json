@@ -643,7 +643,17 @@
       "guestFilterUnsent": "Not sent",
       "guestNoMatch": "No guest by that name or number.",
       "guestShowMore": "Show {count} more",
-      "guestShowingCount": "{shown} of {total}"
+      "guestShowingCount": "{shown} of {total}",
+      "gateLinkTitle": "Door team link",
+      "gateLinkBody": "Send your door team a link on WhatsApp — one tap opens the scanner, no reference code or PIN.",
+      "gateLinkEnable": "Create the link",
+      "gateLinkActiveBody": "Anyone with this link can open the scanner for your event, so send it to your door team only. If it goes further, change it.",
+      "gateLinkWhatsapp": "Send on WhatsApp",
+      "gateLinkShareText": "Door scanner link for our event — open it on the day:",
+      "gateLinkRotate": "Change link",
+      "gateLinkRotateConfirm": "The old link stops working and everyone with the scanner open is signed out. Continue?",
+      "gateLinkDisable": "Turn off link",
+      "gateLinkDisableConfirm": "The link stops working and everyone with the scanner open is signed out. Continue?"
     }
   },
   "admin": {
@@ -1034,7 +1044,8 @@
     "submit": "Enter",
     "invalidError": "Incorrect reference code or PIN",
     "lockedError": "Too many wrong attempts, try again in {minutes} min",
-    "exit": "Exit"
+    "exit": "Exit",
+    "linkInvalid": "This link was turned off or changed. Ask the host for the new one."
   },
   "guest": {
     "openInvitation": "Open invitation",

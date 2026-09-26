@@ -632,6 +632,10 @@ model Event {
    * sha256 of a customer-set PIN, gates the no-login /gate-access scanner. Null = that access method is off.
    */
   gatePinHash           String?
+  /// The door team's link (`/gate-link/<token>`): opening it grants a door
+  /// session for this event, no PIN typed. 256-bit, unguessable; null = off.
+  /// Replacing or clearing it also ends every open door session.
+  gateLinkToken         String?                  @unique
   gatePinFailedAttempts Int                      @default(0)
   gatePinLockedUntil    DateTime?
   themeId               String

@@ -89,6 +89,11 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
   const g = dict.gate;
 
   const stopStream = useCallback(() => {
+    // Pause first. A <video> still playing when its camera track stops paints
+    // black, and the camera box stays on screen through a scan's round trip —
+    // the black frame the door team saw every time a code was read. Paused, it
+    // holds the frame it last showed; the next start() plays a fresh stream.
+    videoRef.current?.pause();
     streamRef.current?.getTracks().forEach((track) => track.stop());
     streamRef.current = null;
   }, []);

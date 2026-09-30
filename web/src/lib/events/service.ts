@@ -7,6 +7,7 @@ import {
   OrderStatus,
   Prisma,
   ThemeVisibility,
+  InvitationStatus,
 } from "@/generated/prisma/client";
 import type { ScheduleItem } from "@/lib/events/types";
 import { generateReferenceCode } from "@/lib/events/reference-code";
@@ -568,6 +569,15 @@ export async function updateDraftDetails(eventId: string, editor: DraftEditor, i
  * dashboard links with, so the two screens cannot disagree about how many are
  * left.
  */
+/** The statuses `classifyRsvp` reads as an answer: declined, accepted, or admitted at the door. */
+const ANSWERED_STATUSES: InvitationStatus[] = [
+  InvitationStatus.DECLINED,
+  InvitationStatus.ACCEPTED,
+  InvitationStatus.VALID,
+  InvitationStatus.PARTIALLY_USED,
+  InvitationStatus.FULLY_USED,
+];
+
 export async function getEventSendQueue(eventId: string, userId: string) {
   const event = await prisma.event.findFirst({
     where: { id: eventId, ownerId: userId, orderId: { not: null } },
@@ -597,7 +607,15 @@ export async function getEventSendQueue(eventId: string, userId: string) {
   if (!event) return null;
 
   const pending = await prisma.guest.findMany({
-    where: { eventId, isBlocked: false, invitation: { is: { sentAt: null } } },
+    // Nor a guest who already has her answer with no send on record — a reply
+    // through a link that reached her some other way, or a walk-in the door
+    // admitted by name. The event page counts her as delivered and leaves her
+    // out of its «N باقية» the same way; the two must agree.
+    where: {
+      eventId,
+      isBlocked: false,
+      invitation: { is: { sentAt: null, status: { notIn: ANSWERED_STATUSES } } },
+    },
     select: {
       id: true,
       nameAr: true,

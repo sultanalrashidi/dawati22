@@ -78,6 +78,7 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
   const [attempt, setAttempt] = useState(0);
   /** The last send never reached the server — a hall-wifi problem, not a code problem. */
   const [sendFailed, setSendFailed] = useState(false);
+  const [admitFailed, setAdmitFailed] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -132,6 +133,7 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
       if (busyRef.current) return;
       busyRef.current = true;
       setSendFailed(false);
+      setAdmitFailed(false);
       stopStream();
       startTransition(async () => {
         try {
@@ -225,10 +227,22 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
   /** A guest found by search: let her in straight away and show the result. */
   const admit = useCallback(
     (guestId: string, seats: number) => {
+      setSendFailed(false);
+      setAdmitFailed(false);
       stopStream();
       startTransition(async () => {
         const next = await saveCount(guestId, seats);
-        if (next) show(next);
+        if (next) {
+          show(next);
+          return;
+        }
+        // Nobody was let in. Say so where she is looking and hand the camera
+        // back, as a failed scan does: the stopped stream holds its last frame,
+        // which would otherwise pass for a live camera that reads nothing.
+        setPartyState("idle");
+        setAdmitFailed(true);
+        setCamera("starting");
+        setAttempt((n) => n + 1);
       });
     },
     [saveCount, show, stopStream],
@@ -352,6 +366,7 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
     setBaseline(0);
     setConfirmed(false);
     setSendFailed(false);
+    setAdmitFailed(false);
     setCamera("starting");
     setAttempt((n) => n + 1);
   }
@@ -505,6 +520,11 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
           {g.scanSendFailed}
         </p>
       )}
+      {admitFailed && (
+        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
+          {g.partyFailed}
+        </p>
+      )}
 
       {/* Always mounted — the stream needs this element to exist the moment
           getUserMedia resolves, not one render later. */}
@@ -513,8 +533,19 @@ export function GateScanner({ eventId, dict }: { eventId: string; dict: Dictiona
           camera === "scanning" ? "" : "hidden"
         }`}
       >
-        <video ref={videoRef} className="aspect-square w-full object-cover" muted playsInline autoPlay />
-        <p className="p-2 text-center text-xs text-fg-muted">{g.scanPrompt}</p>
+        <div className="relative">
+          <video ref={videoRef} className="aspect-square w-full object-cover" muted playsInline autoPlay />
+          {/* The stream is stopped for the round trip and the box holds the
+              frame it read (see stopStream), so it must not look live. */}
+          {isPending && (
+            <div className="absolute inset-0 flex items-center justify-center bg-black/45 text-sm font-bold text-white">
+              {g.scanChecking}
+            </div>
+          )}
+        </div>
+        <p className="p-2 text-center text-xs text-fg-muted" aria-live="polite">
+          {isPending ? g.scanChecking : g.scanPrompt}
+        </p>
       </div>
       <canvas ref={canvasRef} className="hidden" />
 

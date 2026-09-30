@@ -104,8 +104,12 @@ export default async function EventDetailPage({
   // The send queue's own predicate, computed here from rows this page already
   // has — the two screens must never disagree about how many are left, and
   // that is only guaranteed by both asking the same question. Blocked guests
-  // are out of both: you do not send to somebody you have blocked.
-  const unsent = rows.filter((r) => !r.guest.isBlocked && !r.invitation?.sentAt).length;
+  // are out of both: you do not send to somebody you have blocked. So is a
+  // guest who already has her answer with no send on record — a reply through
+  // a link that reached her some other way, or a walk-in the door admitted by
+  // name: the reply cards count her as delivered (see `sent` below), and an
+  // invitation to a wedding she is already at is nothing to send.
+  const unsent = rows.filter((r) => !r.guest.isBlocked && !r.invitation?.sentAt && r.rsvp === "pending").length;
   const accepted = rows.filter((r) => r.rsvp === "accepted");
   const declined = rows.filter((r) => r.rsvp === "declined");
   // «بانتظار الرد» is an invitation in her hands that she has not answered:
@@ -125,8 +129,9 @@ export default async function EventDetailPage({
   // case. Where the two differ the sum is the truer "sent": an invitation sent
   // and then blocked is no longer out (blocking writes BLOCKED over any
   // answer, so she is in none of the three), and a reply with no sentAt — a
-  // link that reached her by a route nothing recorded — was evidently
-  // delivered, the same inference markViewed() draws from an open.
+  // link that reached her by a route nothing recorded, or the door admitting
+  // her by name — counts as delivered, the same inference markViewed() draws
+  // from an open; `unsent` above leaves her out to match.
   const sent = accepted.length + declined.length + pending;
   const people = accepted.reduce((sum, r) => sum + r.people, 0);
   const pct = (n: number) => (sent > 0 ? Math.round((n / sent) * 100) : 0);

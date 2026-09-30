@@ -91,9 +91,11 @@ export function SendQueue({
   const [doneIds, setDoneIds] = useState<string[]>([]);
   const [skippedIds, setSkippedIds] = useState<string[]>([]);
   const [justSent, setJustSent] = useState<QueueGuest | null>(null);
-  const [copied, setCopied] = useState(false);
+  // Whose link was copied, not just "copied": the card moves on at once, and
+  // a bare flag read «تم نسخ الرابط» on the next guest's button.
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const inFlight = useRef<Promise<void> | null>(null);
-  const lastWhatsappTap = useRef(-Infinity);
+  const lastCardTap = useRef(-Infinity);
 
   // What is left to look at this sitting — skipped guests come off the card
   // but stay in the count of who has not been sent to.
@@ -173,16 +175,24 @@ export function SendQueue({
     advance(guest);
   }
 
+  // Every action on the card moves it on, so the second tap of a double tap
+  // lands on the NEXT guest's card: on her WhatsApp link (a chat she never
+  // chose, opened and recorded), her copy button (another guest's private link
+  // on the clipboard) or "mark sent". The first banner of a sitting also
+  // pushes the card down under the finger. So one tap per second across the
+  // card, and the rest are swallowed: the first already did what she meant,
+  // and nobody reads a new name that fast.
+  function firstTap(event: { timeStamp: number }) {
+    if (event.timeStamp - lastCardTap.current < 1000) return false;
+    lastCardTap.current = event.timeStamp;
+    return true;
+  }
+
   function handOffToWhatsapp(event: MouseEvent<HTMLAnchorElement>, guest: QueueGuest) {
-    // The second tap of a double tap. The card has moved on by then, so it
-    // would land on the NEXT guest's link and open — and record — a chat she
-    // never chose. Swallowed rather than followed: the first tap already
-    // opened the one she meant, and nobody reads a new name that fast.
-    if (event.timeStamp - lastWhatsappTap.current < 1000) {
+    if (!firstTap(event)) {
       event.preventDefault();
       return;
     }
-    lastWhatsappTap.current = event.timeStamp;
     note(guest);
     // Not `advance` here: the browser follows this link only after the handler
     // returns, and by then React would have rendered the next guest's href
@@ -269,11 +279,12 @@ export function SendQueue({
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             <button
               type="button"
-              onClick={async () => {
+              onClick={async (event) => {
+                if (!firstTap(event)) return;
                 try {
                   await navigator.clipboard.writeText(current.invitationUrl);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
+                  setCopiedId(current.id);
+                  setTimeout(() => setCopiedId(null), 2000);
                   handOff(current);
                 } catch {
                   // Clipboard refused; nothing was shared, so nothing is marked.
@@ -281,20 +292,24 @@ export function SendQueue({
               }}
               className="h-9 rounded-full border border-border px-4 text-xs font-medium text-fg"
             >
-              {copied ? d.linkCopied : d.copyLink}
+              {copiedId === current.id ? d.linkCopied : d.copyLink}
             </button>
             {/* The way forward that does not depend on the browser telling us
                 she came back — and the honest way to say "not this one". */}
             <button
               type="button"
-              onClick={() => handOff(current)}
+              onClick={(event) => {
+                if (firstTap(event)) handOff(current);
+              }}
               className="h-9 rounded-full border border-border px-4 text-xs font-medium text-fg-muted"
             >
               {d.sendQueueMarkSent}
             </button>
             <button
               type="button"
-              onClick={() => setSkippedIds((ids) => [...ids, current.id])}
+              onClick={(event) => {
+                if (firstTap(event)) setSkippedIds((ids) => [...ids, current.id]);
+              }}
               className="h-9 rounded-full px-4 text-xs font-medium text-fg-muted hover:underline"
             >
               {d.sendQueueSkip}

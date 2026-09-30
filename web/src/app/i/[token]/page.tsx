@@ -32,7 +32,8 @@ export async function generateMetadata({ params }: PageProps<"/i/[token]">): Pro
   // The same names and date the preview image draws — see
   // lib/invitations/link-preview.ts.
   const { names, dateLines } = linkPreviewText(invitation);
-  const when = [...dateLines, invitation.event.locationName].filter(Boolean).join(" · ");
+  // "،" rather than "·": beside Arabic-Indic digits a middle dot reads as "٠".
+  const when = [...dateLines, invitation.event.locationName].filter(Boolean).join("، ");
 
   return {
     title: `دعوة خاصة إلى ${invitation.guest.nameAr}`,

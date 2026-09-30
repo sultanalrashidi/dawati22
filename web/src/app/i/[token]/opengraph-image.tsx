@@ -32,14 +32,34 @@ type FontEntry = NonNullable<ConstructorParameters<typeof ImageResponse>[1]>["fo
   ? F
   : never;
 
+/**
+ * How long each of the two font requests may take. WhatsApp gives up on a slow
+ * preview and shows the bare link, so a late face is worth less than the
+ * frame-only card drawn without it.
+ */
+const FONT_FETCH_TIMEOUT_MS = 2500;
+
 /** Only the glyphs actually needed (the `text` param) — keeps the fetch small. */
 async function loadGoogleFont(family: string, text: string, weight: number): Promise<ArrayBuffer> {
   const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&text=${encodeURIComponent(text)}`;
-  const css = await fetch(cssUrl).then((res) => res.text());
-  const match = css.match(/src: url\(([^)]+)\) format\('(?:opentype|truetype)'\)/);
+  const cssRes = await fetch(cssUrl, { signal: AbortSignal.timeout(FONT_FETCH_TIMEOUT_MS) });
+  if (!cssRes.ok) throw new Error(`Font CSS for ${family} answered ${cssRes.status}`);
+  const match = (await cssRes.text()).match(/src: url\(([^)]+)\) format\('(?:opentype|truetype)'\)/);
   if (!match) throw new Error(`Could not resolve font file for ${family}`);
-  const res = await fetch(match[1]);
+  const res = await fetch(match[1], { signal: AbortSignal.timeout(FONT_FETCH_TIMEOUT_MS) });
+  if (!res.ok) throw new Error(`Font file for ${family} answered ${res.status}`);
   return res.arrayBuffer();
+}
+
+/**
+ * The names line's size: 80px for the usual pair, smaller as the names grow,
+ * so a long pair ("عبدالرحمن بن محمد و الجوهرة بنت عبدالعزيز") stays inside
+ * the card instead of losing its end off the left edge. Satori cannot measure
+ * joined Arabic, so this goes by characters; ~0.4em each is what Markazi Text
+ * draws them at.
+ */
+function namesFontSize(names: string): number {
+  return Math.max(28, Math.min(80, Math.floor(1000 / (0.4 * Math.max(1, [...names].length)))));
 }
 
 /** opentype.js's own test for an Arabic letter; the Arabic-Indic digits are not one. */
@@ -168,7 +188,9 @@ export default async function Image({ params }: { params: Promise<{ token: strin
             justifyContent: "center",
             background: theme.bg,
             position: "relative",
-            fontFamily: arabicData ? "ArabicFont" : undefined,
+            // Only when the face was fetched: Satori splits every fontFamily it
+            // is given, and an explicit undefined throws before anything draws.
+            ...(arabicData ? { fontFamily: "ArabicFont" } : {}),
           }}
         >
           {/* corner-bracket frame, echoing the LuxuryKit card motif */}
@@ -182,7 +204,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
           ))}
 
           {show.text ? rtlLine(heading, 32, { color: theme.accent, marginBottom: 8 }) : null}
-          {show.names ? rtlLine(names, 80, { color: theme.fg }) : null}
+          {show.names ? rtlLine(names, namesFontSize(preview.names || "دعوتي"), { color: theme.fg }) : null}
           <div style={{ width: 140, height: 1, background: theme.accent, margin: "32px 0" }} />
           {/* Hijri first, with the weekday, then the Gregorian date — the order the invitation prints them in. */}
           {show.text ? (
@@ -205,12 +227,15 @@ export default async function Image({ params }: { params: Promise<{ token: strin
   // Render eagerly so a shaping failure on an unusual name (see ARABIC_FONT)
   // is caught here, and the preview degrades to the frame, heading and date
   // instead of the link showing no image at all. The bare frame is the last
-  // resort: every word on the card is Arabic now, so none of it is certain to
-  // shape when the face could not be fetched.
-  for (const show of [
-    { names: true, text: true },
-    { names: false, text: true },
-  ]) {
+  // resort, and the only card drawn without the face: every word on the card
+  // is Arabic, and next/og's own fallback face cannot shape the common names.
+  const attempts = arabicData
+    ? [
+        { names: true, text: true },
+        { names: false, text: true },
+      ]
+    : [];
+  for (const show of attempts) {
     try {
       const response = card(show);
       const png = await response.arrayBuffer();

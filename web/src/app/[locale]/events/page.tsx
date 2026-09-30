@@ -20,6 +20,9 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
   if (!isLocale(locale)) notFound();
   const dict = await getDictionary(locale);
   const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
+  // Not "·" between Arabic-Indic digits: in the site's face it is the same
+  // small square as "٠", so "٣٩ · ٧٨" read as "٣٩٠ ٧٨".
+  const sep = locale === "ar" ? "، " : " · ";
   const user = await requireUserOrRedirect(locale, [Role.CUSTOMER]);
 
   const [events, drafts, eligibleOrders] = await Promise.all([
@@ -120,7 +123,7 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
                 const remaining = Math.max(0, eventCapacity(event) - occupiedSlots);
                 return (
                   <p className="text-xs text-fg-muted">
-                    {dict.events.detail.statsRemaining} {nf.format(remaining)} · {dict.events.detail.rsvpAccepted} {nf.format(accepted)} · {dict.events.detail.rsvpDeclined} {nf.format(declined)}
+                    {dict.events.detail.statsRemaining} {nf.format(remaining)}{sep}{dict.events.detail.rsvpAccepted} {nf.format(accepted)}{sep}{dict.events.detail.rsvpDeclined} {nf.format(declined)}
                   </p>
                 );
               })()}

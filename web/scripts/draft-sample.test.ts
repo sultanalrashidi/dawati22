@@ -28,10 +28,10 @@ test("the sample wedding is 60 days ahead at 21:00 Riyadh", () => {
 });
 
 test("the event name is composed groom first", () => {
-  assert.equal(SAMPLE_EVENT_NAME, "حفل زفاف فهد و نورة");
+  assert.equal(SAMPLE_EVENT_NAME, "حفل زفاف فهد ونورة");
   assert.equal(
     composeWeddingName([{ ...SAMPLE_COUPLE, groomNameAr: " محمد ", brideNameAr: "سارة" }]),
-    "حفل زفاف محمد و سارة",
+    "حفل زفاف محمد وسارة",
   );
 });
 

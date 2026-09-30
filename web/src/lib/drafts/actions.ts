@@ -73,7 +73,7 @@ export async function saveDraftDetailsAction(
   // back to the form to fix the link.
   const music = await resolveMusicLink(formData.get("musicUrl"));
   // No page asks for an event name; a wedding is composed after its couple
-  // ("حفل زفاف فهد و نورة") so it follows every rename automatically.
+  // ("حفل زفاف فهد ونورة") so it follows every rename automatically.
   const values = readEventForm(formData, {
     musicTrack: music.ok ? music.track : draft.musicYoutubeId,
   });

@@ -18,11 +18,28 @@ export interface GuestListEntry {
   invitationUrl: string;
   waMessage: string;
   rsvp?: RsvpBadge;
-  /** Whether her invitation has actually gone out — the "not sent" filter. */
+  /** Whether her invitation has actually gone out — the "not sent" filter, and half of "awaiting a reply". */
   sent: boolean;
 }
 
 export type GuestFilter = "all" | "accepted" | "declined" | "pending" | "unsent";
+
+/**
+ * Whether her answer is still owed: the invitation went out, she can still
+ * reply, and she has not. Not simply "no answer" — a guest nobody has sent
+ * anything to is not waiting on anything (she is under «ما أُرسلت»), and a
+ * blocked one cannot reply at all. The dashboard's «بانتظار الرد» card asks
+ * the same question of the same rows, and the chip must agree with it.
+ */
+function isAwaitingReply(entry: GuestListEntry): boolean {
+  return entry.sent && !entry.isBlocked && entry.rsvp !== "accepted" && entry.rsvp !== "declined";
+}
+
+/** The row's reply badge — none at all when no reply is owed, rather than a «بانتظار الرد» that is not true. */
+function replyBadge(entry: GuestListEntry): RsvpBadge | null {
+  if (entry.rsvp === "accepted" || entry.rsvp === "declined") return entry.rsvp;
+  return isAwaitingReply(entry) ? "pending" : null;
+}
 
 /**
  * Which guests survive the box and the chips.
@@ -55,7 +72,7 @@ export function filterGuests(
   return entries.filter((entry) => {
     if (filter === "accepted" && entry.rsvp !== "accepted") return false;
     if (filter === "declined" && entry.rsvp !== "declined") return false;
-    if (filter === "pending" && (entry.rsvp === "accepted" || entry.rsvp === "declined")) return false;
+    if (filter === "pending" && !isAwaitingReply(entry)) return false;
     if (filter === "unsent" && entry.sent) return false;
     if (!term) return true;
     if (byPhone) {
@@ -116,7 +133,7 @@ export function GuestList({
       all: entries.length,
       accepted: entries.filter((e) => e.rsvp === "accepted").length,
       declined: entries.filter((e) => e.rsvp === "declined").length,
-      pending: entries.filter((e) => e.rsvp !== "accepted" && e.rsvp !== "declined").length,
+      pending: entries.filter(isAwaitingReply).length,
       unsent: entries.filter((e) => !e.sent).length,
     }),
     [entries],
@@ -206,7 +223,7 @@ export function GuestList({
               activity={entry.activity}
               invitationUrl={entry.invitationUrl}
               waMessage={entry.waMessage}
-              rsvp={entry.rsvp}
+              rsvp={replyBadge(entry)}
             />
           ))}
 

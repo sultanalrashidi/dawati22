@@ -42,8 +42,14 @@ export function GuestRow({
   guest: { id: string; nameAr: string; phone?: string | null; allowedCount: number; checkedInCount: number; isBlocked: boolean };
   invitationUrl: string;
   waMessage: string;
-  rsvp?: RsvpBadge;
-  /** Seats the guest said they are bringing; null when they have not replied. */
+  /** Null when no reply is owed — never sent, or blocked — so the row claims no status at all. */
+  rsvp: RsvpBadge | null;
+  /**
+   * Her whole party, herself included — the number she gave when she
+   * accepted, or her allowance if the reply carried none. Null unless she
+   * accepted. Not a count of companions, despite the name: a guest coming
+   * with two others is 3.
+   */
   companions: number | null;
   /** Already-formatted "opened, no reply · yesterday" line. */
   activity: string;
@@ -64,6 +70,10 @@ export function GuestRow({
   const waHref = `https://wa.me/${to ? to.slice(1) : ""}?text=${encodeURIComponent(waMessage)}`;
   const d = dict.events.detail;
   const rsvpLabel = rsvp === "accepted" ? d.rsvpAccepted : rsvp === "declined" ? d.rsvpDeclined : d.rsvpPending;
+  // The page's numerals, not the runtime's: a bare number here printed a Latin
+  // «3» in a table otherwise written «١٢٠».
+  const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
+  const people = companions === null ? "—" : nf.format(companions);
 
   return (
     <div className="flex flex-col gap-3 border-b border-border px-4 py-4 last:border-b-0 sm:grid sm:grid-cols-[minmax(0,1.4fr)_auto_auto_minmax(0,1fr)_auto] sm:items-center sm:gap-4">
@@ -81,28 +91,28 @@ export function GuestRow({
             </p>
           )}
         </div>
-        <span
-          className={`shrink-0 rounded-full px-2.5 py-1 text-xs sm:hidden ${RSVP_BADGE_STYLE[rsvp ?? "pending"]}`}
-        >
-          {rsvpLabel}
-        </span>
+        {rsvp && (
+          <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs sm:hidden ${RSVP_BADGE_STYLE[rsvp]}`}>
+            {rsvpLabel}
+          </span>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-3 text-xs text-fg-muted sm:hidden">
         <span>
-          {d.colCompanions}: <span className="tabular-nums">{companions === null ? "—" : companions}</span>
+          {d.colCompanions}: <span className="tabular-nums">{people}</span>
         </span>
         <span className="truncate">{activity}</span>
       </div>
 
       <p className="hidden text-sm tabular-nums text-fg-muted sm:block sm:text-center">
-        {companions === null ? "—" : companions}
+        {people}
       </p>
 
       <p className="hidden sm:block">
-        <span className={`rounded-full px-2.5 py-1 text-xs ${RSVP_BADGE_STYLE[rsvp ?? "pending"]}`}>
-          {rsvpLabel}
-        </span>
+        {rsvp && (
+          <span className={`rounded-full px-2.5 py-1 text-xs ${RSVP_BADGE_STYLE[rsvp]}`}>{rsvpLabel}</span>
+        )}
       </p>
 
       <p className="hidden truncate text-xs text-fg-muted sm:block">{activity}</p>

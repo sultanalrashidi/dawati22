@@ -19,6 +19,7 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const dict = await getDictionary(locale);
+  const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
   const user = await requireUserOrRedirect(locale, [Role.CUSTOMER]);
 
   const [events, drafts, eligibleOrders] = await Promise.all([
@@ -108,7 +109,7 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
                 {riyadhDateFormat(locale === "ar" ? "ar-SA" : "en-US").format(new Date(event.eventDate))}
               </p>
               <p className="text-sm text-fg-muted">
-                {dict.events.guestsCount.replace("{count}", String(event.guests.length))}
+                {dict.events.guestsCount.replace("{count}", nf.format(event.guests.length))}
               </p>
               {(() => {
                 const accepted = event.guests.filter((g) => classifyRsvp(g.invitation?.status) === "accepted").length;
@@ -119,7 +120,7 @@ export default async function EventsPage({ params }: PageProps<"/[locale]/events
                 const remaining = Math.max(0, eventCapacity(event) - occupiedSlots);
                 return (
                   <p className="text-xs text-fg-muted">
-                    {dict.events.detail.statsRemaining} {remaining} · {dict.events.detail.rsvpAccepted} {accepted} · {dict.events.detail.rsvpDeclined} {declined}
+                    {dict.events.detail.statsRemaining} {nf.format(remaining)} · {dict.events.detail.rsvpAccepted} {nf.format(accepted)} · {dict.events.detail.rsvpDeclined} {nf.format(declined)}
                   </p>
                 );
               })()}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
@@ -22,6 +22,15 @@ import { unmarkGuestSentAction } from "@/lib/guests/actions";
  * never is. So this marks on the RETURN instead — the tap only writes a local
  * note, and coming back is what sends it. A tab that is discarded entirely
  * still has the note, and flushes it the next time she opens the queue.
+ *
+ * And the tap must not move the card until the browser has followed the link.
+ * The WhatsApp button is ONE <a> whose href is whoever is on the card, and
+ * React renders state set in a click handler before the browser runs the
+ * click's default action — so advancing the card inside the handler re-pointed
+ * that link at the NEXT guest just before it was followed. The guest she
+ * tapped was recorded as sent and never received anything, and every chat
+ * after opened for the guest after. So the note is written in the handler (it
+ * cannot wait, for the reason above), and only the card moves a task later.
  */
 
 const pendingKey = (eventId: string) => `dawati.sendQueue.${eventId}`;
@@ -84,6 +93,7 @@ export function SendQueue({
   const [justSent, setJustSent] = useState<QueueGuest | null>(null);
   const [copied, setCopied] = useState(false);
   const inFlight = useRef<Promise<void> | null>(null);
+  const lastWhatsappTap = useRef(-Infinity);
 
   // What is left to look at this sitting — skipped guests come off the card
   // but stay in the count of who has not been sent to.
@@ -145,10 +155,40 @@ export function SendQueue({
     };
   }, [flush]);
 
-  function handOff(guest: QueueGuest) {
+  // The local note alone — the part that must happen inside the tap itself.
+  function note(guest: QueueGuest) {
     writePending(eventId, [...new Set([...readPending(eventId), guest.id])]);
-    setDoneIds((ids) => [...ids, guest.id]);
+  }
+
+  // Moves the card on and offers the undo. Idempotent, so a guest who arrives
+  // here twice is still one guest in the count.
+  function advance(guest: QueueGuest) {
+    setDoneIds((ids) => (ids.includes(guest.id) ? ids : [...ids, guest.id]));
     setJustSent(guest);
+  }
+
+  // Copying and "mark sent" navigate nowhere, so the card can move at once.
+  function handOff(guest: QueueGuest) {
+    note(guest);
+    advance(guest);
+  }
+
+  function handOffToWhatsapp(event: MouseEvent<HTMLAnchorElement>, guest: QueueGuest) {
+    // The second tap of a double tap. The card has moved on by then, so it
+    // would land on the NEXT guest's link and open — and record — a chat she
+    // never chose. Swallowed rather than followed: the first tap already
+    // opened the one she meant, and nobody reads a new name that fast.
+    if (event.timeStamp - lastWhatsappTap.current < 1000) {
+      event.preventDefault();
+      return;
+    }
+    lastWhatsappTap.current = event.timeStamp;
+    note(guest);
+    // Not `advance` here: the browser follows this link only after the handler
+    // returns, and by then React would have rendered the next guest's href
+    // into it. A timer runs after the navigation has taken the tapped guest's
+    // URL — and if the phone suspends the tab first, it runs on her return.
+    setTimeout(() => advance(guest), 0);
   }
 
   async function undo(guest: QueueGuest) {
@@ -220,7 +260,7 @@ export function SendQueue({
             href={current.waHref}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => handOff(current)}
+            onClick={(event) => handOffToWhatsapp(event, current)}
             className="mt-5 flex h-12 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
           >
             {d.sendQueueWhatsapp}

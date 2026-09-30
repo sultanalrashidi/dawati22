@@ -245,6 +245,19 @@ function LayerBox({
   const scrollable = (layer.type === "rsvp" || layer.type === "schedule" || layer.type === "notes") &&
     layer.overflow === "scroll";
   const interactive = editing || scrollable || INTERACTIVE_LAYERS.has(layer.type);
+  // A guest's RSVP block is a real form whose controls keep a tap-sized floor
+  // (see `atLeast` in rsvp-layer.tsx) while the stage shrinks with the phone.
+  // On a 390px iPhone its fields outgrow the authored box, and choosing «سأحضر»
+  // adds the party-size row on top — the submit button was cut in half, and
+  // on smaller phones hidden entirely inside a scroller nothing announced.
+  // For a guest the authored height is a floor: the box grows with its fields
+  // as far as it can while staying centred on the stage, and scrolls only
+  // beyond that. The editor keeps the exact authored box it is dragged by.
+  const { y, height } = resolved.transform;
+  const growth =
+    scrollable && layer.type === "rsvp" && !editing && height !== null
+      ? { height: "auto", minHeight: `${height}%`, maxHeight: `${Math.max(height, 2 * Math.min(y, 100 - y))}%` }
+      : null;
   return (
     <div
       data-layer-id={layer.id}
@@ -257,6 +270,7 @@ function LayerBox({
         ...boxStyle(resolved.transform),
         pointerEvents: interactive ? "auto" : "none",
         ...(scrollable ? { overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" } as const : {}),
+        ...growth,
       }}
     >
       {children}

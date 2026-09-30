@@ -36,7 +36,7 @@ import {
   type InvitationTextFields,
   type ResolvedContent,
 } from "@/lib/themes/builder/content";
-import type { LayoutOverrides } from "@/lib/themes/builder/resolve";
+import { resolveScene, type LayoutOverrides } from "@/lib/themes/builder/resolve";
 import { passSceneFor } from "@/lib/themes/builder/no-qr-pass";
 import { STAGE_RESERVE, stageMaxWidth } from "@/lib/themes/builder/stage-size";
 import {
@@ -60,6 +60,7 @@ import { BuilderPageBackground, pageBackgroundUrl } from "@/components/guest/bui
 import { RoseCandlelightPass } from "@/components/guest/rose-candlelight-pass";
 import { BridalFramePass } from "@/components/guest/bridal-frame-pass";
 import { formatDualDate } from "@/lib/dates";
+import { bindKunyas } from "@/lib/kunya";
 import type { WalletTarget } from "@/lib/wallet/platform";
 
 /**
@@ -89,6 +90,22 @@ function isUsableLayer(layer: { visible: boolean; base: { width: number; height:
 function initialOf(nameEn: string, nameAr: string | null | undefined): string {
   const name = nameEn.trim() || (nameAr ?? "").trim();
   return [...name][0] ?? "";
+}
+
+/**
+ * The stage's content with every kunya held on one line — the guest it greets
+ * and the mothers in the host line (see `bindKunyas`). For printing only: the
+ * designed RSVP block prefills from `StageData.rsvp.guestName`, the raw name,
+ * so the no-break space never reaches a stored answer.
+ */
+function withKunyasBound(content: ResolvedContent): ResolvedContent {
+  return {
+    ...content,
+    guestName: bindKunyas(content.guestName),
+    hostName: bindKunyas(content.hostName),
+    hostLine: bindKunyas(content.hostLine),
+    inviteLine: bindKunyas(content.inviteLine),
+  };
 }
 
 type GuestFacingStatus = "DRAFT" | "SENT" | "VIEWED" | "ACCEPTED" | "DECLINED";
@@ -213,6 +230,20 @@ interface Props {
 
 /** Opening-transition length in ms — kept in sync with the CSS animation durations below. */
 const OPENING_TRANSITION_MS = 650;
+
+/**
+ * The key a builder theme's page background carries on the cover and on the
+ * opened invitation alike.
+ *
+ * Opening swaps the cover's screen tree for the invitation's, and the backdrop
+ * sits at a different place in each, so without a shared key React threw the
+ * cover's <img> away at the reveal and mounted a new one for the same file.
+ * `next/image` decodes asynchronously, so a phone could paint the frames before
+ * that decode finished with no art at all — a blank flash at the exact moment
+ * the envelope opens. One key keeps the one element, already decoded, across
+ * the swap.
+ */
+const PAGE_BACKGROUND_KEY = "page-background";
 
 const OPEN_ANIMATIONS: Record<ThemeConfig["motion"]["openStyle"], string> = {
   fade: "dawati-fade-in 0.9s ease-out",
@@ -370,21 +401,32 @@ function Scene({
   children,
   showHint = false,
   hintLabel,
+  coverPageArt = false,
 }: {
   children: ReactNode;
   showHint?: boolean;
   /** Words over the chevron — only the first screen after the cover says them. */
   hintLabel?: string;
+  /**
+   * Lay the theme's flat colour over the fixed page background for this one
+   * screen. A scene is a full viewport tall, so while it is the screen in view
+   * nothing of the page art shows around it. Only for an entry pass that
+   * brings its own card art — see `passOnOwnCard`.
+   */
+  coverPageArt?: boolean;
 }) {
   const [ref, inView] = useInView<HTMLElement>();
   return (
     <section
       ref={ref}
       className={`dawati-scene${inView ? " dawati-scene-in-view" : ""}`}
-      // Keeps the bottom of every screen clear of whatever the page fixes
-      // there — the owner's preview bar. 0px on a guest's invitation, where the
-      // stylesheet's own 4rem is all there is.
-      style={{ paddingBottom: "calc(4rem + var(--dawati-bottom-inset, 0px))" }}
+      style={{
+        // Keeps the bottom of every screen clear of whatever the page fixes
+        // there — the owner's preview bar. 0px on a guest's invitation, where
+        // the stylesheet's own 4rem is all there is.
+        paddingBottom: "calc(4rem + var(--dawati-bottom-inset, 0px))",
+        ...(coverPageArt ? { backgroundColor: "var(--color-bg)" } : null),
+      }}
     >
       {/* The reveal moves this wrapper, never the section: the section is
           what the scroll snaps to — see `.dawati-scene` in globals.css. */}
@@ -688,7 +730,7 @@ function InvitationScreens({
   const builderContent = useMemo<ResolvedContent | null>(
     () =>
       builder
-        ? resolveContent({
+        ? withKunyasBound(resolveContent({
             guestName: guest.nameAr,
             allowedCount: guest.allowedCount,
             couples,
@@ -704,7 +746,7 @@ function InvitationScreens({
             eventDate: event.eventDate,
             locationName: event.locationName,
             regionName: event.regionName ?? null,
-          })
+          }))
         : null,
     [builder, couples, event, guest],
   );
@@ -724,7 +766,14 @@ function InvitationScreens({
   // into the artwork, and substituting used to delete both mothers from the
   // pass the moment she typed a word of her own. Her extra text still prints
   // on the invitation itself and in the WhatsApp message.
-  const passInviteText = [hostLine, INVITE_VERB].filter(Boolean).join(" ").replace(/\s+/g, " ");
+  //
+  // The kunyas are bound AFTER the flattening: `\s` matches the no-break
+  // space too, so binding first would be undone on the spot.
+  const passInviteText = bindKunyas([hostLine, INVITE_VERB].filter(Boolean).join(" ").replace(/\s+/g, " "));
+  // What the screens below print for the host line and the guest — see
+  // `bindKunyas`. Printing only: the RSVP form prefills `guest.nameAr` itself.
+  const shownHostLine = bindKunyas(hostLine);
+  const shownGuestName = bindKunyas(guest.nameAr);
 
   /**
    * The one way the invitation opens. Every cover routes through here — the
@@ -916,7 +965,7 @@ function InvitationScreens({
         style={vars}
         className="relative flex min-h-dvh flex-col items-center justify-center gap-8 bg-[var(--color-bg)] px-6 pb-[var(--dawati-bottom-inset)] text-center text-[var(--color-fg)]"
       >
-        <BuilderPageBackground page={builder.layout.page} assets={builder.assets} />
+        <BuilderPageBackground key={PAGE_BACKGROUND_KEY} page={builder.layout.page} assets={builder.assets} />
         {/* Every screen the admin left visible after the cover — without the
             data gating the flow applies later, because warming one screen too
             many costs a few kilobytes and warming one too few costs the wait
@@ -1120,7 +1169,7 @@ function InvitationScreens({
               {g.guestOf}
             </p>
             <h1 className="text-3xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
-              {guest.nameAr}
+              {shownGuestName}
             </h1>
             {/* The Latin names line. Both English names are optional: with
                 neither given the line goes — the Arabic names follow on the
@@ -1228,6 +1277,25 @@ function InvitationScreens({
   // reachable rather than handing them an empty stage. Without a barcode it is
   // the design's own no-barcode card when it has one — see no-qr-pass.ts.
   const passScene = builder ? passSceneFor(builder.layout, hasQr) : undefined;
+  // A pass whose own picture fills its stage — a printed card, like the
+  // jasmine family's — already is the whole screen's artwork. Over the page
+  // background it read as two invitations stacked: the page's bride and arch
+  // around the card's own bride and arch, the card's straight edges cutting
+  // across both, and the "show this at the door" line printed on the page's
+  // flowers. That screen shows the card alone, on the theme's flat colour. A
+  // pass laid straight onto the page art, with no card of its own, keeps the
+  // art behind it exactly as before.
+  const passOnOwnCard = Boolean(
+    builder &&
+      passScene &&
+      resolveScene(builder.layout, passScene.id, breakpoint, builder.overrides).some(
+        ({ layer, transform }) =>
+          layer.type === "asset" &&
+          Boolean(builder.assets[layer.slot]) &&
+          transform.width * transform.scale >= 90 &&
+          (transform.height ?? 0) * transform.scale >= 90,
+      ),
+  );
 
   const somethingFollowsDetails = hasSchedule || hasNotes || hasRsvpForm || hasResponded;
   const somethingFollowsSchedule = hasNotes || hasRsvpForm || hasResponded;
@@ -1244,7 +1312,7 @@ function InvitationScreens({
   const passFrameNode = !hasQr ? (
     <PassholderTag
       nameLabel={g.passName}
-      name={guest.nameAr}
+      name={shownGuestName}
       seatsLabel={g.passSeatsShort}
       seats={guest.allowedCount}
     />
@@ -1281,7 +1349,8 @@ function InvitationScreens({
           decor kit over it would scatter someone else's motifs across the
           admin's design. LEGACY themes keep the exact branch they had. */}
       {builder ? (
-        <BuilderPageBackground page={builder.layout.page} assets={builder.assets} />
+        // The same key as on the cover, so the reveal keeps its element.
+        <BuilderPageBackground key={PAGE_BACKGROUND_KEY} page={builder.layout.page} assets={builder.assets} />
       ) : theme.card?.style ? (
         <RoseCandlelightBackground assetFolder={roseAssetFolder} />
       ) : (
@@ -1370,7 +1439,7 @@ function InvitationScreens({
                       {g.guestOf}
                     </p>
                     <h1 className="text-lg leading-snug sm:text-xl" style={{ color: "var(--color-fg)", fontFamily: "var(--font-ar-display)" }}>
-                      {guest.nameAr}
+                      {shownGuestName}
                     </h1>
                     <p className="text-[11px] leading-relaxed sm:text-xs" style={{ color: "var(--color-fg-muted)", fontFamily: "var(--font-ar-body)" }}>
                       {g.guestWelcome}
@@ -1396,7 +1465,7 @@ function InvitationScreens({
                       {g.guestOf}
                     </p>
                     <h1 className="text-lg leading-snug sm:text-xl" style={{ color: "#3d2417", fontFamily: "var(--font-ar-display)" }}>
-                      {guest.nameAr}
+                      {shownGuestName}
                     </h1>
                     <p className="text-[11px] leading-relaxed sm:text-xs" style={{ color: "#6b4530", fontFamily: "var(--font-ar-body)" }}>
                       {g.guestWelcome}
@@ -1409,7 +1478,7 @@ function InvitationScreens({
                     {g.guestOf}
                   </p>
                   <h1 className="text-3xl leading-relaxed" style={{ fontFamily: "var(--font-ar-display)" }}>
-                    {guest.nameAr}
+                    {shownGuestName}
                   </h1>
                 </>
               )}
@@ -1430,7 +1499,7 @@ function InvitationScreens({
                 )}
                 {hostLine && (
                   <p className="whitespace-pre-line leading-loose" style={{ fontFamily: "var(--font-ar-display)" }}>
-                    {hostLine}
+                    {shownHostLine}
                   </p>
                 )}
                 <p className="leading-loose text-[var(--color-fg-muted)]">{INVITE_VERB}</p>
@@ -1637,7 +1706,7 @@ function InvitationScreens({
         )}
 
         {currentStatus === "ACCEPTED" && (
-          <Scene>
+          <Scene coverPageArt={passOnOwnCard && (!hasQr || Boolean(currentQr) || mode === "preview")}>
             {/* A no-QR event has no code to wait for, so it goes straight to the
                 pass. With a QR the pass waits for the real one — or for the
                 editor's preview — and otherwise shows the thank-you line. */}
@@ -1700,7 +1769,7 @@ function InvitationScreens({
                   ) : (
                     <FakeQr />
                   )}
-                  <p className="text-sm text-[var(--color-fg-muted)]">{g.passName}: {guest.nameAr}</p>
+                  <p className="text-sm text-[var(--color-fg-muted)]">{g.passName}: {shownGuestName}</p>
                   <p className="text-sm text-[var(--color-fg-muted)]">{g.passSeats}: {guest.allowedCount}</p>
                 </div>
               )

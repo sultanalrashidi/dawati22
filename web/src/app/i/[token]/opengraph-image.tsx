@@ -1,9 +1,8 @@
 import { ImageResponse } from "next/og";
-import type { ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { getViewableInvitationByLinkToken } from "@/lib/invitations/service";
-import { couplesFor } from "@/lib/events/service";
+import { linkPreviewText } from "@/lib/invitations/link-preview";
 import type { ThemeConfig } from "@/lib/themes/types";
-import { riyadhDateFormat } from "@/lib/dates";
 import { ThemeEngine } from "@/generated/prisma/client";
 import { builderThemeConfig, loadBuilderTheme } from "@/lib/themes/builder/guest";
 
@@ -13,13 +12,18 @@ export const contentType = "image/png";
 
 const FALLBACK_PALETTE = { bg: "#14110d", surface: "#1e1912", fg: "#f3ede3", fgMuted: "#b8ac9a", accent: "#d4af74" };
 
+/** The line over the names. Arabic, like the invitation and everything else on the card. */
+const HEADING = "دعوة زفاف";
+
 /**
- * The face the names are set in when they fall back to Arabic. Chosen by
- * rendering, not taste: Satori's shaper (opentype.js) throws "lookupType 5
- * substFormat 3 is not yet supported" on the GSUB tables of Amiri, Noto Naskh
- * Arabic, Noto Kufi Arabic and the Noto Sans Arabic that next/og would fetch on
- * its own — for the most common Saudi names of all (عبدالله، عبدالعزيز،
- * الجوهرة). Markazi Text shapes every one of them.
+ * The one face the whole card is set in. Chosen by rendering, not taste:
+ * Satori's shaper (opentype.js) throws "lookupType 5 substFormat 3 is not yet
+ * supported" on the GSUB tables of Amiri, Noto Naskh Arabic, Noto Kufi Arabic
+ * and the Noto Sans Arabic that next/og would fetch on its own — for the most
+ * common Saudi names of all (عبدالله، عبدالعزيز، الجوهرة). Markazi Text shapes
+ * every one of them. It carries Latin letters too, so an English name standing
+ * in for a missing Arabic one sits on the same baseline as the "و" beside it;
+ * a Latin face and an Arabic face on one line do not, in Satori.
  */
 const ARABIC_FONT = "Markazi Text";
 const ARABIC_FONT_WEIGHT = 500;
@@ -28,11 +32,7 @@ type FontEntry = NonNullable<ConstructorParameters<typeof ImageResponse>[1]>["fo
   ? F
   : never;
 
-/**
- * Only the glyphs actually needed (the `text` param) — keeps the fetch small.
- * The display face is Latin-only, so the Arabic names get their own face
- * (`ARABIC_FONT`) rather than being subset out of Cormorant.
- */
+/** Only the glyphs actually needed (the `text` param) — keeps the fetch small. */
 async function loadGoogleFont(family: string, text: string, weight: number): Promise<ArrayBuffer> {
   const cssUrl = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(family)}:wght@${weight}&text=${encodeURIComponent(text)}`;
   const css = await fetch(cssUrl).then((res) => res.text());
@@ -42,29 +42,71 @@ async function loadGoogleFont(family: string, text: string, weight: number): Pro
   return res.arrayBuffer();
 }
 
+/** opentype.js's own test for an Arabic letter; the Arabic-Indic digits are not one. */
+const ARABIC_LETTER = /[\u0600-\u065F\u066A-\u06D2\u06FA-\u06FF]/;
+/** A word with a Latin letter in it: part of an English name. */
+const LATIN_WORD = /[A-Za-z\u00C0-\u024F]/;
+const NBSP = "\u00a0";
+
 /**
- * The names line, groom first. "Faisal & Noura" when both English names were
- * given; otherwise the Arabic given names — the English ones are optional and
- * the Arabic ones required — joined with "و". Never one of each: a Latin word
- * and an Arabic word on one line sit on different baselines in Satori.
+ * A line of Arabic cut into the pieces Satori can draw right to left, first
+ * piece first.
+ *
+ * Satori does no bidi: it places words left to right in the order given. The
+ * only reordering is opentype.js's, which draws Arabic words joined by
+ * no-break spaces as one stretch, reversed whole, and leaves digits and Latin
+ * letters as they are. So each piece is one Arabic stretch plus the numbers
+ * (or English name) read just before it, written as it is SEEN: the stretch in
+ * reading order for opentype.js to turn round, then those numbers to its
+ * right. A piece never holds two stretches: opentype.js would pull the space
+ * before the number between them into the first and glue the two together.
+ *
+ * Pieces rather than one flex item per word, because Satori sizes a text box
+ * by adding up its letters' isolated forms — far wider than the joined word it
+ * draws — so every word carried its own blank and the Gregorian date printed
+ * as "١٩      نوفمبر". Inside a piece the words sit where they are drawn; the
+ * one blank left is at the piece's right-hand end, where it falls after a
+ * comma or at the end of the line. Nothing here can measure it, so it also
+ * leaves each line a little left of centre.
  */
-function previewNames(couple: {
-  groomNameEn: string;
-  brideNameEn: string;
-  groomNameAr: string | null;
-  brideNameAr: string | null;
-}): { text: string; script: "latin" | "arabic" } {
-  const brideEn = couple.brideNameEn.trim();
-  const groomEn = couple.groomNameEn.trim();
-  if (brideEn && groomEn) return { text: `${groomEn} & ${brideEn}`, script: "latin" };
-  const bride = couple.brideNameAr?.trim() || brideEn;
-  const groom = couple.groomNameAr?.trim() || groomEn;
-  const text = [groom, bride].filter(Boolean).join(" و ");
-  return { text: text || "دعوتي", script: "arabic" };
+function rtlPieces(text: string): string[] {
+  const pieces: { lead: string[]; arabic: string[] }[] = [{ lead: [], arabic: [] }];
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    let piece = pieces[pieces.length - 1];
+    if (ARABIC_LETTER.test(word)) {
+      piece.arabic.push(word);
+      continue;
+    }
+    if (piece.arabic.length > 0) {
+      piece = { lead: [], arabic: [] };
+      pieces.push(piece);
+    }
+    // Consecutive Latin words are one English name, read left to right.
+    const previous = piece.lead[piece.lead.length - 1];
+    if (previous && LATIN_WORD.test(previous) && LATIN_WORD.test(word)) {
+      piece.lead[piece.lead.length - 1] = `${previous}${NBSP}${word}`;
+    } else {
+      piece.lead.push(word);
+    }
+  }
+  return pieces
+    .map(({ lead, arabic }) => [arabic.join(NBSP), ...lead.reverse()].filter(Boolean).join(NBSP))
+    .filter(Boolean);
+}
+
+/** The pieces of one line, the first on the right where an Arabic reader starts. */
+function rtlLine(pieces: string[], fontSize: number, style: CSSProperties) {
+  return (
+    <div style={{ display: "flex", flexDirection: "row-reverse", gap: Math.round(fontSize * 0.25), fontSize, ...style }}>
+      {pieces.map((piece, index) => (
+        <span key={index}>{piece}</span>
+      ))}
+    </div>
+  );
 }
 
 /**
- * The palette and fonts the invitation itself is drawn in.
+ * The palette the invitation itself is drawn in.
  *
  * A BUILDER design keeps its colours on the chosen variant, not in
  * `theme.config` — reading `config.fonts` off one threw on every invitation
@@ -72,11 +114,10 @@ function previewNames(couple: {
  * icon instead of a card. Composed the way the invitation page composes it,
  * and anything unreadable falls back rather than failing the preview.
  */
-async function previewTheme(
+async function previewPalette(
   invitation: Awaited<ReturnType<typeof getViewableInvitationByLinkToken>>,
-): Promise<{ palette: typeof FALLBACK_PALETTE; latinFont: string }> {
-  const fallback = { palette: FALLBACK_PALETTE, latinFont: "Cormorant Garamond" };
-  if (!invitation) return fallback;
+): Promise<typeof FALLBACK_PALETTE> {
+  if (!invitation) return FALLBACK_PALETTE;
   try {
     const { theme, themeVariantId } = invitation.event;
     const builder =
@@ -84,12 +125,9 @@ async function previewTheme(
     const config: ThemeConfig | undefined = builder
       ? builderThemeConfig({ palette: builder.palette, typography: builder.typography })
       : (theme.config as unknown as ThemeConfig | undefined);
-    return {
-      palette: config?.palette ?? fallback.palette,
-      latinFont: config?.fonts?.latinDisplay ?? fallback.latinFont,
-    };
+    return config?.palette ?? FALLBACK_PALETTE;
   } catch {
-    return fallback;
+    return FALLBACK_PALETTE;
   }
 }
 
@@ -97,56 +135,27 @@ export default async function Image({ params }: { params: Promise<{ token: strin
   const { token } = await params;
   const invitation = await getViewableInvitationByLinkToken(token);
 
-  const { palette: theme, latinFont } = await previewTheme(invitation);
-  // One card, one pair of names: a joint wedding shows its primary couple
-  // rather than stacking every pair into a link preview.
-  const primaryCouple = invitation ? couplesFor(invitation.event)[0] : null;
-  const names = primaryCouple ? previewNames(primaryCouple) : { text: "دعوتي", script: "arabic" as const };
-  const dateLabel = invitation
-    ? riyadhDateFormat("en-US", { day: "numeric", month: "long", year: "numeric" }).format(invitation.event.eventDate)
-    : "";
+  const theme = await previewPalette(invitation);
+  // The couple and the date exactly as the page's description gives them —
+  // see lib/invitations/link-preview.ts.
+  const preview = invitation ? linkPreviewText(invitation) : { names: "", dateLines: [] };
+  const heading = rtlPieces(HEADING);
+  const names = rtlPieces(preview.names || "دعوتي");
+  const dateLines = preview.dateLines.map(rtlPieces);
 
-  // Must cover every glyph actually drawn in the Latin face (Latin names +
-  // "Wedding Invitation" + the date) — subsetting to just the names left the
-  // date's letters outside the fetched font and falling back to Satori's
-  // default typeface. Arabic names are drawn in their own face, subset to them.
-  const latinGlyphs = `${names.script === "latin" ? names.text : ""} WEDDING INVITATION ${dateLabel}`;
-  const [latinData, arabicData] = await Promise.all([
-    loadGoogleFont(latinFont, latinGlyphs, 600).catch(() => null),
-    names.script === "arabic"
-      ? loadGoogleFont(ARABIC_FONT, names.text, ARABIC_FONT_WEIGHT).catch(() => null)
-      : Promise.resolve<ArrayBuffer | null>(null),
-  ]);
-  const fonts: FontEntry[] = [];
-  if (latinData) fonts.push({ name: "DisplayFont", data: latinData, style: "normal", weight: 600 });
-  if (arabicData) fonts.push({ name: "ArabicFont", data: arabicData, style: "normal", weight: ARABIC_FONT_WEIGHT });
-  const displayFont = latinData ? "DisplayFont" : undefined;
+  // Must cover every glyph drawn — heading, names and date, and the no-break
+  // spaces between their words — or the missing ones fall back to a face
+  // next/og fetches on its own (see ARABIC_FONT).
+  const arabicData = await loadGoogleFont(
+    ARABIC_FONT,
+    [heading, names, ...dateLines].flat().join(" "),
+    ARABIC_FONT_WEIGHT,
+  ).catch(() => null);
+  const fonts: FontEntry[] = arabicData
+    ? [{ name: "ArabicFont", data: arabicData, style: "normal", weight: ARABIC_FONT_WEIGHT }]
+    : [];
 
-  const namesRow =
-    names.script === "latin" ? (
-      <div style={{ fontSize: 72, color: theme.fg, fontFamily: displayFont, display: "flex" }}>{names.text}</div>
-    ) : (
-      // Satori shapes Arabic letters but does no bidi reordering across
-      // spaces, so a plain string prints the words left-to-right — groom
-      // first. One flex item per word in a reversed row puts the bride's name
-      // on the right, where an Arabic reader starts.
-      <div
-        style={{
-          fontSize: 72,
-          color: theme.fg,
-          fontFamily: arabicData ? "ArabicFont" : undefined,
-          display: "flex",
-          flexDirection: "row-reverse",
-          gap: 22,
-        }}
-      >
-        {names.text.split(" ").map((word, index) => (
-          <span key={index}>{word}</span>
-        ))}
-      </div>
-    );
-
-  const card = (namesNode: ReactNode) =>
+  const card = (show: { names: boolean; text: boolean }) =>
     new ImageResponse(
       (
         <div
@@ -159,6 +168,7 @@ export default async function Image({ params }: { params: Promise<{ token: strin
             justifyContent: "center",
             background: theme.bg,
             position: "relative",
+            fontFamily: arabicData ? "ArabicFont" : undefined,
           }}
         >
           {/* corner-bracket frame, echoing the LuxuryKit card motif */}
@@ -171,24 +181,19 @@ export default async function Image({ params }: { params: Promise<{ token: strin
             <div key={i} style={{ position: "absolute", width: 56, height: 56, borderColor: theme.accent, borderStyle: "solid", ...pos }} />
           ))}
 
-          <div
-            style={{
-              fontSize: 22,
-              letterSpacing: 10,
-              textTransform: "uppercase",
-              color: theme.accent,
-              marginBottom: 28,
-              fontFamily: displayFont,
-              display: "flex",
-            }}
-          >
-            Wedding Invitation
-          </div>
-          {namesNode}
-          <div style={{ width: 140, height: 1, background: theme.accent, margin: "36px 0" }} />
-          <div style={{ fontSize: 26, color: theme.fgMuted, fontFamily: displayFont, display: "flex" }}>
-            {dateLabel}
-          </div>
+          {show.text ? rtlLine(heading, 32, { color: theme.accent, marginBottom: 8 }) : null}
+          {show.names ? rtlLine(names, 80, { color: theme.fg }) : null}
+          <div style={{ width: 140, height: 1, background: theme.accent, margin: "32px 0" }} />
+          {/* Hijri first, with the weekday, then the Gregorian date — the order the invitation prints them in. */}
+          {show.text ? (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+              {dateLines.map((pieces, index) => (
+                <div key={index} style={{ display: "flex" }}>
+                  {rtlLine(pieces, index === 0 ? 36 : 30, { color: theme.fgMuted })}
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       ),
       {
@@ -199,12 +204,20 @@ export default async function Image({ params }: { params: Promise<{ token: strin
 
   // Render eagerly so a shaping failure on an unusual name (see ARABIC_FONT)
   // is caught here, and the preview degrades to the frame, heading and date
-  // instead of the link showing no image at all.
-  try {
-    const response = card(namesRow);
-    const png = await response.arrayBuffer();
-    return new Response(png, { headers: response.headers });
-  } catch {
-    return card(null);
+  // instead of the link showing no image at all. The bare frame is the last
+  // resort: every word on the card is Arabic now, so none of it is certain to
+  // shape when the face could not be fetched.
+  for (const show of [
+    { names: true, text: true },
+    { names: false, text: true },
+  ]) {
+    try {
+      const response = card(show);
+      const png = await response.arrayBuffer();
+      return new Response(png, { headers: response.headers });
+    } catch {
+      // Try the plainer card.
+    }
   }
+  return card({ names: false, text: false });
 }

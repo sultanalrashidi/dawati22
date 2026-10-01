@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>لوحات دعوتي</title>
+<!--
+  لوحات ترند «لوحات الطرق» لدعوتي. كل لوحة 2400×600 (4:1).
+  - افتح الملف في المتصفح: يعرض العشر لوحات مصغّرة.
+  - ?board=1 … ?board=10 يعرض لوحة وحدة بمقاسها الكامل (هذا اللي يصوّره render.mjs).
+  - الخطوط والشعار محلية في هذا المجلد، فالملف يشتغل بدون إنترنت.
+-->
+<style>
+  @font-face { font-family: 'Almarai'; font-weight: 700; src: url('fonts/almarai-700-ar.woff2') format('woff2'); unicode-range: U+0600-06FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFC; }
+  @font-face { font-family: 'Almarai'; font-weight: 700; src: url('fonts/almarai-700-latin.woff2') format('woff2'); unicode-range: U+0000-00FF, U+2000-206F; }
+  @font-face { font-family: 'Almarai'; font-weight: 800; src: url('fonts/almarai-800-ar.woff2') format('woff2'); unicode-range: U+0600-06FF, U+200C-200E, U+FB50-FDFF, U+FE70-FEFC; }
+  @font-face { font-family: 'Amiri'; font-weight: 700; src: url('fonts/amiri-700-ar.woff2') format('woff2'); }
+  @font-face { font-family: 'Aref Ruqaa'; font-weight: 700; src: url('fonts/aref-ruqaa-700-ar.woff2') format('woff2'); }
+
+  :root {
+    --cream: #F6ECE2;      /* خلفية الشعار نفسه، فيذوب الشعار في اللوحة */
+    --ivory: #FAF6EE;
+    --ink: #241E12;
+    --brown: #5B3A22;      /* لون «د» في الشعار */
+    --gold: #A6863B;
+    --gold-line: #C9AE6B;
+    --tan: #C9A37A;        /* حلقة الشعار */
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #2a2620; }
+  body { font-family: 'Almarai', sans-serif; color: var(--ink); }
+
+  /* ---------- اللوحة ---------- */
+  .board {
+    position: relative;
+    width: 2400px; height: 600px;
+    background:
+      radial-gradient(120% 140% at 85% 50%, #FBF4EC 0%, var(--cream) 55%, #EFE2D3 100%);
+    overflow: hidden;
+    display: flex; align-items: center;
+  }
+  /* إطار ذهبي رفيع مزدوج */
+  .board::before, .board::after {
+    content: ''; position: absolute; pointer-events: none; border-radius: 6px;
+  }
+  .board::before { inset: 26px; border: 3px solid var(--gold-line); }
+  .board::after  { inset: 38px; border: 1px solid rgba(201, 174, 107, .55); }
+
+  /* كتلة الهوية — يمين اللوحة */
+  .brand {
+    flex: 0 0 560px; height: 100%;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+    position: relative;
+  }
+  .brand img { width: 300px; height: 300px; display: block; clip-path: circle(46.5%); }
+  .brand .word {
+    font-family: 'Aref Ruqaa', serif; font-weight: 700; font-size: 92px; line-height: 1;
+    color: var(--brown); margin-top: -18px;
+  }
+  .divider {
+    flex: 0 0 auto; width: 3px; height: 380px;
+    background: linear-gradient(to bottom, transparent, var(--gold-line) 18%, var(--gold-line) 82%, transparent);
+    position: relative;
+  }
+  .divider::after {
+    content: ''; position: absolute; top: 50%; left: 50%; width: 18px; height: 18px;
+    background: var(--gold); transform: translate(-50%, -50%) rotate(45deg);
+    box-shadow: 0 0 0 6px var(--cream);
+  }
+
+  /* النص */
+  .copy {
+    flex: 1 1 auto; height: 100%;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    padding: 0 110px 0 120px; text-align: center;
+  }
+  .l1 {
+    font-family: 'Amiri', serif; font-weight: 700;
+    font-size: 132px; line-height: 1.15; color: var(--ink);
+    white-space: nowrap;
+  }
+  .rule {
+    display: flex; align-items: center; gap: 22px; margin: 30px 0 18px; color: var(--gold);
+  }
+  .rule span { display: block; width: 180px; height: 2px; background: var(--gold-line); }
+  .rule i { display: block; width: 12px; height: 12px; background: var(--gold); transform: rotate(45deg); }
+  .l2 {
+    font-family: 'Almarai', sans-serif; font-weight: 800;
+    font-size: 96px; line-height: 1.2; color: var(--brown);
+    white-space: nowrap;
+  }
+  .url {
+    position: absolute; left: 92px; bottom: 66px;
+    font-family: 'Almarai', sans-serif; font-weight: 700; font-size: 34px; letter-spacing: .06em;
+    color: var(--gold); direction: ltr;
+  }
+
+  /* ---------- معرض المعاينة ---------- */
+  body.gallery { padding: 32px 16px 64px; }
+  .gallery h1 { color: #F4EEE0; font: 800 24px 'Almarai', sans-serif; text-align: center; margin-bottom: 6px; }
+  .gallery p.hint { color: #C9AE6B; font: 700 15px 'Almarai', sans-serif; text-align: center; margin-bottom: 28px; }
+  .gallery .grid { display: grid; gap: 28px; max-width: 1200px; margin: 0 auto; }
+  .gallery .item { display: grid; gap: 8px; }
+  .gallery .item a { color: #F4EEE0; font: 700 15px 'Almarai', sans-serif; text-decoration: none; }
+  .gallery .item a b { color: #C9AE6B; }
+  .gallery .frame { width: 100%; aspect-ratio: 4 / 1; position: relative; overflow: hidden; border-radius: 6px; box-shadow: 0 10px 30px rgba(0,0,0,.4); }
+  .gallery .frame .board { position: absolute; top: 0; right: 0; transform-origin: top right; }
+  body.single { width: 2400px; height: 600px; overflow: hidden; }
+</style>
+</head>
+<body>
+<script>
+  // العبارات العشر. top = ترتيبها في الكاروسيل (1 = أول صورة).
+  const BOARDS = [
+    { l1: '«إن شاء الله» ما تكفي القلب..', l2: 'أكّد حضورك من الدعوة', top: 1 },
+    { l1: 'ضاع الكرت.. وضاع معه العنوان', l2: 'دعوتك توصل برسالة وما تضيع', top: 2 },
+    { l1: 'لا تقول: نسيت الموعد', l2: 'ينضاف لتقويم جوالك بضغطة', top: 3 },
+    { l1: 'هاجسي ليلة الفرح: مين بيجي؟', l2: 'الردود توصلك أول بأول', top: 4 },
+    { l1: 'بعض الحضور فرحة..', l2: 'وتأكيده راحة بال' },
+    { l1: 'أكثر سؤال سمعته: وين القاعة؟', l2: 'الموقع والموعد داخل الدعوة' },
+    { l1: 'اللمّة ما تكمل إلا فيك', l2: 'أكّد حضورك.. ننتظرك' },
+    { l1: 'أحلى بداية: اسمك على الدعوة', l2: 'كل ضيف دعوته باسمه' },
+    { l1: 'كرت الفرح صار في جيبك', l2: 'بمحفظة جوالك مع الباركود' },
+    { l1: 'ليلة انتظرناها عمر..', l2: 'تستاهل دعوة تليق فيها' },
+  ];
+
+  function boardHTML(b) {
+    return `<div class="board">
+      <div class="brand"><img src="logo.png" alt="شعار دعوتي"><div class="word">دعوتي</div></div>
+      <div class="divider"></div>
+      <div class="copy">
+        <div class="l1">${b.l1}</div>
+        <div class="rule"><span></span><i></i><span></span></div>
+        <div class="l2">${b.l2}</div>
+      </div>
+      <div class="url">dawati.store</div>
+    </div>`;
+  }
+
+  // يصغّر السطر لين يركب داخل مساحة النص (اللوحة تبقى مقروءة من السيارة)
+  function fit(board) {
+    const copy = board.querySelector('.copy');
+    const max = copy.clientWidth - 230;
+    for (const el of board.querySelectorAll('.l1, .l2')) {
+      let size = parseFloat(getComputedStyle(el).fontSize);
+      while (el.scrollWidth > max && size > 40) { size -= 2; el.style.fontSize = size + 'px'; }
+    }
+  }
+
+  const n = Number(new URLSearchParams(location.search).get('board'));
+  document.fonts.load('700 10px Amiri').then(() => Promise.all([
+    document.fonts.load('800 10px Almarai', 'أ'), document.fonts.load('700 10px "Aref Ruqaa"', 'د'),
+    document.fonts.load('700 10px Almarai', 'a'),
+  ])).then(() => {
+    if (n >= 1 && n <= BOARDS.length) {
+      document.body.className = 'single';
+      document.body.innerHTML = boardHTML(BOARDS[n - 1]);
+      fit(document.querySelector('.board'));
+    } else {
+      document.body.className = 'gallery';
+      document.body.innerHTML = `<h1>لوحات دعوتي — ترند لوحات الطرق</h1>
+        <p class="hint">كل لوحة 2400×600 · اضغط على العنوان لفتحها بمقاسها الكامل</p>
+        <div class="grid">${BOARDS.map((b, i) => `
+          <div class="item">
+            <a href="?board=${i + 1}">${b.top ? `<b>الكاروسيل ${b.top} ·</b> ` : ''}لوحة ${i + 1}</a>
+            <div class="frame">${boardHTML(b)}</div>
+          </div>`).join('')}</div>`;
+      const scale = () => document.querySelectorAll('.frame').forEach(f => {
+        f.querySelector('.board').style.transform = `scale(${f.clientWidth / 2400})`;
+      });
+      document.querySelectorAll('.board').forEach(fit);
+      scale(); addEventListener('resize', scale);
+    }
+    window.__ready = true;
+  });
+</script>
+</body>
+</html>

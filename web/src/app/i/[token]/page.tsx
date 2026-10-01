@@ -17,7 +17,7 @@ import { noteLines } from "@/lib/themes/builder/content";
 import { builderFontStylesheetHref } from "@/lib/themes/builder/fonts-server";
 import type { ThemeConfig } from "@/lib/themes/types";
 import type { ScheduleItem } from "@/lib/events/types";
-import { riyadhDateFormat } from "@/lib/dates";
+import { linkPreviewText } from "@/lib/invitations/link-preview";
 
 // Powers the WhatsApp/social link-preview card (title + description; the
 // image itself comes from the sibling opengraph-image.tsx) — this is what
@@ -29,20 +29,19 @@ export async function generateMetadata({ params }: PageProps<"/i/[token]">): Pro
   const invitation = await getViewableInvitationByLinkToken(token);
   if (!invitation) return {};
 
-  const dual = riyadhDateFormat("ar-SA-u-ca-gregory", { day: "numeric", month: "long", year: "numeric" }).format(
-    invitation.event.eventDate,
-  );
-  // A joint wedding still gets one preview line: the primary couple, same as
-  // the seal monogram and the link-preview image. The English names are
-  // optional, so an empty one gives way to the Arabic given name; groom first,
-  // as on the invitation itself.
-  const [primaryCouple] = couplesFor(invitation.event);
-  const bride = primaryCouple.brideNameEn.trim() || primaryCouple.brideNameAr || "";
-  const groom = primaryCouple.groomNameEn.trim() || primaryCouple.groomNameAr || "";
+  // The same names and date the preview image draws — see
+  // lib/invitations/link-preview.ts.
+  const { names, dateLines } = linkPreviewText(invitation);
+  // "،" rather than "·": beside Arabic-Indic digits a middle dot reads as "٠".
+  const when = [...dateLines, invitation.event.locationName].filter(Boolean).join("، ");
 
   return {
     title: `دعوة خاصة إلى ${invitation.guest.nameAr}`,
-    description: `${groom} و ${bride} — ${dual} · ${invitation.event.locationName}`,
+    // Led by a right-to-left mark: WhatsApp sets a preview's direction from
+    // its first letter, so an English name standing in for a missing Arabic
+    // one would otherwise turn the whole line left-to-right and print the
+    // couple and the date back to front.
+    description: `\u200f${[names, when].filter(Boolean).join(" — ")}`,
   };
 }
 

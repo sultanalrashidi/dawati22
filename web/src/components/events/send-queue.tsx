@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type MouseEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
@@ -22,6 +22,15 @@ import { unmarkGuestSentAction } from "@/lib/guests/actions";
  * never is. So this marks on the RETURN instead — the tap only writes a local
  * note, and coming back is what sends it. A tab that is discarded entirely
  * still has the note, and flushes it the next time she opens the queue.
+ *
+ * And the tap must not move the card until the browser has followed the link.
+ * The WhatsApp button is ONE <a> whose href is whoever is on the card, and
+ * React renders state set in a click handler before the browser runs the
+ * click's default action — so advancing the card inside the handler re-pointed
+ * that link at the NEXT guest just before it was followed. The guest she
+ * tapped was recorded as sent and never received anything, and every chat
+ * after opened for the guest after. So the note is written in the handler (it
+ * cannot wait, for the reason above), and only the card moves a task later.
  */
 
 const pendingKey = (eventId: string) => `dawati.sendQueue.${eventId}`;
@@ -82,8 +91,11 @@ export function SendQueue({
   const [doneIds, setDoneIds] = useState<string[]>([]);
   const [skippedIds, setSkippedIds] = useState<string[]>([]);
   const [justSent, setJustSent] = useState<QueueGuest | null>(null);
-  const [copied, setCopied] = useState(false);
+  // Whose link was copied, not just "copied": the card moves on at once, and
+  // a bare flag read «تم نسخ الرابط» on the next guest's button.
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const inFlight = useRef<Promise<void> | null>(null);
+  const lastCardTap = useRef(-Infinity);
 
   // What is left to look at this sitting — skipped guests come off the card
   // but stay in the count of who has not been sent to.
@@ -145,10 +157,48 @@ export function SendQueue({
     };
   }, [flush]);
 
-  function handOff(guest: QueueGuest) {
+  // The local note alone — the part that must happen inside the tap itself.
+  function note(guest: QueueGuest) {
     writePending(eventId, [...new Set([...readPending(eventId), guest.id])]);
-    setDoneIds((ids) => [...ids, guest.id]);
+  }
+
+  // Moves the card on and offers the undo. Idempotent, so a guest who arrives
+  // here twice is still one guest in the count.
+  function advance(guest: QueueGuest) {
+    setDoneIds((ids) => (ids.includes(guest.id) ? ids : [...ids, guest.id]));
     setJustSent(guest);
+  }
+
+  // Copying and "mark sent" navigate nowhere, so the card can move at once.
+  function handOff(guest: QueueGuest) {
+    note(guest);
+    advance(guest);
+  }
+
+  // Every action on the card moves it on, so the second tap of a double tap
+  // lands on the NEXT guest's card: on her WhatsApp link (a chat she never
+  // chose, opened and recorded), her copy button (another guest's private link
+  // on the clipboard) or "mark sent". The first banner of a sitting also
+  // pushes the card down under the finger. So one tap per second across the
+  // card, and the rest are swallowed: the first already did what she meant,
+  // and nobody reads a new name that fast.
+  function firstTap(event: { timeStamp: number }) {
+    if (event.timeStamp - lastCardTap.current < 1000) return false;
+    lastCardTap.current = event.timeStamp;
+    return true;
+  }
+
+  function handOffToWhatsapp(event: MouseEvent<HTMLAnchorElement>, guest: QueueGuest) {
+    if (!firstTap(event)) {
+      event.preventDefault();
+      return;
+    }
+    note(guest);
+    // Not `advance` here: the browser follows this link only after the handler
+    // returns, and by then React would have rendered the next guest's href
+    // into it. A timer runs after the navigation has taken the tapped guest's
+    // URL — and if the phone suspends the tab first, it runs on her return.
+    setTimeout(() => advance(guest), 0);
   }
 
   async function undo(guest: QueueGuest) {
@@ -220,7 +270,7 @@ export function SendQueue({
             href={current.waHref}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={() => handOff(current)}
+            onClick={(event) => handOffToWhatsapp(event, current)}
             className="mt-5 flex h-12 items-center justify-center rounded-full bg-accent text-sm font-bold text-accent-fg transition-colors hover:bg-accent-strong"
           >
             {d.sendQueueWhatsapp}
@@ -229,11 +279,12 @@ export function SendQueue({
           <div className="mt-3 flex flex-wrap justify-center gap-2">
             <button
               type="button"
-              onClick={async () => {
+              onClick={async (event) => {
+                if (!firstTap(event)) return;
                 try {
                   await navigator.clipboard.writeText(current.invitationUrl);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
+                  setCopiedId(current.id);
+                  setTimeout(() => setCopiedId(null), 2000);
                   handOff(current);
                 } catch {
                   // Clipboard refused; nothing was shared, so nothing is marked.
@@ -241,20 +292,24 @@ export function SendQueue({
               }}
               className="h-9 rounded-full border border-border px-4 text-xs font-medium text-fg"
             >
-              {copied ? d.linkCopied : d.copyLink}
+              {copiedId === current.id ? d.linkCopied : d.copyLink}
             </button>
             {/* The way forward that does not depend on the browser telling us
                 she came back — and the honest way to say "not this one". */}
             <button
               type="button"
-              onClick={() => handOff(current)}
+              onClick={(event) => {
+                if (firstTap(event)) handOff(current);
+              }}
               className="h-9 rounded-full border border-border px-4 text-xs font-medium text-fg-muted"
             >
               {d.sendQueueMarkSent}
             </button>
             <button
               type="button"
-              onClick={() => setSkippedIds((ids) => [...ids, current.id])}
+              onClick={(event) => {
+                if (firstTap(event)) setSkippedIds((ids) => [...ids, current.id]);
+              }}
               className="h-9 rounded-full px-4 text-xs font-medium text-fg-muted hover:underline"
             >
               {d.sendQueueSkip}

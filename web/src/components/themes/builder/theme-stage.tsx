@@ -245,18 +245,68 @@ function LayerBox({
   const scrollable = (layer.type === "rsvp" || layer.type === "schedule" || layer.type === "notes") &&
     layer.overflow === "scroll";
   const interactive = editing || scrollable || INTERACTIVE_LAYERS.has(layer.type);
+  const box = {
+    "data-layer-id": layer.id,
+    "data-layer-overflow": scrollable ? "scroll" : undefined,
+    role: scrollable && !editing ? "region" : undefined,
+    "aria-label": scrollable && !editing ? `${layer.name} — قابل للتمرير` : undefined,
+    tabIndex: scrollable && !editing ? 0 : undefined,
+    className: scrollable ? "focus-visible:outline-2 focus-visible:outline-offset-2" : undefined,
+  };
+  const scrolls = scrollable ? ({ overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" } as const) : {};
+
+  // A guest's RSVP block is a real form whose controls keep a tap-sized floor
+  // (see `atLeast` in rsvp-layer.tsx) while the stage shrinks with the phone.
+  // On a 390px iPhone its fields outgrow the authored box, and choosing «سأحضر»
+  // adds the party-size row on top — the submit button was cut in half, and
+  // on smaller phones hidden entirely inside a scroller nothing announced.
+  //
+  // For a guest the authored height is a floor. The box hangs from the top
+  // edge it was drawn with and grows down with its fields; only once it
+  // reaches the stage's bottom does it climb, by the spacer above it giving
+  // way, and it scrolls only when it fills the whole stage. Down first, so the
+  // row «سأحضر» reveals does not lift the buttons she just tapped out from
+  // under her finger wherever there is room below. The column spans the
+  // stage's full height at the layer's own x and width, and takes no taps
+  // itself. A rotated or scaled box is left as drawn: its drawn edges are not
+  // the ones these percentages describe. The editor keeps the exact authored
+  // box it is dragged by.
+  const { x, y, width, height, rotation, scale, opacity } = resolved.transform;
+  const top = height === null ? 0 : y - height / 2;
+  if (scrollable && layer.type === "rsvp" && !editing && height !== null && rotation === 0 && scale === 1 && top >= 0) {
+    return (
+      <div
+        style={{
+          position: "absolute",
+          left: `${x}%`,
+          top: 0,
+          width: `${width}%`,
+          height: "100%",
+          transform: "translateX(-50%)",
+          opacity,
+          display: "flex",
+          flexDirection: "column",
+          pointerEvents: "none",
+        }}
+      >
+        <div aria-hidden style={{ flex: `0 1 ${top}%` }} />
+        <div
+          {...box}
+          style={{ flex: "0 0 auto", minHeight: `${height}%`, maxHeight: "100%", pointerEvents: "auto", ...scrolls }}
+        >
+          {children}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      data-layer-id={layer.id}
-      data-layer-overflow={scrollable ? "scroll" : undefined}
-      role={scrollable && !editing ? "region" : undefined}
-      aria-label={scrollable && !editing ? `${layer.name} — قابل للتمرير` : undefined}
-      tabIndex={scrollable && !editing ? 0 : undefined}
-      className={scrollable ? "focus-visible:outline-2 focus-visible:outline-offset-2" : undefined}
+      {...box}
       style={{
         ...boxStyle(resolved.transform),
         pointerEvents: interactive ? "auto" : "none",
-        ...(scrollable ? { overflowY: "auto", overflowX: "hidden", overscrollBehavior: "contain" } as const : {}),
+        ...scrolls,
       }}
     >
       {children}

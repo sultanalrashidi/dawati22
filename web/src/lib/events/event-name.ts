@@ -4,14 +4,20 @@ import type { CoupleInput } from "@/lib/themes/builder/content";
  * The event's own name, composed from the primary couple — groom first, as
  * everywhere the two are printed together.
  *
- * A draft never asks for an event name: "حفل زفاف فهد و نورة" is what she
+ * A draft never asks for an event name: "حفل زفاف فهد ونورة" is what she
  * would type anyway, and one fewer field stands between her and the preview.
+ *
+ * Arabic writes the "و" joined to the word it links — "فهد ونورة", not
+ * "فهد و نورة". It keeps its space only before a name that is not in Arabic
+ * script (the English name standing in for a missing Arabic one): "وNoura"
+ * would glue a right-to-left letter onto a left-to-right word.
  */
 export function composeWeddingName(couples: readonly CoupleInput[]): string {
   const [couple] = couples;
   const groom = couple.groomNameAr?.trim() || couple.groomNameEn.trim();
   const bride = couple.brideNameAr?.trim() || couple.brideNameEn.trim();
-  return `حفل زفاف ${groom} و ${bride}`;
+  const and = /^\p{Script=Arabic}/u.test(bride) ? "و" : "و ";
+  return `حفل زفاف ${groom} ${and}${bride}`;
 }
 
 /**

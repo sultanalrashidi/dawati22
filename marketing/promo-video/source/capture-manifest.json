@@ -1,0 +1,889 @@
+{
+  "notes": [
+    "DEMO DATA (after the QA pass): 120 guests + invitations + RSVPs on the promo event, written with the app's own service semantics (addGuestsBulk / markInvitationShared / markViewed / submitRsvp; E.164 050000xxxx-style fake numbers; independent 256-bit tokens; partySize clamped to seats). Timeline: host designed, signed up and paid on Fri 25 Sep 2026 20:38–20:41 Riyadh (Event/Order/User timestamps backdated from 29 Sep in the local DB); big guest list added 26 Sep 20:05, sent 26–28 Sep (first send 26 Sep 21:40 Riyadh = detailsLockedAt); her pasted short list 28 Sep; أم فهد replied 29 Sep. The 29 demo guests that had never been sent (plus one extra demo SENT guest) were removed and «الجوهرة» (pasted, never sent) marked sent, so every guest on the list has been sent: 120 = 78 accepted + 9 declined + 33 pending. Pre-demo snapshot: capture/db-before-demo.dump; pre-QA-fix snapshot: capture/fix/db-before-qa-fix.dump.",
+    "Guest messages on c11: أم فهد's real RSVP message on top, then demo «مبروك يا نورة، الله يسعدكم 🤍» and «ألف مبروك وبالرفاه والبنين» (the product shows only the latest 3; «الله يتمم لكم على خير» and a 4th exist but are not displayed).",
+    "أم فهد's RSVP was submitted through the real guest page (then reset once and re-submitted through the UI during the first pass). During the QA pass it was cleared once more only for the 440x956 filled-form still and restored byte-for-byte (same Rsvp row and respondedAt 29 Sep 00:51 UTC); the final state is one real ACCEPTED reply (party 3) plus her door check-in (3 of 3).",
+    "MUSIC: the house track is a TikTok embed that cannot load in this offline sandbox. For the guest captures (c10-*, c02c-*) the hidden 1x1 player iframe was replaced by a local stub that speaks the same postMessage protocol, so the app's real pill shows the state a phone shows while the song plays («إيقاف الموسيقى», vinyl icon). No audio. The c04 preview stills were re-shot in the QA pass with the same stub, so they match c10 (pill «تشغيل الموسيقى» on the closed cover, «إيقاف الموسيقى» after opening).",
+    "DOOR CAMERA: headless Chromium has no camera; the scanner used Chromium's fake capture device fed with locally generated Y4M clips (idle = blurred warm hall; others = a phone showing a guest's REAL pass screenshot). The QR decode (jsQR in the app), check-in writes and results are real. أم فهد was admitted via the name search («أدخليها»), أم محمد and خالتي منيرة via camera scans, then أم فهد's pass was scanned again → «هذي الدعوة تم استخدامها من قبل». خالتي منيرة's check-in was reset and re-done through the camera to film the slide-in scan sequence (twice: first pass and QA pass).",
+    "ATTENDANCE (c13): 48 more check-ins were written with performCheckIn semantics (seat count, PARTIALLY_USED/FULLY_USED, SUCCESS CheckInLog, gateStaffId null). The report only switches on after the event start, so eventDate was temporarily set to ~95 min before capture and then restored to 2026-11-19 17:30 UTC (20:30 Riyadh). Other shots show the real date/countdown.",
+    "SEQUENCES: c10-seq-open, c10-seq-scroll, c10-seq-pass, c12-seq-scan — JPEG frames 1170x2532 from CDP Page.startScreencast (q92; scroll q88). Frames arrive only on repaint, so use sequence.json: frames[].t (seconds from first frame, sorted — screencast occasionally delivers out of order) and frames30 (frame to show at each 1/30 s). c12-seq-scan ends with 8 page.screenshot frames (s0000–s0007) because screencast stops delivering frames once the camera stream stops.",
+    "PRODUCT BUG FOUND (report to the team): on the send queue (/events/<id>/send) tapping «أرسل عبر واتساب» opens WhatsApp for the NEXT guest. The anchor's onClick (handOff) updates state, React re-renders the same <a> with the next guest's href before the browser follows the link. Observed: tapping أم فهد's card recorded أم فهد as sent but opened wa.me/966500001102 with أم محمد's personal link. File: web/src/components/events/send-queue.tsx.",
+    "Dev-only UI: OTP code on screen (c05c-otp — use c05c-otp-clean) and the mock payment block (c05d — leave out). Seed prices appear in several shots (listed per file; -noprice variants exist for C1, C5, C8b). URLs show localhost:3000.",
+    "The landing page and the activate comparison table still carry older door copy («كل مسحة تحتسب فرداً… «مستخدمة بالكامل»») that differs from the scanner, which asks «كم شخص دخل؟» and says «هذي الدعوة تم استخدامها من قبل» (visible in c01-landing-full / c05-activate-full).",
+    "Guest link opens in the real (not preview) mode: markViewed moved أم فهد to VIEWED, and the pass carries her real QR (qrToken). The pass prints «عدد الأشخاص: 3» (her allowance) in Latin digits, as the product does.",
+    "NOT CAPTURED: see «STILL NOT POSSIBLE HERE» below.",
+    "Browser UI: the details form uses the browser's native radio/checkbox styling (blue accent) — that is the product as rendered in Chrome/Android.",
+    "QA-FIX PASS — what changed in the local DB (all local, reversible, nothing remote touched): (1) Event.createdAt, EventCouple.createdAt, Order.createdAt/paidAt and the host User.createdAt/phoneVerifiedAt moved back 3 d 7 h to 25 Sep; (2) unsent demo guests removed as above; (3) Event.groomMotherAr/brideMotherAr = «أم عبدالله»/«أم سعد» (no-break space); (4) door check-ins were snapshotted (fix/checkinlog.csv, fix/checkin-guests.csv), removed for the pre-wedding re-shoots, restored exactly, then خالتي منيرة's check-in was reset once more and re-done through the real camera scan (c12-seq-scan); (5) أم فهد's reply was cleared for the 440x956 filled-form take and restored from fix/omfahad-rsvp.csv (same row, same respondedAt); (6) the 56 non-live legacy seed designs were set to HIDDEN for the gallery / details-form takes and set back to PUBLISHED (fix/hidden-themes.txt); (7) a throwaway empty copy of the event (id capfixevent…) was created for the paste-a-list takes and deleted again with its 9 pasted guests; (8) Event/EventCouple English names blanked only while rendering c14b, then restored; (9) eventDate moved to ~95 min before capture for c13 and restored to 2026-11-19 17:30 UTC; detailsLockedAt nulled only while re-shooting c05e and restored.",
+    "EDITED-AT-CAPTURE VARIANTS (clearly named; the unedited real screens are kept beside them): *-noprice.png hide every «… ر.س» figure with visibility:hidden (layout untouched); c05c-otp-clean.png removes the dev-only mock-SMS line with display:none (production never renders it); c13-attendance-notime.png removes only the «آخر تحديث … بتوقيت الرياض» line (it prints the capture machine's clock, ~5 AM Riyadh). Crops: c10-guest-21-pass-card-crop.png, c10-guest-02-opened-name-crop.png (pixel crops, no scaling).",
+    "TALL PAGES: every -full.png taller than 16,000 px is also provided as -full-pN.png parts (≤16,000 px, cut at empty rows). c06-dashboard-full.png (35,229 px) and c13-attendance-full.png (44,619 px) exceeded Chromium's 32,767 px canvas limit and now exist only as parts (-p1..-p3); the whole images were moved to capture/fix/superseded/.",
+    "PRODUCT ISSUES TO REPORT (seen while capturing; not fixable from the capture side): (a) web/src/app/[locale]/events/[eventId]/page.tsx:108 computes «بانتظار الرد» as rows.length − accepted − declined, so unsent guests count as pending under a card headed «على X دعوة مرسلة» (numbers stop adding up whenever some guests are unsent; hidden in the captures by the data fix, not by code); (b) guest pass at 390x844 and 440x956: square card over the page's own bride art (seam, two brides), footer line over the flowers, tiny «عدد الأشخاص»; (c) opened card: «يسعدنا حضوركم ومشاركتنا هذه الفرحة» touches the flower sprigs; (d) the RSVP form box scrolls/clips at ≤430x932 once «عدد الأشخاص» appears; (e) «المرافقون: 3» shows party size (incl. the guest) and mixes Latin with Arabic-Indic digits; (f) event name «حفل زفاف فيصل و نورة» has a detached «و» (web/src/lib/events/event-name.ts); (g) link-preview image is English-first (previewNames() prefers English names; eyebrow and date always en-US); (h) a ~70 ms blank frame when the opened envelope mounts, and a one-frame black camera box when the scanner stops; (i) send-queue WhatsApp button opens the NEXT guest's chat (see earlier note); (j) a mother's name like «أم عبدالله» wraps between «أم» and the name unless typed with a no-break space.",
+    "STILL NOT POSSIBLE HERE: Apple/Google Wallet button (no signing keys locally, never renders), the real Moyasar card form (dev uses the mock), a WhatsApp chat screen (C9 is a graphic), a server clock reading an evening time on the attendance report (the dev server runs on the machine clock; handled with c13-attendance-notime.png), and the production design catalogue (local copies of the live families were used)."
+  ],
+  "files": [
+    {
+      "file": "c01-landing-full-p1.png",
+      "capture": "C1",
+      "description": "Landing page, full length (for panning). — part 1 of 2 (0–15,497 px of 24,003 px).",
+      "url": "http://localhost:3000/ar",
+      "notes": "Split at an empty row so no text is cut; ≤16,000 px for the HTML-to-video renderer. Shows seed prices — mask in the edit or use the -noprice variant (prices are admin-editable and must not appear on screen)."
+    },
+    {
+      "file": "c01-landing-full-p2.png",
+      "capture": "C1",
+      "description": "Landing page, full length (for panning). — part 2 of 2 (15,497–24,003 px of 24,003 px).",
+      "url": "http://localhost:3000/ar",
+      "notes": "Split at an empty row so no text is cut; ≤16,000 px for the HTML-to-video renderer. Shows seed prices — mask in the edit or use the -noprice variant (prices are admin-editable and must not appear on screen)."
+    },
+    {
+      "file": "c01-landing-full.png",
+      "capture": "C1",
+      "description": "Landing page, full length (for panning).",
+      "url": "http://localhost:3000/ar",
+      "notes": "Shows seed prices — mask in the edit or use the -noprice variant (prices are admin-editable and must not appear on screen). 24,003 px tall (under the 32,767 px canvas limit); also split into c01-landing-full-p1/-p2 (≤16,000 px each)."
+    },
+    {
+      "file": "c01-landing-noprice.png",
+      "capture": "C1",
+      "description": "Landing hero /ar without the price line: wordmark, kicker «منصة الدعوات الرقمية الفاخرة», H1, main CTA and the no-login note.",
+      "url": "http://localhost:3000/ar",
+      "notes": "EDITED AT CAPTURE: price figures («… ر.س») hidden with an injected visibility:hidden (layout untouched) — prices are admin-editable and must not appear in the video. Hidden: الأسعار تبدأ من ٢ ر.س للدعوة ← | ٢ر.س / لكل دعوة | ٣ر.س / لكل دعوة"
+    },
+    {
+      "file": "c01-landing.png",
+      "capture": "C1",
+      "description": "Landing hero /ar (light mode): wordmark, kicker, H1, main CTA and the no-login note.",
+      "url": "http://localhost:3000/ar",
+      "notes": "Price line «الأسعار تبدأ من ٢ ر.س للدعوة ←» at y≈1430–1490 — use c01-landing-noprice.png, or mask that line."
+    },
+    {
+      "file": "c02-gallery-full-p1.png",
+      "capture": "C2",
+      "description": "Designs gallery, full length (live-family catalogue only). — part 1 of 2 (0–15,497 px of 16,308 px).",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": "Split at an empty row so no text is cut; ≤16,000 px for the HTML-to-video renderer. "
+    },
+    {
+      "file": "c02-gallery-full-p2.png",
+      "capture": "C2",
+      "description": "Designs gallery, full length (live-family catalogue only). — part 2 of 2 (15,497–16,308 px of 16,308 px).",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": "Split at an empty row so no text is cut; ≤16,000 px for the HTML-to-video renderer. "
+    },
+    {
+      "file": "c02-gallery-full.png",
+      "capture": "C2",
+      "description": "Designs gallery, full length (live-family catalogue only).",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": "Local catalogue trimmed for this take: the 56 legacy seed designs that are not live families (gradient tiles such as «قصر ملكي», and the older duplicate «عروس الياسمين» family) were set to HIDDEN in the local DB and restored afterwards; shown are the imported «عروس الياسمين» and the local copies of live families (فيونكة الورد، شقائق الرخام، ختم الخزف، شرابة الذهب، عروس الياقوت، عروس الشمبانيا، دانتيل اللؤلؤ، شموع الورد). 16,308 px / 6.6 MB (was 79,680 px / 20.7 MB with the full legacy catalogue); also split into -p1/-p2 (≤16,000 px)."
+    },
+    {
+      "file": "c02-gallery-top.png",
+      "capture": "C2",
+      "description": "Designs gallery /ar/themes, top: «اختر تصميم دعوتك», search and filter, «عروس الياسمين» first (sorted newest).",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": "Local catalogue trimmed for this take: the 56 legacy seed designs that are not live families (gradient tiles such as «قصر ملكي», and the older duplicate «عروس الياسمين» family) were set to HIDDEN in the local DB and restored afterwards; shown are the imported «عروس الياسمين» and the local copies of live families (فيونكة الورد، شقائق الرخام، ختم الخزف، شرابة الذهب، عروس الياقوت، عروس الشمبانيا، دانتيل اللؤلؤ، شموع الورد)."
+    },
+    {
+      "file": "c02-gallery.png",
+      "capture": "C2",
+      "description": "«عروس الياسمين» design card filling the frame: burgundy closed-envelope art, «كلاسيكي · ٩ ألوان», 9 colour swatches, «ابدأ بهذا التصميم» / «معاينة التصميم»; the next family card begins below.",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": "Local catalogue trimmed for this take: the 56 legacy seed designs that are not live families (gradient tiles such as «قصر ملكي», and the older duplicate «عروس الياسمين» family) were set to HIDDEN in the local DB and restored afterwards; shown are the imported «عروس الياسمين» and the local copies of live families (فيونكة الورد، شقائق الرخام، ختم الخزف، شرابة الذهب، عروس الياقوت، عروس الشمبانيا، دانتيل اللؤلؤ، شموع الورد). Re-shot after QA: previously a byte-identical duplicate of c02-gallery-top.png; now the card fills the frame (card top just under the header)."
+    },
+    {
+      "file": "c02b-gallery-colour-black-gold.png",
+      "capture": "C2",
+      "description": "«عروس الياسمين» card with the «أسود» swatch selected (envelope art switches colour).",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": ""
+    },
+    {
+      "file": "c02b-gallery-colour-burgundy.png",
+      "capture": "C2",
+      "description": "«عروس الياسمين» card with the «عنابي» swatch selected (envelope art switches colour).",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": ""
+    },
+    {
+      "file": "c02b-gallery-colour-powder-pink.png",
+      "capture": "C2",
+      "description": "«عروس الياسمين» card with the «وردي» swatch selected (envelope art switches colour).",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": ""
+    },
+    {
+      "file": "c02c-design-preview-black.png",
+      "capture": "C2",
+      "description": "Same preview after tapping the «أسود» swatch in the preview's colour bar.",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": ""
+    },
+    {
+      "file": "c02c-design-preview-opened.png",
+      "capture": "C2",
+      "description": "Gallery design preview after «افتح الدعوة»: «دعوة خاصة إلى أم فهد» (product sample guest), music pill «إيقاف الموسيقى».",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": "Music player stubbed offline (see top-level notes)."
+    },
+    {
+      "file": "c02c-design-preview.png",
+      "capture": "C2",
+      "description": "Gallery «معاينة التصميم»: the real invitation renderer with the product's own sample data — closed envelope «N & F», «افتح الدعوة», colour-swatch bar, «خروج», music pill.",
+      "url": "http://localhost:3000/ar/themes",
+      "notes": "Watermark-free: this is the public design preview with sample data, not the customer's draft."
+    },
+    {
+      "file": "c03-details-00-sample.png",
+      "capture": "C3",
+      "description": "Draft details form as it arrives from the gallery: step bar (التصميم ← البيانات ← المعاينة ← التفعيل), title «بيانات دعوتك», pre-filled with the product's own sample names (warning to replace them).",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. "
+    },
+    {
+      "file": "c03-details-01-top.png",
+      "capture": "C3",
+      "description": "Details form (filled), top: step bar, «بيانات دعوتك», the opening (الافتتاحية) select.",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. "
+    },
+    {
+      "file": "c03-details-02-host.png",
+      "capture": "C3",
+      "description": "Host line: template with the two mothers — والدة العريس «أم عبدالله» / والدة العروس «أم سعد».",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. Mothers' names typed with a no-break space (أم عبدالله / أم سعد) so each stays on one line in the invitation; looks identical in the field."
+    },
+    {
+      "file": "c03-details-03-names.png",
+      "capture": "C3",
+      "description": "Couple: groom فيصل العتيبي (Faisal), bride نورة القحطاني (Noura).",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. "
+    },
+    {
+      "file": "c03-details-04-date-venue.png",
+      "capture": "C3",
+      "description": "Date & time (Thu 19 Nov 2026, 8:30 PM), venue «قاعة ليلة العمر» — الرياض, and «رابط الموقع على الخريطة (اختياري)» with a Google Maps link.",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. "
+    },
+    {
+      "file": "c03-details-05-notes.png",
+      "capture": "C3",
+      "description": "Notes: the ready-made lines «نرجو عدم التصوير…» and «يرجى عدم اصطحاب الأطفال» ticked; closing line.",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. "
+    },
+    {
+      "file": "c03-details-06-music-programme.png",
+      "capture": "C3",
+      "description": "Music link (optional, left empty = house track), autoplay choice, the programme «الاستقبال|٨:٣٠ م / العشاء|١٠:٣٠ م / الزفة|١٢:٠٠ ص», and the start of the design picker.",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. Local catalogue trimmed for this take: the 56 legacy seed designs that are not live families (gradient tiles such as «قصر ملكي», and the older duplicate «عروس الياسمين» family) were set to HIDDEN in the local DB and restored afterwards; shown are the imported «عروس الياسمين» and the local copies of live families (فيونكة الورد، شقائق الرخام، ختم الخزف، شرابة الذهب، عروس الياقوت، عروس الشمبانيا، دانتيل اللؤلؤ، شموع الورد)."
+    },
+    {
+      "file": "c03-details-07-design-selected.png",
+      "capture": "C3",
+      "description": "Design picker inside the form: «عروس الياسمين» burgundy marked «المختار» (9 colour swatches).",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. Local catalogue trimmed for this take: the 56 legacy seed designs that are not live families (gradient tiles such as «قصر ملكي», and the older duplicate «عروس الياسمين» family) were set to HIDDEN in the local DB and restored afterwards; shown are the imported «عروس الياسمين» and the local copies of live families (فيونكة الورد، شقائق الرخام، ختم الخزف، شرابة الذهب، عروس الياقوت، عروس الشمبانيا، دانتيل اللؤلؤ، شموع الورد). Above the selected tile: «عروس الشمبانيا» and «دانتيل اللؤلؤ» (local copies of live families, real envelope art). For the jasmine tile alone crop x≈590–1120, y≈960–1800."
+    },
+    {
+      "file": "c03-details-08-companions.png",
+      "capture": "C3",
+      "description": "Guest management (أدير المدعوين بنفسي / أطلب من فريق دعوتي إدارتهم), RSVP required, and who sets companions — «المدعو يختار بنفسه» selected.",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. "
+    },
+    {
+      "file": "c03-details-full-p1.png",
+      "capture": "C3",
+      "description": "Details form, filled, full length. — part 1 of 2 (0–15,489 px of 16,575 px).",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Split at an empty row so no text is cut; ≤16,000 px for the HTML-to-video renderer. "
+    },
+    {
+      "file": "c03-details-full-p2.png",
+      "capture": "C3",
+      "description": "Details form, filled, full length. — part 2 of 2 (15,489–16,575 px of 16,575 px).",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Split at an empty row so no text is cut; ≤16,000 px for the HTML-to-video renderer. "
+    },
+    {
+      "file": "c03-details-full.png",
+      "capture": "C3",
+      "description": "Details form, filled, full length.",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/details",
+      "notes": "Re-shot on a fresh no-login draft (same design, same sample data) after the QA pass, with the live-family catalogue only. Local catalogue trimmed for this take: the 56 legacy seed designs that are not live families (gradient tiles such as «قصر ملكي», and the older duplicate «عروس الياسمين» family) were set to HIDDEN in the local DB and restored afterwards; shown are the imported «عروس الياسمين» and the local copies of live families (فيونكة الورد، شقائق الرخام، ختم الخزف، شرابة الذهب، عروس الياقوت، عروس الشمبانيا، دانتيل اللؤلؤ، شموع الورد). 16,575 px; also split into -p1/-p2 (≤16,000 px)."
+    },
+    {
+      "file": "c04-preview-01-cover.png",
+      "capture": "C4",
+      "description": "Watermarked preview /preview/<id>: closed envelope (N & F medallion), «افتح الدعوة», watermark «نسخة تجريبية / غير صالحة للمشاركة», bottom bar «تعديل البيانات / شارك المعاينة / فعّل دعوتك».",
+      "url": "http://localhost:3000/ar/preview/cmum17ajd001lzb7davbev965",
+      "notes": "Fresh unpaid draft, so the watermark is real. Music: TikTok house-track player stubbed offline (same stub as the c10 guest shots), so the pill reads as it does on a phone while the song plays. Best C4 hero (closed envelope + watermark + owner bar). Music pill reads «تشغيل الموسيقى» before the tap, exactly like c10-guest-01-cover."
+    },
+    {
+      "file": "c04-preview-02-opened.png",
+      "capture": "C4",
+      "description": "Preview after opening: opened envelope with the preview's stand-in guest, watermark, music pill «إيقاف الموسيقى», owner bar.",
+      "url": "http://localhost:3000/ar/preview/cmum17ajd001lzb7davbev965",
+      "notes": "Fresh unpaid draft, so the watermark is real. Music: TikTok house-track player stubbed offline (same stub as the c10 guest shots), so the pill reads as it does on a phone while the song plays. The preview addresses the card to a stand-in guest (not أم فهد) — do not cut straight from this into c10-guest-02."
+    },
+    {
+      "file": "c04-preview-03-greeting.png",
+      "capture": "C4",
+      "description": "Preview, greeting scene: «تتشرف والدة العريس أم عبدالله / ووالدة العروس أم سعد / بدعوتكم لحضور حفل زفاف», «فيصل على نورة», date — watermarked.",
+      "url": "http://localhost:3000/ar/preview/cmum17ajd001lzb7davbev965",
+      "notes": "Fresh unpaid draft, so the watermark is real. Music: TikTok house-track player stubbed offline (same stub as the c10 guest shots), so the pill reads as it does on a phone while the song plays. Mothers' names typed with a no-break space, so «أم عبدالله» / «أم سعد» no longer split across lines."
+    },
+    {
+      "file": "c05-activate-compare.png",
+      "capture": "C5",
+      "description": "«وش الفرق بين الخيارين؟» comparison table (top).",
+      "url": "http://localhost:3000/ar/draft/cmuly6odj0001zb7d4o56hm1i/activate",
+      "notes": ""
+    },
+    {
+      "file": "c05-activate-full.png",
+      "capture": "C5",
+      "description": "Activate page, full length incl. «وش الفرق بين الخيارين؟» comparison table.",
+      "url": "http://localhost:3000/ar/draft/cmuly6odj0001zb7d4o56hm1i/activate",
+      "notes": "Shows seed prices — mask in the edit or use the -noprice variant (prices are admin-editable and must not appear on screen). Also carries older door copy in the comparison table (see top-level notes)."
+    },
+    {
+      "file": "c05-activate-noprice.png",
+      "capture": "C5",
+      "description": "Count slider at ١٥٠ invitations, «بباركود» («ننصح به») selected vs «بدون باركود», total box — all price figures hidden.",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/activate",
+      "notes": "EDITED AT CAPTURE: every price figure («… ر.س») was hidden with an injected visibility:hidden (layout untouched) because prices are admin-editable and must not appear in the video. Hidden: ٣ ر.س / لكل دعوة | ٤٥٠ ر.س | ٢ ر.س / لكل دعوة | ٣٠٠ ر.س | ٤٥٠ ر.س | ٣ ر.س × ١٥٠ دعوةe:\\\"$Sreact.fragment\\\"\\n20:I[\\\"[proj. Fresh draft (same data) — the promo event itself is already paid."
+    },
+    {
+      "file": "c05-activate-top-noprice.png",
+      "capture": "C5",
+      "description": "Activate page top without prices: «عدد الدعوات وطريقة الدخول», draft summary, count slider at ١٥٠.",
+      "url": "http://localhost:3000/ar/draft/cmum17ajd001lzb7davbev965/activate",
+      "notes": "EDITED AT CAPTURE: every price figure («… ر.س») was hidden with an injected visibility:hidden (layout untouched) because prices are admin-editable and must not appear in the video. Hidden: ٣ ر.س / لكل دعوة | ٤٥٠ ر.س | ٢ ر.س / لكل دعوة | ٣٠٠ ر.س | ٤٥٠ ر.س | ٣ ر.س × ١٥٠ دعوةe:\\\"$Sreact.fragment\\\"\\n20:I[\\\"[proj"
+    },
+    {
+      "file": "c05-activate-top.png",
+      "capture": "C5",
+      "description": "Activate page top: «عدد الدعوات وطريقة الدخول», draft summary, count slider.",
+      "url": "http://localhost:3000/ar/draft/cmuly6odj0001zb7d4o56hm1i/activate",
+      "notes": "Seed prices visible — use c05-activate-top-noprice.png."
+    },
+    {
+      "file": "c05-activate.png",
+      "capture": "C5",
+      "description": "Count slider at 150 invitations, «بباركود» (ننصح به) selected vs «بدون باركود», live total. NOTE: seed prices visible.",
+      "url": "http://localhost:3000/ar/draft/cmuly6odj0001zb7d4o56hm1i/activate",
+      "notes": "Seed prices in three places (per-invitation lines y≈1450–1520, card totals y≈1670–1760, total box y≈2020–2200). Use c05-activate-noprice.png (same screen, prices hidden) or cut above y≈1400."
+    },
+    {
+      "file": "c05b-login.png",
+      "capture": "C5",
+      "description": "Sign-in only at payment: «تسجيل الدخول» with the Saudi phone 0500009911 typed (country picker +966).",
+      "url": "http://localhost:3000/ar/login?next=order&event=cmuly6odj0001zb7d4o56hm1i&tier=WITH_QR&count=150",
+      "notes": ""
+    },
+    {
+      "file": "c05c-otp-clean.png",
+      "capture": "C5",
+      "description": "OTP step «أدخل رمز التحقق»: the code typed into the field and «تحقق ودخول» — without the dev-only mock-SMS line.",
+      "url": "http://localhost:3000/ar/login?next=order&event=cmuly6odj0001zb7d4o56hm1i&tier=WITH_QR&count=150",
+      "notes": "EDITED AT CAPTURE: the dev-only line «وضع تجريبي — رمز التحقق: 100862» (rendered only when the mock SMS provider returns the code, never in production) was removed with display:none; everything else is the real render. Not submitted."
+    },
+    {
+      "file": "c05c-otp.png",
+      "capture": "C5",
+      "description": "OTP step «أدخل رمز التحقق». DEV ONLY: the mock SMS code is printed on screen (real SMS in production) — crop or blur that line.",
+      "url": "http://localhost:3000/ar/login?next=order&event=cmuly6odj0001zb7d4o56hm1i&tier=WITH_QR&count=150",
+      "notes": "DEV ONLY line «وضع تجريبي — رمز التحقق: 876643» (y≈1140–1245) — do not use as is; use c05c-otp-clean.png."
+    },
+    {
+      "file": "c05c2-name.png",
+      "capture": "C5",
+      "description": "First sign-in asks her name: «أم سعد».",
+      "url": "http://localhost:3000/ar/login?next=order&event=cmuly6odj0001zb7d4o56hm1i&tier=WITH_QR&count=150",
+      "notes": ""
+    },
+    {
+      "file": "c05d-checkout-full.png",
+      "capture": "C5",
+      "description": "Checkout, full length (dev mock payment).",
+      "url": "http://localhost:3000/ar/checkout/cmulybi6b0008zb7d07krllfv",
+      "notes": "Recommended: leave out (dev-only mock payment block + prices). See c05d-checkout.png notes."
+    },
+    {
+      "file": "c05d-checkout.png",
+      "capture": "C5",
+      "description": "Checkout «إتمام الطلب»: order summary, discount-code box. DEV ONLY: mock payment button «ادفع الآن (وضع تجريبي)» replaces the Moyasar card form of production.",
+      "url": "http://localhost:3000/ar/checkout/cmulybi6b0008zb7d07krllfv",
+      "notes": "Recommended: leave checkout out of the cut. DEV ONLY block «وضع تجريبي — لا يوجد دفع فعلي» / «ادفع الآن (وضع تجريبي)» / «مدى — قريبًا · Apple Pay — قريبًا» (y≈1430–1930) replaces the production Moyasar form; if used at all, crop to the order summary (y 0–1000) and mask «المبلغ ٤٥٠ ر.س» (y≈850–910)."
+    },
+    {
+      "file": "c05e-paid-full.png",
+      "capture": "C5",
+      "description": "Payment success, full length with receipt (تاريخ الدفع ٢٥ سبتمبر ٢٠٢٦).",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i/activated?order=cmulybi6b0008zb7d07krllfv",
+      "notes": "Same state as c05e-paid.png (paid 25 Sep 2026). Price line must be masked."
+    },
+    {
+      "file": "c05e-paid.png",
+      "capture": "C5",
+      "description": "«تم الدفع وتفعيل دعوتك» — «رُفعت العلامة المائية، ودعوتك صارت جاهزة للإرسال.»; «أضف المدعوين» / «عدّل على دعوتك» / «شاهد دعوتك بدون علامة مائية»; receipt (المناسبة، ١٥٠ دعوة، بباركود، المبلغ، تاريخ الدفع ٢٥ سبتمبر ٢٠٢٦، رقم العملية).",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i/activated?order=cmulybi6b0008zb7d07krllfv",
+      "notes": "Re-shot after QA: the order is now dated 25 Sep 2026 (before the guest list went in on 26 Sep), and the shot was taken with the details not yet locked, as they are right after payment («عدّل على دعوتك» present). Seed price «المبلغ المدفوع ٤٥٠ ر.س» at y≈2090–2150 — mask in the edit."
+    },
+    {
+      "file": "c06-dashboard-full-p1.png",
+      "capture": "C6",
+      "description": "Event dashboard, full length — part 1 of 3 (0–15,497 px of the 35,229 px page).",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "The single 35,229 px image exceeded Chromium's 32,767 px canvas limit, so only the parts are kept. Pre-wedding state after demo data."
+    },
+    {
+      "file": "c06-dashboard-full-p2.png",
+      "capture": "C6",
+      "description": "Event dashboard, full length — part 2 of 3 (15,497–30,941 px).",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Cut at an empty row between guest rows."
+    },
+    {
+      "file": "c06-dashboard-full-p3.png",
+      "capture": "C6",
+      "description": "Event dashboard, full length — part 3 of 3 (30,941–35,229 px): end of the guest list, attendance report (not started), custom design card, footer.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Shows seed prices — mask in the edit or use the -noprice variant (prices are admin-editable and must not appear on screen)."
+    },
+    {
+      "file": "c06-dashboard-guests.png",
+      "capture": "C6",
+      "description": "Guest table «آخر الردود»: search, filter chips, rows with RSVP badges وافق / اعتذر / بانتظار الرد and activity; أم فهد on top (وافق · المرافقون: 3).",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Product copy (report to the team): «المرافقون: 3» shows her PARTY SIZE (3 incl. herself = 2 companions) and uses Latin digits beside Arabic-Indic ones (e.g. «قبل 55 دقيقة»). Avoid pushing in on that line or caption over it."
+    },
+    {
+      "file": "c06-dashboard-top.png",
+      "capture": "C6",
+      "description": "Event page top: «المناسبة الحالية / حفل زفاف فيصل و نورة», section links, capacity «١١١ / ١٥٠»; door panel begins.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Re-shot after the guest-list fix (120 guests, all sent)."
+    },
+    {
+      "file": "c06-dashboard.png",
+      "capture": "C6",
+      "description": "Overview: «يفصلنا عن المناسبة ٥١ يوماً», details-locked note (first invitation sent ٢٦ سبتمبر), stat tiles «تم الإرسال ١٢٠ من ١٥٠ / أكّدوا الحضور ٧٨ (١٧٤ شخصاً) / اعتذروا ٩ / بانتظار الرد ٣٣», response card «حالة الردود على ١٢٠ دعوة مرسلة — وافق ٧٨ · اعتذر ٩ · بانتظار الرد ٣٣».",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Re-shot after QA: numbers now add up — 120 guests on the list, all 120 sent; 78 + 9 + 33 = 120. Lock note «أول دعوة طلعت لضيوفك بتاريخ ٢٦ سبتمبر ٢٠٢٦» is after the payment date (25 Sep). Test-invitation card below shows a localhost:3000 link."
+    },
+    {
+      "file": "c06a-dashboard-new.png",
+      "capture": "C6",
+      "description": "Event page right after payment (no guests yet): dark side panel «المناسبة الحالية», gate panel start.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": ""
+    },
+    {
+      "file": "c07-paste-after-b.png",
+      "capture": "C7",
+      "description": "Same review table scrolled to its last rows (the blocked duplicate).",
+      "url": "http://localhost:3000/ar/events/<throwaway-copy>",
+      "notes": "Filmed on a throwaway copy of the promo event with an empty guest list (local DB clone, deleted afterwards), so the page around the panel is the \"just activated, no guests yet\" state that matches the story order; same 10 lines as the original take."
+    },
+    {
+      "file": "c07-paste-after.png",
+      "capture": "C7",
+      "description": "Row-by-row check: bad number flagged «الرقم غير صحيح — بيضاف بدون رقم» (amber), repeated name without number blocked «الاسم مكرر — أضيفي رقم جوالها» (red); «جاهز للإضافة: ٩ · فيه ١ سطر يحتاج تعديل», button «أضف ٩ مدعو».",
+      "url": "http://localhost:3000/ar/events/<throwaway-copy>",
+      "notes": "Filmed on a throwaway copy of the promo event with an empty guest list (local DB clone, deleted afterwards), so the page around the panel is the \"just activated, no guests yet\" state that matches the story order; same 10 lines as the original take. Numbers shown normalised to +966. «الجوهرة» row amber (added without number), second «خالتي منيرة» row red (blocked, not added)."
+    },
+    {
+      "file": "c07-paste-before-end.png",
+      "capture": "C7",
+      "description": "Same panel, textarea scrolled to the end of the list: the malformed «الجوهرة 050000110» and the repeated «خالتي منيرة» (no number) lines.",
+      "url": "http://localhost:3000/ar/events/<throwaway-copy>",
+      "notes": "Filmed on a throwaway copy of the promo event with an empty guest list (local DB clone, deleted afterwards), so the page around the panel is the \"just activated, no guests yet\" state that matches the story order; same 10 lines as the original take."
+    },
+    {
+      "file": "c07-paste-before.png",
+      "capture": "C7",
+      "description": "Paste-a-list panel «استيراد قائمة المدعوين» with 10 pasted lines (name + number + seat count per line), textarea at its first line «أم فهد، 0500001101، 3», before «اقرأ القائمة».",
+      "url": "http://localhost:3000/ar/events/<throwaway-copy>",
+      "notes": "Filmed on a throwaway copy of the promo event with an empty guest list (local DB clone, deleted afterwards), so the page around the panel is the \"just activated, no guests yet\" state that matches the story order; same 10 lines as the original take."
+    },
+    {
+      "file": "c07-paste-done.png",
+      "capture": "C7",
+      "description": "«تمت إضافة ٩ مدعو.» with «تراجع عن هذه الإضافة».",
+      "url": "http://localhost:3000/ar/events/<throwaway-copy>",
+      "notes": "Filmed on a throwaway copy of the promo event with an empty guest list (local DB clone, deleted afterwards), so the page around the panel is the \"just activated, no guests yet\" state that matches the story order; same 10 lines as the original take."
+    },
+    {
+      "file": "c08-send-queue.png",
+      "capture": "C8",
+      "description": "Send queue «إرسال الدعوات»: one guest at a time — «التالي / أم فهد / +966500001101 / عدد الأشخاص: ٣», big «أرسل عبر واتساب» (opens her chat from the host's own WhatsApp), copy / mark-sent / skip, progress «أُرسلت ٠ من ٩».",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i/send",
+      "notes": "Number is shown normalised as +966500001101 (manifest previously said 0500001101)."
+    },
+    {
+      "file": "c08b-team-send-compare.png",
+      "capture": "C8",
+      "description": "Comparison table row «فريق دعوتي يرسل الدعوات عنك» — «مجاناً — تضيف أسماء ضيوفك وأرقامهم، وفريقنا يتولى الإرسال.» (both tiers).",
+      "url": "http://localhost:3000/ar/draft/cmuly6odj0001zb7d4o56hm1i/activate",
+      "notes": "Preferred C8b still: no prices on screen."
+    },
+    {
+      "file": "c08b-team-send-noprice.png",
+      "capture": "C8",
+      "description": "Landing pricing section with every price hidden: «ما تبي ترسلها بنفسك؟ فريق دعوتي يرسل الدعوات لضيوفك عنك — مجاناً.»",
+      "url": "http://localhost:3000/ar",
+      "notes": "EDITED AT CAPTURE: price figures («… ر.س») hidden with an injected visibility:hidden (layout untouched) — prices are admin-editable and must not appear in the video. Hidden: الأسعار تبدأ من ٢ ر.س للدعوة ← | ٢ر.س / لكل دعوة | ٣ر.س / لكل دعوة Prefer c08b-team-send-compare.png (no prices at all) for C8b."
+    },
+    {
+      "file": "c08b-team-send.png",
+      "capture": "C8",
+      "description": "Landing pricing section: «ما تبي ترسلها بنفسك؟ فريق دعوتي يرسل الدعوات لضيوفك عنك — مجاناً.»",
+      "url": "http://localhost:3000/ar",
+      "notes": "The two price cards dominate this frame — use c08b-team-send-compare.png (no prices) for C8b, or c08b-team-send-noprice.png."
+    },
+    {
+      "file": "c08c-send-queue-sent.png",
+      "capture": "C8",
+      "description": "After tapping WhatsApp for أم فهد: «سجّلنا إرسال دعوة أم فهد» + «تراجع», progress advances, next card «أم محمد».",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i/send",
+      "notes": ""
+    },
+    {
+      "file": "c10-guest-01-cover.png",
+      "capture": "C10",
+      "description": "Guest link /i/<token> for «أم فهد» (real, not preview): closed «عروس الياسمين» burgundy envelope with «N & F» wax medallion, «افتح الدعوة», music pill «تشغيل الموسيقى».",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": ""
+    },
+    {
+      "file": "c10-guest-02-opened-name-crop.png",
+      "capture": "C10",
+      "description": "Crop of c10-guest-02-opened.png around «دعوة خاصة إلى / أم فهد» (x 215–955, y 640–1010 → 740x370).",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "For the push-in on her name; the line under it touches the flowers (product layout), so it is left out of this crop."
+    },
+    {
+      "file": "c10-guest-02-opened.png",
+      "capture": "C10",
+      "description": "Opened envelope: «دعوة خاصة إلى / أم فهد / يسعدنا حضوركم ومشاركتنا هذه الفرحة», hint «التفاصيل بالأسفل», music pill «إيقاف الموسيقى».",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "Product layout at 390x844: the line «يسعدنا حضوركم ومشاركتنا هذه الفرحة» (y≈1060–1090) touches the flower sprigs on both sides — push in on «دعوة خاصة إلى / أم فهد» (y≈820–960) or caption that line in the edit. Crop: c10-guest-02-opened-name-crop.png."
+    },
+    {
+      "file": "c10-guest-03-greeting.png",
+      "capture": "C10",
+      "description": "Greeting scene: basmala, host line «تتشرف والدة العريس أم عبدالله ووالدة العروس أم سعد بدعوتكم لحضور حفل زفاف», «فيصل على نورة», Hijri + Gregorian date.",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "Mothers' names stored with a no-break space (أم عبدالله / أم سعد) so each name stays on one line; visually identical text."
+    },
+    {
+      "file": "c10-guest-04-details.png",
+      "capture": "C10",
+      "description": "«تفاصيل المناسبة»: date/time, «قاعة ليلة العمر — الرياض», buttons «أضيفوها إلى تقويمكم» and «الموقع على الخريطة», closing «بحضوركم تكتمل فرحتنا».",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "تفاصيل المناسبة الخميس، ٩ جمادى الآخرة ١٤٤٨ هـ ١٩ نوفمبر ٢٠٢٦ م ٨:٣٠ م قاعة ليلة العمر — الرياض أضيفوها إلى تقويمكم الموقع على الخريطة بحضوركم تكتمل فرحتنا | Framing: the bride illustration overlaps the left end of «الموقع على الخريطة» (x≈150–240, y≈1540–1700) — when pushing in, frame the two buttons from about x 180 to x 1000."
+    },
+    {
+      "file": "c10-guest-05-countdown.png",
+      "capture": "C10",
+      "description": "Live countdown «يفصلنا عن المناسبة» (يوم / ساعة / دقيقة / ثانية), real time to 19 Nov 2026.",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "يفصلنا عن المناسبة 51 يوم 16 ساعة 44 دقيقة 01 ثانية"
+    },
+    {
+      "file": "c10-guest-06-programme.png",
+      "capture": "C10",
+      "description": "«برنامج اليوم»: الاستقبال ٨:٣٠ م · العشاء ١٠:٣٠ م · الزفة ١٢:٠٠ ص.",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "برنامج اليوم الاستقبال ٨:٣٠ م العشاء ١٠:٣٠ م الزفة ١٢:٠٠ ص"
+    },
+    {
+      "file": "c10-guest-07-notes.png",
+      "capture": "C10",
+      "description": "«ملاحظات»: «نرجو عدم التصوير حفاظاً على خصوصية الحفل», «يرجى عدم اصطحاب الأطفال».",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "ملاحظات - نرجو عدم التصوير حفاظاً على خصوصية الحفل - يرجى عدم اصطحاب الأطفال"
+    },
+    {
+      "file": "c10-guest-08-rsvp-empty.png",
+      "capture": "C10",
+      "description": "RSVP «نرجو تأكيد حضوركم» empty: الاسم (prefilled «أم فهد»), رقم الجوال, سأحضر / أعتذر, كلمة لنا, «إرسال التأكيد» (disabled until a choice).",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "نرجو تأكيد حضوركم الاسم رقم الجوال سأحضر أعتذر كلمة لنا إرسال التأكيد"
+    },
+    {
+      "file": "c10-guest-20-rsvp-filled.png",
+      "capture": "C10",
+      "description": "RSVP filled: الاسم «أم فهد» (prefilled), رقم الجوال, «سأحضر» selected, «عدد الأشخاص: ٣», «كلمة لنا»: «الله يتمم لكم على خير ويجعلها ليلة العمر 🤍».",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "The form box scrolls at 390x844: «إرسال التأكيد» is cut by the box edge (y≈1950–1975). Do not use alone — use c10-guest-20c-rsvp-filled-440x956.png for the whole filled form."
+    },
+    {
+      "file": "c10-guest-20b-rsvp-filled-submit.png",
+      "capture": "C10",
+      "description": "RSVP filled, form box scrolled to its end: «عدد الأشخاص ٣», «كلمة لنا» message and the «إرسال التأكيد» button.",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "Form box scrolled to its end, so the title «نرجو تأكيد حضوركم» is cut at the top (y≈540–600). Prefer c10-guest-20c-rsvp-filled-440x956.png."
+    },
+    {
+      "file": "c10-guest-20c-rsvp-filled-440x956.png",
+      "capture": "C10",
+      "description": "RSVP form filled, whole form in one frame (taller phone viewport 440x956 @3x → 1320x2868): «نرجو تأكيد حضوركم», الاسم «أم فهد», رقم الجوال, «سأحضر», «عدد الأشخاص ٣», «كلمة لنا» with her message, and «إرسال التأكيد».",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "Viewport 440x956 @3x (iPhone Pro Max size) → 1320x2868, because at 390x844 and 430x932 the form box still scrolls/clips. Her reply was cleared in the DB for this take and restored byte-for-byte afterwards (same Rsvp row, same respondedAt); nothing was submitted. Scale to the 1170-wide frames if mixed with them."
+    },
+    {
+      "file": "c10-guest-21-pass-card-crop.png",
+      "capture": "C10",
+      "description": "Crop of c10-guest-21-pass.png to the pass card only (x 72–1098, y 420–1960 → 1026x1540): «بطاقة الدخول», couple, date, venue, «أم فهد», «عدد الأشخاص: 3», her real QR.",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "Pixel crop, no scaling. QR decodes to her qrToken."
+    },
+    {
+      "file": "c10-guest-21-pass.png",
+      "capture": "C10",
+      "description": "«بطاقة الدخول» for أم فهد: couple, date/venue, guest name, «عدد الأشخاص: 3», real QR (her qrToken), «يرجى إبراز رمز الدعوة عند الدخول».",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "(Counts in Latin digits, as the product prints them.) PRODUCT RENDERING at this size (report to the team; also identical at 440x956): the square «بطاقة الدخول» card image (x 72–1098, y 420–1958) sits on the page's own bride illustration — hair/bouquet stick out left of the card and continue below it (hard seam, \"two brides\"); the footer «يرجى إبراز رمز الدعوة عند الدخول» (y≈2210–2270) runs into the flowers; «عدد الأشخاص: 3» is tiny; the title is crossed by the arch line. Use c10-guest-21-pass-card-crop.png, push in on name/count/QR, and caption «يرجى إبراز رمز الدعوة عند الدخول» and «عدد الأشخاص: ٣»."
+    },
+    {
+      "file": "c10-guest-22-rsvp-thanks.png",
+      "capture": "C10",
+      "description": "RSVP scene after answering: «يسعدنا حضوركم! نراكم قريبًا».",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": ""
+    },
+    {
+      "file": "c10-guest-23-declined.png",
+      "capture": "C10",
+      "description": "The decline outcome (a demo guest «أم خالد» who answered «أعتذر»): «شكرًا لتواصلكم، سنفتقد حضوركم».",
+      "url": "http://localhost:3000/i/5Bps0Yzj_9tLPFLaNJ7m2ED6KyG2hwLfoeZBVJ5Ug3A",
+      "notes": "Demo guest; her decline was written with submitRsvp semantics."
+    },
+    {
+      "file": "c10-seq-open/",
+      "capture": "C10",
+      "description": "Frame sequence (174 JPEG frames at 1170x2532, 4.768s) of the envelope opening; sequence.json has per-frame timestamps and a 30fps frame map.",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "Re-recorded after QA (warm-up open + reload in the same context). The product still drops the background art for ~70 ms while the opened scene mounts: f0026–f0028 (t≈1.39–1.44 s) are blank (music pill on a flat background). sequence.json frames30 holds f0025 over those ticks and lists them in excluded_frames; do not use them directly. Tap at ~0.6 s."
+    },
+    {
+      "file": "c10-seq-pass/",
+      "capture": "C10",
+      "description": "Frame sequence (215 frames, 4.761s) from submitting the RSVP to the entry pass settling.",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "Real server action + real QR (qrToken). The pass artwork (card.png) arrives ~1 s after the text layers (first load of the image) — real behaviour on a cold cache. Unchanged by the QA pass."
+    },
+    {
+      "file": "c10-seq-scroll/",
+      "capture": "C10",
+      "description": "Frame sequence (676 frames at 1170x2532, 12.198s) scrolling scene by scene from the opened envelope to the (empty) RSVP form.",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+      "notes": "Programmatic smooth scroll (not a finger swipe); dwell ~1.9s per scene. Re-recorded with the mothers' names kept on one line. No blank frames (automatic check)."
+    },
+    {
+      "file": "c11-wishes.png",
+      "capture": "C11",
+      "description": "«كلمات للعروسين»: the latest 3 guest messages — أم فهد's «الله يتمم لكم على خير ويجعلها ليلة العمر 🤍» on top, then «مبروك يا نورة، الله يسعدكم 🤍» and «ألف مبروك وبالرفاه والبنين».",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Re-shot after the guest-list fix. Same product-copy caveat as c06-dashboard-guests for the «المرافقون: 3» row below the wishes."
+    },
+    {
+      "file": "c12-gate-already-used.png",
+      "capture": "C12",
+      "description": "Second scan of أم فهد's pass: «هذي الدعوة تم استخدامها من قبل» — «3 من 3 دخلوا».",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": "Camera: Chromium fake capture device fed with a locally generated clip (headless has no camera). (The door UI and pass print these counts in Latin digits.)"
+    },
+    {
+      "file": "c12-gate-camera-qr.png",
+      "capture": "C12",
+      "description": "Scanner camera with a guest's phone (خالتي منيرة's real pass) in view, a moment before the QR is read.",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": "Frame f0074 of the re-recorded c12-seq-scan (screencast JPEG q92 saved as PNG). Fake camera feed, real QR."
+    },
+    {
+      "file": "c12-gate-panel-before.png",
+      "capture": "C12",
+      "description": "Door panel «دخول منظّمات الدخول» (بباركود only): 5 steps, reference code, «افتح ماسح البوابة», door-team link card «أنشئ الرابط», PIN form.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": ""
+    },
+    {
+      "file": "c12-gate-panel-link.png",
+      "capture": "C12",
+      "description": "Door-team link card close-up: «رابط منظّمات الدخول» — «أرسلي رابط للمنظّمة بالواتساب، تضغطه وتنفتح الكاميرا على طول — بدون رقم مرجعي ولا رمز سري.» + the link + PIN status.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": ""
+    },
+    {
+      "file": "c12-gate-panel.png",
+      "capture": "C12",
+      "description": "Door panel after setup: reference code 4YEGPR, «افتح ماسح البوابة», door-team link created (http://localhost:3000/gate-link/XFja_JIgnBqjPCq4q7dkA9tCH6mDwZKLtL7-Tj9KjxI) with «أرسليه بواتساب / غيّر الرابط / إيقاف الرابط», PIN active «رمز الدخول مفعّل لمنظّمات الدخول».",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Link text shows localhost:3000 (production: https://www.dawati.store/gate-link/…)."
+    },
+    {
+      "file": "c12-gate-scan-success-2.png",
+      "capture": "C12",
+      "description": "Camera scan success for خالتي منيرة: «دخول ناجح», «4 من 4 دخلوا», «كم شخص دخل؟» 1–4.",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": "Re-shot with the re-recorded scan. Fake camera feed, real QR. (The door UI prints these counts in Latin digits.)"
+    },
+    {
+      "file": "c12-gate-scan-success.png",
+      "capture": "C12",
+      "description": "Real QR scan through the camera: «دخول ناجح» — أم محمد, «2 من 2 دخلوا», «كم شخص دخل؟».",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": "Camera: Chromium fake capture device fed with a locally generated clip (headless has no camera). (The door UI and pass print these counts in Latin digits.)"
+    },
+    {
+      "file": "c12-gate-scanner-full.png",
+      "capture": "C12",
+      "description": "Door scanner, full page.",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": "Camera: Chromium fake capture device fed with a locally generated clip (headless has no camera). Idle feed regenerated so the jittered backdrop never exposes a black edge."
+    },
+    {
+      "file": "c12-gate-scanner.png",
+      "capture": "C12",
+      "description": "Door scanner opened from the one-tap door-team link (no account, no code/PIN): event name, «خروج», live camera box «وجّه الكاميرا نحو رمز QR الخاص بالمدعو», search «ما يمسح؟ ابحثي بالاسم أو رقم الجوال».",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": "Camera: Chromium fake capture device fed with a locally generated clip (headless has no camera). Idle feed regenerated so the jittered backdrop never exposes a black edge. Idle feed = dim hall bokeh, no code in view. Re-shot after QA: no black strip on the right/bottom edge of the camera box."
+    },
+    {
+      "file": "c12-gate-search.png",
+      "capture": "C12",
+      "description": "Search by name «أم فهد»: result card with her number, «0 من 3 دخلوا · أكّدت الحضور · قالت 3», button «أدخليها».",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": "Camera: Chromium fake capture device fed with a locally generated clip (headless has no camera). Idle feed regenerated so the jittered backdrop never exposes a black edge. (The door UI prints these counts in Latin digits.) Nothing was tapped in this take."
+    },
+    {
+      "file": "c12-gate-success-full.png",
+      "capture": "C12",
+      "description": "Success state, full page.",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": ""
+    },
+    {
+      "file": "c12-gate-success.png",
+      "capture": "C12",
+      "description": "«دخول ناجح» — أم فهد, «3 من 3 دخلوا», «كم شخص دخل؟» number chips, «تأكيد», «مسح دعوة أخرى».",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": "(The door UI and pass print these counts in Latin digits.)"
+    },
+    {
+      "file": "c12-seq-scan/",
+      "capture": "C12",
+      "description": "Frame sequence (1170x2532 JPEG): scanner with the camera already live, a phone with a guest's pass slides in, real QR read (jsQR) → «دخول ناجح».",
+      "url": "http://localhost:3000/ar/gate-access",
+      "notes": "Re-recorded after QA with the edge-free feed. Starts on the scanner itself: f0000 is the scanner's own «جاري فتح الكاميرا…» state for one tick, then the live camera (no landing page, no price line). f0076 (t≈2.57 s) is the product's camera box going solid black as the stream stops after the read: frames30 holds f0075 over it and then cuts to f0077 («دخول ناجح»); it is listed in excluded_frames. Tail s0000–s0007 = page.screenshot frames (screencast stops once the camera stops). Camera = Chromium fake capture fed with a locally made clip of خالتي منيرة's real pass screenshot (her real qrToken)."
+    },
+    {
+      "file": "c13-attendance-full-p1.png",
+      "capture": "C13",
+      "description": "Event page on the night, full length — part 1 of 3 (0–15,497 px of 44,619 px).",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "The single 44,619 px image exceeded Chromium's 32,767 px canvas limit, so only the parts are kept. Event date temporarily moved to ~1.5 h before capture, then restored."
+    },
+    {
+      "file": "c13-attendance-full-p2.png",
+      "capture": "C13",
+      "description": "Event page on the night, full length — part 2 of 3 (15,497–30,941 px): guest list.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Cut at an empty row between guest rows."
+    },
+    {
+      "file": "c13-attendance-full-p3.png",
+      "capture": "C13",
+      "description": "Event page on the night, full length — part 3 of 3 (30,941–44,619 px): end of the guest list, «تقرير الحضور» with the attendee and no-show lists, custom design card, footer.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Shows seed prices — mask in the edit or use the -noprice variant (prices are admin-editable and must not appear on screen). Contains the «آخر تحديث …ص» clock line."
+    },
+    {
+      "file": "c13-attendance-lists.png",
+      "capture": "C13",
+      "description": "Attendance lists: who came (with seats used of allowed) and who has not arrived yet.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Event date temporarily moved to ~1.5 h before capture time in the local DB (the report only switches on once the event has started), then restored to Thu 19 Nov 2026 20:30 Riyadh. Check-ins: 3 through the real door UI (search + two camera scans), 48 written with performCheckIn semantics."
+    },
+    {
+      "file": "c13-attendance-notime.png",
+      "capture": "C13",
+      "description": "Same «تقرير الحضور» without the «آخر تحديث … بتوقيت الرياض · يتحدّث تلقائياً» line: tiles «حضروا فعلياً ١٢٠ شخصاً · ٥١ دعوة» / «لم يحضروا بعد ٢٧», attendee list.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Event date temporarily moved to ~1.5 h before capture time in the local DB (the report only switches on once the event has started), then restored to Thu 19 Nov 2026 20:30 Riyadh. Check-ins: 3 through the real door UI (search + two camera scans), 48 written with performCheckIn semantics. EDITED AT CAPTURE: only the «آخر تحديث …» line (آخر تحديث ٤:٥٧ ص بتوقيت الرياض · يتحدّث تلقائياً) was hidden with an injected display:none, because it prints the capture machine's clock (≈5 AM Riyadh), not an evening time. Everything else is the real render; the product itself shows the report without that line once the live window is over."
+    },
+    {
+      "file": "c13-attendance.png",
+      "capture": "C13",
+      "description": "«تقرير الحضور» on the night: «يعتمد على مسح الباركود عند الباب، ويتحدّث تلقائياً طوال ليلة الحفل.», «آخر تحديث … بتوقيت الرياض · يتحدّث تلقائياً», tiles «حضروا فعلياً ١٢٠ شخصاً · ٥١ دعوة» and «لم يحضروا بعد ٢٧ دعوة لم تُستخدم», attendee list with «X من Y».",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Event date temporarily moved to ~1.5 h before capture time in the local DB (the report only switches on once the event has started), then restored to Thu 19 Nov 2026 20:30 Riyadh. Check-ins: 3 through the real door UI (search + two camera scans), 48 written with performCheckIn semantics. The «آخر تحديث ٤:٥٧ ص بتوقيت الرياض» line (y≈510–545) prints the capture machine's clock — use c13-attendance-notime.png or cover that line."
+    },
+    {
+      "file": "c13b-dashboard-tonight.png",
+      "capture": "C13",
+      "description": "Overview on the night: pill «المناسبة اليوم», details-locked note, RSVP tiles «تم الإرسال ١٢٠ من ١٥٠ / أكّدوا ٧٨ / اعتذروا ٩ / بانتظار الرد ٣٣», response card adding up to ١٢٠.",
+      "url": "http://localhost:3000/ar/events/cmuly6odj0001zb7d4o56hm1i",
+      "notes": "Event date temporarily moved to ~1.5 h before capture time in the local DB (the report only switches on once the event has started), then restored to Thu 19 Nov 2026 20:30 Riyadh. Check-ins: 3 through the real door UI (search + two camera scans), 48 written with performCheckIn semantics."
+    },
+    {
+      "file": "c14-whatsapp-preview.png",
+      "capture": "C14",
+      "description": "Link-preview (Open Graph) image of أم فهد's invitation at native 1200x630, as WhatsApp fetches it: theme palette, corner brackets, «WEDDING INVITATION», «Faisal & Noura», «November 19, 2026».",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw/opengraph-image",
+      "notes": "og:title «دعوة خاصة إلى أم فهد»; og:description «Faisal و Noura — ١٩ نوفمبر ٢٠٢٦ · قاعة ليلة العمر» (mixes Latin names with Arabic «و»). Image text is English. Use as reference only: design the C9 chat card around the Arabic og:title «دعوة خاصة إلى أم فهد». PRODUCT (report): previewNames() prefers the English names when both are filled, and the eyebrow «WEDDING INVITATION» and the date line are always en-US."
+    },
+    {
+      "file": "c14b-whatsapp-preview-arabic-names.png",
+      "capture": "C14",
+      "description": "Same Open Graph route rendered with the couple's English names cleared: «فيصل و نورة» in Arabic, but the eyebrow «WEDDING INVITATION» and «November 19, 2026» stay English.",
+      "url": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw/opengraph-image",
+      "notes": "groomNameEn/brideNameEn (Event + EventCouple) were blanked in the local DB only for this render and restored to Faisal/Noura right after (the invitation and its N & F seal are unchanged). og:description in that state: «فيصل و نورة — ١٩ نوفمبر ٢٠٢٦ · قاعة ليلة العمر». Reference only."
+    }
+  ],
+  "generated": "2026-09-29 (local dev server http://localhost:3000, DB dawati_dev); QA-fix pass the same night",
+  "capture_settings": "Playwright Chromium (headless shell 141), viewport 390x844 @3x → 1170x2532, isMobile+hasTouch, locale ar-SA (process LANG ar_SA.UTF-8 so native date controls are Arabic), tz Asia/Riyadh, colorScheme light + cookie dawati_theme=light, Next.js dev indicator hidden with injected CSS (nextjs-portal etc.) and checked for dev-overlay issues on every shot. Waited for document.fonts.ready, images decoded, finite animations finished. Frame sequences and some later stills use a \"native 3x\" browser (--force-device-scale-factor=3 + CDP mobile/touch emulation) because CDP screencast only returns 1170x2532 frames when the scale factor is real.",
+  "ids": {
+    "eventId": "cmuly6odj0001zb7d4o56hm1i",
+    "orderId": "cmulybi6b0008zb7d07krllfv",
+    "eventName": "حفل زفاف فيصل و نورة",
+    "guestLinkToken_umFahad": "XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+    "guestLink_umFahad": "http://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+    "guestQrToken_umFahad": "IiGIr4_7oSodNJhGhXD06_Yvr-Htmzahx7RDT-pfkeE",
+    "doorTeamLink": "http://localhost:3000/gate-link/XFja_JIgnBqjPCq4q7dkA9tCH6mDwZKLtL7-Tj9KjxI",
+    "referenceCode": "4YEGPR",
+    "doorPin": "2468",
+    "customerPhone": "0500009911 (+966500009911), name «أم سعد»",
+    "theme": "jasmine-bride-copy (عروس الياسمين), variant burgundy/عنابي",
+    "draftForReshoots": "cmum17ajd001lzb7davbev965 (fresh unpaid no-login draft, same design/data; used for c03, c04 and the c05 -noprice stills)",
+    "orderPaidAt": "2026-09-25 17:41 UTC (20:41 Riyadh) — backdated, see notes"
+  },
+  "sample_data": {
+    "couple": "فيصل العتيبي (Faisal) على نورة القحطاني (Noura); seal initials «N & F»",
+    "host_line": "تتشرف والدة العريس أم عبدالله ووالدة العروس أم سعد بدعوتكم لحضور حفل زفاف (stored as «أم عبدالله» / «أم سعد» with a no-break space so each name stays on one line; the WhatsApp text flattens it to a normal space)",
+    "date": "Thu 19 Nov 2026 20:30 Riyadh (الخميس، ٩ جمادى الآخرة ١٤٤٨ هـ)",
+    "venue": "قاعة ليلة العمر — الرياض, map https://maps.google.com/?q=24.7136,46.6753",
+    "programme": "الاستقبال|٨:٣٠ م · العشاء|١٠:٣٠ م · الزفة|١٢:٠٠ ص (entered with Arabic-Indic digits, like the form's own placeholder)",
+    "notes": "ready-made lines ticked: «نرجو عدم التصوير حفاظاً على خصوصية الحفل», «يرجى عدم اصطحاب الأطفال»",
+    "music": "left empty → house track (autoplay on open, form default)",
+    "companions": "«المدعو يختار بنفسه»",
+    "tier": "«بباركود», 150 invitations",
+    "hero_guest": "أم فهد 0500001101, 3 seats; RSVP سأحضر, عدد الأشخاص 3, «الله يتمم لكم على خير ويجعلها ليلة العمر 🤍» (submitted through the real guest page)",
+    "pasted_list": [
+      "أم فهد، 0500001101، 3",
+      "أم محمد 0500001102 2",
+      "سارة القحطاني 0500001103",
+      "هيفاء العتيبي، 0500001104، 2",
+      "الجوهرة 050000110",
+      "خالتي منيرة 0500001106 4",
+      "أم خالد، 0500001107، 3",
+      "نوف الدوسري 0500001108",
+      "خالتي منيرة",
+      "ريم الشهري، 0500001110، 2"
+    ]
+  },
+  "whatsapp": {
+    "wa_me_url": "https://wa.me/966500001101?text=%D8%AA%D8%AA%D8%B4%D8%B1%D9%81%20%D9%88%D8%A7%D9%84%D8%AF%D8%A9%20%D8%A7%D9%84%D8%B9%D8%B1%D9%8A%D8%B3%20%D8%A3%D9%85%20%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D9%84%D9%87%20%D9%88%D9%88%D8%A7%D9%84%D8%AF%D8%A9%20%D8%A7%D9%84%D8%B9%D8%B1%D9%88%D8%B3%20%D8%A3%D9%85%20%D8%B3%D8%B9%D8%AF%20%D8%A8%D8%AF%D8%B9%D9%88%D8%AA%D9%83%D9%85%20%D9%84%D8%AD%D8%B6%D9%88%D8%B1%20%D8%AD%D9%81%D9%84%20%D8%B2%D9%81%D8%A7%D9%81%20%D9%81%D9%8A%D8%B5%D9%84%20%D8%B9%D9%84%D9%89%20%D9%86%D9%88%D8%B1%D8%A9%0Ahttp%3A%2F%2Flocalhost%3A3000%2Fi%2FXAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+    "to": "+966500001101",
+    "message_text": "تتشرف والدة العريس أم عبدالله ووالدة العروس أم سعد بدعوتكم لحضور حفل زفاف فيصل على نورة\nhttp://localhost:3000/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+    "production_equivalent": "تتشرف والدة العريس أم عبدالله ووالدة العروس أم سعد بدعوتكم لحضور حفل زفاف فيصل على نورة\nhttps://www.dawati.store/i/XAWZlTDd8TFTymQRFfQlY6oDpOqZh1R3EXIiop7WUrw",
+    "link_preview_title": "دعوة خاصة إلى أم فهد",
+    "link_preview_description": "Faisal و Noura — ١٩ نوفمبر ٢٠٢٦ · قاعة ليلة العمر",
+    "note": "Same sentence for every guest; only the link differs. Decoded from the «أرسل عبر واتساب» href on أم فهد's send-queue card (wa.me was intercepted locally, nothing left the machine)."
+  },
+  "dashboard_numbers": "Guests on the list 120 (of 150 bought) · تم الإرسال ١٢٠ من ١٥٠ · أكّدوا الحضور ٧٨ (١٧٤ شخصاً، ٦٥٪) · اعتذروا ٩ (٨٪) · بانتظار الرد ٣٣ · response card «حالة الردود على ١٢٠ دعوة مرسلة — وافق ٧٨ · اعتذر ٩ · بانتظار الرد ٣٣» (adds up) · ما أُرسلت ٠ · capacity ١١١ / ١٥٠ · ٣٩ مقعد متبقٍ. Attendance (c13): حضروا فعلياً ١٢٠ شخصاً · ٥١ دعوة; لم يحضروا بعد ٢٧. NOTE for the script: scene 17 of creative-direction.md quotes «بانتظار الرد ٦٣» (the old, non-adding figure) — it is now ٣٣.",
+  "qa_fixes": [
+    {
+      "defect": "Dates contradict (lock note 26 Sep vs paid 29 Sep)",
+      "fix": "Order/Event/User creation + paidAt backdated to 25 Sep; c05e-paid(+full) re-shot (details unlocked as right after payment). Lock note (26 Sep) now follows payment; c06/c11/c12-gate-panel-link/c13b consistent."
+    },
+    {
+      "defect": "Response card does not add up (120 sent vs 78+9+63)",
+      "fix": "Unsent demo guests removed → 120 on the list, all sent: 78+9+33=120. c06-dashboard, -top, -guests, -full (parts), c11-wishes, c13*, c13b re-shot. Product bug reported (page.tsx:108)."
+    },
+    {
+      "defect": "Prices on the main C5 still (and landing / team-send)",
+      "fix": "New c05-activate-noprice, c05-activate-top-noprice, c01-landing-noprice, c08b-team-send-noprice (price text hidden, layout real). Priced originals kept with mask coordinates; c08b-team-send-compare recommended."
+    },
+    {
+      "defect": "c10-seq-open blank frames",
+      "fix": "Re-recorded after warm-up + reload; the ~70 ms swap flash is product behaviour (f0026–f0028); frames30 now holds f0025 over them (excluded_frames + known_artifact in sequence.json)."
+    },
+    {
+      "defect": "c12-seq-scan landing-page frames + black camera frame",
+      "fix": "Re-recorded starting on the scanner (no landing page / price line) with the edge-free feed; the one black camera frame (f0076) is excluded from frames30. c12-gate-camera-qr and c12-gate-scan-success-2 regenerated from the new take."
+    },
+    {
+      "defect": "«أم / عبدالله» split across lines",
+      "fix": "Names stored with a no-break space; c10-guest-03-greeting, c10-seq-scroll re-shot; c04-preview-01..03 re-shot on a fresh unpaid draft (watermark real) so the preview greeting is fixed too."
+    },
+    {
+      "defect": "Pass: double bride / seam / footer over flowers",
+      "fix": "Product rendering (same at 440x956). Added c10-guest-21-pass-card-crop.png; manifest gives caption guidance. Reported."
+    },
+    {
+      "defect": "Opened card line touches flowers",
+      "fix": "Product layout. Added c10-guest-02-opened-name-crop.png; manifest notes. Reported."
+    },
+    {
+      "defect": "No still with the whole filled RSVP form",
+      "fix": "c10-guest-20c-rsvp-filled-440x956.png (1320x2868): title, name, phone, سأحضر, عدد الأشخاص ٣, message and «إرسال التأكيد» all visible; reply restored exactly afterwards."
+    },
+    {
+      "defect": "Black edge on the fake camera feed",
+      "fix": "mkfeed.py now draws the backdrop 16 px larger and crops after the jitter; idle.y4m and slide-munira.y4m regenerated; c12-gate-scanner, -search, -scanner-full re-shot (checked: no black columns/rows)."
+    },
+    {
+      "defect": "c07 before-shot state mismatch / hero line hidden",
+      "fix": "All c07 stills re-shot on a throwaway empty copy of the event (deleted afterwards): c07-paste-before (textarea at the top, أم فهد line visible), new c07-paste-before-end, -after, -after-b, -done. c07-paste-before-top removed."
+    },
+    {
+      "defect": "c02-gallery duplicate of c02-gallery-top",
+      "fix": "Re-shot with the jasmine card filling the frame."
+    },
+    {
+      "defect": "-full images taller than 32,767 px",
+      "fix": "All >16,000 px fulls split into ≤16,000 px parts at empty rows; c06/c13 whole images retired; c02-gallery-full now 16,308 px / 6.6 MB (live-family catalogue)."
+    },
+    {
+      "defect": "Legacy gradient tiles / duplicate jasmine in c02/c03",
+      "fix": "Non-live legacy seed designs hidden for the takes (restored after); c02-gallery-top/-full and all c03 stills re-shot on a fresh draft — picker shows only real envelope art."
+    },
+    {
+      "defect": "Link preview all English",
+      "fix": "c14 kept as reference; c14b rendered with the English names blanked (Arabic names, English eyebrow/date). Reported; C9 should be designed around «دعوة خاصة إلى أم فهد»."
+    },
+    {
+      "defect": "Manifest mismatches",
+      "fix": "c08-send-queue now «+966500001101»; c10-seq-open and c12-seq-scan notes/sequence.json describe the real excluded frames; c02-gallery described correctly."
+    },
+    {
+      "defect": "Dev-only UI in c05c/c05d",
+      "fix": "c05c-otp-clean.png added (dev line removed, which production never renders). c05d: recommended to leave out; crop/mask coordinates in its notes."
+    },
+    {
+      "defect": "«آخر تحديث ٤:٠٤ ص» on the attendance report",
+      "fix": "Clock line is server time (cannot fake without restarting the dev server). c13-attendance-notime.png added; original kept with the line's coordinates."
+    },
+    {
+      "defect": "Product copy («المرافقون: 3», Latin digits, detached «و»)",
+      "fix": "Reported (notes); framing guidance on c06-dashboard-guests / c11."
+    },
+    {
+      "defect": "Bride overlaps «الموقع على الخريطة»",
+      "fix": "Framing guidance on c10-guest-04-details (x 180–1000)."
+    },
+    {
+      "defect": "c04 music pill / stand-in guest inconsistent with c10",
+      "fix": "c04 re-shot with the same music stub (pill «إيقاف الموسيقى» after opening). The preview's stand-in guest is product behaviour — do not cut straight from c04-02 into c10-02; c04-preview-01-cover is the C4 hero."
+    }
+  ]
+}

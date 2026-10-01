@@ -76,6 +76,10 @@ export default async function EventDetailPage({
   // What she may USE: bought plus granted. The receipt screen deliberately
   // shows a different number — see `@/lib/events/capacity`.
   const capacity = eventCapacity(event);
+  // Every figure on the page — counts, dates, times, "ago" — names its
+  // numbering system rather than trusting the locale's default: bare "ar" now
+  // defaults to Latin digits, and one formatter that forgot put «قبل 55 دقيقة»
+  // and a Latin «3» into a table otherwise written in Arabic-Indic.
   const nf = new Intl.NumberFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US");
   // The line above the link in the WhatsApp message a host sends each guest:
   // her extra text if she wrote one, else the composed invitation sentence.
@@ -97,15 +101,38 @@ export default async function EventDetailPage({
     };
   });
 
-  const sent = rows.filter((r) => r.invitation?.sentAt).length;
   // The send queue's own predicate, computed here from rows this page already
   // has — the two screens must never disagree about how many are left, and
   // that is only guaranteed by both asking the same question. Blocked guests
-  // are out of both: you do not send to somebody you have blocked.
-  const unsent = rows.filter((r) => !r.guest.isBlocked && !r.invitation?.sentAt).length;
+  // are out of both: you do not send to somebody you have blocked. So is a
+  // guest who already has her answer with no send on record — a reply through
+  // a link that reached her some other way, or a walk-in the door admitted by
+  // name: the reply cards count her as delivered (see `sent` below), and an
+  // invitation to a wedding she is already at is nothing to send.
+  const unsent = rows.filter((r) => !r.guest.isBlocked && !r.invitation?.sentAt && r.rsvp === "pending").length;
   const accepted = rows.filter((r) => r.rsvp === "accepted");
   const declined = rows.filter((r) => r.rsvp === "declined");
-  const pending = rows.length - accepted.length - declined.length;
+  // «بانتظار الرد» is an invitation in her hands that she has not answered:
+  // it went out, and she can still reply. It used to be everyone without an
+  // answer — rows minus the two above — which counted guests nobody had sent
+  // anything to under a card titled "replies to X SENT invitations", so its
+  // three figures stopped adding up to X. Two silences are not waiting: never
+  // sent (that is `unsent`, the send queue's number), and sent then blocked —
+  // her link no longer opens and a reply is refused. The same predicate is the
+  // guest list's «ما ردّن» chip; the two must agree.
+  const pending = rows.filter(
+    (r) => r.rsvp === "pending" && r.invitation?.sentAt && !r.guest.isBlocked,
+  ).length;
+  // The invitations that are out, and so the denominator of every reply
+  // figure: the sum of the three buckets rather than a count of sentAt, so the
+  // stat cards, the percentages and the response bar add up to it in every
+  // case. Where the two differ the sum is the truer "sent": an invitation sent
+  // and then blocked is no longer out (blocking writes BLOCKED over any
+  // answer, so she is in none of the three), and a reply with no sentAt — a
+  // link that reached her by a route nothing recorded, or the door admitting
+  // her by name — counts as delivered, the same inference markViewed() draws
+  // from an open; `unsent` above leaves her out to match.
+  const sent = accepted.length + declined.length + pending;
   const people = accepted.reduce((sum, r) => sum + r.people, 0);
   const pct = (n: number) => (sent > 0 ? Math.round((n / sent) * 100) : 0);
 
@@ -269,7 +296,7 @@ export default async function EventDetailPage({
             <p className="mt-1 text-xs leading-relaxed text-fg-muted">
               {d.lockedBody.replace(
                 "{date}",
-                riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory" : "en-US", {
+                riyadhDateFormat(locale === "ar" ? "ar-SA-u-ca-gregory-nu-arab" : "en-US", {
                   day: "numeric",
                   month: "long",
                   year: "numeric",
@@ -455,7 +482,9 @@ export default async function EventDetailPage({
                 invitationUrl: invitation ? guestInvitationUrl(invitation.linkToken) : "",
                 waMessage: invitation ? `${shareText}\n${guestInvitationUrl(invitation.linkToken)}` : "",
                 rsvp,
-                sent: Boolean(invitation?.sentAt),
+                // A reply counts as sent, as it does in `sent` above — so the
+                // chips never file one guest under both «أكّدن» and «ما أُرسلت».
+                sent: Boolean(invitation?.sentAt) || rsvp !== "pending",
               }))}
             />
           )}
@@ -484,7 +513,7 @@ export default async function EventDetailPage({
                     <p className="mt-1 text-xs text-fg-muted">
                       {d.attendanceUpdatedAt.replace(
                         "{time}",
-                        riyadhDateFormat(locale === "ar" ? "ar-SA" : "en-US", {
+                        riyadhDateFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en-US", {
                           hour: "numeric",
                           minute: "2-digit",
                         }).format(report.at),

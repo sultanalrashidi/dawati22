@@ -30,7 +30,7 @@ export function generateStaticParams() {
 
 export const metadata: Metadata = {
   title: "دعوتي — Dawati",
-  description: "منصة عربية فاخرة للدعوات الرقمية والمناسبات",
+  description: "منصة عربية فاخرة لدعوات الزفاف الرقمية",
 };
 
 // Avoids a light/dark flash before hydration: reads the theme cookie (or

@@ -30,11 +30,11 @@ test("a wedding is named after its couple, whatever the form posted", () => {
   // The admin form used to post the name it was rendered with — the old one.
   assert.equal(
     eventNameFor({ isWedding: true, couples: AHMED, typed: composeWeddingName(MAJED) }),
-    "حفل زفاف أحمد و لمى",
+    "حفل زفاف أحمد ولمى",
   );
   // And with nothing posted at all, which is what the forms do now.
-  assert.equal(eventNameFor({ isWedding: true, couples: AHMED, typed: "" }), "حفل زفاف أحمد و لمى");
-  assert.equal(eventNameFor({ isWedding: true, couples: MAJED, typed: "" }), "حفل زفاف ماجد و لمى");
+  assert.equal(eventNameFor({ isWedding: true, couples: AHMED, typed: "" }), "حفل زفاف أحمد ولمى");
+  assert.equal(eventNameFor({ isWedding: true, couples: MAJED, typed: "" }), "حفل زفاف ماجد ولمى");
 });
 
 test("the English names stand in when the Arabic ones are absent", () => {

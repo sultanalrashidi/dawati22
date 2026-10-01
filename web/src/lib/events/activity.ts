@@ -47,6 +47,10 @@ export function eventHasStarted(eventDate: Date, now: number = Date.now()): bool
 /**
  * "2 minutes ago" / "yesterday", in the viewer's language. Returns null for a
  * missing date so the caller can say what "never happened" means in context.
+ *
+ * Arabic names its digits, like every number formatter on the dashboard: bare
+ * "ar" now defaults to Latin ones, and the guest table read «قبل 55 دقيقة»
+ * beside counts written «١٢٠».
  */
 export function relativeTime(
   date: Date | null | undefined,
@@ -54,7 +58,7 @@ export function relativeTime(
   now: number = Date.now(),
 ): string | null {
   if (!date) return null;
-  const rtf = new Intl.RelativeTimeFormat(locale === "ar" ? "ar" : "en", { numeric: "auto" });
+  const rtf = new Intl.RelativeTimeFormat(locale === "ar" ? "ar-SA-u-nu-arab" : "en", { numeric: "auto" });
   const diff = date.getTime() - now;
 
   if (Math.abs(diff) < HOUR) return rtf.format(Math.round(diff / MINUTE), "minute");

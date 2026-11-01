@@ -62,6 +62,7 @@
     "countryLabel": "Country",
     "countryGroupGulf": "Gulf countries",
     "countryGroupArab": "Arab countries",
+    "countryGroupWorld": "Other countries",
     "nameLabel": "Name",
     "namePlaceholder": "Enter your name",
     "sendCode": "Send code",

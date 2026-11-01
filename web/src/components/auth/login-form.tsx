@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect, useMemo } from "react";
+import { useState, useTransition, useRef, useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { OTP_MAX_LENGTH, isSubmittableOtp } from "@/lib/otp/format";
@@ -59,8 +59,19 @@ export function LoginForm({
     () => ({
       gulf: PHONE_COUNTRIES.filter((c) => c.region === "gulf"),
       arab: PHONE_COUNTRIES.filter((c) => c.region === "arab"),
+      world: PHONE_COUNTRIES.filter((c) => c.region === "world").sort((a, b) =>
+        locale === "ar" ? a.nameAr.localeCompare(b.nameAr, "ar") : a.nameEn.localeCompare(b.nameEn, "en"),
+      ),
     }),
-    [],
+    [locale],
+  );
+  // The world names come from Intl, whose wording and order differ between the
+  // server's ICU and the browser's — so that group renders in the browser only.
+  // Saudi, the default, is in the Gulf group and is there from the first paint.
+  const inBrowser = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
   );
   const countryName = (iso: string) => {
     const c = getPhoneCountry(iso);
@@ -161,6 +172,15 @@ export function LoginForm({
                     </option>
                   ))}
                 </optgroup>
+                {inBrowser && (
+                  <optgroup label={dict.auth.countryGroupWorld}>
+                    {groups.world.map((c) => (
+                      <option key={c.iso} value={c.iso}>
+                        {c.flag} {countryName(c.iso)}
+                      </option>
+                    ))}
+                  </optgroup>
+                )}
               </select>
               <div className="flex h-11 min-w-0 flex-1 items-center rounded-lg border border-border bg-bg focus-within:border-accent">
                 <span className="select-none ps-3 pe-1 text-fg-muted">+{selected.dialCode}</span>

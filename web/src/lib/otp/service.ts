@@ -8,6 +8,7 @@ import { createAuthenticaOtpAdapter } from "@/lib/otp/authentica-adapter";
 import { OtpDeliveryError, type OtpAdapter } from "@/lib/otp/adapter";
 import { OtpPurpose } from "@/generated/prisma/client";
 import { isTestBypassPhone, isTestPhoneBypassEnabled } from "@/lib/settings/service";
+import { LISTED_PHONE_COUNTRIES } from "@/lib/security/phone";
 
 const CODE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 /**
@@ -27,6 +28,21 @@ const MAX_ATTEMPTS = 5;
 const SIGNUP_GRANT_TTL_MS = 10 * 60 * 1000; // 10 minutes to type a name
 const SEND_WINDOW_MS = 10 * 60 * 1000; // 10 minutes
 const MAX_SENDS_PER_WINDOW = 3;
+
+/**
+ * One shared hourly budget for every number outside the Gulf and Arab list.
+ * Opening sign-in to the whole world is what SMS-pumping rings look for — a
+ * script cycling fresh premium-rate numbers never trips the per-phone limit —
+ * so faraway sends are capped together. A real customer abroad is a handful a
+ * day; a flood stops here instead of on the SMS bill.
+ */
+const WORLD_SEND_WINDOW_MS = 60 * 60 * 1000;
+const MAX_WORLD_SENDS_PER_WINDOW = 30;
+const LISTED_PREFIXES = LISTED_PHONE_COUNTRIES.map((c) => `+${c.dialCode}`);
+
+function isWorldPhone(phone: string): boolean {
+  return !LISTED_PREFIXES.some((prefix) => phone.startsWith(prefix));
+}
 
 /**
  * Who delivers the code, and to whom.
@@ -113,6 +129,17 @@ export async function requestOtp(
     if (recent.length >= MAX_SENDS_PER_WINDOW) {
       const retryAfterMs = recent[0].createdAt.getTime() + SEND_WINDOW_MS - Date.now();
       throw new OtpRateLimitError(Math.max(1, Math.ceil(retryAfterMs / 1000)));
+    }
+
+    if (isWorldPhone(phone)) {
+      await lockKey(tx, "otp-send", "world");
+      const worldSent = await tx.otpCode.count({
+        where: {
+          createdAt: { gte: new Date(Date.now() - WORLD_SEND_WINDOW_MS) },
+          NOT: LISTED_PREFIXES.map((prefix) => ({ phone: { startsWith: prefix } })),
+        },
+      });
+      if (worldSent >= MAX_WORLD_SENDS_PER_WINDOW) throw new OtpRateLimitError(15 * 60);
     }
 
     // The row is written either way: it is what limits sending, expires the

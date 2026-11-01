@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db/client";
 import { eventCapacity, capacityBreakdown } from "@/lib/events/capacity";
 import { writeAuditLog, listAuditLog, type AuditActor } from "@/lib/audit/service";
 import { normalizeArabic } from "@/lib/arabic";
-import { normalizePhone, DEFAULT_PHONE_COUNTRY, PHONE_COUNTRIES } from "@/lib/security/phone";
+import { normalizePhone, DEFAULT_PHONE_COUNTRY, LISTED_PHONE_COUNTRIES } from "@/lib/security/phone";
 import { riyadhDateTimeLocalToDate } from "@/lib/dates";
 import { EventStatus, GuestManagementRequestStatus, OrderStatus, Role, type Prisma } from "@/generated/prisma/client";
 import type { InvitationTier } from "@/generated/prisma/enums";
@@ -203,7 +203,7 @@ function phoneCandidates(term: string): string[] {
 
   // Bare national: let each country claim it, or none.
   const national = digits.replace(/^00/, "").replace(/^0+/, "");
-  for (const country of PHONE_COUNTRIES) {
+  for (const country of LISTED_PHONE_COUNTRIES) {
     if (country.national.test(national)) forms.add(`+${country.dialCode}${national}`);
   }
 
